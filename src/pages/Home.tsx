@@ -11,7 +11,7 @@ import {
 
 const Home: React.FC = () => {
   return (
-    <div className="bg-white">
+    <div className="mx-auto min-h-screen flex flex-col">
       <header className="bg-gradient-to-r from-indigo-100 to-indigo-50">
         <nav className="container mx-auto px-6 py-3">
           <div className="flex justify-between items-center">

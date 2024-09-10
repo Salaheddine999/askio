@@ -17,6 +17,7 @@ import {
   AlertCircle,
   Edit2,
 } from "lucide-react";
+import ConfirmationModal from "./ConfirmationModal";
 
 interface EditChatbotProps extends ChatbotProps {
   name: string;
@@ -50,6 +51,8 @@ const EditChatbot: React.FC = () => {
   const [showEmbedPreview, setShowEmbedPreview] = useState(false);
   const [showChatbot, setShowChatbot] = useState(false);
   const [editingFaqIndex, setEditingFaqIndex] = useState<number | null>(null);
+  const [isDeleteFaqModalOpen, setIsDeleteFaqModalOpen] = useState(false);
+  const [faqToDelete, setFaqToDelete] = useState<number | null>(null);
 
   useEffect(() => {
     if (id) {
@@ -122,13 +125,24 @@ const EditChatbot: React.FC = () => {
     setFaqInput({ question: "", answer: "" });
   };
 
-  const handleDeleteFaq = (index: number) => {
-    if (window.confirm("Are you sure you want to delete this FAQ?")) {
+  const openDeleteFaqModal = (index: number) => {
+    setFaqToDelete(index);
+    setIsDeleteFaqModalOpen(true);
+  };
+
+  const closeDeleteFaqModal = () => {
+    setFaqToDelete(null);
+    setIsDeleteFaqModalOpen(false);
+  };
+
+  const handleDeleteFaq = () => {
+    if (faqToDelete !== null) {
       setConfig((prev) => ({
         ...prev,
-        faqData: prev.faqData.filter((_, i) => i !== index),
+        faqData: prev.faqData.filter((_, i) => i !== faqToDelete),
       }));
-      setFaqList((prev) => prev.filter((_, i) => i !== index));
+      setFaqList((prev) => prev.filter((_, i) => i !== faqToDelete));
+      closeDeleteFaqModal();
     }
   };
 
@@ -552,7 +566,7 @@ const EditChatbot: React.FC = () => {
                           className="text-red-500 hover:text-red-700"
                           onClick={(e) => {
                             e.stopPropagation();
-                            handleDeleteFaq(index);
+                            openDeleteFaqModal(index);
                           }}
                         >
                           <Trash2 size={16} />
@@ -624,6 +638,16 @@ const EditChatbot: React.FC = () => {
           <Chatbot {...config} isEmbedded={true} />
         </div>
       )}
+
+      <ConfirmationModal
+        isOpen={isDeleteFaqModalOpen}
+        onClose={closeDeleteFaqModal}
+        onConfirm={handleDeleteFaq}
+        title="Delete FAQ"
+        message="Are you sure you want to delete this FAQ?"
+        confirmText="Delete"
+        cancelText="Cancel"
+      />
     </div>
   );
 };

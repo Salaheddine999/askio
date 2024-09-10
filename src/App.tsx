@@ -18,6 +18,7 @@ import Profile from "./pages/Profile";
 
 const App: React.FC = () => {
   const [session, setSession] = useState<Session | null>(null);
+  const [darkMode, setDarkMode] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -30,15 +31,34 @@ const App: React.FC = () => {
       setSession(session);
     });
 
+    // Check for user's dark mode preference
+    const isDarkMode = localStorage.getItem("darkMode") === "true";
+    setDarkMode(isDarkMode);
+
     return () => subscription.unsubscribe();
   }, []);
 
+  useEffect(() => {
+    if (darkMode) {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+    localStorage.setItem("darkMode", darkMode.toString());
+  }, [darkMode]);
+
+  const toggleDarkMode = () => {
+    setDarkMode(!darkMode);
+  };
+
   return (
     <Router>
-      <div className="min-h-screen flex flex-col bg-indigo-50">
-        {session && <Navbar />}
-        <div className="flex-grow">
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className={`min-h-screen flex flex-col ${darkMode ? "dark" : ""}`}>
+        {session && (
+          <Navbar darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
+        )}
+        <div className="flex-grow bg-gray-50 dark:bg-gray-900">
+          <div className="mx-auto">
             <Routes>
               <Route
                 path="/"
