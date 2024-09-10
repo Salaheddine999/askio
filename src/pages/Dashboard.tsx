@@ -29,7 +29,7 @@ const Dashboard: React.FC = () => {
       data: { user },
     } = await supabase.auth.getUser();
     if (user) {
-      const { data, error } = await supabase
+      const { data } = await supabase
         .from("profiles")
         .select("first_login")
         .eq("id", user.id)
