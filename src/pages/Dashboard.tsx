@@ -116,7 +116,7 @@ const Dashboard: React.FC = () => {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 mt-6">
       {isNewUser && (
         <div
           className="bg-green-100 dark:bg-green-800 border-l-4 border-green-500 text-green-700 dark:text-green-200 p-4 mb-8 rounded-md"
@@ -131,12 +131,12 @@ const Dashboard: React.FC = () => {
       )}
 
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8">
-        <h2 className="text-3xl font-bold text-indigo-900 dark:text-indigo-200 mb-4 sm:mb-0">
+        <h2 className="text-3xl font-medium text-black dark:text-gray-100 mb-4 sm:mb-0">
           Your Chatbots
         </h2>
         <Link
           to="/configure"
-          className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md transition-colors duration-200 flex items-center w-full sm:w-auto justify-center"
+          className="bg-[#aab2ff] hover:bg-indigo-400 text-black px-4 py-2 rounded-md transition-colors duration-200 flex items-center w-full sm:w-auto justify-center"
         >
           <PlusCircle size={20} className="mr-2" />
           Create New Chatbot
@@ -173,16 +173,16 @@ const Dashboard: React.FC = () => {
               key={chatbot.id}
               className="bg-white dark:bg-gray-800 shadow-sm rounded-lg p-6 hover:shadow-md transition-shadow duration-200 border border-indigo-100 dark:border-indigo-800"
             >
-              <h3 className="text-xl font-semibold mb-2 text-indigo-900 dark:text-indigo-200">
+              <h3 className="text-xl font-semibold mb-2 text-black dark:text-gray-100">
                 {chatbot.title}
               </h3>
-              <p className="text-indigo-600 dark:text-indigo-400 mb-4">
+              <p className="text-gray-600 dark:text-gray-400 mb-4">
                 Position: {chatbot.position}
               </p>
               <div className="flex justify-between items-center">
                 <Link
                   to={`/configure/${chatbot.id}`}
-                  className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors duration-200 flex items-center"
+                  className="text-indigo-700 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors duration-200 flex items-center"
                 >
                   <Edit2 size={16} className="mr-2" />
                   Edit

@@ -18,6 +18,7 @@ import {
   Edit2,
 } from "lucide-react";
 import ConfirmationModal from "./ConfirmationModal";
+import { toast } from "react-hot-toast";
 
 interface EditChatbotProps extends ChatbotProps {
   name: string;
@@ -45,8 +46,6 @@ const EditChatbot: React.FC = () => {
   });
   const [faqInput, setFaqInput] = useState({ question: "", answer: "" });
   const [faqList, setFaqList] = useState<FAQItem[]>([]);
-  const [error, setError] = useState<string | null>(null);
-  const [saveMessage, setSaveMessage] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("general");
   const [showEmbedPreview, setShowEmbedPreview] = useState(false);
   const [showChatbot, setShowChatbot] = useState(false);
@@ -78,7 +77,7 @@ const EditChatbot: React.FC = () => {
     } catch (err) {
       const error = err as PostgrestError;
       console.error("Error loading chatbot config:", error);
-      setError(`Failed to load chatbot configuration: ${error.message}`);
+      toast.error(`Failed to load chatbot configuration: ${error.message}`);
     }
   };
 
@@ -156,7 +155,7 @@ const EditChatbot: React.FC = () => {
 
   const saveConfig = async () => {
     if (!config.name.trim() || !config.title.trim()) {
-      setError("Chatbot name and title are required.");
+      toast.error("Chatbot name and title are required.");
       return;
     }
     try {
@@ -177,9 +176,7 @@ const EditChatbot: React.FC = () => {
             .insert({ ...chatbotConfig, name, user_id: user.id });
 
       if (result.error) throw result.error;
-
-      setSaveMessage("Configuration saved successfully!");
-      setTimeout(() => setSaveMessage(null), 3000);
+      toast.success("Configuration saved successfully!");
 
       if (!id && result.data) {
         const newChatbot = result.data[0] as { id: string };
@@ -188,7 +185,7 @@ const EditChatbot: React.FC = () => {
     } catch (err) {
       const error = err as PostgrestError;
       console.error("Error saving config:", error);
-      setError(`Failed to save configuration: ${error.message}`);
+      toast.error("Failed to save configuration! Try again later.");
     }
   };
 
@@ -237,11 +234,13 @@ const EditChatbot: React.FC = () => {
 
     return (
       <div className="space-y-6">
-        <h2 className="text-xl font-semibold mb-4">Embed Instructions</h2>
-        <p className="text-gray-700">
+        <h2 className="text-xl font-semibold mb-4 dark:text-gray-100">
+          Embed Instructions
+        </h2>
+        <p className="text-gray-700 dark:text-gray-100">
           To add this chatbot to your website, follow these steps:
         </p>
-        <ol className="list-decimal list-inside space-y-2 text-gray-700">
+        <ol className="list-decimal list-inside space-y-2 text-gray-700 dark:text-gray-100">
           <li>Copy the embed code below.</li>
           <li>
             Paste the code into your website's HTML, just before the closing
@@ -252,13 +251,18 @@ const EditChatbot: React.FC = () => {
           </li>
         </ol>
         <div className="mt-6">
-          <h3 className="text-lg font-semibold mb-2">Embed Code</h3>
+          <h3 className="text-lg font-semibold mb-2 dark:text-gray-100">
+            Embed Code
+          </h3>
           <div className="bg-gray-100 p-4 rounded-md">
             <code>{generateEmbedCode()}</code>
           </div>
           <button
-            className="mt-2 bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded transition-colors duration-200 flex items-center"
-            onClick={() => navigator.clipboard.writeText(generateEmbedCode())}
+            className="mt-2 bg-[#aab2ff] hover:bg-indigo-400 text-black px-4 py-2 rounded transition-colors duration-200 flex items-center"
+            onClick={() => {
+              navigator.clipboard.writeText(generateEmbedCode());
+              toast.success("Embed code copied to clipboard!");
+            }}
           >
             <Code size={20} className="mr-2" />
             Copy to Clipboard
@@ -273,18 +277,15 @@ const EditChatbot: React.FC = () => {
   };
 
   const predefinedColors: string[] = [
-    "#4F46E5", // indigo-600
-    "#3730A3", // indigo-800
-    "#312E81", // indigo-900
-    "#6366F1", // indigo-500
     "#818CF8", // indigo-400
-    "#A5B4FC", // indigo-300
     "#EF4444", // red-500
     "#10B981", // green-500
     "#F59E0B", // yellow-500
     "#3B82F6", // blue-500
     "#8B5CF6", // purple-500
     "#EC4899", // pink-500
+    "#0891B2", // teal-500
+    "#000000", // black
   ];
 
   const EmbedPreviewModal = () => (
@@ -319,14 +320,14 @@ const EditChatbot: React.FC = () => {
   const tabs = ["general", "appearance", "faq", "embed"];
 
   return (
-    <div className="container mx-auto p-4 max-w-6xl">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-indigo-900">
+    <div className="container mx-auto p-4 max-w-6xl mt-10">
+      <div className="flex justify-between items-center mb-10">
+        <h1 className="text-3xl font-medium text-black dark:text-gray-100">
           {id ? `Edit Chatbot: ${config.name}` : "Create New Chatbot"}
         </h1>
         <div className="flex space-x-4">
           <button
-            className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md transition-colors duration-200 flex items-center"
+            className="bg-[#aab2ff] hover:bg-indigo-400 text-black px-4 py-2 rounded-md transition-colors duration-200 flex items-center"
             onClick={() => setShowChatbot(!showChatbot)}
           >
             {showChatbot ? (
@@ -352,15 +353,15 @@ const EditChatbot: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 bg-white rounded-lg shadow-md p-6">
+        <div className="lg:col-span-2 bg-white rounded-lg shadow-md p-6 dark:bg-gray-800">
           <div className="flex flex-wrap gap-2 mb-6">
             {tabs.map((tab) => (
               <button
                 key={tab}
                 className={`px-4 py-2 rounded-md transition-colors duration-200 ${
                   activeTab === tab
-                    ? "bg-indigo-600 text-white"
-                    : "bg-gray-200 text-gray-800 hover:bg-gray-300"
+                    ? "bg-[#aab2ff] text-black"
+                    : "bg-gray-200 text-gray-800 hover:bg-[#aab2ff]"
                 }`}
                 onClick={() => setActiveTab(tab)}
               >
@@ -371,20 +372,24 @@ const EditChatbot: React.FC = () => {
 
           {activeTab === "general" && (
             <>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
                 <div>
-                  <label className="block mb-2">Chatbot Name</label>
+                  <label className="block mb-2 text-black dark:text-gray-100">
+                    Chatbot Name
+                  </label>
                   <input
-                    className="w-full p-2 border rounded-md"
+                    className="w-full p-2 border rounded-md text-black"
                     placeholder="Chatbot Name"
                     value={config.name}
                     onChange={(e) => handleConfigChange("name", e.target.value)}
                   />
                 </div>
                 <div>
-                  <label className="block mb-2">Chatbot Title</label>
+                  <label className="block mb-2 text-black dark:text-gray-100">
+                    Chatbot Title
+                  </label>
                   <input
-                    className="w-full p-2 border rounded-md"
+                    className="w-full p-2 border rounded-md text-black"
                     placeholder="Chatbot Title"
                     value={config.title}
                     onChange={(e) =>
@@ -393,9 +398,11 @@ const EditChatbot: React.FC = () => {
                   />
                 </div>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
                 <div>
-                  <label className="block mb-2">Position</label>
+                  <label className="block mb-2 dark:text-gray-100">
+                    Position
+                  </label>
                   <select
                     className="w-full p-2 border rounded-md"
                     value={config.position}
@@ -410,7 +417,9 @@ const EditChatbot: React.FC = () => {
                   </select>
                 </div>
                 <div>
-                  <label className="block mb-2">Initial Message</label>
+                  <label className="block mb-2 dark:text-gray-100">
+                    Initial Message
+                  </label>
                   <input
                     className="w-full p-2 border rounded-md"
                     placeholder="Initial Message"
@@ -422,7 +431,9 @@ const EditChatbot: React.FC = () => {
                 </div>
               </div>
               <div>
-                <label className="block mb-2">Input Placeholder</label>
+                <label className="block mb-2 dark:text-gray-100">
+                  Input Placeholder
+                </label>
                 <input
                   className="w-full p-2 border rounded-md"
                   placeholder="Input Placeholder"
@@ -439,7 +450,9 @@ const EditChatbot: React.FC = () => {
             <>
               <div className="space-y-4">
                 <div>
-                  <label className="block mb-2">Primary Color</label>
+                  <label className="block mb-2 dark:text-gray-100">
+                    Primary Color
+                  </label>
                   <div className="flex items-center space-x-4">
                     <HexColorPicker
                       color={config.primaryColor}
@@ -458,7 +471,9 @@ const EditChatbot: React.FC = () => {
                   </div>
                 </div>
                 <div>
-                  <label className="block mb-2">Secondary Color</label>
+                  <label className="block mb-2 dark:text-gray-100">
+                    Secondary Color
+                  </label>
                   <div className="flex items-center space-x-4">
                     <HexColorPicker
                       color={config.secondaryColor}
@@ -533,7 +548,7 @@ const EditChatbot: React.FC = () => {
                   </div>
                 ) : (
                   <button
-                    className="bg-indigo-500 hover:bg-indigo-600 text-white p-2 rounded-md transition-colors duration-200 flex items-center"
+                    className="bg-[#aab2ff] hover:bg-indigo-400 text-black p-2 rounded-md transition-colors duration-200 flex items-center"
                     onClick={handleAddFaq}
                   >
                     <Plus size={20} className="mr-2" />
@@ -554,7 +569,7 @@ const EditChatbot: React.FC = () => {
                       <span className="font-semibold">{faq.question}</span>
                       <div className="flex items-center space-x-2">
                         <button
-                          className="text-indigo-600 hover:text-indigo-800"
+                          className="text-indigo-400 hover:text-indigo-800"
                           onClick={(e) => {
                             e.stopPropagation();
                             handleEditFaq(index);
@@ -580,7 +595,9 @@ const EditChatbot: React.FC = () => {
                     </div>
                     {faq.isOpen && (
                       <div className="p-4">
-                        <p className="text-gray-700">{faq.answer}</p>
+                        <p className="text-gray-700 dark:text-gray-100">
+                          {faq.answer}
+                        </p>
                       </div>
                     )}
                   </div>
@@ -593,10 +610,12 @@ const EditChatbot: React.FC = () => {
         </div>
 
         <div className="lg:col-span-1">
-          <h2 className="text-xl font-semibold mb-4">Preview</h2>
+          <h2 className="text-xl font-semibold mb-4 text-black dark:text-gray-100">
+            Preview
+          </h2>
           <div
             className="border rounded-md bg-gray-100 relative overflow-hidden"
-            style={{ height: "600px", width: "300px" }}
+            style={{ height: "520px", width: "370px" }}
           >
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="w-full h-full">
@@ -609,24 +628,13 @@ const EditChatbot: React.FC = () => {
 
       <div className="mt-8">
         <button
-          className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-md transition-colors duration-200 flex items-center"
+          className="bg-green-400 hover:bg-green-500 text-white px-6 py-2 rounded-md transition-colors duration-200 flex items-center"
           onClick={saveConfig}
         >
           <Save size={20} className="mr-2" />
           {id ? "Save Configuration" : "Create Chatbot"}
         </button>
       </div>
-
-      {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-md mt-4">
-          {error}
-        </div>
-      )}
-      {saveMessage && (
-        <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-md mt-4">
-          {saveMessage}
-        </div>
-      )}
 
       {showEmbedPreview && <EmbedPreviewModal />}
 

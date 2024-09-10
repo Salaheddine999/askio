@@ -11,10 +11,10 @@ const Documentation: React.FC = () => {
   return (
     <div className="min-h-screen py-12">
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h1 className="text-4xl font-extrabold text-gray-900 mb-8">
+        <h1 className="text-4xl font-bold text-indigo-900 mb-8 dark:text-indigo-200">
           Askio Chatbot Documentation
         </h1>
-        <p className="text-xl text-gray-600 mb-12">
+        <p className="text-xl text-indigo-700 mb-12 dark:text-indigo-200">
           Learn how to create, customize, and embed your chatbot on your website
           using Askio Chatbot.
         </p>
@@ -58,13 +58,13 @@ const Section: React.FC<{
   isOpen: boolean;
   toggleSection: () => void;
 }> = ({ title, content, isOpen, toggleSection }) => (
-  <div className="mb-6 bg-white rounded-lg shadow-md overflow-hidden">
+  <div className="mb-6 bg-gray-50 dark:bg-indigo-200 rounded-lg shadow-md overflow-hidden">
     <button
       className="w-full text-left p-6 focus:outline-none"
       onClick={toggleSection}
     >
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-semibold text-gray-900">{title}</h2>
+        <h2 className="text-2xl font-semibold text-indigo-900">{title}</h2>
         {isOpen ? <ChevronDown size={24} /> : <ChevronRight size={24} />}
       </div>
     </button>

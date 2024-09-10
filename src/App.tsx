@@ -15,6 +15,7 @@ import { Session } from "@supabase/supabase-js";
 import Documentation from "./pages/Documentation";
 import Navbar from "./components/Navbar";
 import Profile from "./pages/Profile";
+import { Toaster } from "react-hot-toast";
 
 const App: React.FC = () => {
   const [session, setSession] = useState<Session | null>(null);
@@ -86,6 +87,7 @@ const App: React.FC = () => {
                 element={session ? <Profile /> : <Navigate to="/auth" />}
               />
             </Routes>
+            <Toaster position="top-center" />
           </div>
         </div>
       </div>

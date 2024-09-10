@@ -43,16 +43,16 @@ const Profile: React.FC = () => {
 
   return (
     <div className="container mx-auto mt-8 p-4">
-      <h1 className="text-3xl font-bold mb-6">Profile</h1>
-      <div className="bg-white shadow-md rounded-lg p-6">
+      <h1 className="text-3xl font-medium mb-6 dark:text-gray-100">Profile</h1>
+      <div className="bg-white shadow-md rounded-lg p-6 dark:bg-gray-800">
         <div className="mb-4">
-          <label className="block text-gray-700 text-sm font-bold mb-2">
+          <label className="block text-gray-700 text-sm font-bold mb-2 dark:text-gray-100">
             Email
           </label>
-          <p className="text-gray-600">{user?.email}</p>
+          <p className="text-gray-600 dark:text-gray-100">{user?.email}</p>
         </div>
         <div className="mb-4">
-          <label className="block text-gray-700 text-sm font-bold mb-2">
+          <label className="block text-gray-700 text-sm font-bold mb-2 dark:text-gray-100">
             Name
           </label>
           {editing ? (
@@ -63,7 +63,9 @@ const Profile: React.FC = () => {
               className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
             />
           ) : (
-            <p className="text-gray-600">{name || "Not set"}</p>
+            <p className="text-gray-600 dark:text-gray-100">
+              {name || "Not set"}
+            </p>
           )}
         </div>
         {editing ? (
