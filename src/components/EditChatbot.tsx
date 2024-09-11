@@ -640,7 +640,7 @@ const EditChatbot: React.FC = () => {
 
       {showChatbot && (
         <div
-          className="fixed bottom-4 right-4 z-50"
+          className="fixed z-50"
           style={{ maxWidth: "350px", maxHeight: "550px" }}
         >
           <Chatbot {...config} isEmbedded={true} />

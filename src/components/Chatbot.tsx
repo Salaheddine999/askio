@@ -137,7 +137,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
   const chatbotButton = (
     <button
       onClick={toggleChatbot}
-      className={`fixed ${positionClasses[position]} z-50 w-14 h-14 flex items-center justify-center bg-blue-500 text-white rounded-full shadow-lg hover:bg-blue-600 transition-colors duration-200`}
+      className={`fixed ${positionClasses[position]} z-50 w-14 h-14 flex items-center justify-center bg-blue-500 text-white rounded-full shadow-lg hover:bg-blue-600 transition-colors duration-200 m-4`}
       style={{ backgroundColor: primaryColor }}
     >
       <MessageSquare size={20} />
@@ -147,7 +147,9 @@ const Chatbot: React.FC<ChatbotProps> = ({
   const chatbotContent = (
     <div
       className={`${
-        isEmbedded ? `fixed ${positionClasses[position]} z-50` : "w-full h-full"
+        isEmbedded
+          ? `fixed ${positionClasses[position]} z-50 m-4`
+          : "w-full h-full"
       } bg-white flex flex-col shadow-lg rounded-[10px] ${
         !isEmbedded && isPreview ? "" : ""
       } ${isEmbedded ? "w-[370px] h-[520px] max-w-[370px] max-h-[520px]" : ""}`}
