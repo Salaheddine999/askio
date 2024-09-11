@@ -111,10 +111,10 @@ const Chatbot: React.FC<ChatbotProps> = ({
   };
 
   const positionClasses = {
-    "bottom-right": isEmbedded ? "bottom-0 right-0" : "-bottom-4 -right-4",
-    "bottom-left": isEmbedded ? "bottom-0 left-0" : "-bottom-4 -left-4",
-    "top-right": isEmbedded ? "top-0 right-0" : "-top-4 -right-4",
-    "top-left": isEmbedded ? "top-0 left-0" : "-top-4 -left-4",
+    "bottom-right": isEmbedded ? "bottom-0 right-0" : "bottom-4 right-4",
+    "bottom-left": isEmbedded ? "bottom-0 left-0" : "bottom-4 left-4",
+    "top-right": isEmbedded ? "top-0 right-0" : "top-4 right-4",
+    "top-left": isEmbedded ? "top-0 left-0" : "top-4 left-4",
   };
 
   useEffect(() => {
@@ -137,7 +137,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
   const chatbotButton = (
     <button
       onClick={toggleChatbot}
-      className={`fixed ${positionClasses[position]} z-50 w-14 h-14 flex items-center justify-center bg-blue-500 text-white rounded-full shadow-lg hover:bg-blue-600 transition-colors duration-200 m-4`}
+      className={`fixed ${positionClasses[position]} z-50 w-14 h-14 flex items-center justify-center bg-blue-500 text-white rounded-full shadow-lg hover:bg-blue-600 transition-colors duration-200`}
       style={{ backgroundColor: primaryColor }}
     >
       <MessageSquare size={20} />
@@ -147,9 +147,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
   const chatbotContent = (
     <div
       className={`${
-        isEmbedded
-          ? `fixed ${positionClasses[position]} z-50 m-4`
-          : "w-full h-full"
+        isEmbedded ? `fixed ${positionClasses[position]} z-50` : "w-full h-full"
       } bg-white flex flex-col shadow-lg rounded-[10px] ${
         !isEmbedded && isPreview ? "" : ""
       } ${isEmbedded ? "w-[370px] h-[520px] max-w-[370px] max-h-[520px]" : ""}`}
