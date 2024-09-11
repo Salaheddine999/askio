@@ -148,7 +148,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
     <div
       className={`${
         isEmbedded ? `fixed ${positionClasses[position]} z-50` : "w-full h-full"
-      } bg-white flex flex-col shadow-lg rounded-lg ${
+      } bg-white flex flex-col shadow-lg rounded-[10px] ${
         !isEmbedded && isPreview ? "" : ""
       } ${isEmbedded ? "w-[370px] h-[520px] max-w-[370px] max-h-[520px]" : ""}`}
     >
@@ -175,7 +175,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
               }`}
             >
               <span
-                className={`inline-block p-2 rounded-lg max-w-[80%] ${
+                className={`inline-block p-2 rounded-[10px] max-w-[80%] ${
                   message.sender === "user"
                     ? "text-white"
                     : "bg-gray-200 text-gray-800"
@@ -217,7 +217,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyPress={(e) => e.key === "Enter" && handleSend()}
-            className="flex-grow p-2 border rounded-l-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="flex-grow p-2 border rounded-l-lg focus:outline-none"
             placeholder={placeholder}
           />
           <button
@@ -228,6 +228,12 @@ const Chatbot: React.FC<ChatbotProps> = ({
             <Send size={20} />
           </button>
         </div>
+      </div>
+      <div className="p-2 border-t text-center text-xs font-semibold text-gray-500 bg-gray-50">
+        Powered by{" "}
+        <a href="https://askio.vercel.app/" style={{ color: primaryColor }}>
+          Askio
+        </a>
       </div>
     </div>
   );
