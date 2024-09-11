@@ -2,7 +2,13 @@ import React, { useEffect, useState } from "react";
 import { supabase } from "../utils/supabase";
 import { Link } from "react-router-dom";
 import { PostgrestError } from "@supabase/supabase-js";
-import { PlusCircle, Edit2, Loader, Trash2 } from "lucide-react";
+import {
+  PlusCircle,
+  Edit2,
+  LoaderCircle,
+  Trash2,
+  MessageSquare,
+} from "lucide-react";
 import ConfirmationModal from "../components/ConfirmationModal";
 
 interface Chatbot {
@@ -118,25 +124,28 @@ const Dashboard: React.FC = () => {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 mt-6">
       {isNewUser && (
-        <div
-          className="bg-green-100 dark:bg-green-800 border-l-4 border-green-500 text-green-700 dark:text-green-200 p-4 mb-8 rounded-md"
-          role="alert"
-        >
-          <p className="font-bold">Welcome to Askio Chatbot!</p>
-          <p>
+        <div className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white p-6 mb-8 rounded-lg shadow-md">
+          <h3 className="text-xl font-bold mb-2">Welcome to Askio Chatbot!</h3>
+          <p className="mb-4">
             Get started by creating your first chatbot. If you need help, check
             out our documentation.
           </p>
+          <Link
+            to="/docs"
+            className="bg-white text-indigo-600 px-4 py-2 rounded-md transition-colors duration-200 hover:bg-indigo-100"
+          >
+            View Documentation
+          </Link>
         </div>
       )}
 
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8">
-        <h2 className="text-3xl font-medium text-black dark:text-gray-100 mb-4 sm:mb-0">
+        <h2 className="text-3xl font-semibold text-black dark:text-gray-100 mb-4 sm:mb-0">
           Your Chatbots
         </h2>
         <Link
           to="/configure"
-          className="bg-[#aab2ff] hover:bg-indigo-400 text-black px-4 py-2 rounded-md transition-colors duration-200 flex items-center w-full sm:w-auto justify-center"
+          className="bg-[#aab2ff] hover:bg-indigo-400 text-black px-6 py-3 rounded-lg transition-colors duration-200 flex items-center w-full sm:w-auto justify-center shadow-md"
         >
           <PlusCircle size={20} className="mr-2" />
           Create New Chatbot
@@ -145,8 +154,8 @@ const Dashboard: React.FC = () => {
 
       {loading && (
         <div className="flex justify-center items-center h-64">
-          <Loader
-            className="animate-spin text-indigo-600 dark:text-indigo-400"
+          <LoaderCircle
+            className="animate-spin text-indigo-400 dark:text-indigo-400"
             size={48}
           />
         </div>
@@ -167,29 +176,32 @@ const Dashboard: React.FC = () => {
         </div>
       )}
       {!loading && !error && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
           {chatbots.map((chatbot) => (
             <div
               key={chatbot.id}
-              className="bg-white dark:bg-gray-800 shadow-sm rounded-lg p-6 hover:shadow-md transition-shadow duration-200 border border-indigo-100 dark:border-indigo-800"
+              className="bg-white dark:bg-gray-800 shadow-lg rounded-lg p-6 hover:shadow-xl transition-shadow duration-200 border border-indigo-100 dark:border-indigo-800 flex flex-col"
             >
-              <h3 className="text-xl font-semibold mb-2 text-black dark:text-gray-100">
-                {chatbot.title}
-              </h3>
-              <p className="text-gray-600 dark:text-gray-400 mb-4">
+              <div className="flex items-center mb-4">
+                <MessageSquare size={24} className="text-indigo-400 mr-3" />
+                <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100">
+                  {chatbot.title}
+                </h3>
+              </div>
+              <p className="text-gray-600 dark:text-gray-400 mb-6 flex-grow">
                 Position: {chatbot.position}
               </p>
               <div className="flex justify-between items-center">
                 <Link
                   to={`/configure/${chatbot.id}`}
-                  className="text-indigo-700 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors duration-200 flex items-center"
+                  className="bg-indigo-100 text-indigo-700 dark:bg-indigo-700 dark:text-indigo-100 hover:bg-indigo-200 dark:hover:bg-indigo-600 px-4 py-2 rounded-md transition-colors duration-200 flex items-center"
                 >
                   <Edit2 size={16} className="mr-2" />
                   Edit
                 </Link>
                 <button
                   onClick={() => openDeleteModal(chatbot.id)}
-                  className="text-red-500 dark:text-red-400 hover:text-red-600 dark:hover:text-red-300 transition-colors duration-200 flex items-center"
+                  className="bg-red-100 text-red-600 dark:bg-red-800 dark:text-red-200 hover:bg-red-200 dark:hover:bg-red-700 px-4 py-2 rounded-md transition-colors duration-200 flex items-center"
                 >
                   <Trash2 size={16} className="mr-2" />
                   Delete
@@ -204,13 +216,6 @@ const Dashboard: React.FC = () => {
           <p className="text-xl mb-4">
             No chatbots found. Create one to get started!
           </p>
-          <Link
-            to="/configure"
-            className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-md transition-colors duration-200 inline-flex items-center"
-          >
-            <PlusCircle size={24} className="mr-2" />
-            Create Your First Chatbot
-          </Link>
         </div>
       )}
 

@@ -639,10 +639,7 @@ const EditChatbot: React.FC = () => {
       {showEmbedPreview && <EmbedPreviewModal />}
 
       {showChatbot && (
-        <div
-          className="fixed z-50"
-          style={{ maxWidth: "350px", maxHeight: "550px" }}
-        >
+        <div className="fixed z-50" style={{ margin: "10px" }}>
           <Chatbot {...config} isEmbedded={true} />
         </div>
       )}
