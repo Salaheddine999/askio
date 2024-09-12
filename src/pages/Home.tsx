@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   MessageCircle,
   ToyBrick,
@@ -57,6 +57,39 @@ export default function ChatbotLanding() {
       }, 1000);
     }
   };
+
+  useEffect(() => {
+    // Create the chatbot container
+    const chatbotContainer = document.createElement("div");
+    chatbotContainer.id = "chatbot-container";
+    document.body.appendChild(chatbotContainer);
+
+    // Load the chatbot script
+    const script = document.createElement("script");
+    script.src = "https://askio.vercel.app/chatbot-embed.js";
+    script.async = true;
+
+    script.onload = () => {
+      // Initialize the chatbot after the script has loaded
+      const initScript = document.createElement("script");
+      initScript.text = `
+        ChatbotEmbed.init("78c33df1-8040-4465-b718-5fb2061efacb", "https://askio.vercel.app");
+      `;
+      document.body.appendChild(initScript);
+    };
+
+    document.body.appendChild(script);
+
+    return () => {
+      // Clean up
+      document.body.removeChild(chatbotContainer);
+      document.body.removeChild(script);
+      const initScript = document.querySelector(
+        'script[text*="ChatbotEmbed.init"]'
+      );
+      if (initScript) document.body.removeChild(initScript);
+    };
+  }, []);
 
   return (
     <div className="min-h-screen bg-white text-gray-800">
