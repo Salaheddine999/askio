@@ -144,37 +144,41 @@ export default function ChatbotLanding() {
       </header>
 
       {isMenuOpen && (
-        <div className="md:hidden bg-white py-4 px-4 shadow-md">
+        <div className="md:hidden fixed top-[72px] left-0 right-0 bg-white py-10 px-4 shadow-md z-40">
           <nav className="flex flex-col space-y-4">
             <a
               href="#features"
               className="hover:text-[#aab2ff] transition-colors"
+              onClick={() => setIsMenuOpen(false)}
             >
               Features
             </a>
             <a
               href="#how-it-works"
               className="hover:text-[#aab2ff] transition-colors"
+              onClick={() => setIsMenuOpen(false)}
             >
               How it Works
             </a>
             <a
               href="#testimonials"
               className="hover:text-[#aab2ff] transition-colors"
+              onClick={() => setIsMenuOpen(false)}
             >
               Testimonials
             </a>
-            <button className="text-[#aab2ff] hover:text-[#8e98ff] transition-colors">
-              Login
-            </button>
-            <button className="bg-[#aab2ff] text-white px-4 py-2 rounded-md hover:bg-[#8e98ff] transition-colors">
-              Register
-            </button>
+            <Link
+              to="/auth"
+              className="bg-[#aab2ff] text-white px-4 py-2 rounded-md hover:bg-[#8e98ff] transition-colors"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Get Started
+            </Link>
           </nav>
         </div>
       )}
 
-      <main className=" pt-12 sm:pt-28">
+      <main className=" pt-16 sm:pt-28">
         <section className="py-20 overflow-hidden">
           <div className="container mx-auto px-4 flex flex-col md:flex-row items-center">
             <motion.div
