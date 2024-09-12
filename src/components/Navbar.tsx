@@ -117,7 +117,7 @@ const Navbar: React.FC<NavbarProps> = ({ darkMode, toggleDarkMode }) => {
             <NavLink to="/profile" icon={<User size={18} />} text="Profile" />
             <button
               onClick={toggleDarkMode}
-              className="w-full text-left text-white dark:text-gray-300 text-sm font-medium px-4 py-2 rounded-md transition-colors duration-200 flex items-center mt-2 hover:bg-indigo-700 dark:hover:bg-gray-700"
+              className="w-full text-left text-black dark:text-gray-300 text-sm font-medium px-4 py-2 rounded-md transition-colors duration-200 flex items-center mt-2 hover:bg-indigo-300 dark:hover:bg-gray-700"
             >
               {darkMode ? (
                 <Sun size={18} className="mr-2" />
