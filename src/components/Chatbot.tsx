@@ -47,6 +47,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
     if (input.trim() === "") return;
 
     setMessages((prev) => [...prev, { text: input, sender: "user" }]);
+    setShowSuggestions(false);
 
     const matchedFaq = faqData.find(
       (item) => item.question.toLowerCase() === input.toLowerCase()
@@ -58,7 +59,6 @@ const Chatbot: React.FC<ChatbotProps> = ({
           ...prev,
           { text: matchedFaq.answer, sender: "bot" },
         ]);
-        setShowSuggestions(false);
       }, 500);
     } else {
       setTimeout(() => {
@@ -69,8 +69,10 @@ const Chatbot: React.FC<ChatbotProps> = ({
             sender: "bot",
           },
         ]);
-        setShowSuggestions(true);
-        updateSuggestions(input);
+        setTimeout(() => {
+          setShowSuggestions(true);
+          updateSuggestions(input);
+        }, 100);
       }, 500);
     }
 
