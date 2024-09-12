@@ -25,7 +25,7 @@ export default function ChatbotLanding() {
   const [chatMessages, setChatMessages] = useState([
     {
       type: "bot",
-      content: "Hi there! I'm your Askio!",
+      content: "Hi there! I'm Askio!",
     },
     {
       type: "bot",

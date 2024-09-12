@@ -94,7 +94,9 @@ const Chatbot: React.FC<ChatbotProps> = ({
     );
   };
 
-  const handleSuggestionClick = (question: string) => {
+  const handleSuggestionClick = (event: React.MouseEvent, question: string) => {
+    event.preventDefault();
+    event.stopPropagation();
     setMessages((prev) => [...prev, { text: question, sender: "user" }]);
     const matchedFaq = faqData.find((faq) => faq.question === question);
     if (matchedFaq) {
@@ -200,7 +202,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
                   {suggestions.map((question, idx) => (
                     <button
                       key={idx}
-                      onClick={() => handleSuggestionClick(question)}
+                      onClick={(e) => handleSuggestionClick(e, question)}
                       className="text-sm bg-gray-100 hover:bg-gray-200 text-gray-800 py-1 px-3 rounded-[10px] transition-colors duration-200 border border-gray-300"
                     >
                       {question}
