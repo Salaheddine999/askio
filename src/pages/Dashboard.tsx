@@ -10,6 +10,7 @@ import {
   MessageSquare,
 } from "lucide-react";
 import ConfirmationModal from "../components/ConfirmationModal";
+import { toast } from "react-hot-toast";
 
 interface Chatbot {
   id: string;
@@ -112,6 +113,7 @@ const Dashboard: React.FC = () => {
       if (error) throw error;
 
       setChatbots(chatbots.filter((chatbot) => chatbot.id !== chatbotToDelete));
+      toast.success("Chatbot deleted successfully");
     } catch (err) {
       const error = err as PostgrestError;
       console.error("Error deleting chatbot:", error);
