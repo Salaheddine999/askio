@@ -174,7 +174,7 @@ export default function ChatbotLanding() {
         </div>
       )}
 
-      <main className="pt-28">
+      <main className=" pt-12 sm:pt-28">
         <section className="py-20 overflow-hidden">
           <div className="container mx-auto px-4 flex flex-col md:flex-row items-center">
             <motion.div

@@ -37,6 +37,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
   const [isOpen, setIsOpen] = useState(!isEmbedded);
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(true);
+  const [isTyping, setIsTyping] = useState(false);
 
   useEffect(() => {
     // Initialize suggestions with all FAQ questions
@@ -48,20 +49,22 @@ const Chatbot: React.FC<ChatbotProps> = ({
 
     setMessages((prev) => [...prev, { text: input, sender: "user" }]);
     setShowSuggestions(false);
+    setInput("");
 
     const matchedFaq = faqData.find(
       (item) => item.question.toLowerCase() === input.toLowerCase()
     );
 
-    if (matchedFaq) {
-      setTimeout(() => {
+    setIsTyping(true);
+
+    setTimeout(() => {
+      if (matchedFaq) {
         setMessages((prev) => [
           ...prev,
           { text: matchedFaq.answer, sender: "bot" },
         ]);
-      }, 500);
-    } else {
-      setTimeout(() => {
+        setIsTyping(false);
+      } else {
         setMessages((prev) => [
           ...prev,
           {
@@ -69,14 +72,13 @@ const Chatbot: React.FC<ChatbotProps> = ({
             sender: "bot",
           },
         ]);
+        setIsTyping(false);
         setTimeout(() => {
           setShowSuggestions(true);
           updateSuggestions(input);
         }, 100);
-      }, 500);
-    }
-
-    setInput("");
+      }
+    }, 1500); // Simulate typing delay
   };
 
   const updateSuggestions = (userInput: string) => {
@@ -100,13 +102,15 @@ const Chatbot: React.FC<ChatbotProps> = ({
     setMessages((prev) => [...prev, { text: question, sender: "user" }]);
     const matchedFaq = faqData.find((faq) => faq.question === question);
     if (matchedFaq) {
+      setIsTyping(true);
       setTimeout(() => {
         setMessages((prev) => [
           ...prev,
           { text: matchedFaq.answer, sender: "bot" },
         ]);
         setShowSuggestions(false);
-      }, 500);
+        setIsTyping(false);
+      }, 1500); // Simulate typing delay
     }
   };
 
@@ -213,6 +217,23 @@ const Chatbot: React.FC<ChatbotProps> = ({
             )}
           </React.Fragment>
         ))}
+        {isTyping && (
+          <div className="flex justify-start">
+            <span className="inline-block p-2 rounded-[10px] bg-gray-200 text-gray-800">
+              <div className="flex items-center h-5">
+                <span className="h-1.5 w-1.5 bg-gray-600 rounded-full mr-1 animate-bounce"></span>
+                <span
+                  className="h-1.5 w-1.5 bg-gray-600 rounded-full mr-1 animate-bounce"
+                  style={{ animationDelay: "-0.3s" }}
+                ></span>
+                <span
+                  className="h-1.5 w-1.5 bg-gray-600 rounded-full animate-bounce"
+                  style={{ animationDelay: "-0.15s" }}
+                ></span>
+              </div>
+            </span>
+          </div>
+        )}
       </div>
       <div className="p-4 border-t">
         <div className="flex">
