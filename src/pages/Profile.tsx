@@ -44,49 +44,53 @@ const Profile: React.FC = () => {
   }
 
   return (
-    <div className="container mx-auto mt-8 p-4 max-w-screen-md">
-      <h1 className="text-3xl font-medium mb-6 dark:text-gray-100">Profile</h1>
-      <div className="bg-white shadow-md rounded-lg p-6 dark:bg-gray-800">
-        <div className="mb-4">
-          <label className="block text-gray-700 text-sm font-bold mb-2 dark:text-gray-100">
-            Email
-          </label>
-          <p className="text-gray-600 dark:text-gray-100">{user?.email}</p>
-        </div>
-        <div className="mb-4">
-          <label className="block text-gray-700 text-sm font-bold mb-2 dark:text-gray-100">
-            Name
-          </label>
+    <div className="min-h-screen bg-gray-100 dark:bg-gray-900">
+      <div className="container mx-auto p-4 max-w-screen-md">
+        <h1 className="text-3xl font-medium mt-8 mb-6 dark:text-gray-100">
+          Profile
+        </h1>
+        <div className="bg-white shadow-md rounded-lg p-6 dark:bg-gray-800">
+          <div className="mb-4">
+            <label className="block text-gray-700 text-sm font-bold mb-2 dark:text-gray-100">
+              Email
+            </label>
+            <p className="text-gray-600 dark:text-gray-100">{user?.email}</p>
+          </div>
+          <div className="mb-4">
+            <label className="block text-gray-700 text-sm font-bold mb-2 dark:text-gray-100">
+              Name
+            </label>
+            {editing ? (
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600"
+              />
+            ) : (
+              <p className="text-gray-600 dark:text-gray-100">
+                {name || "Not set"}
+              </p>
+            )}
+          </div>
           {editing ? (
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            />
+            <button
+              onClick={updateUserProfile}
+              className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline flex items-center"
+            >
+              <Save size={20} className="mr-2" />
+              Save Changes
+            </button>
           ) : (
-            <p className="text-gray-600 dark:text-gray-100">
-              {name || "Not set"}
-            </p>
+            <button
+              onClick={() => setEditing(true)}
+              className="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline flex items-center"
+            >
+              <Edit2 size={20} className="mr-2" />
+              Edit Profile
+            </button>
           )}
         </div>
-        {editing ? (
-          <button
-            onClick={updateUserProfile}
-            className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline flex items-center"
-          >
-            <Save size={20} className="mr-2" />
-            Save Changes
-          </button>
-        ) : (
-          <button
-            onClick={() => setEditing(true)}
-            className="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline flex items-center"
-          >
-            <Edit2 size={20} className="mr-2" />
-            Edit Profile
-          </button>
-        )}
       </div>
     </div>
   );

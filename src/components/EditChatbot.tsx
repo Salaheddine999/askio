@@ -339,422 +339,429 @@ const EditChatbot: React.FC = () => {
   const tabs = ["general", "appearance", "faq", "embed"];
 
   return (
-    <div className="container mx-auto p-4 max-w-6xl mt-10">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-10">
-        <h1 className="text-3xl font-medium text-black dark:text-gray-100 mb-4 sm:mb-0">
-          {id ? `Edit Chatbot: ${config.name}` : "Create New Chatbot"}
-        </h1>
-        <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4">
-          <button
-            className="bg-[#aab2ff] hover:bg-indigo-400 text-black px-4 py-2 rounded-md transition-colors duration-200 flex items-center"
-            onClick={() => setShowChatbot(!showChatbot)}
-          >
-            {showChatbot ? (
-              <>
-                <EyeOff size={20} className="mr-2" />
-                Hide Chatbot
-              </>
-            ) : (
-              <>
-                <Eye size={20} className="mr-2" />
-                Show Chatbot
-              </>
-            )}
-          </button>
-          <button
-            className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-md transition-colors duration-200 flex items-center"
-            onClick={() => navigate("/")}
-          >
-            <ArrowLeft size={20} className="mr-2" />
-            Back to Chatbot List
-          </button>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 bg-white rounded-lg shadow-md p-6 dark:bg-gray-800">
-          <div className="flex flex-wrap gap-2 mb-6">
-            {tabs.map((tab) => (
-              <button
-                key={tab}
-                className={`px-4 py-2 rounded-md transition-colors duration-200 ${
-                  activeTab === tab
-                    ? "bg-[#aab2ff] text-black"
-                    : "bg-gray-200 text-gray-800 hover:bg-[#aab2ff]"
-                }`}
-                onClick={() => setActiveTab(tab)}
-              >
-                {tab.charAt(0).toUpperCase() + tab.slice(1)}
-              </button>
-            ))}
+    <div className="min-h-screen bg-gray-100 dark:bg-gray-900">
+      <div className="container mx-auto p-4 max-w-6xl py-8 sm:py-12">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-10">
+          <h1 className="text-3xl font-medium text-gray-900 dark:text-gray-100 mb-4 sm:mb-0">
+            {id ? `Edit Chatbot: ${config.name}` : "Create New Chatbot"}
+          </h1>
+          <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4">
+            <button
+              className="bg-[#aab2ff] hover:bg-indigo-400 text-black px-4 py-2 rounded-md transition-colors duration-200 flex items-center"
+              onClick={() => setShowChatbot(!showChatbot)}
+            >
+              {showChatbot ? (
+                <>
+                  <EyeOff size={20} className="mr-2" />
+                  Hide Chatbot
+                </>
+              ) : (
+                <>
+                  <Eye size={20} className="mr-2" />
+                  Show Chatbot
+                </>
+              )}
+            </button>
+            <button
+              className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-md transition-colors duration-200 flex items-center"
+              onClick={() => navigate("/")}
+            >
+              <ArrowLeft size={20} className="mr-2" />
+              Back to Chatbot List
+            </button>
           </div>
+        </div>
 
-          {activeTab === "general" && (
-            <div className="space-y-6">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                <div>
-                  <label className="block mb-2 text-black dark:text-gray-100">
-                    Chatbot Name
-                  </label>
-                  <input
-                    className="w-full p-2 border rounded-md text-black"
-                    placeholder="Chatbot Name"
-                    value={config.name}
-                    onChange={(e) => handleConfigChange("name", e.target.value)}
-                  />
-                </div>
-                <div>
-                  <label className="block mb-2 text-black dark:text-gray-100">
-                    Chatbot Title
-                  </label>
-                  <input
-                    className="w-full p-2 border rounded-md text-black"
-                    placeholder="Chatbot Title"
-                    value={config.title}
-                    onChange={(e) =>
-                      handleConfigChange("title", e.target.value)
-                    }
-                  />
-                </div>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                <div>
-                  <label className="block mb-2 dark:text-gray-100">
-                    Position
-                  </label>
-                  <select
-                    className="w-full p-2 border rounded-md"
-                    value={config.position}
-                    onChange={(e) =>
-                      handleConfigChange("position", e.target.value)
-                    }
-                  >
-                    <option value="bottom-right">Bottom Right</option>
-                    <option value="bottom-left">Bottom Left</option>
-                    <option value="top-right">Top Right</option>
-                    <option value="top-left">Top Left</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block mb-2 dark:text-gray-100">
-                    Initial Message
-                  </label>
-                  <input
-                    className="w-full p-2 border rounded-md"
-                    placeholder="Initial Message"
-                    value={config.initialMessage}
-                    onChange={(e) =>
-                      handleConfigChange("initialMessage", e.target.value)
-                    }
-                  />
-                </div>
-              </div>
-              <div>
-                <label className="block mb-2 dark:text-gray-100">
-                  Input Placeholder
-                </label>
-                <input
-                  className="w-full p-2 border rounded-md"
-                  placeholder="Input Placeholder"
-                  value={config.placeholder}
-                  onChange={(e) =>
-                    handleConfigChange("placeholder", e.target.value)
-                  }
-                />
-              </div>
-            </div>
-          )}
-
-          {activeTab === "appearance" && (
-            <div className="space-y-6">
-              <div className="flex items-center mb-4">
-                <input
-                  type="checkbox"
-                  id="useGradient"
-                  checked={useGradient}
-                  onChange={(e) => setUseGradient(e.target.checked)}
-                  className="mr-2"
-                />
-                <label
-                  htmlFor="useGradient"
-                  className="text-gray-700 dark:text-gray-300"
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-2 bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+            <div className="flex flex-wrap gap-2 mb-6">
+              {tabs.map((tab) => (
+                <button
+                  key={tab}
+                  className={`px-4 py-2 rounded-md transition-colors duration-200 ${
+                    activeTab === tab
+                      ? "bg-[#aab2ff] text-black"
+                      : "bg-gray-200 text-gray-800 hover:bg-[#aab2ff]"
+                  }`}
+                  onClick={() => setActiveTab(tab)}
                 >
-                  Use Gradient for Colors
-                </label>
-              </div>
-              {useGradient ? (
-                <div className="space-y-6">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                    <div>
-                      <label className="block mb-2 dark:text-gray-100">
-                        Gradient Start
-                      </label>
-                      <div className="flex flex-col space-y-2">
-                        <HexColorPicker
-                          color={gradientStart}
-                          onChange={setGradientStart}
-                        />
-                        <HexColorInput
-                          color={gradientStart}
-                          onChange={setGradientStart}
-                          className="w-full p-2 border rounded-md"
-                        />
-                      </div>
-                    </div>
-                    <div>
-                      <label className="block mb-2 dark:text-gray-100">
-                        Gradient End
-                      </label>
-                      <div className="flex flex-col space-y-2">
-                        <HexColorPicker
-                          color={gradientEnd}
-                          onChange={setGradientEnd}
-                        />
-                        <HexColorInput
-                          color={gradientEnd}
-                          onChange={setGradientEnd}
-                          className="w-full p-2 border rounded-md"
-                        />
-                      </div>
-                    </div>
+                  {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                </button>
+              ))}
+            </div>
+
+            {activeTab === "general" && (
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block mb-2 text-black dark:text-gray-100">
+                      Chatbot Name
+                    </label>
+                    <input
+                      className="w-full p-2 border rounded-md text-black"
+                      placeholder="Chatbot Name"
+                      value={config.name}
+                      onChange={(e) =>
+                        handleConfigChange("name", e.target.value)
+                      }
+                    />
                   </div>
                   <div>
-                    <label className="block mb-2 dark:text-gray-100">
-                      Gradient Angle
+                    <label className="block mb-2 text-black dark:text-gray-100">
+                      Chatbot Title
                     </label>
-                    <div className="flex items-center space-x-4">
-                      <input
-                        type="range"
-                        min="0"
-                        max="360"
-                        value={gradientAngle}
-                        onChange={(e) =>
-                          setGradientAngle(parseInt(e.target.value))
-                        }
-                        className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
-                      />
-                      <span className="text-gray-700 dark:text-gray-300">
-                        {gradientAngle}°
-                      </span>
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <div
-                      className="h-20 rounded-md"
-                      style={{ background: config.primaryColor }}
-                    ></div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                      This gradient will be applied to both primary and
-                      secondary colors.
-                    </p>
+                    <input
+                      className="w-full p-2 border rounded-md text-black"
+                      placeholder="Chatbot Title"
+                      value={config.title}
+                      onChange={(e) =>
+                        handleConfigChange("title", e.target.value)
+                      }
+                    />
                   </div>
                 </div>
-              ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   <div>
                     <label className="block mb-2 dark:text-gray-100">
-                      Primary Color
+                      Position
                     </label>
-                    <div className="flex flex-col space-y-2">
-                      <HexColorPicker
-                        color={config.primaryColor}
-                        onChange={(color) =>
-                          handleConfigChange("primaryColor", color)
-                        }
-                      />
-                      <HexColorInput
-                        color={config.primaryColor}
-                        onChange={(color) =>
-                          handleConfigChange("primaryColor", color)
-                        }
-                        className="w-full p-2 border rounded-md"
-                      />
-                    </div>
+                    <select
+                      className="w-full p-2 border rounded-md"
+                      value={config.position}
+                      onChange={(e) =>
+                        handleConfigChange("position", e.target.value)
+                      }
+                    >
+                      <option value="bottom-right">Bottom Right</option>
+                      <option value="bottom-left">Bottom Left</option>
+                      <option value="top-right">Top Right</option>
+                      <option value="top-left">Top Left</option>
+                    </select>
                   </div>
                   <div>
                     <label className="block mb-2 dark:text-gray-100">
-                      Secondary Color
+                      Initial Message
                     </label>
-                    <div className="flex flex-col space-y-2">
-                      <HexColorPicker
-                        color={config.secondaryColor}
-                        onChange={(color) =>
-                          handleConfigChange("secondaryColor", color)
-                        }
-                      />
-                      <HexColorInput
-                        color={config.secondaryColor}
-                        onChange={(color) =>
-                          handleConfigChange("secondaryColor", color)
-                        }
-                        className="w-full p-2 border rounded-md"
-                      />
-                    </div>
+                    <input
+                      className="w-full p-2 border rounded-md"
+                      placeholder="Initial Message"
+                      value={config.initialMessage}
+                      onChange={(e) =>
+                        handleConfigChange("initialMessage", e.target.value)
+                      }
+                    />
                   </div>
                 </div>
-              )}
-              <div className="flex flex-wrap mt-4">
-                {predefinedColors.map((color) => (
-                  <button
-                    key={color}
-                    className="w-8 h-8 m-1 rounded-md border border-gray-300"
-                    style={{ backgroundColor: color }}
-                    onClick={() => {
-                      setUseGradient(false);
-                      handleConfigChange("primaryColor", color);
-                      handleConfigChange("secondaryColor", color);
-                    }}
-                  ></button>
-                ))}
+                <div>
+                  <label className="block mb-2 dark:text-gray-100">
+                    Input Placeholder
+                  </label>
+                  <input
+                    className="w-full p-2 border rounded-md"
+                    placeholder="Input Placeholder"
+                    value={config.placeholder}
+                    onChange={(e) =>
+                      handleConfigChange("placeholder", e.target.value)
+                    }
+                  />
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {activeTab === "faq" && (
-            <>
-              <div className="space-y-2 mb-6">
-                <input
-                  className="w-full p-2 border rounded-md"
-                  placeholder="Question"
-                  value={faqInput.question}
-                  onChange={(e) =>
-                    setFaqInput((prev) => ({
-                      ...prev,
-                      question: e.target.value,
-                    }))
-                  }
-                />
-                <textarea
-                  className="w-full p-2 border rounded-md"
-                  placeholder="Answer"
-                  value={faqInput.answer}
-                  onChange={(e) =>
-                    setFaqInput((prev) => ({ ...prev, answer: e.target.value }))
-                  }
-                />
-                {editingFaqIndex !== null ? (
-                  <div className="flex space-x-2">
-                    <button
-                      className="bg-green-500 hover:bg-green-600 text-white p-2 rounded-md transition-colors duration-200 flex items-center"
-                      onClick={handleUpdateFaq}
-                    >
-                      <Save size={20} className="mr-2" />
-                      Update FAQ
-                    </button>
-                    <button
-                      className="bg-gray-500 hover:bg-gray-600 text-white p-2 rounded-md transition-colors duration-200 flex items-center"
-                      onClick={handleCancelEdit}
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                ) : (
-                  <button
-                    className="bg-[#aab2ff] hover:bg-indigo-400 text-black p-2 rounded-md transition-colors duration-200 flex items-center"
-                    onClick={handleAddFaq}
+            {activeTab === "appearance" && (
+              <div className="space-y-6">
+                <div className="flex items-center mb-4">
+                  <input
+                    type="checkbox"
+                    id="useGradient"
+                    checked={useGradient}
+                    onChange={(e) => setUseGradient(e.target.checked)}
+                    className="mr-2"
+                  />
+                  <label
+                    htmlFor="useGradient"
+                    className="text-gray-700 dark:text-gray-300"
                   >
-                    <Plus size={20} className="mr-2" />
-                    Add FAQ
-                  </button>
-                )}
-              </div>
-              <div className="mt-4 space-y-4 max-h-96 overflow-y-auto pr-2">
-                {faqList.map((faq, index) => (
-                  <div
-                    key={index}
-                    className="border rounded-md overflow-hidden"
-                  >
-                    <div
-                      className="bg-gray-100 p-4 flex justify-between items-center cursor-pointer"
-                      onClick={() => toggleFAQ(index)}
-                    >
-                      <span className="font-semibold">{faq.question}</span>
-                      <div className="flex items-center space-x-2">
-                        <button
-                          className="text-indigo-400 hover:text-indigo-800"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleEditFaq(index);
-                          }}
-                        >
-                          <Edit2 size={16} />
-                        </button>
-                        <button
-                          className="text-red-500 hover:text-red-700"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            openDeleteFaqModal(index);
-                          }}
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                        {faq.isOpen ? (
-                          <ChevronUp size={20} />
-                        ) : (
-                          <ChevronDown size={20} />
-                        )}
+                    Use Gradient for Colors
+                  </label>
+                </div>
+                {useGradient ? (
+                  <div className="space-y-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                      <div>
+                        <label className="block mb-2 dark:text-gray-100">
+                          Gradient Start
+                        </label>
+                        <div className="flex flex-col space-y-2">
+                          <HexColorPicker
+                            color={gradientStart}
+                            onChange={setGradientStart}
+                          />
+                          <HexColorInput
+                            color={gradientStart}
+                            onChange={setGradientStart}
+                            className="w-full p-2 border rounded-md"
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block mb-2 dark:text-gray-100">
+                          Gradient End
+                        </label>
+                        <div className="flex flex-col space-y-2">
+                          <HexColorPicker
+                            color={gradientEnd}
+                            onChange={setGradientEnd}
+                          />
+                          <HexColorInput
+                            color={gradientEnd}
+                            onChange={setGradientEnd}
+                            className="w-full p-2 border rounded-md"
+                          />
+                        </div>
                       </div>
                     </div>
-                    {faq.isOpen && (
-                      <div className="p-4">
-                        <p className="text-gray-700 dark:text-gray-100">
-                          {faq.answer}
-                        </p>
+                    <div>
+                      <label className="block mb-2 dark:text-gray-100">
+                        Gradient Angle
+                      </label>
+                      <div className="flex items-center space-x-4">
+                        <input
+                          type="range"
+                          min="0"
+                          max="360"
+                          value={gradientAngle}
+                          onChange={(e) =>
+                            setGradientAngle(parseInt(e.target.value))
+                          }
+                          className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
+                        />
+                        <span className="text-gray-700 dark:text-gray-300">
+                          {gradientAngle}°
+                        </span>
                       </div>
-                    )}
+                    </div>
+                    <div className="space-y-2">
+                      <div
+                        className="h-20 rounded-md"
+                        style={{ background: config.primaryColor }}
+                      ></div>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        This gradient will be applied to both primary and
+                        secondary colors.
+                      </p>
+                    </div>
                   </div>
-                ))}
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <div>
+                      <label className="block mb-2 dark:text-gray-100">
+                        Primary Color
+                      </label>
+                      <div className="flex flex-col space-y-2">
+                        <HexColorPicker
+                          color={config.primaryColor}
+                          onChange={(color) =>
+                            handleConfigChange("primaryColor", color)
+                          }
+                        />
+                        <HexColorInput
+                          color={config.primaryColor}
+                          onChange={(color) =>
+                            handleConfigChange("primaryColor", color)
+                          }
+                          className="w-full p-2 border rounded-md"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block mb-2 dark:text-gray-100">
+                        Secondary Color
+                      </label>
+                      <div className="flex flex-col space-y-2">
+                        <HexColorPicker
+                          color={config.secondaryColor}
+                          onChange={(color) =>
+                            handleConfigChange("secondaryColor", color)
+                          }
+                        />
+                        <HexColorInput
+                          color={config.secondaryColor}
+                          onChange={(color) =>
+                            handleConfigChange("secondaryColor", color)
+                          }
+                          className="w-full p-2 border rounded-md"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+                <div className="flex flex-wrap mt-4">
+                  {predefinedColors.map((color) => (
+                    <button
+                      key={color}
+                      className="w-8 h-8 m-1 rounded-md border border-gray-300"
+                      style={{ backgroundColor: color }}
+                      onClick={() => {
+                        setUseGradient(false);
+                        handleConfigChange("primaryColor", color);
+                        handleConfigChange("secondaryColor", color);
+                      }}
+                    ></button>
+                  ))}
+                </div>
               </div>
-            </>
-          )}
+            )}
 
-          {activeTab === "embed" && <EmbedTab />}
-        </div>
+            {activeTab === "faq" && (
+              <>
+                <div className="space-y-2 mb-6">
+                  <input
+                    className="w-full p-2 border rounded-md"
+                    placeholder="Question"
+                    value={faqInput.question}
+                    onChange={(e) =>
+                      setFaqInput((prev) => ({
+                        ...prev,
+                        question: e.target.value,
+                      }))
+                    }
+                  />
+                  <textarea
+                    className="w-full p-2 border rounded-md"
+                    placeholder="Answer"
+                    value={faqInput.answer}
+                    onChange={(e) =>
+                      setFaqInput((prev) => ({
+                        ...prev,
+                        answer: e.target.value,
+                      }))
+                    }
+                  />
+                  {editingFaqIndex !== null ? (
+                    <div className="flex space-x-2">
+                      <button
+                        className="bg-green-500 hover:bg-green-600 text-white p-2 rounded-md transition-colors duration-200 flex items-center"
+                        onClick={handleUpdateFaq}
+                      >
+                        <Save size={20} className="mr-2" />
+                        Update FAQ
+                      </button>
+                      <button
+                        className="bg-gray-500 hover:bg-gray-600 text-white p-2 rounded-md transition-colors duration-200 flex items-center"
+                        onClick={handleCancelEdit}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      className="bg-[#aab2ff] hover:bg-indigo-400 text-black p-2 rounded-md transition-colors duration-200 flex items-center"
+                      onClick={handleAddFaq}
+                    >
+                      <Plus size={20} className="mr-2" />
+                      Add FAQ
+                    </button>
+                  )}
+                </div>
+                <div className="mt-4 space-y-4 max-h-96 overflow-y-auto pr-2">
+                  {faqList.map((faq, index) => (
+                    <div
+                      key={index}
+                      className="border rounded-md overflow-hidden"
+                    >
+                      <div
+                        className="bg-gray-100 p-4 flex justify-between items-center cursor-pointer"
+                        onClick={() => toggleFAQ(index)}
+                      >
+                        <span className="font-semibold">{faq.question}</span>
+                        <div className="flex items-center space-x-2">
+                          <button
+                            className="text-indigo-400 hover:text-indigo-800"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleEditFaq(index);
+                            }}
+                          >
+                            <Edit2 size={16} />
+                          </button>
+                          <button
+                            className="text-red-500 hover:text-red-700"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              openDeleteFaqModal(index);
+                            }}
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                          {faq.isOpen ? (
+                            <ChevronUp size={20} />
+                          ) : (
+                            <ChevronDown size={20} />
+                          )}
+                        </div>
+                      </div>
+                      {faq.isOpen && (
+                        <div className="p-4">
+                          <p className="text-gray-700 dark:text-gray-100">
+                            {faq.answer}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
 
-        <div className="lg:col-span-1">
-          <h2 className="text-xl font-semibold mb-4 text-black dark:text-gray-100">
-            Preview
-          </h2>
-          <div
-            className="border rounded-md bg-gray-100 relative overflow-hidden mx-auto"
-            style={{ height: "520px", maxWidth: "370px" }}
-          >
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-full h-full">
-                <Chatbot {...config} isEmbedded={false} />
+            {activeTab === "embed" && <EmbedTab />}
+          </div>
+
+          <div className="lg:col-span-1">
+            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-gray-100">
+              Preview
+            </h2>
+            <div
+              className="border rounded-md bg-white dark:bg-gray-800 relative overflow-hidden mx-auto"
+              style={{ height: "520px", maxWidth: "370px" }}
+            >
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-full h-full">
+                  <Chatbot {...config} isEmbedded={false} />
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <div className="mt-8">
-        <button
-          className="bg-green-400 hover:bg-green-500 text-white px-6 py-2 rounded-md transition-colors duration-200 flex items-center"
-          onClick={saveConfig}
-        >
-          <Save size={20} className="mr-2" />
-          {id ? "Save Configuration" : "Create Chatbot"}
-        </button>
-      </div>
-
-      {showEmbedPreview && <EmbedPreviewModal />}
-
-      {showChatbot && (
-        <div className="fixed z-50" style={{ margin: "10px" }}>
-          <Chatbot {...config} isEmbedded={true} />
+        <div className="mt-8">
+          <button
+            className="bg-green-400 hover:bg-green-500 text-white px-6 py-2 rounded-md transition-colors duration-200 flex items-center"
+            onClick={saveConfig}
+          >
+            <Save size={20} className="mr-2" />
+            {id ? "Save Configuration" : "Create Chatbot"}
+          </button>
         </div>
-      )}
 
-      <ConfirmationModal
-        isOpen={isDeleteFaqModalOpen}
-        onClose={closeDeleteFaqModal}
-        onConfirm={handleDeleteFaq}
-        title="Delete FAQ"
-        message="Are you sure you want to delete this FAQ?"
-        confirmText="Delete"
-        cancelText="Cancel"
-      />
+        {showEmbedPreview && <EmbedPreviewModal />}
+
+        {showChatbot && (
+          <div className="fixed z-50" style={{ margin: "10px" }}>
+            <Chatbot {...config} isEmbedded={true} />
+          </div>
+        )}
+
+        <ConfirmationModal
+          isOpen={isDeleteFaqModalOpen}
+          onClose={closeDeleteFaqModal}
+          onConfirm={handleDeleteFaq}
+          title="Delete FAQ"
+          message="Are you sure you want to delete this FAQ?"
+          confirmText="Delete"
+          cancelText="Cancel"
+        />
+      </div>
     </div>
   );
 };

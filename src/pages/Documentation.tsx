@@ -9,12 +9,12 @@ const Documentation: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen py-12">
+    <div className="min-h-screen py-12 bg-gray-100 dark:bg-gray-900">
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h1 className="text-4xl font-bold text-indigo-900 mb-8 dark:text-indigo-200">
+        <h1 className="text-4xl font-bold text-black mb-8 dark:text-white">
           Askio Chatbot Documentation
         </h1>
-        <p className="text-xl text-indigo-700 mb-12 dark:text-indigo-200">
+        <p className="text-xl text-gray-700 mb-12 dark:text-gray-300">
           Learn how to create, customize, and embed your chatbot on your website
           using Askio Chatbot.
         </p>
@@ -30,8 +30,10 @@ const Documentation: React.FC = () => {
         ))}
 
         <div className="mt-12 bg-blue-50 border-l-4 border-blue-500 p-4 rounded-md">
-          <h3 className="text-lg font-semibold text-blue-700 mb-2">Pro Tips</h3>
-          <ul className="list-disc list-inside space-y-2 text-blue-600">
+          <h3 className="text-lg font-semibold text-black mb-2 dark:text-white">
+            Pro Tips
+          </h3>
+          <ul className="list-disc list-inside space-y-2 text-gray-700 dark:text-gray-300">
             <li>
               Regularly update your FAQs based on user interactions and
               feedback.
@@ -58,13 +60,15 @@ const Section: React.FC<{
   isOpen: boolean;
   toggleSection: () => void;
 }> = ({ title, content, isOpen, toggleSection }) => (
-  <div className="mb-6 bg-gray-50 dark:bg-indigo-200 rounded-lg shadow-md overflow-hidden">
+  <div className="mb-6 bg-gray-50 dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
     <button
       className="w-full text-left p-6 focus:outline-none"
       onClick={toggleSection}
     >
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-semibold text-indigo-900">{title}</h2>
+        <h2 className="text-2xl font-semibold text-black dark:text-white">
+          {title}
+        </h2>
         {isOpen ? <ChevronDown size={24} /> : <ChevronRight size={24} />}
       </div>
     </button>
@@ -72,7 +76,7 @@ const Section: React.FC<{
       <div className="px-6 pb-6">
         <ol className="list-decimal list-inside space-y-4">
           {content.map((step, index) => (
-            <li key={index} className="text-gray-700">
+            <li key={index} className="text-gray-700 dark:text-gray-300">
               {step}
             </li>
           ))}
