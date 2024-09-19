@@ -63,7 +63,10 @@ const Chatbot: React.FC<ChatbotProps> = ({
     setSuggestions(faqData.map((faq) => faq.question));
   }, [faqData]);
 
-  const handleSend = () => {
+  const handleSend = (e?: React.FormEvent) => {
+    if (e) {
+      e.preventDefault(); // Prevent form submission
+    }
     if (input.trim() === "") return;
 
     setMessages((prev) => [...prev, { text: input, sender: "user" }]);
@@ -170,7 +173,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
   const chatbotButton = (
     <motion.button
       onClick={toggleChatbot}
-      className={`fixed ${positionClasses[position]} z-50 w-16 h-16 flex items-center justify-center text-white rounded-full shadow-lg transition-all duration-300 overflow-hidden`}
+      className={`fixed ${positionClasses[position]} z-50 w-14 h-14 flex items-center justify-center text-white rounded-full shadow-lg transition-all duration-300 overflow-hidden`}
       style={{
         background: isGradient
           ? primaryColor
@@ -183,7 +186,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
       }}
       whileTap={{ scale: 0.95 }}
     >
-      <MessageCircleMore size={28} className="text-white" />
+      <MessageCircleMore size={24} className="text-white" />
     </motion.button>
   );
 
@@ -241,7 +244,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
               </span>
             </motion.div>
           ))}
-          {messages.length === 1 && showSuggestions && (
+          {showSuggestions && (
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -289,13 +292,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
         <div ref={messagesEndRef} />
       </div>
       <div className="p-4 border-t">
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            handleSend();
-          }}
-          className="flex"
-        >
+        <form onSubmit={handleSend} className="flex">
           <input
             type="text"
             value={input}
