@@ -187,7 +187,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
       }}
       whileTap={{ scale: 0.95 }}
     >
-      <MessageCircleMore size={24} className="text-white" />
+      <MessageCircleMore size={28} className="text-white" />
     </motion.button>
   );
 

@@ -34,7 +34,7 @@
       function updatePosition(position, isOpen) {
         if (isOpen) {
           iframe.style.width = "350px";
-          iframe.style.height = "500px";
+          iframe.style.height = "520px";
           iframe.style.borderRadius = "10px";
         } else {
           iframe.style.width = "62px";
