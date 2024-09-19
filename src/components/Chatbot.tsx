@@ -65,7 +65,8 @@ const Chatbot: React.FC<ChatbotProps> = ({
 
   const handleSend = (e?: React.FormEvent) => {
     if (e) {
-      e.preventDefault(); // Prevent form submission
+      e.preventDefault();
+      e.stopPropagation();
     }
     if (input.trim() === "") return;
 
@@ -173,7 +174,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
   const chatbotButton = (
     <motion.button
       onClick={toggleChatbot}
-      className={`fixed ${positionClasses[position]} z-50 w-14 h-14 flex items-center justify-center text-white rounded-full shadow-lg transition-all duration-300 overflow-hidden`}
+      className={`fixed ${positionClasses[position]} z-50 w-16 h-16 flex items-center justify-center text-white rounded-full shadow-lg transition-all duration-300 overflow-hidden`}
       style={{
         background: isGradient
           ? primaryColor
@@ -200,7 +201,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
         isEmbedded ? `fixed ${positionClasses[position]} z-50` : "w-full h-full"
       } bg-white flex flex-col shadow-lg rounded-lg ${
         !isEmbedded && isPreview ? "" : ""
-      } ${isEmbedded ? "w-[350px] h-[500px]" : ""}`}
+      } ${isEmbedded ? "w-[350px] h-[520px]" : ""}`}
     >
       <div
         className="text-white p-4 flex items-center justify-between rounded-t-lg"
@@ -244,28 +245,31 @@ const Chatbot: React.FC<ChatbotProps> = ({
               </span>
             </motion.div>
           ))}
-          {showSuggestions && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.3 }}
-              className="mt-4"
-            >
-              <p className="text-sm text-gray-600 mb-2">Suggested questions:</p>
-              <div className="flex flex-wrap gap-2">
-                {suggestions.map((question, idx) => (
-                  <button
-                    key={idx}
-                    onClick={(e) => handleSuggestionClick(e, question)}
-                    className="text-sm bg-gray-100 hover:bg-gray-200 text-gray-800 py-1 px-3 rounded-lg transition-colors duration-200 border border-gray-300"
-                  >
-                    {question}
-                  </button>
-                ))}
-              </div>
-            </motion.div>
-          )}
+          {showSuggestions &&
+            messages[messages.length - 1].sender === "bot" && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.3 }}
+                className="mt-4"
+              >
+                <p className="text-sm text-gray-600 mb-2">
+                  Suggested questions:
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {suggestions.map((question, idx) => (
+                    <button
+                      key={idx}
+                      onClick={(e) => handleSuggestionClick(e, question)}
+                      className="text-sm bg-gray-100 hover:bg-gray-200 text-gray-800 py-1 px-3 rounded-lg transition-colors duration-200 border border-gray-300"
+                    >
+                      {question}
+                    </button>
+                  ))}
+                </div>
+              </motion.div>
+            )}
         </AnimatePresence>
         {isTyping && (
           <motion.div
@@ -306,6 +310,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
             style={buttonStyle}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
+            onClick={(e) => e.stopPropagation()} // Add this line to stop event propagation
           >
             <Send size={20} />
           </motion.button>
