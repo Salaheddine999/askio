@@ -17,10 +17,6 @@ export interface ChatbotProps {
   faqData: Array<{ question: string; answer: string }>;
   isEmbedded?: boolean;
   isPreview?: boolean;
-  gradientStart?: string;
-  gradientEnd?: string;
-  useGradient: boolean;
-  gradientAngle?: number;
 }
 
 const Chatbot: React.FC<ChatbotProps> = ({
@@ -33,10 +29,6 @@ const Chatbot: React.FC<ChatbotProps> = ({
   faqData,
   isEmbedded,
   isPreview,
-  gradientStart,
-  gradientEnd,
-  useGradient,
-  gradientAngle = 90,
 }) => {
   const [messages, setMessages] = useState<Message[]>([
     { text: initialMessage, sender: "bot" },
@@ -150,18 +142,11 @@ const Chatbot: React.FC<ChatbotProps> = ({
     return () => window.removeEventListener("message", handleMessage);
   }, []);
 
-  const getBackgroundStyle = () => {
-    if (useGradient && gradientStart && gradientEnd) {
-      return `linear-gradient(${gradientAngle}deg, ${gradientStart}, ${gradientEnd})`;
-    }
-    return primaryColor;
-  };
-
   const chatbotButton = (
     <button
       onClick={toggleChatbot}
-      className={`fixed ${positionClasses[position]} z-50 w-14 h-14 flex items-center justify-center text-white rounded-full shadow-lg hover:opacity-90 transition-colors duration-200`}
-      style={{ background: getBackgroundStyle() }}
+      className={`fixed ${positionClasses[position]} z-50 w-14 h-14 flex items-center justify-center bg-blue-500 text-white rounded-full shadow-lg hover:bg-blue-600 transition-colors duration-200`}
+      style={{ backgroundColor: primaryColor }}
     >
       <MessageSquare size={20} />
     </button>
@@ -177,7 +162,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
     >
       <div
         className="text-white p-4 flex items-center justify-between rounded-t-lg"
-        style={{ background: getBackgroundStyle() }}
+        style={{ backgroundColor: primaryColor }}
       >
         <div className="flex items-center">
           <MessageSquare className="mr-2" />
@@ -263,7 +248,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
           <button
             onClick={handleSend}
             className="text-white p-2 rounded-r-lg hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200"
-            style={{ background: getBackgroundStyle() }}
+            style={{ backgroundColor: secondaryColor }}
           >
             <Send size={20} />
           </button>
