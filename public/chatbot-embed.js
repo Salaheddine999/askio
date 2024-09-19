@@ -25,9 +25,9 @@
       iframe.scrolling = "no";
 
       // Start with a fixed size for the closed state
-      iframe.style.width = "80px";
-      iframe.style.height = "80px";
-      iframe.style.borderRadius = "50%";
+      iframe.style.width = "62px";
+      iframe.style.height = "62px";
+      iframe.style.borderRadius = "33px";
 
       container.appendChild(iframe);
 
@@ -37,9 +37,9 @@
           iframe.style.height = "520px";
           iframe.style.borderRadius = "8px";
         } else {
-          iframe.style.width = "80px";
-          iframe.style.height = "80px";
-          iframe.style.borderRadius = "50%";
+          iframe.style.width = "62px";
+          iframe.style.height = "62px";
+          iframe.style.borderRadius = "33px";
         }
 
         if (position.includes("bottom")) {
