@@ -25,16 +25,16 @@
       iframe.scrolling = "no";
 
       // Start with a fixed size for the closed state
-      iframe.style.width = "56px";
-      iframe.style.height = "56px";
-      iframe.style.borderRadius = "28px";
+      iframe.style.width = "62px";
+      iframe.style.height = "62px";
+      iframe.style.borderRadius = "31px";
 
       container.appendChild(iframe);
 
       function updatePosition(position, isOpen) {
         if (isOpen) {
-          iframe.style.width = "320px";
-          iframe.style.height = "450px";
+          iframe.style.width = "350px";
+          iframe.style.height = "500px";
           iframe.style.borderRadius = "10px";
         } else {
           iframe.style.width = "56px";

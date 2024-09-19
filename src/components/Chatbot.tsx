@@ -197,7 +197,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
         isEmbedded ? `fixed ${positionClasses[position]} z-50` : "w-full h-full"
       } bg-white flex flex-col shadow-lg rounded-lg ${
         !isEmbedded && isPreview ? "" : ""
-      } ${isEmbedded ? "w-[320px] h-[450px]" : ""}`}
+      } ${isEmbedded ? "w-[350px] h-[500px]" : ""}`}
     >
       <div
         className="text-white p-4 flex items-center justify-between rounded-t-lg"
