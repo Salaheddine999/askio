@@ -1,7 +1,16 @@
 import React, { useEffect, useState } from "react";
-import { supabase } from "../utils/supabase";
+import { db, auth } from "../utils/firebase";
+import {
+  collection,
+  query,
+  where,
+  getDocs,
+  deleteDoc,
+  doc,
+  getDoc,
+  updateDoc,
+} from "firebase/firestore";
 import { Link } from "react-router-dom";
-import { PostgrestError } from "@supabase/supabase-js";
 import {
   PlusCircle,
   Edit2,
@@ -32,62 +41,44 @@ const Dashboard: React.FC = () => {
   }, []);
 
   const checkIfNewUser = async () => {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const user = auth.currentUser;
     if (user) {
-      const { data } = await supabase
-        .from("profiles")
-        .select("first_login")
-        .eq("id", user.id)
-        .single();
+      const docRef = doc(db, "profiles", user.uid);
+      const docSnap = await getDoc(docRef);
 
-      if (data && data.first_login) {
+      if (docSnap.exists() && docSnap.data().first_login) {
         setIsNewUser(true);
         // Update the first_login flag
-        await supabase
-          .from("profiles")
-          .update({ first_login: false })
-          .eq("id", user.id);
+        await updateDoc(docRef, { first_login: false });
       }
     }
   };
 
-  const fetchChatbots = async (retries = 3) => {
+  const fetchChatbots = async () => {
     setLoading(true);
     setError(null);
     try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      const user = auth.currentUser;
       if (!user) throw new Error("User not authenticated");
 
-      const { data, error } = await supabase
-        .from("chatbot_configs")
-        .select("*")
-        .eq("user_id", user.id);
-
-      if (error) throw error;
-
-      setChatbots(data || []);
-      setLoading(false);
-    } catch (err) {
-      const error = err as PostgrestError;
-      console.error(
-        "Error fetching chatbots:",
-        error.message,
-        error.details,
-        error.hint
+      const q = query(
+        collection(db, "chatbot_configs"),
+        where("user_id", "==", user.uid)
       );
-      if (retries > 0) {
-        console.log(`Retrying... (${retries} attempts left)`);
-        setTimeout(() => fetchChatbots(retries - 1), 1000);
-      } else {
-        setError(
-          `Failed to fetch chatbots: ${error.message}. Please try refreshing the page or contact support if the issue persists.`
-        );
-        setLoading(false);
-      }
+      const querySnapshot = await getDocs(q);
+      const chatbotData = querySnapshot.docs.map(
+        (doc) => ({ id: doc.id, ...doc.data() } as Chatbot)
+      );
+      setChatbots(chatbotData);
+    } catch (error) {
+      console.error("Error fetching chatbots:", error);
+      setError(
+        `Failed to fetch chatbots: ${
+          (error as Error).message
+        }. Please try refreshing the page or contact support if the issue persists.`
+      );
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -105,19 +96,12 @@ const Dashboard: React.FC = () => {
     if (!chatbotToDelete) return;
 
     try {
-      const { error } = await supabase
-        .from("chatbot_configs")
-        .delete()
-        .eq("id", chatbotToDelete);
-
-      if (error) throw error;
-
+      await deleteDoc(doc(db, "chatbot_configs", chatbotToDelete));
       setChatbots(chatbots.filter((chatbot) => chatbot.id !== chatbotToDelete));
       toast.success("Chatbot deleted successfully");
-    } catch (err) {
-      const error = err as PostgrestError;
+    } catch (error) {
       console.error("Error deleting chatbot:", error);
-      setError(`Failed to delete chatbot: ${error.message}`);
+      setError(`Failed to delete chatbot: ${(error as Error).message}`);
     } finally {
       closeDeleteModal();
     }

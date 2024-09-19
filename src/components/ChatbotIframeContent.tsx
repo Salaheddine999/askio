@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import { db } from "../utils/firebase";
+import { doc, getDoc } from "firebase/firestore";
 import Chatbot, { ChatbotProps } from "./Chatbot";
-import { supabase } from "../utils/supabase";
 
 const ChatbotIframeContent: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -10,16 +11,17 @@ const ChatbotIframeContent: React.FC = () => {
   useEffect(() => {
     const fetchConfig = async () => {
       if (id) {
-        const { data, error } = await supabase
-          .from("chatbot_configs")
-          .select("*")
-          .eq("id", id)
-          .single();
+        try {
+          const docRef = doc(db, "chatbot_configs", id);
+          const docSnap = await getDoc(docRef);
 
-        if (error) {
+          if (!docSnap.exists()) {
+            throw new Error("No such document!");
+          }
+
+          setConfig({ id: docSnap.id, ...docSnap.data() } as ChatbotProps);
+        } catch (error) {
           console.error("Error fetching chatbot config:", error);
-        } else {
-          setConfig(data);
         }
       }
     };

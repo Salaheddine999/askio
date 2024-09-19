@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { supabase } from "../utils/supabase";
+import { db, auth } from "../utils/firebase";
+import { doc, getDoc, setDoc, updateDoc, collection } from "firebase/firestore";
 import Chatbot, { ChatbotProps } from "./Chatbot";
-import { PostgrestError } from "@supabase/supabase-js";
 import { HexColorPicker } from "react-colorful";
 import {
   Save,
@@ -66,18 +66,19 @@ const EditChatbot: React.FC = () => {
   const fetchChatbotConfig = async () => {
     if (!id) return;
     try {
-      const { data, error } = await supabase
-        .from("chatbot_configs")
-        .select("*")
-        .eq("id", id)
-        .single();
+      const docRef = doc(db, "chatbot_configs", id);
+      const docSnap = await getDoc(docRef);
 
-      if (error) throw error;
-      setConfig(data as EditChatbotProps);
-    } catch (err) {
-      const error = err as PostgrestError;
+      if (docSnap.exists()) {
+        setConfig({ id, ...docSnap.data() } as EditChatbotProps);
+      } else {
+        throw new Error("No such document!");
+      }
+    } catch (error) {
       console.error("Error loading chatbot config:", error);
-      toast.error(`Failed to load chatbot configuration: ${error.message}`);
+      toast.error(
+        `Failed to load chatbot configuration: ${(error as Error).message}`
+      );
     }
   };
 
@@ -154,38 +155,40 @@ const EditChatbot: React.FC = () => {
   };
 
   const saveConfig = async () => {
+    const user = auth.currentUser;
+    if (!user) {
+      toast.error("You must be logged in to save the configuration.");
+      return;
+    }
     if (!config.name.trim() || !config.title.trim()) {
       toast.error("Chatbot name and title are required.");
       return;
     }
     try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) throw new Error("User not authenticated");
+      const { id, ...chatbotConfig } = config;
+      const dataToSave = {
+        ...chatbotConfig,
+        user_id: user.uid,
+      };
 
-      const { name, id, ...chatbotConfig } = config;
-      const result = id
-        ? await supabase
-            .from("chatbot_configs")
-            .update({ ...chatbotConfig, name })
-            .eq("id", id)
-            .eq("user_id", user.id)
-        : await supabase
-            .from("chatbot_configs")
-            .insert({ ...chatbotConfig, name, user_id: user.id });
-
-      if (result.error) throw result.error;
-      toast.success("Configuration saved successfully!");
-
-      if (!id && result.data) {
-        const newChatbot = result.data[0] as { id: string };
-        navigate(`/configure/${newChatbot.id}`);
+      let docRef;
+      if (id) {
+        docRef = doc(db, "chatbot_configs", id);
+        await updateDoc(docRef, dataToSave);
+      } else {
+        docRef = doc(collection(db, "chatbot_configs"));
+        await setDoc(docRef, dataToSave);
       }
-    } catch (err) {
-      const error = err as PostgrestError;
+
+      toast.success("Configuration saved successfully!");
+      navigate(`/configure/${docRef.id}`);
+    } catch (error) {
       console.error("Error saving config:", error);
-      toast.error("Failed to save configuration! Try again later.");
+      if (error instanceof Error) {
+        toast.error(`Failed to save configuration: ${error.message}`);
+      } else {
+        toast.error("An unknown error occurred while saving the configuration");
+      }
     }
   };
 

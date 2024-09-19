@@ -1,6 +1,11 @@
 import React, { useState } from "react";
-import { supabase } from "../utils/supabase";
-import { AuthError } from "@supabase/supabase-js";
+import { auth } from "../utils/firebase";
+import {
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  signInWithPopup,
+  GoogleAuthProvider,
+} from "firebase/auth";
 import { FaGoogle } from "react-icons/fa";
 
 const Auth: React.FC = () => {
@@ -17,36 +22,23 @@ const Auth: React.FC = () => {
 
     try {
       if (mode === "login") {
-        const { error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
-        if (error) throw error;
+        await signInWithEmailAndPassword(auth, email, password);
       } else {
-        const { error } = await supabase.auth.signUp({ email, password });
-        if (error) throw error;
+        await createUserWithEmailAndPassword(auth, email, password);
       }
     } catch (error) {
-      if (error instanceof AuthError) {
-        setError(error.message);
-      } else {
-        setError("An unexpected error occurred");
-      }
+      setError((error as Error).message);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleOAuth = async (provider: "github" | "google") => {
+  const handleOAuth = async (provider: "google") => {
     try {
-      const { error } = await supabase.auth.signInWithOAuth({ provider });
-      if (error) throw error;
+      const googleProvider = new GoogleAuthProvider();
+      await signInWithPopup(auth, googleProvider);
     } catch (error) {
-      if (error instanceof AuthError) {
-        setError(error.message);
-      } else {
-        setError("An unexpected error occurred");
-      }
+      setError((error as Error).message);
     }
   };
 

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { supabase } from "../utils/supabase";
+import { auth } from "../utils/firebase"; // Import Firebase auth
+import { signOut } from "firebase/auth"; // Import signOut function
 import {
   List,
   HelpCircle,
@@ -23,8 +24,12 @@ const Navbar: React.FC<NavbarProps> = ({ darkMode, toggleDarkMode }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut();
-    navigate("/");
+    try {
+      await signOut(auth);
+      navigate("/");
+    } catch (error) {
+      console.error("Error signing out:", error);
+    }
   };
 
   const isActive = (path: string) => location.pathname === path;

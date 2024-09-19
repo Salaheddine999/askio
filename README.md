@@ -31,7 +31,7 @@ Askio Chatbot is a powerful and customizable chatbot solution that allows you to
 - TypeScript
 - Vite
 - Tailwind CSS
-- Supabase
+- Firebase
 
 ## Contributing
 

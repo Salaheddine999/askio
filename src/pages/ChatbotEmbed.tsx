@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { supabase } from "../utils/supabase";
+import { db } from "../utils/firebase";
+import { doc, getDoc } from "firebase/firestore";
 import Chatbot, { ChatbotProps } from "../components/Chatbot";
 
 const ChatbotEmbed: React.FC = () => {
@@ -13,15 +14,14 @@ const ChatbotEmbed: React.FC = () => {
     const fetchConfig = async () => {
       if (id) {
         try {
-          const { data, error } = await supabase
-            .from("chatbot_configs")
-            .select("*")
-            .eq("id", id)
-            .single();
+          const docRef = doc(db, "chatbot_configs", id);
+          const docSnap = await getDoc(docRef);
 
-          if (error) throw error;
+          if (!docSnap.exists()) {
+            throw new Error("No such document!");
+          }
 
-          setConfig(data as ChatbotProps);
+          setConfig({ id: docSnap.id, ...docSnap.data() } as ChatbotProps);
         } catch (err) {
           console.error("Error fetching chatbot config:", err);
           setError("Failed to load chatbot configuration");

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { supabase } from "../utils/supabase";
-import { User } from "@supabase/supabase-js";
+import { auth, db } from "../utils/firebase";
+import { User, updateProfile } from "firebase/auth";
+import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { Edit2, Save } from "lucide-react";
 
 const Profile: React.FC = () => {
@@ -14,22 +15,23 @@ const Profile: React.FC = () => {
   }, []);
 
   const fetchUser = async () => {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    setUser(user);
-    setName(user?.user_metadata?.name || "");
+    const currentUser = auth.currentUser;
+    if (currentUser) {
+      setUser(currentUser);
+      const userDoc = await getDoc(doc(db, "users", currentUser.uid));
+      if (userDoc.exists()) {
+        setName(userDoc.data().name || "");
+      }
+    }
     setLoading(false);
   };
 
-  const updateProfile = async () => {
+  const updateUserProfile = async () => {
     try {
-      const { error } = await supabase.auth.updateUser({
-        data: { name: name },
-      });
-
-      if (error) throw error;
-
+      if (user) {
+        await updateProfile(user, { displayName: name });
+        await updateDoc(doc(db, "users", user.uid), { name });
+      }
       setEditing(false);
       fetchUser();
     } catch (error) {
@@ -70,7 +72,7 @@ const Profile: React.FC = () => {
         </div>
         {editing ? (
           <button
-            onClick={updateProfile}
+            onClick={updateUserProfile}
             className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline flex items-center"
           >
             <Save size={20} className="mr-2" />

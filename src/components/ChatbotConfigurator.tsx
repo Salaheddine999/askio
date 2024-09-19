@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "../utils/supabase";
+import { db, auth } from "../utils/firebase";
+import { collection, getDocs, addDoc } from "firebase/firestore";
 
 const ChatbotConfigurator: React.FC = () => {
-  const [chatbots, setChatbots] = useState<Array<{ id: number; name: string }>>(
+  const [chatbots, setChatbots] = useState<Array<{ id: string; name: string }>>(
     []
   );
   const [newChatbotName, setNewChatbotName] = useState("");
@@ -15,46 +16,40 @@ const ChatbotConfigurator: React.FC = () => {
   }, []);
 
   const fetchChatbots = async () => {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    const { data, error } = await supabase
-      .from("chatbot_configs")
-      .select("id, name")
-      .eq("user_id", user?.id);
-
-    if (error) {
-      console.error("Error fetching chatbots:", error);
-      setError("Failed to fetch chatbots. Please try again.");
-    } else {
-      setChatbots(data || []);
-    }
+    const chatbotsCollection = collection(db, "chatbot_configs");
+    const snapshot = await getDocs(chatbotsCollection);
+    const chatbotsList = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+    setChatbots(chatbotsList as { id: string; name: string }[]);
   };
 
   const createNewChatbot = async () => {
     if (newChatbotName.trim()) {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      const { data, error } = await supabase
-        .from("chatbot_configs")
-        .insert([{ name: newChatbotName, user_id: user?.id }])
-        .select();
-
-      if (error) {
-        console.error("Error creating new chatbot:", error);
-        setError("Failed to create new chatbot. Please try again.");
-      } else {
+      const user = auth.currentUser;
+      if (!user) {
+        setError("User not authenticated");
+        return;
+      }
+      try {
+        const docRef = await addDoc(collection(db, "chatbot_configs"), {
+          name: newChatbotName,
+          user_id: user.uid,
+        });
         setNewChatbotName("");
         fetchChatbots();
-        navigate(`/edit-chatbot/${data[0].id}`);
+        navigate(`/edit-chatbot/${docRef.id}`);
+      } catch (error) {
+        console.error("Error creating new chatbot:", error);
+        setError("Failed to create new chatbot. Please try again.");
       }
     } else {
       setError("Please enter a name for the new chatbot.");
     }
   };
 
-  const handleEditChatbot = (id: number) => {
+  const handleEditChatbot = (id: string) => {
     navigate(`/edit-chatbot/${id}`);
   };
 

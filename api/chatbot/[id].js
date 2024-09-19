@@ -1,9 +1,19 @@
-import { createClient } from "@supabase/supabase-js";
+import { getFirestore, doc, getDoc } from "firebase/firestore";
+import { initializeApp } from "firebase/app";
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
-);
+// Firebase configuration
+const firebaseConfig = {
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
 export default async function handler(req, res) {
   // Set CORS headers
@@ -39,17 +49,19 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { data, error } = await supabase
-      .from("chatbot_configs")
-      .select("*")
-      .eq("id", id)
-      .single();
+    const docRef = doc(db, "chatbot_configs", id);
+    const docSnap = await getDoc(docRef);
 
-    if (error) throw error;
+    if (!docSnap.exists()) {
+      res.status(400).json({ error: "Invalid chatbot ID" });
+      return;
+    }
+
+    const data = docSnap.data();
 
     // Sanitize the data before sending it to the client
     const sanitizedData = {
-      id: data.id,
+      id: docRef.id,
       title: data.title,
       primaryColor: data.primaryColor,
       secondaryColor: data.secondaryColor,
