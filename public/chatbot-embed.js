@@ -37,9 +37,9 @@
           iframe.style.height = "500px";
           iframe.style.borderRadius = "10px";
         } else {
-          iframe.style.width = "56px";
-          iframe.style.height = "56px";
-          iframe.style.borderRadius = "28px";
+          iframe.style.width = "62px";
+          iframe.style.height = "62px";
+          iframe.style.borderRadius = "31px";
         }
 
         if (position.includes("bottom")) {
