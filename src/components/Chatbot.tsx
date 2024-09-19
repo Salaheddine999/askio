@@ -138,10 +138,10 @@ const Chatbot: React.FC<ChatbotProps> = ({
   };
 
   const positionClasses = {
-    "bottom-right": isEmbedded ? "bottom-0 right-0" : "bottom-4 right-4",
-    "bottom-left": isEmbedded ? "bottom-0 left-0" : "bottom-4 left-4",
-    "top-right": isEmbedded ? "top-0 right-0" : "top-4 right-4",
-    "top-left": isEmbedded ? "top-0 left-0" : "top-4 left-4",
+    "bottom-right": isEmbedded ? "bottom-6 right-6" : "bottom-4 right-4",
+    "bottom-left": isEmbedded ? "bottom-6 left-6" : "bottom-4 left-4",
+    "top-right": isEmbedded ? "top-6 right-6" : "top-4 right-4",
+    "top-left": isEmbedded ? "top-6 left-6" : "top-4 left-4",
   };
 
   useEffect(() => {
@@ -170,7 +170,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
   const chatbotButton = (
     <motion.button
       onClick={toggleChatbot}
-      className={`fixed ${positionClasses[position]} z-50 w-16 h-16 flex items-center justify-center text-white rounded-full shadow-lg transition-all duration-300 overflow-hidden`}
+      className={`fixed ${positionClasses[position]} z-50 w-20 h-20 flex items-center justify-center text-white rounded-full shadow-lg transition-all duration-300 overflow-hidden`}
       style={{
         background: isGradient
           ? primaryColor
@@ -183,23 +183,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
       }}
       whileTap={{ scale: 0.95 }}
     >
-      <div className="relative flex flex-col items-center justify-center w-full h-full">
-        <MessageSquare
-          size={24}
-          className="transform transition-transform duration-300 group-hover:scale-110"
-        />
-        <motion.div
-          className="absolute inset-0 bg-black opacity-0 rounded-full"
-          whileHover={{ opacity: 0.1 }}
-        />
-        <motion.span
-          className="absolute bottom-1 text-xs font-semibold opacity-0 transition-opacity duration-300"
-          initial={{ opacity: 0, y: 5 }}
-          whileHover={{ opacity: 1, y: 0 }}
-        >
-          Chat
-        </motion.span>
-      </div>
+      <MessageSquare size={32} className="text-white" />
     </motion.button>
   );
 
@@ -211,9 +195,9 @@ const Chatbot: React.FC<ChatbotProps> = ({
       transition={{ duration: 0.3 }}
       className={`${
         isEmbedded ? `fixed ${positionClasses[position]} z-50` : "w-full h-full"
-      } bg-white flex flex-col shadow-lg rounded-[10px] ${
+      } bg-white flex flex-col shadow-lg rounded-lg ${
         !isEmbedded && isPreview ? "" : ""
-      } ${isEmbedded ? "w-[370px] h-[520px] max-w-[370px] max-h-[520px]" : ""}`}
+      } ${isEmbedded ? "w-[370px] h-[520px]" : ""}`}
     >
       <div
         className="text-white p-4 flex items-center justify-between rounded-t-lg"
@@ -246,7 +230,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
               }`}
             >
               <span
-                className={`inline-block p-2 rounded-[10px] max-w-[80%] ${
+                className={`inline-block p-2 rounded-lg max-w-[80%] ${
                   message.sender === "user"
                     ? "text-white"
                     : "bg-gray-200 text-gray-800"
@@ -271,7 +255,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
                   <button
                     key={idx}
                     onClick={(e) => handleSuggestionClick(e, question)}
-                    className="text-sm bg-gray-100 hover:bg-gray-200 text-gray-800 py-1 px-3 rounded-[10px] transition-colors duration-200 border border-gray-300"
+                    className="text-sm bg-gray-100 hover:bg-gray-200 text-gray-800 py-1 px-3 rounded-lg transition-colors duration-200 border border-gray-300"
                   >
                     {question}
                   </button>
@@ -287,7 +271,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
             exit={{ opacity: 0, y: -10 }}
             className="flex justify-start"
           >
-            <span className="inline-block p-2 rounded-[10px] bg-gray-200 text-gray-800">
+            <span className="inline-block p-2 rounded-lg bg-gray-200 text-gray-800">
               <div className="flex items-center h-5">
                 <span className="h-1.5 w-1.5 bg-gray-600 rounded-full mr-1 animate-bounce"></span>
                 <span
@@ -346,7 +330,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
   );
 
   return (
-    <AnimatePresence>
+    <AnimatePresence mode="wait">
       {isEmbedded ? (isOpen ? chatbotContent : chatbotButton) : chatbotContent}
     </AnimatePresence>
   );

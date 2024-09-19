@@ -8,20 +8,26 @@
         return;
       }
 
+      // Remove any existing iframes
+      var existingIframes = container.getElementsByTagName("iframe");
+      for (var i = existingIframes.length - 1; i >= 0; i--) {
+        container.removeChild(existingIframes[i]);
+      }
+
       var iframe = document.createElement("iframe");
       iframe.src = origin + "/chatbot/" + chatbotId;
       iframe.style.position = "fixed";
       iframe.style.border = "none";
       iframe.style.zIndex = "10000";
-      iframe.style.transition = "all 0.15s ease-in-out";
+      iframe.style.transition = "all 0.3s ease-in-out";
       iframe.style.boxShadow = "0 0 10px rgba(0,0,0,0.2)";
       iframe.style.overflow = "hidden";
       iframe.scrolling = "no";
 
-      // Start with a minimal size for the closed state
-      iframe.style.width = "56px";
-      iframe.style.height = "56px";
-      iframe.style.borderRadius = "28px";
+      // Start with a fixed size for the closed state
+      iframe.style.width = "80px";
+      iframe.style.height = "80px";
+      iframe.style.borderRadius = "50%";
 
       container.appendChild(iframe);
 
@@ -29,26 +35,26 @@
         if (isOpen) {
           iframe.style.width = "370px";
           iframe.style.height = "520px";
-          iframe.style.borderRadius = "10px";
+          iframe.style.borderRadius = "8px";
         } else {
-          iframe.style.width = "56px";
-          iframe.style.height = "56px";
-          iframe.style.borderRadius = "28px";
+          iframe.style.width = "80px";
+          iframe.style.height = "80px";
+          iframe.style.borderRadius = "50%";
         }
 
         if (position.includes("bottom")) {
-          iframe.style.bottom = "20px";
+          iframe.style.bottom = "24px";
           iframe.style.top = "auto";
         } else {
-          iframe.style.top = "20px";
+          iframe.style.top = "24px";
           iframe.style.bottom = "auto";
         }
 
         if (position.includes("right")) {
-          iframe.style.right = "20px";
+          iframe.style.right = "24px";
           iframe.style.left = "auto";
         } else {
-          iframe.style.left = "20px";
+          iframe.style.left = "24px";
           iframe.style.right = "auto";
         }
       }
@@ -66,7 +72,7 @@
       }
 
       iframe.addEventListener("load", function () {
-        iframe.contentDocument.addEventListener("click", function (e) {
+        iframe.contentWindow.addEventListener("click", function (e) {
           if (e.target.closest("button")) {
             toggleChatbot();
           }
