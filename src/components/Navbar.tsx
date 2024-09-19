@@ -67,7 +67,7 @@ const Navbar: React.FC<NavbarProps> = ({ darkMode, toggleDarkMode }) => {
                 alt="Askio Chatbot"
                 className="w-14 h-14 mr-2"
               />
-              Askio
+              <span className="text-black">Askio</span>
             </Link>
           </div>
           <div className="hidden md:flex items-center space-x-4">

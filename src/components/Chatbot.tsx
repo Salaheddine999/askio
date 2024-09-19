@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { MessageSquare, Send, X } from "lucide-react";
 
 type Message = {
@@ -9,7 +9,7 @@ type Message = {
 export interface ChatbotProps {
   id: string;
   title: string;
-  primaryColor: string;
+  primaryColor: string; // This can now be either a hex color or a linear-gradient
   secondaryColor: string;
   position: "bottom-right" | "bottom-left" | "top-right" | "top-left";
   initialMessage: string;
@@ -38,6 +38,23 @@ const Chatbot: React.FC<ChatbotProps> = ({
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(true);
   const [isTyping, setIsTyping] = useState(false);
+
+  const isGradient = primaryColor.startsWith("linear-gradient");
+
+  const headerStyle = {
+    backgroundColor: isGradient ? "transparent" : primaryColor,
+    backgroundImage: isGradient ? primaryColor : "none",
+  };
+
+  const buttonStyle = {
+    backgroundColor: isGradient ? "transparent" : secondaryColor,
+    backgroundImage: isGradient ? secondaryColor : "none",
+  };
+
+  const userMessageStyle = {
+    backgroundColor: isGradient ? "transparent" : secondaryColor,
+    backgroundImage: isGradient ? secondaryColor : "none",
+  };
 
   useEffect(() => {
     // Initialize suggestions with all FAQ questions
@@ -145,8 +162,8 @@ const Chatbot: React.FC<ChatbotProps> = ({
   const chatbotButton = (
     <button
       onClick={toggleChatbot}
-      className={`fixed ${positionClasses[position]} z-50 w-14 h-14 flex items-center justify-center bg-blue-500 text-white rounded-full shadow-lg hover:bg-blue-600 transition-colors duration-200`}
-      style={{ backgroundColor: primaryColor }}
+      className={`fixed ${positionClasses[position]} z-50 w-14 h-14 flex items-center justify-center text-white rounded-full shadow-lg hover:opacity-90 transition-all duration-200`}
+      style={headerStyle}
     >
       <MessageSquare size={20} />
     </button>
@@ -162,7 +179,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
     >
       <div
         className="text-white p-4 flex items-center justify-between rounded-t-lg"
-        style={{ backgroundColor: primaryColor }}
+        style={headerStyle}
       >
         <div className="flex items-center">
           <MessageSquare className="mr-2" />
@@ -188,11 +205,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
                     ? "text-white"
                     : "bg-gray-200 text-gray-800"
                 }`}
-                style={
-                  message.sender === "user"
-                    ? { backgroundColor: secondaryColor }
-                    : {}
-                }
+                style={message.sender === "user" ? userMessageStyle : {}}
               >
                 {message.text}
               </span>
@@ -248,7 +261,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
           <button
             onClick={handleSend}
             className="text-white p-2 rounded-r-lg hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200"
-            style={{ backgroundColor: secondaryColor }}
+            style={buttonStyle}
           >
             <Send size={20} />
           </button>

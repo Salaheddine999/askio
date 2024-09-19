@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { db, auth } from "../utils/firebase";
 import { doc, getDoc, setDoc, updateDoc, collection } from "firebase/firestore";
 import Chatbot, { ChatbotProps } from "./Chatbot";
-import { HexColorPicker } from "react-colorful";
+import { HexColorPicker, HexColorInput } from "react-colorful";
 import {
   Save,
   ArrowLeft,
@@ -52,6 +52,10 @@ const EditChatbot: React.FC = () => {
   const [editingFaqIndex, setEditingFaqIndex] = useState<number | null>(null);
   const [isDeleteFaqModalOpen, setIsDeleteFaqModalOpen] = useState(false);
   const [faqToDelete, setFaqToDelete] = useState<number | null>(null);
+  const [gradientStart, setGradientStart] = useState("#4F46E5");
+  const [gradientEnd, setGradientEnd] = useState("#6366F1");
+  const [useGradient, setUseGradient] = useState(false);
+  const [gradientAngle, setGradientAngle] = useState(90);
 
   useEffect(() => {
     if (id) {
@@ -85,6 +89,18 @@ const EditChatbot: React.FC = () => {
   const handleConfigChange = (key: keyof EditChatbotProps, value: string) => {
     setConfig((prev) => ({ ...prev, [key]: value }));
   };
+
+  const updateGradient = () => {
+    if (useGradient) {
+      const gradientColor = `linear-gradient(${gradientAngle}deg, ${gradientStart}, ${gradientEnd})`;
+      handleConfigChange("primaryColor", gradientColor);
+      handleConfigChange("secondaryColor", gradientColor);
+    }
+  };
+
+  useEffect(() => {
+    updateGradient();
+  }, [gradientStart, gradientEnd, useGradient, gradientAngle]);
 
   const handleAddFaq = () => {
     if (faqInput.question && faqInput.answer) {
@@ -451,50 +467,132 @@ const EditChatbot: React.FC = () => {
 
           {activeTab === "appearance" && (
             <div className="space-y-6">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                <div>
-                  <label className="block mb-2 dark:text-gray-100">
-                    Primary Color
-                  </label>
-                  <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
-                    <HexColorPicker
-                      color={config.primaryColor}
-                      onChange={(color) =>
-                        handleConfigChange("primaryColor", color)
-                      }
-                    />
-                    <input
-                      type="text"
-                      className="w-full sm:w-24 p-2 border rounded-md"
-                      value={config.primaryColor}
-                      onChange={(e) =>
-                        handleConfigChange("primaryColor", e.target.value)
-                      }
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label className="block mb-2 dark:text-gray-100">
-                    Secondary Color
-                  </label>
-                  <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
-                    <HexColorPicker
-                      color={config.secondaryColor}
-                      onChange={(color) =>
-                        handleConfigChange("secondaryColor", color)
-                      }
-                    />
-                    <input
-                      type="text"
-                      className="w-full sm:w-24 p-2 border rounded-md"
-                      value={config.secondaryColor}
-                      onChange={(e) =>
-                        handleConfigChange("secondaryColor", e.target.value)
-                      }
-                    />
-                  </div>
-                </div>
+              <div className="flex items-center mb-4">
+                <input
+                  type="checkbox"
+                  id="useGradient"
+                  checked={useGradient}
+                  onChange={(e) => setUseGradient(e.target.checked)}
+                  className="mr-2"
+                />
+                <label
+                  htmlFor="useGradient"
+                  className="text-gray-700 dark:text-gray-300"
+                >
+                  Use Gradient for Colors
+                </label>
               </div>
+              {useGradient ? (
+                <div className="space-y-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <div>
+                      <label className="block mb-2 dark:text-gray-100">
+                        Gradient Start
+                      </label>
+                      <div className="flex flex-col space-y-2">
+                        <HexColorPicker
+                          color={gradientStart}
+                          onChange={setGradientStart}
+                        />
+                        <HexColorInput
+                          color={gradientStart}
+                          onChange={setGradientStart}
+                          className="w-full p-2 border rounded-md"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block mb-2 dark:text-gray-100">
+                        Gradient End
+                      </label>
+                      <div className="flex flex-col space-y-2">
+                        <HexColorPicker
+                          color={gradientEnd}
+                          onChange={setGradientEnd}
+                        />
+                        <HexColorInput
+                          color={gradientEnd}
+                          onChange={setGradientEnd}
+                          className="w-full p-2 border rounded-md"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block mb-2 dark:text-gray-100">
+                      Gradient Angle
+                    </label>
+                    <div className="flex items-center space-x-4">
+                      <input
+                        type="range"
+                        min="0"
+                        max="360"
+                        value={gradientAngle}
+                        onChange={(e) =>
+                          setGradientAngle(parseInt(e.target.value))
+                        }
+                        className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
+                      />
+                      <span className="text-gray-700 dark:text-gray-300">
+                        {gradientAngle}°
+                      </span>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <div
+                      className="h-20 rounded-md"
+                      style={{ background: config.primaryColor }}
+                    ></div>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      This gradient will be applied to both primary and
+                      secondary colors.
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block mb-2 dark:text-gray-100">
+                      Primary Color
+                    </label>
+                    <div className="flex flex-col space-y-2">
+                      <HexColorPicker
+                        color={config.primaryColor}
+                        onChange={(color) =>
+                          handleConfigChange("primaryColor", color)
+                        }
+                      />
+                      <HexColorInput
+                        color={config.primaryColor}
+                        onChange={(color) =>
+                          handleConfigChange("primaryColor", color)
+                        }
+                        className="w-full p-2 border rounded-md"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block mb-2 dark:text-gray-100">
+                      Secondary Color
+                    </label>
+                    <div className="flex flex-col space-y-2">
+                      <HexColorPicker
+                        color={config.secondaryColor}
+                        onChange={(color) =>
+                          handleConfigChange("secondaryColor", color)
+                        }
+                      />
+                      <HexColorInput
+                        color={config.secondaryColor}
+                        onChange={(color) =>
+                          handleConfigChange("secondaryColor", color)
+                        }
+                        className="w-full p-2 border rounded-md"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
               <div className="flex flex-wrap mt-4">
                 {predefinedColors.map((color) => (
                   <button
@@ -502,6 +600,7 @@ const EditChatbot: React.FC = () => {
                     className="w-8 h-8 m-1 rounded-md border border-gray-300"
                     style={{ backgroundColor: color }}
                     onClick={() => {
+                      setUseGradient(false);
                       handleConfigChange("primaryColor", color);
                       handleConfigChange("secondaryColor", color);
                     }}
