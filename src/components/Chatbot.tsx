@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { MessageSquare, Send, X } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 type Message = {
   text: string;
@@ -38,6 +39,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(true);
   const [isTyping, setIsTyping] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const isGradient = primaryColor.startsWith("linear-gradient");
 
@@ -159,18 +161,54 @@ const Chatbot: React.FC<ChatbotProps> = ({
     return () => window.removeEventListener("message", handleMessage);
   }, []);
 
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(scrollToBottom, [messages]);
+
   const chatbotButton = (
-    <button
+    <motion.button
       onClick={toggleChatbot}
-      className={`fixed ${positionClasses[position]} z-50 w-14 h-14 flex items-center justify-center text-white rounded-full shadow-lg hover:opacity-90 transition-all duration-200`}
-      style={headerStyle}
+      className={`fixed ${positionClasses[position]} z-50 w-16 h-16 flex items-center justify-center text-white rounded-full shadow-lg transition-all duration-300 overflow-hidden`}
+      style={{
+        background: isGradient
+          ? primaryColor
+          : `linear-gradient(145deg, ${primaryColor}, ${primaryColor}cc)`,
+        boxShadow: `0 4px 10px rgba(0, 0, 0, 0.1), inset 0 -4px 4px rgba(0, 0, 0, 0.1), inset 0 4px 4px rgba(255, 255, 255, 0.2)`,
+      }}
+      whileHover={{
+        scale: 1.05,
+        boxShadow: `0 6px 15px rgba(0, 0, 0, 0.15), inset 0 -6px 6px rgba(0, 0, 0, 0.15), inset 0 6px 6px rgba(255, 255, 255, 0.25)`,
+      }}
+      whileTap={{ scale: 0.95 }}
     >
-      <MessageSquare size={20} />
-    </button>
+      <div className="relative flex flex-col items-center justify-center w-full h-full">
+        <MessageSquare
+          size={24}
+          className="transform transition-transform duration-300 group-hover:scale-110"
+        />
+        <motion.div
+          className="absolute inset-0 bg-black opacity-0 rounded-full"
+          whileHover={{ opacity: 0.1 }}
+        />
+        <motion.span
+          className="absolute bottom-1 text-xs font-semibold opacity-0 transition-opacity duration-300"
+          initial={{ opacity: 0, y: 5 }}
+          whileHover={{ opacity: 1, y: 0 }}
+        >
+          Chat
+        </motion.span>
+      </div>
+    </motion.button>
   );
 
   const chatbotContent = (
-    <div
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: 20 }}
+      transition={{ duration: 0.3 }}
       className={`${
         isEmbedded ? `fixed ${positionClasses[position]} z-50` : "w-full h-full"
       } bg-white flex flex-col shadow-lg rounded-[10px] ${
@@ -186,15 +224,23 @@ const Chatbot: React.FC<ChatbotProps> = ({
           <h2 className="font-bold">{title}</h2>
         </div>
         {isEmbedded && (
-          <button onClick={toggleChatbot} className="text-white">
+          <button
+            onClick={toggleChatbot}
+            className="text-white hover:text-gray-200 transition-colors duration-200"
+          >
             <X size={20} />
           </button>
         )}
       </div>
       <div className="flex-grow overflow-y-auto p-4 space-y-4">
-        {messages.map((message, index) => (
-          <React.Fragment key={index}>
-            <div
+        <AnimatePresence>
+          {messages.map((message, index) => (
+            <motion.div
+              key={index}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.3 }}
               className={`flex ${
                 message.sender === "user" ? "justify-end" : "justify-start"
               }`}
@@ -209,29 +255,38 @@ const Chatbot: React.FC<ChatbotProps> = ({
               >
                 {message.text}
               </span>
-            </div>
-            {index === messages.length - 1 && showSuggestions && (
-              <div className="mt-2">
-                <p className="text-sm text-gray-600 mb-2">
-                  Here are some suggestions:
-                </p>
-                <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto">
-                  {suggestions.map((question, idx) => (
-                    <button
-                      key={idx}
-                      onClick={(e) => handleSuggestionClick(e, question)}
-                      className="text-sm bg-gray-100 hover:bg-gray-200 text-gray-800 py-1 px-3 rounded-[10px] transition-colors duration-200 border border-gray-300"
-                    >
-                      {question}
-                    </button>
-                  ))}
-                </div>
+            </motion.div>
+          ))}
+          {messages.length === 1 && showSuggestions && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.3 }}
+              className="mt-4"
+            >
+              <p className="text-sm text-gray-600 mb-2">Suggested questions:</p>
+              <div className="flex flex-wrap gap-2">
+                {suggestions.map((question, idx) => (
+                  <button
+                    key={idx}
+                    onClick={(e) => handleSuggestionClick(e, question)}
+                    className="text-sm bg-gray-100 hover:bg-gray-200 text-gray-800 py-1 px-3 rounded-[10px] transition-colors duration-200 border border-gray-300"
+                  >
+                    {question}
+                  </button>
+                ))}
               </div>
-            )}
-          </React.Fragment>
-        ))}
+            </motion.div>
+          )}
+        </AnimatePresence>
         {isTyping && (
-          <div className="flex justify-start">
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="flex justify-start"
+          >
             <span className="inline-block p-2 rounded-[10px] bg-gray-200 text-gray-800">
               <div className="flex items-center h-5">
                 <span className="h-1.5 w-1.5 bg-gray-600 rounded-full mr-1 animate-bounce"></span>
@@ -245,42 +300,56 @@ const Chatbot: React.FC<ChatbotProps> = ({
                 ></span>
               </div>
             </span>
-          </div>
+          </motion.div>
         )}
+        <div ref={messagesEndRef} />
       </div>
       <div className="p-4 border-t">
-        <div className="flex">
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleSend();
+          }}
+          className="flex"
+        >
           <input
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            onKeyPress={(e) => e.key === "Enter" && handleSend()}
-            className="flex-grow p-2 border rounded-l-lg focus:outline-none"
+            className="flex-grow p-2 border rounded-l-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             placeholder={placeholder}
           />
-          <button
-            onClick={handleSend}
+          <motion.button
+            type="submit"
             className="text-white p-2 rounded-r-lg hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200"
             style={buttonStyle}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
           >
             <Send size={20} />
-          </button>
-        </div>
+          </motion.button>
+        </form>
       </div>
       <div className="p-2 border-t text-center text-xs font-semibold text-gray-500 bg-gray-50">
         Powered by{" "}
-        <a href="https://askio.vercel.app/" style={{ color: primaryColor }}>
+        <a
+          href="https://askio.vercel.app/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="hover:underline"
+          style={{ color: primaryColor }}
+        >
           Askio
         </a>
       </div>
-    </div>
+    </motion.div>
   );
 
-  return isEmbedded
-    ? isOpen
-      ? chatbotContent
-      : chatbotButton
-    : chatbotContent;
+  return (
+    <AnimatePresence>
+      {isEmbedded ? (isOpen ? chatbotContent : chatbotButton) : chatbotContent}
+    </AnimatePresence>
+  );
 };
 
 export default Chatbot;
