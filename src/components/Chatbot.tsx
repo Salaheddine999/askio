@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { MessageSquare, Send, X } from "lucide-react";
+import { Bot, MessageCircleMore, Send, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 type Message = {
@@ -183,7 +183,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
       }}
       whileTap={{ scale: 0.95 }}
     >
-      <MessageSquare size={24} className="text-white" />
+      <MessageCircleMore size={28} className="text-white" />
     </motion.button>
   );
 
@@ -204,7 +204,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
         style={headerStyle}
       >
         <div className="flex items-center">
-          <MessageSquare className="mr-2" />
+          <Bot className="mr-2" />
           <h2 className="font-bold">{title}</h2>
         </div>
         {isEmbedded && (
