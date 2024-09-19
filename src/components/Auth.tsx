@@ -33,7 +33,7 @@ const Auth: React.FC = () => {
     }
   };
 
-  const handleOAuth = async (provider: "google") => {
+  const handleOAuth = async () => {
     try {
       const googleProvider = new GoogleAuthProvider();
       await signInWithPopup(auth, googleProvider);
@@ -118,7 +118,7 @@ const Auth: React.FC = () => {
 
             <div className="mt-6 grid gap-3">
               <button
-                onClick={() => handleOAuth("google")}
+                onClick={handleOAuth}
                 className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50"
               >
                 <FaGoogle className="h-5 w-5 mr-2" />
