@@ -170,7 +170,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
   const chatbotButton = (
     <motion.button
       onClick={toggleChatbot}
-      className={`fixed ${positionClasses[position]} z-50 w-20 h-20 flex items-center justify-center text-white rounded-full shadow-lg transition-all duration-300 overflow-hidden`}
+      className={`fixed ${positionClasses[position]} z-50 w-16 h-16 flex items-center justify-center text-white rounded-full shadow-lg transition-all duration-300 overflow-hidden`}
       style={{
         background: isGradient
           ? primaryColor
@@ -183,7 +183,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
       }}
       whileTap={{ scale: 0.95 }}
     >
-      <MessageSquare size={32} className="text-white" />
+      <MessageSquare size={24} className="text-white" />
     </motion.button>
   );
 
@@ -197,7 +197,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
         isEmbedded ? `fixed ${positionClasses[position]} z-50` : "w-full h-full"
       } bg-white flex flex-col shadow-lg rounded-lg ${
         !isEmbedded && isPreview ? "" : ""
-      } ${isEmbedded ? "w-[370px] h-[520px]" : ""}`}
+      } ${isEmbedded ? "w-[320px] h-[450px]" : ""}`}
     >
       <div
         className="text-white p-4 flex items-center justify-between rounded-t-lg"

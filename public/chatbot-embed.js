@@ -25,36 +25,36 @@
       iframe.scrolling = "no";
 
       // Start with a fixed size for the closed state
-      iframe.style.width = "62px";
-      iframe.style.height = "62px";
-      iframe.style.borderRadius = "33px";
+      iframe.style.width = "56px";
+      iframe.style.height = "56px";
+      iframe.style.borderRadius = "28px";
 
       container.appendChild(iframe);
 
       function updatePosition(position, isOpen) {
         if (isOpen) {
-          iframe.style.width = "370px";
-          iframe.style.height = "520px";
-          iframe.style.borderRadius = "8px";
+          iframe.style.width = "320px";
+          iframe.style.height = "450px";
+          iframe.style.borderRadius = "10px";
         } else {
-          iframe.style.width = "62px";
-          iframe.style.height = "62px";
-          iframe.style.borderRadius = "33px";
+          iframe.style.width = "56px";
+          iframe.style.height = "56px";
+          iframe.style.borderRadius = "28px";
         }
 
         if (position.includes("bottom")) {
-          iframe.style.bottom = "24px";
+          iframe.style.bottom = "20px";
           iframe.style.top = "auto";
         } else {
-          iframe.style.top = "24px";
+          iframe.style.top = "20px";
           iframe.style.bottom = "auto";
         }
 
         if (position.includes("right")) {
-          iframe.style.right = "24px";
+          iframe.style.right = "20px";
           iframe.style.left = "auto";
         } else {
-          iframe.style.left = "24px";
+          iframe.style.left = "20px";
           iframe.style.right = "auto";
         }
       }

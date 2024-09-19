@@ -44,7 +44,7 @@ const Profile: React.FC = () => {
   }
 
   return (
-    <div className="container mx-auto mt-8 p-4">
+    <div className="container mx-auto mt-8 p-4 max-w-screen-md">
       <h1 className="text-3xl font-medium mb-6 dark:text-gray-100">Profile</h1>
       <div className="bg-white shadow-md rounded-lg p-6 dark:bg-gray-800">
         <div className="mb-4">
