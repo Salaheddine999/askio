@@ -73,7 +73,7 @@ export default function ChatbotLanding() {
       // Initialize the chatbot after the script has loaded
       const initScript = document.createElement("script");
       initScript.text = `
-        ChatbotEmbed.init("78c33df1-8040-4465-b718-5fb2061efacb", "https://askio.vercel.app");
+        ChatbotEmbed.init("eh0qWjVhkPeBwzGxYLv6", "https://askio.vercel.app");
       `;
       document.body.appendChild(initScript);
     };
