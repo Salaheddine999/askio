@@ -203,7 +203,9 @@ export default function ChatbotLanding() {
                 whileTap={{ scale: 0.95 }}
                 className="bg-gradient-to-r from-[#aab2ff] to-indigo-500 text-white px-4 py-2 rounded-[10px] text-md font-semibold hover:shadow-lg transition-all duration-300"
               >
-                Try It Now <ArrowRight className="inline ml-2" />
+                <Link to="/auth">
+                  Try It Now <ArrowRight className="inline ml-2" />
+                </Link>
               </motion.button>
             </motion.div>
             <motion.div
