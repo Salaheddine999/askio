@@ -757,10 +757,14 @@ const EditChatbot: React.FC = () => {
           onClose={closeDeleteFaqModal}
           onConfirm={handleDeleteFaq}
           title="Delete FAQ"
-          message="Are you sure you want to delete this FAQ?"
           confirmText="Delete"
           cancelText="Cancel"
-        />
+          confirmButtonClass="bg-red-600 text-white hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600 focus:ring-red-500 dark:focus:ring-red-400"
+        >
+          <p className="text-gray-700 dark:text-gray-300">
+            Are you sure you want to delete this FAQ?
+          </p>
+        </ConfirmationModal>
       </div>
     </div>
   );

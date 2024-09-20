@@ -3,12 +3,15 @@ import { auth, db } from "../utils/firebase";
 import { User, updateProfile } from "firebase/auth";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { Edit2, Save } from "lucide-react";
+import ConfirmationModal from "../components/ConfirmationModal";
+import { useModal } from "../hooks/useModal";
 
 const Profile: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState("");
+  const updateModal = useModal();
 
   useEffect(() => {
     fetchUser();
@@ -34,6 +37,7 @@ const Profile: React.FC = () => {
       }
       setEditing(false);
       fetchUser();
+      updateModal.closeModal();
     } catch (error) {
       console.error("Error updating profile:", error);
     }
@@ -75,7 +79,7 @@ const Profile: React.FC = () => {
           </div>
           {editing ? (
             <button
-              onClick={updateUserProfile}
+              onClick={updateModal.openModal}
               className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline flex items-center"
             >
               <Save size={20} className="mr-2" />
@@ -90,6 +94,17 @@ const Profile: React.FC = () => {
               Edit Profile
             </button>
           )}
+          <ConfirmationModal
+            isOpen={updateModal.isOpen}
+            onClose={updateModal.closeModal}
+            onConfirm={updateUserProfile}
+            title="Update Profile"
+            confirmText="Update"
+            cancelText="Cancel"
+            confirmButtonClass="bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
+          >
+            <p>Are you sure you want to update your profile?</p>
+          </ConfirmationModal>
         </div>
       </div>
     </div>

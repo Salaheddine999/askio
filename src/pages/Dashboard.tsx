@@ -27,6 +27,8 @@ import {
 import ConfirmationModal from "../components/ConfirmationModal";
 import { toast } from "react-hot-toast";
 import { Transition } from "@headlessui/react";
+import { useModal } from "../hooks/useModal";
+import { motion } from "framer-motion";
 
 interface Chatbot {
   id: string;
@@ -40,12 +42,12 @@ const Dashboard: React.FC = () => {
   const [chatbots, setChatbots] = useState<Chatbot[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const deleteModal = useModal();
+  const embedModal = useModal();
   const [chatbotToDelete, setChatbotToDelete] = useState<string | null>(null);
   const [isNewUser, setIsNewUser] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
-  const [isEmbedModalOpen, setIsEmbedModalOpen] = useState(false);
   const [selectedChatbotId, setSelectedChatbotId] = useState<string | null>(
     null
   );
@@ -105,12 +107,7 @@ const Dashboard: React.FC = () => {
 
   const openDeleteModal = (id: string) => {
     setChatbotToDelete(id);
-    setIsDeleteModalOpen(true);
-  };
-
-  const closeDeleteModal = () => {
-    setChatbotToDelete(null);
-    setIsDeleteModalOpen(false);
+    deleteModal.openModal();
   };
 
   const deleteChatbot = async () => {
@@ -124,18 +121,13 @@ const Dashboard: React.FC = () => {
       console.error("Error deleting chatbot:", error);
       setError(`Failed to delete chatbot: ${(error as Error).message}`);
     } finally {
-      closeDeleteModal();
+      deleteModal.closeModal();
     }
   };
 
   const openEmbedModal = (id: string) => {
     setSelectedChatbotId(id);
-    setIsEmbedModalOpen(true);
-  };
-
-  const closeEmbedModal = () => {
-    setSelectedChatbotId(null);
-    setIsEmbedModalOpen(false);
+    embedModal.openModal();
   };
 
   const generateEmbedCode = (id: string) => {
@@ -153,6 +145,7 @@ const Dashboard: React.FC = () => {
       navigator.clipboard.writeText(embedCode).then(
         () => {
           toast.success("Embed code copied to clipboard!");
+          embedModal.closeModal();
         },
         () => {
           toast.error("Failed to copy embed code.");
@@ -391,67 +384,43 @@ const Dashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* Embed Code Modal */}
-      {isEmbedModalOpen && selectedChatbotId && (
-        <div className="fixed z-10 inset-0 overflow-y-auto">
-          <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-            <div
-              className="fixed inset-0 transition-opacity"
-              aria-hidden="true"
-            >
-              <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
-            </div>
-            <span
-              className="hidden sm:inline-block sm:align-middle sm:h-screen"
-              aria-hidden="true"
-            >
-              &#8203;
-            </span>
-            <div className="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-              <div className="bg-white dark:bg-gray-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-white mb-2">
-                  Embed Code
-                </h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-                  Copy and paste this code into your website to embed the
-                  chatbot.
-                </p>
-                <div className="bg-gray-100 dark:bg-gray-700 p-3 rounded-md overflow-x-auto">
-                  <pre className="text-sm text-gray-800 dark:text-gray-200 whitespace-pre-wrap">
-                    {generateEmbedCode(selectedChatbotId)}
-                  </pre>
-                </div>
-              </div>
-              <div className="bg-gray-50 dark:bg-gray-700 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                <button
-                  type="button"
-                  className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-[#aab2ff] text-base font-medium text-black hover:bg-[#8e98ff] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:ml-3 sm:w-auto sm:text-sm"
-                  onClick={copyEmbedCode}
-                >
-                  Copy to Clipboard
-                </button>
-                <button
-                  type="button"
-                  className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
-                  onClick={closeEmbedModal}
-                >
-                  Close
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
       <ConfirmationModal
-        isOpen={isDeleteModalOpen}
-        onClose={closeDeleteModal}
+        isOpen={deleteModal.isOpen}
+        onClose={deleteModal.closeModal}
         onConfirm={deleteChatbot}
         title="Delete Chatbot"
-        message="Are you sure you want to delete this chatbot? This action cannot be undone."
         confirmText="Delete"
         cancelText="Cancel"
-      />
+        confirmButtonClass="bg-red-600 text-white hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600 focus:ring-red-500 dark:focus:ring-red-400"
+      >
+        <p className="text-gray-700 dark:text-gray-300">
+          Are you sure you want to delete this chatbot? This action cannot be
+          undone.
+        </p>
+      </ConfirmationModal>
+
+      <ConfirmationModal
+        isOpen={embedModal.isOpen}
+        onClose={embedModal.closeModal}
+        title="Embed Code"
+        confirmText="Copy to Clipboard"
+        cancelText="Close"
+        onConfirm={copyEmbedCode}
+        confirmButtonClass="bg-[#aab2ff] text-black hover:bg-[#8e98ff] dark:bg-[#aab2ff] dark:hover:bg-[#8e98ff] focus:ring-[#aab2ff] dark:focus:ring-[#8e98ff]"
+      >
+        <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+          Copy and paste this code into your website to embed the chatbot.
+        </p>
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-gray-100 dark:bg-gray-700 p-3 rounded-md overflow-x-auto"
+        >
+          <pre className="text-sm text-gray-800 dark:text-gray-200 whitespace-pre-wrap">
+            {selectedChatbotId && generateEmbedCode(selectedChatbotId)}
+          </pre>
+        </motion.div>
+      </ConfirmationModal>
     </div>
   );
 };
