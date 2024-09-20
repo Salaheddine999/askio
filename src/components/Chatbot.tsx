@@ -34,9 +34,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
   isPreview,
   customPositionClass,
 }) => {
-  const [messages, setMessages] = useState<Message[]>([
-    { text: initialMessage, sender: "bot" },
-  ]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isOpen, setIsOpen] = useState(!isEmbedded);
   const [suggestions, setSuggestions] = useState<string[]>([]);
@@ -60,6 +58,10 @@ const Chatbot: React.FC<ChatbotProps> = ({
     backgroundColor: isGradient ? "transparent" : secondaryColor,
     backgroundImage: isGradient ? secondaryColor : "none",
   };
+
+  useEffect(() => {
+    setMessages([{ text: initialMessage, sender: "bot" }]);
+  }, [initialMessage]);
 
   useEffect(() => {
     // Initialize suggestions with all FAQ questions
@@ -263,7 +265,8 @@ const Chatbot: React.FC<ChatbotProps> = ({
             </motion.div>
           ))}
           {showSuggestions &&
-            messages[messages.length - 1].sender === "bot" && (
+            messages.length > 0 &&
+            messages[messages.length - 1]?.sender === "bot" && (
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
