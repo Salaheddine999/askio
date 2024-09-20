@@ -32,8 +32,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
   faqData,
   isEmbedded,
   isPreview,
-  customPositionClass, // Destructure the new prop
-  gradientStart,
+  customPositionClass,
 }) => {
   const [messages, setMessages] = useState<Message[]>([
     { text: initialMessage, sender: "bot" },
