@@ -224,7 +224,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
 
           <div className="flex flex-col">
             <h2 className="font-semibold">{title}</h2>
-            <p className="text-sm text-white opacity-90">Ask me question</p>
+            <p className="text-sm text-white opacity-90">Ask me a question</p>
           </div>
         </div>
 
@@ -315,7 +315,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            className="flex-grow p-2 border rounded-l-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="flex-grow p-2 border rounded-l-lg focus:outline-none"
             placeholder={placeholder}
           />
           <motion.button
