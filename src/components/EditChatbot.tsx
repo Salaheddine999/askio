@@ -57,6 +57,13 @@ const EditChatbot: React.FC = () => {
   const [useGradient, setUseGradient] = useState(false);
   const [gradientAngle, setGradientAngle] = useState(90);
 
+  const positionClasses = {
+    "bottom-right": "bottom-0 right-0",
+    "bottom-left": "bottom-0 left-0",
+    "top-right": "top-0 right-0",
+    "top-left": "top-0 left-0",
+  };
+
   useEffect(() => {
     if (id) {
       fetchChatbotConfig();
@@ -747,8 +754,12 @@ const EditChatbot: React.FC = () => {
         {showEmbedPreview && <EmbedPreviewModal />}
 
         {showChatbot && (
-          <div className="fixed z-50" style={{ margin: "10px" }}>
-            <Chatbot {...config} isEmbedded={true} />
+          <div className="fixed z-50">
+            <Chatbot
+              {...config}
+              isEmbedded={true}
+              customPositionClass={`${positionClasses[config.position]} m-4`}
+            />
           </div>
         )}
 

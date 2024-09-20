@@ -18,6 +18,7 @@ export interface ChatbotProps {
   faqData: Array<{ question: string; answer: string }>;
   isEmbedded?: boolean;
   isPreview?: boolean;
+  customPositionClass?: string; // New optional prop
 }
 
 const Chatbot: React.FC<ChatbotProps> = ({
@@ -30,6 +31,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
   faqData,
   isEmbedded,
   isPreview,
+  customPositionClass, // Destructure the new prop
 }) => {
   const [messages, setMessages] = useState<Message[]>([
     { text: initialMessage, sender: "bot" },
@@ -142,11 +144,15 @@ const Chatbot: React.FC<ChatbotProps> = ({
   };
 
   const positionClasses = {
-    "bottom-right": isEmbedded ? "bottom-0 right-0" : "bottom-4 right-4",
-    "bottom-left": isEmbedded ? "bottom-0 left-0" : "bottom-4 left-4",
-    "top-right": isEmbedded ? "top-0 right-0" : "top-4 right-4",
-    "top-left": isEmbedded ? "top-0 left-0" : "top-4 left-4",
+    "bottom-right": "bottom-0 right-0",
+    "bottom-left": "bottom-0 left-0",
+    "top-right": "top-0 right-0",
+    "top-left": "top-0 left-0",
   };
+
+  const combinedPositionClass = customPositionClass
+    ? customPositionClass
+    : positionClasses[position];
 
   useEffect(() => {
     if (isEmbedded) {
@@ -174,7 +180,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
   const chatbotButton = (
     <motion.button
       onClick={toggleChatbot}
-      className={`fixed ${positionClasses[position]} z-50 w-16 h-16 flex items-center justify-center text-white rounded-full shadow-lg transition-all duration-300 overflow-hidden`}
+      className={`fixed ${combinedPositionClass} z-50 w-16 h-16 flex items-center justify-center text-white rounded-full shadow-lg transition-all duration-300 overflow-hidden`}
       style={{
         background: isGradient
           ? primaryColor
@@ -198,7 +204,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
       exit={{ opacity: 0, y: 20 }}
       transition={{ duration: 0.3 }}
       className={`${
-        isEmbedded ? `fixed ${positionClasses[position]} z-50` : "w-full h-full"
+        isEmbedded ? `fixed ${combinedPositionClass} z-50` : "w-full h-full"
       } bg-white flex flex-col shadow-lg rounded-lg ${
         !isEmbedded && isPreview ? "" : ""
       } ${isEmbedded ? "w-[350px] h-[520px]" : ""}`}
