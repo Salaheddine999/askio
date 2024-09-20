@@ -19,6 +19,7 @@ export interface ChatbotProps {
   isEmbedded?: boolean;
   isPreview?: boolean;
   customPositionClass?: string; // New optional prop
+  gradientStart?: string;
 }
 
 const Chatbot: React.FC<ChatbotProps> = ({
@@ -32,6 +33,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
   isEmbedded,
   isPreview,
   customPositionClass, // Destructure the new prop
+  gradientStart,
 }) => {
   const [messages, setMessages] = useState<Message[]>([
     { text: initialMessage, sender: "bot" },
@@ -193,7 +195,9 @@ const Chatbot: React.FC<ChatbotProps> = ({
       }}
       whileTap={{ scale: 0.95 }}
     >
-      <MessageCircleMore size={28} className="text-white" />
+      <div className="relative">
+        <MessageCircleMore size={28} className="text-white" />
+      </div>
     </motion.button>
   );
 
@@ -214,9 +218,17 @@ const Chatbot: React.FC<ChatbotProps> = ({
         style={headerStyle}
       >
         <div className="flex items-center">
-          <Bot className="mr-2" />
-          <h2 className="font-bold">{title}</h2>
+          <div className="relative mr-2">
+            <Bot className="w-8 h-8" />
+            <div className="absolute bottom-0 right-0 w-2 h-2 bg-green-400 rounded-full"></div>
+          </div>
+
+          <div className="flex flex-col">
+            <h2 className="font-semibold">{title}</h2>
+            <p className="text-sm text-white opacity-90">Ask me question</p>
+          </div>
         </div>
+
         {isEmbedded && (
           <button
             onClick={toggleChatbot}
@@ -260,15 +272,12 @@ const Chatbot: React.FC<ChatbotProps> = ({
                 transition={{ duration: 0.3 }}
                 className="mt-4"
               >
-                <p className="text-sm text-gray-600 mb-2">
-                  Suggested questions:
-                </p>
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-col space-y-2">
                   {suggestions.map((question, idx) => (
                     <button
                       key={idx}
                       onClick={(e) => handleSuggestionClick(e, question)}
-                      className="text-sm bg-gray-100 hover:bg-gray-200 text-gray-800 py-1 px-3 rounded-lg transition-colors duration-200 border border-gray-300"
+                      className="text-sm bg-gray-100 w-fit hover:bg-gray-200 text-gray-800 py-2 px-3 rounded-lg transition-colors duration-200 border border-gray-300 text-left"
                     >
                       {question}
                     </button>
@@ -316,7 +325,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
             style={buttonStyle}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            onClick={(e) => e.stopPropagation()} // Add this line to stop event propagation
+            onClick={(e) => e.stopPropagation()}
           >
             <Send size={20} />
           </motion.button>
@@ -328,8 +337,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
           href="https://askio.vercel.app/"
           target="_blank"
           rel="noopener noreferrer"
-          className="hover:underline"
-          style={{ color: primaryColor }}
+          className="hover:text-indigo-500 text-gray-600"
         >
           Askio
         </a>
