@@ -26,6 +26,7 @@ const Navbar: React.FC<NavbarProps> = ({ darkMode, toggleDarkMode }) => {
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const profileMenuRef = useRef<HTMLDivElement>(null);
+  const [userInitial, setUserInitial] = useState<string>("");
 
   const handleSignOut = async () => {
     try {
@@ -56,6 +57,15 @@ const Navbar: React.FC<NavbarProps> = ({ darkMode, toggleDarkMode }) => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
+
+  useEffect(() => {
+    const currentUser = auth.currentUser;
+    if (currentUser && currentUser.displayName) {
+      setUserInitial(currentUser.displayName.charAt(0).toUpperCase());
+    } else {
+      setUserInitial("");
+    }
+  }, [auth.currentUser]);
 
   const NavLink: React.FC<{
     to: string;
@@ -110,7 +120,13 @@ const Navbar: React.FC<NavbarProps> = ({ darkMode, toggleDarkMode }) => {
                 aria-haspopup="true"
                 aria-expanded={isProfileMenuOpen}
               >
-                <User size={18} />
+                {userInitial ? (
+                  <span className="inline-flex items-center justify-center h-6 w-6 rounded-full bg-[#aab2ff] text-black font-medium">
+                    {userInitial}
+                  </span>
+                ) : (
+                  <User size={18} />
+                )}
                 <span className="ml-2">Profile</span>
                 <ChevronDown size={16} className="ml-1" />
               </button>

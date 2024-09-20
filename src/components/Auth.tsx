@@ -1,12 +1,15 @@
 import React, { useState } from "react";
-import { auth } from "../utils/firebase";
+import { auth, db } from "../utils/firebase";
 import {
-  signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
-  signInWithPopup,
+  signInWithEmailAndPassword,
   GoogleAuthProvider,
+  signInWithPopup,
 } from "firebase/auth";
+import { doc, setDoc, getDoc } from "firebase/firestore";
 import { FaGoogle } from "react-icons/fa";
+import { toast } from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
 
 const Auth: React.FC = () => {
   const [email, setEmail] = useState("");
@@ -14,6 +17,7 @@ const Auth: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [mode, setMode] = useState<"login" | "register">("login");
+  const navigate = useNavigate();
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -23,8 +27,20 @@ const Auth: React.FC = () => {
     try {
       if (mode === "login") {
         await signInWithEmailAndPassword(auth, email, password);
+        navigate("/dashboard");
       } else {
-        await createUserWithEmailAndPassword(auth, email, password);
+        const userCredential = await createUserWithEmailAndPassword(
+          auth,
+          email,
+          password
+        );
+        await setDoc(doc(db, "users", userCredential.user.uid), {
+          email: userCredential.user.email,
+          name: "",
+          createdAt: new Date(),
+        });
+        toast.success("Registration successful!");
+        navigate("/dashboard");
       }
     } catch (error) {
       setError((error as Error).message);
@@ -36,7 +52,16 @@ const Auth: React.FC = () => {
   const handleOAuth = async () => {
     try {
       const googleProvider = new GoogleAuthProvider();
-      await signInWithPopup(auth, googleProvider);
+      const userCredential = await signInWithPopup(auth, googleProvider);
+      const userDoc = await getDoc(doc(db, "users", userCredential.user.uid));
+      if (!userDoc.exists()) {
+        await setDoc(doc(db, "users", userCredential.user.uid), {
+          email: userCredential.user.email,
+          name: userCredential.user.displayName || "",
+          createdAt: new Date(),
+        });
+      }
+      navigate("/dashboard");
     } catch (error) {
       setError((error as Error).message);
     }

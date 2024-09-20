@@ -60,7 +60,7 @@ const Dashboard: React.FC = () => {
   const checkIfNewUser = async () => {
     const user = auth.currentUser;
     if (user) {
-      const docRef = doc(db, "profiles", user.uid);
+      const docRef = doc(db, "users", user.uid);
       const docSnap = await getDoc(docRef);
 
       if (docSnap.exists() && docSnap.data().first_login) {

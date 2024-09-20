@@ -80,7 +80,7 @@ const Profile: React.FC = () => {
           {editing ? (
             <button
               onClick={updateModal.openModal}
-              className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline flex items-center"
+              className="bg-green-500 hover:bg-green-600 text-white font-medium py-2 px-4 rounded focus:outline-none focus:shadow-outline flex items-center"
             >
               <Save size={20} className="mr-2" />
               Save Changes
@@ -101,7 +101,7 @@ const Profile: React.FC = () => {
             title="Update Profile"
             confirmText="Update"
             cancelText="Cancel"
-            confirmButtonClass="bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
+            confirmButtonClass="bg-[#aab2ff] text-black hover:bg-[#8e98ff] dark:bg-blue-500 dark:hover:bg-blue-600"
           >
             <p>Are you sure you want to update your profile?</p>
           </ConfirmationModal>
