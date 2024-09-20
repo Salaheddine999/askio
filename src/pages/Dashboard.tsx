@@ -22,6 +22,7 @@ import {
   Info,
   Grid,
   List,
+  Code,
 } from "lucide-react";
 import ConfirmationModal from "../components/ConfirmationModal";
 import { toast } from "react-hot-toast";
@@ -44,6 +45,10 @@ const Dashboard: React.FC = () => {
   const [isNewUser, setIsNewUser] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [isEmbedModalOpen, setIsEmbedModalOpen] = useState(false);
+  const [selectedChatbotId, setSelectedChatbotId] = useState<string | null>(
+    null
+  );
 
   useEffect(() => {
     fetchChatbots();
@@ -123,6 +128,39 @@ const Dashboard: React.FC = () => {
     }
   };
 
+  const openEmbedModal = (id: string) => {
+    setSelectedChatbotId(id);
+    setIsEmbedModalOpen(true);
+  };
+
+  const closeEmbedModal = () => {
+    setSelectedChatbotId(null);
+    setIsEmbedModalOpen(false);
+  };
+
+  const generateEmbedCode = (id: string) => {
+    const scriptSrc = `${window.location.origin}/chatbot-embed.js`;
+    return `<div id="chatbot-container"></div>
+<script src="${scriptSrc}"></script>
+<script>
+  ChatbotEmbed.init("${id}", "${window.location.origin}");
+</script>`;
+  };
+
+  const copyEmbedCode = () => {
+    if (selectedChatbotId) {
+      const embedCode = generateEmbedCode(selectedChatbotId);
+      navigator.clipboard.writeText(embedCode).then(
+        () => {
+          toast.success("Embed code copied to clipboard!");
+        },
+        () => {
+          toast.error("Failed to copy embed code.");
+        }
+      );
+    }
+  };
+
   const filteredChatbots = chatbots.filter((chatbot) =>
     chatbot.title.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -194,7 +232,7 @@ const Dashboard: React.FC = () => {
                     onClick={() => setViewMode("grid")}
                     className={`p-2 rounded-md ${
                       viewMode === "grid"
-                        ? "bg-indigo-100 dark:bg-indigo-800"
+                        ? "bg-indigo-100 dark:bg-indigo-300"
                         : "bg-gray-100 dark:bg-gray-700"
                     }`}
                   >
@@ -204,7 +242,7 @@ const Dashboard: React.FC = () => {
                     onClick={() => setViewMode("list")}
                     className={`p-2 rounded-md ${
                       viewMode === "list"
-                        ? "bg-indigo-100 dark:bg-indigo-800"
+                        ? "bg-indigo-100 dark:bg-indigo-300"
                         : "bg-gray-100 dark:bg-gray-700"
                     }`}
                   >
@@ -313,6 +351,13 @@ const Dashboard: React.FC = () => {
                         Edit
                       </Link>
                       <button
+                        onClick={() => openEmbedModal(chatbot.id)}
+                        className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200"
+                      >
+                        <Code size={16} className="mr-2" />
+                        Embed
+                      </button>
+                      <button
                         onClick={() => openDeleteModal(chatbot.id)}
                         className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-red-700 bg-red-100 hover:bg-red-200 dark:text-red-200 dark:bg-red-800 dark:hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors duration-200"
                       >
@@ -334,7 +379,7 @@ const Dashboard: React.FC = () => {
                 {!searchTerm && (
                   <Link
                     to="/configure"
-                    className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200"
+                    className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-black bg-[#aab2ff] hover:bg-[#8e98ff] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200"
                   >
                     <PlusCircle size={20} className="mr-2" />
                     Create Your First Chatbot
@@ -345,6 +390,58 @@ const Dashboard: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Embed Code Modal */}
+      {isEmbedModalOpen && selectedChatbotId && (
+        <div className="fixed z-10 inset-0 overflow-y-auto">
+          <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div
+              className="fixed inset-0 transition-opacity"
+              aria-hidden="true"
+            >
+              <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
+            </div>
+            <span
+              className="hidden sm:inline-block sm:align-middle sm:h-screen"
+              aria-hidden="true"
+            >
+              &#8203;
+            </span>
+            <div className="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+              <div className="bg-white dark:bg-gray-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-white mb-2">
+                  Embed Code
+                </h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                  Copy and paste this code into your website to embed the
+                  chatbot.
+                </p>
+                <div className="bg-gray-100 dark:bg-gray-700 p-3 rounded-md overflow-x-auto">
+                  <pre className="text-sm text-gray-800 dark:text-gray-200 whitespace-pre-wrap">
+                    {generateEmbedCode(selectedChatbotId)}
+                  </pre>
+                </div>
+              </div>
+              <div className="bg-gray-50 dark:bg-gray-700 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                <button
+                  type="button"
+                  className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-[#aab2ff] text-base font-medium text-black hover:bg-[#8e98ff] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:ml-3 sm:w-auto sm:text-sm"
+                  onClick={copyEmbedCode}
+                >
+                  Copy to Clipboard
+                </button>
+                <button
+                  type="button"
+                  className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+                  onClick={closeEmbedModal}
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       <ConfirmationModal
         isOpen={isDeleteModalOpen}
