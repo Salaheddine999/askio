@@ -10,7 +10,7 @@ import {
   getDoc,
   updateDoc,
 } from "firebase/firestore";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   PlusCircle,
   Edit2,
@@ -29,6 +29,9 @@ import { toast } from "react-hot-toast";
 import { Transition } from "@headlessui/react";
 import { useModal } from "../hooks/useModal";
 import { motion } from "framer-motion";
+import Button from "../components/Button";
+import Input from "../components/Input";
+import Card from "../components/Card";
 
 interface Chatbot {
   id: string;
@@ -39,6 +42,7 @@ interface Chatbot {
 }
 
 const Dashboard: React.FC = () => {
+  const navigate = useNavigate();
   const [chatbots, setChatbots] = useState<Chatbot[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -200,23 +204,23 @@ const Dashboard: React.FC = () => {
           </div>
         )}
 
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
+        <Card>
           <div className="p-4 sm:p-6 border-b border-gray-200 dark:border-gray-700">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
+            <div className="flex flex-col md:flex-row justify-between md:items-center space-y-4 md:space-y-0">
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
                 Your Chatbots
               </h2>
               <div className="flex flex-wrap items-center gap-2 sm:gap-4">
-                <div className="relative flex-grow sm:flex-grow-0">
-                  <input
+                <div className="relative w-full sm:w-64">
+                  <Input
                     type="text"
                     placeholder="Search chatbots..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full sm:w-64 pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-indigo-500 focus:border-indigo-500"
+                    className="pl-10 bg-gray-50 dark:bg-gray-700"
                   />
                   <Search
-                    className="absolute left-3 top-2.5 text-gray-400"
+                    className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
                     size={20}
                   />
                 </div>
@@ -242,13 +246,13 @@ const Dashboard: React.FC = () => {
                     <List size={20} />
                   </button>
                 </div>
-                <Link
-                  to="/configure"
-                  className="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-black bg-[#aab2ff] hover:bg-indigo-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200"
+                <Button
+                  onClick={() => navigate("/configure")}
+                  className="bg-[#aab2ff] hover:bg-indigo-400 text-black"
+                  icon={PlusCircle}
                 >
-                  <PlusCircle size={20} className="mr-2" />
                   Create New Chatbot
-                </Link>
+                </Button>
               </div>
             </div>
           </div>
@@ -312,7 +316,7 @@ const Dashboard: React.FC = () => {
                 {filteredChatbots.map((chatbot) => (
                   <div
                     key={chatbot.id}
-                    className={`bg-gray-50 dark:bg-gray-700 rounded-lg p-4 sm:p-6 shadow-sm hover:shadow-md transition-all duration-200 border border-gray-200 dark:border-gray-600 ${
+                    className={`bg-gray-50 dark:bg-gray-700 rounded-lg p-4 sm:p-6 shadow-sm hover:shadow-md transition-all duration-200 border border-gray-200 dark:border-gray-600  dark:hover:bg-gray-600 ${
                       viewMode === "list"
                         ? "flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0"
                         : ""
@@ -336,27 +340,27 @@ const Dashboard: React.FC = () => {
                           : "justify-between items-center mt-4"
                       }`}
                     >
-                      <Link
-                        to={`/configure/${chatbot.id}`}
-                        className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200"
+                      <Button
+                        onClick={() => navigate(`/configure/${chatbot.id}`)}
+                        className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-400 transition-colors duration-200"
+                        icon={Edit2}
                       >
-                        <Edit2 size={16} className="mr-2" />
                         Edit
-                      </Link>
-                      <button
+                      </Button>
+                      <Button
                         onClick={() => openEmbedModal(chatbot.id)}
-                        className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200"
+                        className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-400 transition-colors duration-200"
+                        icon={Code}
                       >
-                        <Code size={16} className="mr-2" />
                         Embed
-                      </button>
-                      <button
+                      </Button>
+                      <Button
                         onClick={() => openDeleteModal(chatbot.id)}
                         className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-red-700 bg-red-100 hover:bg-red-200 dark:text-red-200 dark:bg-red-800 dark:hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors duration-200"
+                        icon={Trash2}
                       >
-                        <Trash2 size={16} className="mr-2" />
                         Delete
-                      </button>
+                      </Button>
                     </div>
                   </div>
                 ))}
@@ -381,7 +385,7 @@ const Dashboard: React.FC = () => {
               </div>
             )}
           </div>
-        </div>
+        </Card>
       </div>
 
       <ConfirmationModal

@@ -225,7 +225,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
           </div>
 
           <div className="flex flex-col">
-            <h2 className="font-semibold">{title}</h2>
+            <h2 className="font-semibold text-lg">{title}</h2>
             <p className="text-sm text-white opacity-90">Ask me a question</p>
           </div>
         </div>
