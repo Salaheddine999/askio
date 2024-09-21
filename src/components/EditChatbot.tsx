@@ -719,11 +719,11 @@ const EditChatbot: React.FC = () => {
           </Card>
 
           <Card className="lg:col-span-1 bg-transparent border-none shadow-none dark:bg-gray-900">
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-gray-100 p-4">
+            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-gray-100">
               Preview
             </h2>
             <div
-              className="border rounded-md bg-white dark:bg-gray-800 relative overflow-hidden mx-auto"
+              className="border rounded-md bg-white dark:bg-gray-800 relative overflow-hidden"
               style={{ height: "520px", maxWidth: "370px" }}
             >
               <div className="absolute inset-0 flex items-center justify-center">
