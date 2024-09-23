@@ -374,7 +374,7 @@ const EditChatbot: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <Card className="lg:col-span-2 p-6">
+          <Card className="lg:col-span-2 p-6 bg-white">
             <div className="flex flex-wrap gap-2 mb-6">
               {tabs.map((tab) => (
                 <Button
@@ -718,7 +718,7 @@ const EditChatbot: React.FC = () => {
             {activeTab === "embed" && <EmbedTab />}
           </Card>
 
-          <Card className="lg:col-span-1 bg-transparent border-none shadow-none dark:bg-gray-900">
+          <Card className="lg:col-span-1 border-none shadow-none dark:bg-gray-900">
             <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-gray-100">
               Preview
             </h2>

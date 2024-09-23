@@ -66,7 +66,7 @@ const Section: React.FC<{
       onClick={toggleSection}
     >
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-semibold text-black dark:text-white">
+        <h2 className="text-xl font-semibold text-black dark:text-white">
           {title}
         </h2>
         {isOpen ? <ChevronDown size={24} /> : <ChevronRight size={24} />}
