@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Bot, MessageCircleMore, Send, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import Fuse from "fuse.js";
 
 type Message = {
   text: string;
@@ -41,6 +42,10 @@ const Chatbot: React.FC<ChatbotProps> = ({
   const [showSuggestions, setShowSuggestions] = useState(true);
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [fuse, setFuse] = useState<Fuse<{
+    question: string;
+    answer: string;
+  }> | null>(null);
 
   const isGradient = primaryColor.startsWith("linear-gradient");
 
@@ -68,6 +73,14 @@ const Chatbot: React.FC<ChatbotProps> = ({
     setSuggestions(faqData.map((faq) => faq.question));
   }, [faqData]);
 
+  useEffect(() => {
+    const fuseInstance = new Fuse(faqData, {
+      keys: ["question"],
+      threshold: 0.4, // Adjusts the sensitivity of the matching
+    });
+    setFuse(fuseInstance);
+  }, [faqData]);
+
   const handleSend = (e?: React.FormEvent) => {
     if (e) {
       e.preventDefault();
@@ -79,9 +92,18 @@ const Chatbot: React.FC<ChatbotProps> = ({
     setShowSuggestions(false);
     setInput("");
 
-    const matchedFaq = faqData.find(
-      (item) => item.question.toLowerCase() === input.toLowerCase()
-    );
+    let matchedFaq: { question: string; answer: string } | undefined;
+
+    if (fuse) {
+      const result = fuse.search(input.trim());
+      if (result.length > 0) {
+        matchedFaq = result[0].item;
+      }
+    } else {
+      matchedFaq = faqData.find(
+        (item) => item.question.toLowerCase() === input.toLowerCase()
+      );
+    }
 
     setIsTyping(true);
 
