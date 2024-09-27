@@ -10,7 +10,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import Fuse from "fuse.js";
 import { db } from "../utils/firebase";
-import { doc, setDoc, getDoc } from "firebase/firestore";
+import { doc, setDoc, getDoc, serverTimestamp } from "firebase/firestore";
 import toast from "react-hot-toast";
 
 type Message = {
@@ -19,7 +19,7 @@ type Message = {
 };
 
 export interface ChatbotProps {
-  id: string; // Add id to the props
+  id: string;
   title: string;
   primaryColor: string;
   secondaryColor: string;
@@ -34,7 +34,7 @@ export interface ChatbotProps {
 }
 
 const Chatbot: React.FC<ChatbotProps> = ({
-  id, // Add id to the destructured props
+  id,
   title,
   primaryColor,
   secondaryColor,
@@ -59,6 +59,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
   }> | null>(null);
   const [showFeedback, setShowFeedback] = useState(false);
   const [hasFeedback, setHasFeedback] = useState(false);
+  const [anonymousToken, setAnonymousToken] = useState<string | null>(null);
 
   const isGradient = primaryColor.startsWith("linear-gradient");
 
@@ -95,7 +96,25 @@ const Chatbot: React.FC<ChatbotProps> = ({
   }, [faqData]);
 
   useEffect(() => {
+    // Generate or retrieve the anonymous token
+    const storedToken = localStorage.getItem("anonymousToken");
+    if (storedToken) {
+      setAnonymousToken(storedToken);
+    } else {
+      const newToken = generateAnonymousToken();
+      localStorage.setItem("anonymousToken", newToken);
+      setAnonymousToken(newToken);
+    }
+  }, []);
+
+  const generateAnonymousToken = () => {
+    return Math.random().toString(36).substr(2, 9);
+  };
+
+  useEffect(() => {
     const checkPreviousFeedback = async () => {
+      if (!anonymousToken || !id) return;
+
       const feedbackKey = `feedback_${id}`;
       const storedFeedback = localStorage.getItem(feedbackKey);
       if (storedFeedback) {
@@ -104,11 +123,8 @@ const Chatbot: React.FC<ChatbotProps> = ({
       }
 
       try {
-        const response = await fetch("https://api.ipify.org?format=json");
-        const data = await response.json();
-        const ipAddress = data.ip;
         const feedbackDoc = await getDoc(
-          doc(db, "feedback", `${id}_${ipAddress}`)
+          doc(db, "feedback", `${id}_${anonymousToken}`)
         );
         if (feedbackDoc.exists()) {
           setHasFeedback(true);
@@ -120,7 +136,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
     };
 
     checkPreviousFeedback();
-  }, [id]);
+  }, [id, anonymousToken]);
 
   const handleSend = (e?: React.FormEvent) => {
     if (e) {
@@ -249,24 +265,27 @@ const Chatbot: React.FC<ChatbotProps> = ({
   };
 
   const handleFeedback = async (isPositive: boolean, e: React.MouseEvent) => {
-    e.stopPropagation(); // Prevent the click from propagating
+    e.stopPropagation();
     if (hasFeedback) {
       toast.error("You have already provided feedback for this chatbot.");
       return;
     }
 
+    if (!id || !anonymousToken) {
+      console.error("Chatbot ID or anonymous token is missing");
+      toast.error("Unable to submit feedback. Please try again later.");
+      return;
+    }
+
     try {
-      const response = await fetch("https://api.ipify.org?format=json");
-      const data = await response.json();
-      const ipAddress = data.ip;
-      const feedbackId = `${id}_${ipAddress}`;
+      const feedbackId = `${id}_${anonymousToken}`;
       const feedbackRef = doc(db, "feedback", feedbackId);
 
       await setDoc(feedbackRef, {
         chatbotId: id,
         isPositive: isPositive,
-        timestamp: new Date(),
-        ipAddress: ipAddress,
+        timestamp: serverTimestamp(),
+        anonymousToken: anonymousToken,
       });
 
       localStorage.setItem(`feedback_${id}`, "true");
@@ -275,7 +294,11 @@ const Chatbot: React.FC<ChatbotProps> = ({
       setShowFeedback(false);
     } catch (error) {
       console.error("Error submitting feedback:", error);
-      toast.error("Failed to submit feedback. Please try again.");
+      if (error instanceof Error) {
+        toast.error(`Failed to submit feedback: ${error.message}`);
+      } else {
+        toast.error("Failed to submit feedback. Please try again.");
+      }
     }
   };
 
