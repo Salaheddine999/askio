@@ -1,7 +1,17 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Bot, MessageCircleMore, Send, X } from "lucide-react";
+import {
+  Bot,
+  MessageCircleMore,
+  Send,
+  X,
+  ThumbsUp,
+  ThumbsDown,
+} from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Fuse from "fuse.js";
+import { db } from "../utils/firebase";
+import { doc, setDoc, getDoc } from "firebase/firestore";
+import toast from "react-hot-toast";
 
 type Message = {
   text: string;
@@ -9,9 +19,9 @@ type Message = {
 };
 
 export interface ChatbotProps {
-  id: string;
+  id: string; // Add id to the props
   title: string;
-  primaryColor: string; // This can now be either a hex color or a linear-gradient
+  primaryColor: string;
   secondaryColor: string;
   position: "bottom-right" | "bottom-left" | "top-right" | "top-left";
   initialMessage: string;
@@ -19,11 +29,12 @@ export interface ChatbotProps {
   faqData: Array<{ question: string; answer: string }>;
   isEmbedded?: boolean;
   isPreview?: boolean;
-  customPositionClass?: string; // New optional prop
+  customPositionClass?: string;
   gradientStart?: string;
 }
 
 const Chatbot: React.FC<ChatbotProps> = ({
+  id, // Add id to the destructured props
   title,
   primaryColor,
   secondaryColor,
@@ -46,6 +57,8 @@ const Chatbot: React.FC<ChatbotProps> = ({
     question: string;
     answer: string;
   }> | null>(null);
+  const [showFeedback, setShowFeedback] = useState(false);
+  const [hasFeedback, setHasFeedback] = useState(false);
 
   const isGradient = primaryColor.startsWith("linear-gradient");
 
@@ -80,6 +93,34 @@ const Chatbot: React.FC<ChatbotProps> = ({
     });
     setFuse(fuseInstance);
   }, [faqData]);
+
+  useEffect(() => {
+    const checkPreviousFeedback = async () => {
+      const feedbackKey = `feedback_${id}`;
+      const storedFeedback = localStorage.getItem(feedbackKey);
+      if (storedFeedback) {
+        setHasFeedback(true);
+        return;
+      }
+
+      try {
+        const response = await fetch("https://api.ipify.org?format=json");
+        const data = await response.json();
+        const ipAddress = data.ip;
+        const feedbackDoc = await getDoc(
+          doc(db, "feedback", `${id}_${ipAddress}`)
+        );
+        if (feedbackDoc.exists()) {
+          setHasFeedback(true);
+          localStorage.setItem(feedbackKey, "true");
+        }
+      } catch (error) {
+        console.error("Error checking previous feedback:", error);
+      }
+    };
+
+    checkPreviousFeedback();
+  }, [id]);
 
   const handleSend = (e?: React.FormEvent) => {
     if (e) {
@@ -201,6 +242,36 @@ const Chatbot: React.FC<ChatbotProps> = ({
   };
 
   useEffect(scrollToBottom, [messages]);
+
+  const handleFeedback = async (isPositive: boolean) => {
+    if (hasFeedback) {
+      toast.error("You have already provided feedback for this chatbot.");
+      return;
+    }
+
+    try {
+      const response = await fetch("https://api.ipify.org?format=json");
+      const data = await response.json();
+      const ipAddress = data.ip;
+      const feedbackId = `${id}_${ipAddress}`;
+      const feedbackRef = doc(db, "feedback", feedbackId);
+
+      await setDoc(feedbackRef, {
+        chatbotId: id,
+        isPositive: isPositive,
+        timestamp: new Date(),
+        ipAddress: ipAddress,
+      });
+
+      localStorage.setItem(`feedback_${id}`, "true");
+      setHasFeedback(true);
+      toast.success("Thank you for your feedback!");
+      setShowFeedback(false);
+    } catch (error) {
+      console.error("Error submitting feedback:", error);
+      toast.error("Failed to submit feedback. Please try again.");
+    }
+  };
 
   const chatbotButton = (
     <motion.button
@@ -355,6 +426,34 @@ const Chatbot: React.FC<ChatbotProps> = ({
           </motion.button>
         </form>
       </div>
+      {!hasFeedback && !showFeedback && messages.length > 1 && (
+        <div className="p-2 border-t text-center">
+          <button
+            onClick={() => setShowFeedback(true)}
+            className="text-sm text-gray-600 hover:text-indigo-600 transition-colors duration-200"
+          >
+            Was this conversation helpful? Provide feedback
+          </button>
+        </div>
+      )}
+      {showFeedback && !hasFeedback && (
+        <div className="p-4 border-t flex justify-center items-center space-x-4">
+          <button
+            onClick={() => handleFeedback(true)}
+            className="flex items-center text-green-500 hover:text-green-700 transition-colors duration-200"
+          >
+            <ThumbsUp size={20} className="mr-1" />
+            <span>Helpful</span>
+          </button>
+          <button
+            onClick={() => handleFeedback(false)}
+            className="flex items-center text-red-500 hover:text-red-700 transition-colors duration-200"
+          >
+            <ThumbsDown size={20} className="mr-1" />
+            <span>Not Helpful</span>
+          </button>
+        </div>
+      )}
       <div className="p-2 border-t text-center text-xs font-semibold text-gray-500 bg-gray-50">
         Powered by{" "}
         <a

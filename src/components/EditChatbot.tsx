@@ -1,7 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { db, auth } from "../utils/firebase";
-import { doc, getDoc, setDoc, updateDoc, collection } from "firebase/firestore";
+import {
+  doc,
+  getDoc,
+  setDoc,
+  updateDoc,
+  collection,
+  serverTimestamp,
+} from "firebase/firestore";
 import Chatbot, { ChatbotProps } from "./Chatbot";
 import { HexColorPicker, HexColorInput } from "react-colorful";
 import {
@@ -195,6 +202,7 @@ const EditChatbot: React.FC = () => {
       const dataToSave = {
         ...chatbotConfig,
         user_id: user.uid,
+        lastUpdated: serverTimestamp(),
       };
 
       let docRef;
@@ -203,7 +211,10 @@ const EditChatbot: React.FC = () => {
         await updateDoc(docRef, dataToSave);
       } else {
         docRef = doc(collection(db, "chatbot_configs"));
-        await setDoc(docRef, dataToSave);
+        await setDoc(docRef, {
+          ...dataToSave,
+          createdAt: serverTimestamp(),
+        });
       }
 
       toast.success("Configuration saved successfully!");

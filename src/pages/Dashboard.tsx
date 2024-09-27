@@ -23,6 +23,8 @@ import {
   Grid,
   List,
   Code,
+  ThumbsUp,
+  ThumbsDown,
 } from "lucide-react";
 import ConfirmationModal from "../components/ConfirmationModal";
 import { toast } from "react-hot-toast";
@@ -32,6 +34,7 @@ import { motion } from "framer-motion";
 import Button from "../components/Button";
 import Input from "../components/Input";
 import Card from "../components/Card";
+import { format } from "date-fns";
 
 interface Chatbot {
   id: string;
@@ -39,6 +42,11 @@ interface Chatbot {
   position: string;
   createdAt: Date;
   lastUpdated: Date;
+}
+
+interface FeedbackCounts {
+  positive: number;
+  negative: number;
 }
 
 const Dashboard: React.FC = () => {
@@ -55,9 +63,13 @@ const Dashboard: React.FC = () => {
   const [selectedChatbotId, setSelectedChatbotId] = useState<string | null>(
     null
   );
+  const [feedbackCounts, setFeedbackCounts] = useState<{
+    [key: string]: FeedbackCounts;
+  }>({});
 
   useEffect(() => {
     fetchChatbots();
+    fetchFeedbackCounts();
     checkIfNewUser();
   }, []);
 
@@ -107,6 +119,26 @@ const Dashboard: React.FC = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const fetchFeedbackCounts = async () => {
+    const feedbackRef = collection(db, "feedback");
+    const snapshot = await getDocs(feedbackRef);
+    const counts: { [key: string]: FeedbackCounts } = {};
+
+    snapshot.forEach((doc) => {
+      const data = doc.data();
+      if (!counts[data.chatbotId]) {
+        counts[data.chatbotId] = { positive: 0, negative: 0 };
+      }
+      if (data.isPositive) {
+        counts[data.chatbotId].positive++;
+      } else {
+        counts[data.chatbotId].negative++;
+      }
+    });
+
+    setFeedbackCounts(counts);
   };
 
   const openDeleteModal = (id: string) => {
@@ -316,23 +348,62 @@ const Dashboard: React.FC = () => {
                 {filteredChatbots.map((chatbot) => (
                   <div
                     key={chatbot.id}
-                    className={`bg-gray-50 dark:bg-gray-700 rounded-lg p-4 sm:p-6 shadow-sm hover:shadow-md transition-all duration-200 border border-gray-200 dark:border-gray-600  dark:hover:bg-gray-600 ${
+                    className={`bg-white dark:bg-gray-800 rounded-lg p-4 sm:p-6 shadow-sm hover:shadow-md transition-all duration-200 border border-gray-200 dark:border-gray-600 dark:hover:bg-gray-700 ${
                       viewMode === "list"
                         ? "flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0"
                         : ""
                     }`}
                   >
-                    <div className={viewMode === "list" ? "flex-grow" : ""}>
-                      <div className="flex items-center mb-2">
-                        <Bot size={24} className="text-indigo-500 mr-3" />
-                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                          {chatbot.title}
-                        </h3>
+                    <div
+                      className={viewMode === "list" ? "flex-grow w-full" : ""}
+                    >
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center">
+                          <Bot size={28} className="text-indigo-400 mr-3" />
+                          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                            {chatbot.title}
+                          </h3>
+                        </div>
+                        <div className="text-sm text-gray-500 dark:text-gray-400">
+                          Created: {format(chatbot.createdAt, "MMM d, yyyy")}
+                        </div>
                       </div>
-                      <p className="text-sm text-gray-600 dark:text-gray-300 mb-1">
-                        Position: {chatbot.position}
-                      </p>
+
+                      <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3 mb-4">
+                        <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          User Feedback
+                        </h4>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-4">
+                            <div
+                              className="flex items-center"
+                              title="Positive User Feedback"
+                            >
+                              <ThumbsUp
+                                size={16}
+                                className="text-green-500 mr-1"
+                              />
+                              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                {feedbackCounts[chatbot.id]?.positive || 0}
+                              </span>
+                            </div>
+                            <div
+                              className="flex items-center"
+                              title="Negative User Feedback"
+                            >
+                              <ThumbsDown
+                                size={16}
+                                className="text-red-500 mr-1"
+                              />
+                              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                {feedbackCounts[chatbot.id]?.negative || 0}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
                     </div>
+
                     <div
                       className={`flex ${
                         viewMode === "list"
