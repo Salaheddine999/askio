@@ -418,7 +418,7 @@ export default function ChatbotLanding() {
                         placeholder={
                           isConversationComplete
                             ? "Type your message..."
-                            : "Please wait..."
+                            : "Type your message..."
                         }
                         className="flex-grow mr-2 border-gray-300 focus:ring-indigo-500 focus:border-indigo-500 transition duration-300 rounded-md px-4 py-2 bg-white"
                         disabled={!isConversationComplete}
@@ -559,7 +559,7 @@ export default function ChatbotLanding() {
                   </motion.div>
                   {index < 2 && (
                     <svg
-                      className="hidden md:block w-12 h-12 text-indigo-500 mx-4 transform translate-y-1/2"
+                      className="hidden md:block w-12 h-12 text-indigo-500 mx-2 transform translate-y-1/2"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
