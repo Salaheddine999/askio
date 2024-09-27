@@ -21,45 +21,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
 import { FaGithub } from "react-icons/fa";
 
-// Add this custom hook at the top of the file, outside the component
-function useTypingEffect(text: string, delay: number = 30) {
-  const [displayedText, setDisplayedText] = useState("");
-  const [isTyping, setIsTyping] = useState(true);
-
-  useEffect(() => {
-    let i = 0;
-    setIsTyping(true);
-    const typingInterval = setInterval(() => {
-      if (i < text.length) {
-        setDisplayedText((prev) => prev + text.charAt(i));
-        i++;
-      } else {
-        clearInterval(typingInterval);
-        setIsTyping(false);
-      }
-    }, delay);
-
-    return () => clearInterval(typingInterval);
-  }, [text, delay]);
-
-  return { displayedText, isTyping };
-}
-
-// Add this new component for the loading indicator
-const TypingIndicator = () => (
-  <div className="flex space-x-2 p-2">
-    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-    <div
-      className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
-      style={{ animationDelay: "0.2s" }}
-    ></div>
-    <div
-      className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
-      style={{ animationDelay: "0.4s" }}
-    ></div>
-  </div>
-);
-
 export default function ChatbotLanding() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [chatMessages, setChatMessages] = useState<
