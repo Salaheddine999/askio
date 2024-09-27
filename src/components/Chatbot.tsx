@@ -243,7 +243,13 @@ const Chatbot: React.FC<ChatbotProps> = ({
 
   useEffect(scrollToBottom, [messages]);
 
-  const handleFeedback = async (isPositive: boolean) => {
+  const handleFeedbackClick = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent the click from propagating
+    setShowFeedback(true);
+  };
+
+  const handleFeedback = async (isPositive: boolean, e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent the click from propagating
     if (hasFeedback) {
       toast.error("You have already provided feedback for this chatbot.");
       return;
@@ -429,7 +435,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
       {!hasFeedback && !showFeedback && messages.length > 1 && (
         <div className="p-2 border-t text-center">
           <button
-            onClick={() => setShowFeedback(true)}
+            onClick={handleFeedbackClick}
             className="text-sm text-gray-600 hover:text-indigo-600 transition-colors duration-200"
           >
             Was this conversation helpful? Provide feedback
@@ -439,14 +445,14 @@ const Chatbot: React.FC<ChatbotProps> = ({
       {showFeedback && !hasFeedback && (
         <div className="p-4 border-t flex justify-center items-center space-x-4">
           <button
-            onClick={() => handleFeedback(true)}
+            onClick={(e) => handleFeedback(true, e)}
             className="flex items-center text-green-500 hover:text-green-700 transition-colors duration-200"
           >
             <ThumbsUp size={20} className="mr-1" />
             <span>Helpful</span>
           </button>
           <button
-            onClick={() => handleFeedback(false)}
+            onClick={(e) => handleFeedback(false, e)}
             className="flex items-center text-red-500 hover:text-red-700 transition-colors duration-200"
           >
             <ThumbsDown size={20} className="mr-1" />
