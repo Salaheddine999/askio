@@ -25,7 +25,6 @@ import {
   Code,
   ThumbsUp,
   ThumbsDown,
-  BarChart,
   MessageCircle,
 } from "lucide-react";
 import ConfirmationModal from "../components/ConfirmationModal";
