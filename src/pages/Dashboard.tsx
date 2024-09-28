@@ -90,7 +90,6 @@ const Dashboard: React.FC = () => {
   const [feedbackSnapshot] = useCollection(query(collection(db, "feedback")));
   const [totalFeedback, setTotalFeedback] = useState<number>(0);
   const [satisfactionRate, setSatisfactionRate] = useState<number>(0);
-  const [showMetricsModal, setShowMetricsModal] = useState(false);
   const [selectedChatbotMetrics, setSelectedChatbotMetrics] = useState<
     string | null
   >(null);
@@ -240,23 +239,6 @@ const Dashboard: React.FC = () => {
   const filteredChatbots = chatbots.filter((chatbot) =>
     chatbot.title.toLowerCase().includes(searchTerm.toLowerCase())
   );
-
-  const satisfactionChartData = {
-    labels: ["Satisfied", "Unsatisfied"],
-    datasets: [
-      {
-        data: [satisfactionRate, 100 - satisfactionRate],
-        backgroundColor: ["#4CAF50", "#F44336"],
-        hoverBackgroundColor: ["#45a049", "#e53935"],
-      },
-    ],
-  };
-
-  const openMetricsModal = () => setShowMetricsModal(true);
-  const closeMetricsModal = () => {
-    setShowMetricsModal(false);
-    setSelectedChatbotMetrics(null);
-  };
 
   const selectChatbotMetrics = (chatbotId: string) => {
     setSelectedChatbotMetrics(chatbotId);
@@ -619,7 +601,7 @@ const Dashboard: React.FC = () => {
                             onClick={() => selectChatbotMetrics(chatbot.id)}
                             className={`w-full text-left p-2 rounded transition-colors duration-200 ${
                               selectedChatbotMetrics === chatbot.id
-                                ? "bg-indigo-100 dark:bg-indigo-400 text-black dark:text-black"
+                                ? "bg-[#aab2ff] dark:bg-indigo-400 text-black dark:text-black"
                                 : "hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200"
                             }`}
                           >
