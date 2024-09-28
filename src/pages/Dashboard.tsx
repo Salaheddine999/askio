@@ -351,7 +351,7 @@ const Dashboard: React.FC = () => {
                 {filteredChatbots.map((chatbot) => (
                   <Card
                     key={chatbot.id}
-                    className={`overflow-hidden ${
+                    className={`overflow-hidden bg-white dark:bg-gray-800 shadow-lg dark:border dark:border-gray-700 hover:shadow-lg transition-shadow duration-200 ${
                       viewMode === "list"
                         ? "flex flex-col sm:flex-row items-center"
                         : ""
@@ -359,16 +359,13 @@ const Dashboard: React.FC = () => {
                   >
                     <div
                       className={`p-6 space-y-4 ${
-                        viewMode === "list" ? "flex-grow" : ""
+                        viewMode === "list" ? "flex-grow w-full" : ""
                       }`}
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-3">
-                          <div className="bg-indigo-100 dark:bg-indigo-900 p-2 rounded-full">
-                            <Bot
-                              size={24}
-                              className="text-indigo-600 dark:text-indigo-400"
-                            />
+                          <div className="bg-indigo-100 p-2 rounded-full">
+                            <Bot size={24} className="text-indigo-500" />
                           </div>
                           <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
                             {chatbot.title}
@@ -379,7 +376,7 @@ const Dashboard: React.FC = () => {
                         </div>
                       </div>
 
-                      <div className="flex items-center justify-between text-sm text-gray-600 dark:text-gray-400">
+                      <div className="flex items-center justify-between text-sm text-gray-600 dark:text-gray-300">
                         <div>
                           Last updated:{" "}
                           {format(chatbot.lastUpdated, "MMM d, yyyy")}
@@ -399,21 +396,21 @@ const Dashboard: React.FC = () => {
                       <div className="flex justify-between items-center pt-4 border-t border-gray-200 dark:border-gray-700">
                         <Button
                           onClick={() => navigate(`/configure/${chatbot.id}`)}
-                          className="bg-indigo-100 text-indigo-700 hover:bg-indigo-200 dark:bg-indigo-900 dark:text-indigo-100 dark:hover:bg-indigo-800"
+                          className="bg-indigo-100 text-indigo-700 hover:bg-indigo-200 dark:bg-indigo-500 dark:text-indigo-50 dark:hover:bg-indigo-600"
                           icon={Edit2}
                         >
                           Edit
                         </Button>
                         <Button
                           onClick={() => openEmbedModal(chatbot.id)}
-                          className="bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-100 dark:hover:bg-gray-700"
+                          className="bg-gray-100 text-gray-700 hover:bg-gray-200"
                           icon={Code}
                         >
                           Embed
                         </Button>
                         <Button
                           onClick={() => openDeleteModal(chatbot.id)}
-                          className="bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-900 dark:text-red-100 dark:hover:bg-red-800"
+                          className="bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-400 dark:text-red-50 dark:hover:bg-red-600"
                           icon={Trash2}
                         >
                           Delete
