@@ -35,6 +35,7 @@ import Button from "../components/Button";
 import Input from "../components/Input";
 import Card from "../components/Card";
 import { format } from "date-fns";
+import { useCollection } from "react-firebase-hooks/firestore";
 
 interface Chatbot {
   id: string;
@@ -66,12 +67,30 @@ const Dashboard: React.FC = () => {
   const [feedbackCounts, setFeedbackCounts] = useState<{
     [key: string]: FeedbackCounts;
   }>({});
+  const [feedbackSnapshot] = useCollection(query(collection(db, "feedback")));
 
   useEffect(() => {
     fetchChatbots();
-    fetchFeedbackCounts();
     checkIfNewUser();
   }, []);
+
+  useEffect(() => {
+    if (feedbackSnapshot) {
+      const newFeedbackCounts: { [key: string]: FeedbackCounts } = {};
+      feedbackSnapshot.docs.forEach((doc) => {
+        const data = doc.data();
+        if (!newFeedbackCounts[data.chatbotId]) {
+          newFeedbackCounts[data.chatbotId] = { positive: 0, negative: 0 };
+        }
+        if (data.isPositive) {
+          newFeedbackCounts[data.chatbotId].positive++;
+        } else {
+          newFeedbackCounts[data.chatbotId].negative++;
+        }
+      });
+      setFeedbackCounts(newFeedbackCounts);
+    }
+  }, [feedbackSnapshot]);
 
   const checkIfNewUser = async () => {
     const user = auth.currentUser;
@@ -121,26 +140,6 @@ const Dashboard: React.FC = () => {
     }
   };
 
-  const fetchFeedbackCounts = async () => {
-    const feedbackRef = collection(db, "feedback");
-    const snapshot = await getDocs(feedbackRef);
-    const counts: { [key: string]: FeedbackCounts } = {};
-
-    snapshot.forEach((doc) => {
-      const data = doc.data();
-      if (!counts[data.chatbotId]) {
-        counts[data.chatbotId] = { positive: 0, negative: 0 };
-      }
-      if (data.isPositive) {
-        counts[data.chatbotId].positive++;
-      } else {
-        counts[data.chatbotId].negative++;
-      }
-    });
-
-    setFeedbackCounts(counts);
-  };
-
   const openDeleteModal = (id: string) => {
     setChatbotToDelete(id);
     deleteModal.openModal();
@@ -188,6 +187,10 @@ const Dashboard: React.FC = () => {
         }
       );
     }
+  };
+
+  const toggleViewMode = () => {
+    setViewMode(viewMode === "grid" ? "list" : "grid");
   };
 
   const filteredChatbots = chatbots.filter((chatbot) =>
@@ -258,7 +261,7 @@ const Dashboard: React.FC = () => {
                 </div>
                 <div className="flex items-center space-x-2">
                   <button
-                    onClick={() => setViewMode("grid")}
+                    onClick={toggleViewMode}
                     className={`p-2 rounded-md ${
                       viewMode === "grid"
                         ? "bg-indigo-100 dark:bg-indigo-300"
@@ -268,7 +271,7 @@ const Dashboard: React.FC = () => {
                     <Grid size={20} />
                   </button>
                   <button
-                    onClick={() => setViewMode("list")}
+                    onClick={toggleViewMode}
                     className={`p-2 rounded-md ${
                       viewMode === "list"
                         ? "bg-indigo-100 dark:bg-indigo-300"
@@ -339,101 +342,85 @@ const Dashboard: React.FC = () => {
               leaveTo="opacity-0"
             >
               <div
-                className={
+                className={`${
                   viewMode === "grid"
-                    ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6"
+                    ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
                     : "space-y-4"
-                }
+                }`}
               >
                 {filteredChatbots.map((chatbot) => (
-                  <div
+                  <Card
                     key={chatbot.id}
-                    className={`bg-white dark:bg-gray-800 rounded-lg p-4 sm:p-6 shadow-sm hover:shadow-md transition-all duration-200 border border-gray-200 dark:border-gray-600 dark:hover:bg-gray-700 ${
+                    className={`overflow-hidden ${
                       viewMode === "list"
-                        ? "flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0"
+                        ? "flex flex-col sm:flex-row items-center"
                         : ""
                     }`}
                   >
                     <div
-                      className={viewMode === "list" ? "flex-grow w-full" : ""}
+                      className={`p-6 space-y-4 ${
+                        viewMode === "list" ? "flex-grow" : ""
+                      }`}
                     >
-                      <div className="flex items-center justify-between mb-4">
-                        <div className="flex items-center">
-                          <Bot size={28} className="text-indigo-400 mr-3" />
-                          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-3">
+                          <div className="bg-indigo-100 dark:bg-indigo-900 p-2 rounded-full">
+                            <Bot
+                              size={24}
+                              className="text-indigo-600 dark:text-indigo-400"
+                            />
+                          </div>
+                          <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
                             {chatbot.title}
                           </h3>
                         </div>
                         <div className="text-sm text-gray-500 dark:text-gray-400">
-                          Created: {format(chatbot.createdAt, "MMM d, yyyy")}
+                          {format(chatbot.createdAt, "MMM d, yyyy")}
                         </div>
                       </div>
 
-                      <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3 mb-4">
-                        <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          User Feedback
-                        </h4>
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center space-x-4">
-                            <div
-                              className="flex items-center"
-                              title="Positive User Feedback"
-                            >
-                              <ThumbsUp
-                                size={16}
-                                className="text-green-500 mr-1"
-                              />
-                              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                                {feedbackCounts[chatbot.id]?.positive || 0}
-                              </span>
-                            </div>
-                            <div
-                              className="flex items-center"
-                              title="Negative User Feedback"
-                            >
-                              <ThumbsDown
-                                size={16}
-                                className="text-red-500 mr-1"
-                              />
-                              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                                {feedbackCounts[chatbot.id]?.negative || 0}
-                              </span>
-                            </div>
-                          </div>
+                      <div className="flex items-center justify-between text-sm text-gray-600 dark:text-gray-400">
+                        <div>
+                          Last updated:{" "}
+                          {format(chatbot.lastUpdated, "MMM d, yyyy")}
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <ThumbsUp size={16} className="text-green-500" />
+                          <span>
+                            {feedbackCounts[chatbot.id]?.positive || 0}
+                          </span>
+                          <ThumbsDown size={16} className="text-red-500" />
+                          <span>
+                            {feedbackCounts[chatbot.id]?.negative || 0}
+                          </span>
                         </div>
                       </div>
-                    </div>
 
-                    <div
-                      className={`flex ${
-                        viewMode === "list"
-                          ? "space-x-2"
-                          : "justify-between items-center mt-4"
-                      }`}
-                    >
-                      <Button
-                        onClick={() => navigate(`/configure/${chatbot.id}`)}
-                        className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-400 transition-colors duration-200"
-                        icon={Edit2}
-                      >
-                        Edit
-                      </Button>
-                      <Button
-                        onClick={() => openEmbedModal(chatbot.id)}
-                        className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-400 transition-colors duration-200"
-                        icon={Code}
-                      >
-                        Embed
-                      </Button>
-                      <Button
-                        onClick={() => openDeleteModal(chatbot.id)}
-                        className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-red-700 bg-red-100 hover:bg-red-200 dark:text-red-200 dark:bg-red-800 dark:hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors duration-200"
-                        icon={Trash2}
-                      >
-                        Delete
-                      </Button>
+                      <div className="flex justify-between items-center pt-4 border-t border-gray-200 dark:border-gray-700">
+                        <Button
+                          onClick={() => navigate(`/configure/${chatbot.id}`)}
+                          className="bg-indigo-100 text-indigo-700 hover:bg-indigo-200 dark:bg-indigo-900 dark:text-indigo-100 dark:hover:bg-indigo-800"
+                          icon={Edit2}
+                        >
+                          Edit
+                        </Button>
+                        <Button
+                          onClick={() => openEmbedModal(chatbot.id)}
+                          className="bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-100 dark:hover:bg-gray-700"
+                          icon={Code}
+                        >
+                          Embed
+                        </Button>
+                        <Button
+                          onClick={() => openDeleteModal(chatbot.id)}
+                          className="bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-900 dark:text-red-100 dark:hover:bg-red-800"
+                          icon={Trash2}
+                        >
+                          Delete
+                        </Button>
+                      </div>
                     </div>
-                  </div>
+                  </Card>
                 ))}
               </div>
             </Transition>
