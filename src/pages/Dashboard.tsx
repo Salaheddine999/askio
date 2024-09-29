@@ -24,9 +24,7 @@ import {
   ThumbsDown,
   Calendar,
   BarChart2,
-  RefreshCw,
   Filter,
-  Menu,
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
@@ -265,11 +263,6 @@ const Dashboard: React.FC<DashboardProps> = ({ toggleSidebar }) => {
       setSortBy(newSortBy);
       setSortOrder("asc");
     }
-  };
-
-  const refreshDashboard = () => {
-    fetchChatbots();
-    toast.success("Dashboard refreshed");
   };
 
   const selectChatbotMetrics = (chatbotId: string) => {

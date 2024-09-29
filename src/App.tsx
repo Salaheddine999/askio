@@ -14,7 +14,6 @@ import Auth from "./components/Auth";
 import ChatbotEmbed from "./pages/ChatbotEmbed";
 import Documentation from "./pages/Documentation";
 import Navbar from "./components/Navbar";
-import Profile from "./pages/Profile";
 import { Toaster } from "react-hot-toast";
 import Settings from "./pages/Settings";
 const App: React.FC = () => {

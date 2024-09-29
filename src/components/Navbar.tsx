@@ -3,10 +3,8 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { auth } from "../utils/firebase";
 import { signOut } from "firebase/auth";
 import {
-  List,
   HelpCircle,
   LogOut,
-  User,
   Moon,
   Sun,
   Home,

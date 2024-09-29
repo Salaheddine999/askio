@@ -13,11 +13,8 @@ import Chatbot, { ChatbotProps } from "./Chatbot";
 import { HexColorPicker, HexColorInput } from "react-colorful";
 import {
   Save,
-  ArrowLeft,
   Plus,
   Trash2,
-  Eye,
-  EyeOff,
   ChevronDown,
   ChevronUp,
   Code,
