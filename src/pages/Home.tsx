@@ -20,6 +20,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
 import { FaGithub } from "react-icons/fa";
+import { Helmet } from "react-helmet-async";
 
 export default function ChatbotLanding() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -196,6 +197,13 @@ export default function ChatbotLanding() {
 
   return (
     <div className="bg-gradient-to-r from-[#f0f2ff] to-[#ffffff] min-h-screen">
+      <Helmet>
+        <title>Askio - Your Chatbot Builder</title>
+        <meta
+          name="description"
+          content="Manage and optimize your chatbots with Askio's dashboard."
+        />
+      </Helmet>
       <header className="w-full mx-auto z-50 transition-all duration-300 pt-6 pb-4">
         <div className="container mx-auto px-4 flex justify-between items-center">
           <Link
