@@ -58,7 +58,6 @@ const EditChatbot: React.FC<{ toggleSidebar: () => void }> = ({
   const [faqList, setFaqList] = useState<FAQItem[]>([]);
   const [activeTab, setActiveTab] = useState("general");
   const [showEmbedPreview, setShowEmbedPreview] = useState(false);
-  const [showChatbot, setShowChatbot] = useState(false);
   const [editingFaqIndex, setEditingFaqIndex] = useState<number | null>(null);
   const [isDeleteFaqModalOpen, setIsDeleteFaqModalOpen] = useState(false);
   const [faqToDelete, setFaqToDelete] = useState<number | null>(null);
@@ -739,16 +738,6 @@ const EditChatbot: React.FC<{ toggleSidebar: () => void }> = ({
         </div>
 
         {showEmbedPreview && <EmbedPreviewModal />}
-
-        {showChatbot && (
-          <div className="fixed z-50">
-            <Chatbot
-              {...config}
-              isEmbedded={true}
-              customPositionClass={`${positionClasses[config.position]} m-4`}
-            />
-          </div>
-        )}
 
         <ConfirmationModal
           isOpen={isDeleteFaqModalOpen}

@@ -328,9 +328,9 @@ const Dashboard: React.FC<DashboardProps> = ({ toggleSidebar }) => {
   const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
 
   return (
-    <div className="bg-gray-50 dark:bg-gray-900 min-h-screen">
-      <div className="w-full 2xl:w-[85%] px-4 sm:px-6 lg:px-12 py-8 sm:py-12">
-        <PageHeader title="Chatbot Dashboard" toggleSidebar={toggleSidebar} />
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <div className="w-full lg:w-[80%] px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+        <PageHeader title="Dashboard" toggleSidebar={toggleSidebar} />
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-8">
           <Card className="bg-white dark:bg-gray-800 p-6">
             <div className="flex items-center justify-between">

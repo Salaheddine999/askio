@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import React from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { auth } from "../utils/firebase";
 import { signOut } from "firebase/auth";
 import {
@@ -27,8 +27,6 @@ const Navbar: React.FC<NavbarProps> = ({
   toggleSidebar,
 }) => {
   const navigate = useNavigate();
-  const location = useLocation();
-  const [userInitial, setUserInitial] = useState<string>("");
 
   const handleSignOut = async () => {
     try {
@@ -38,17 +36,6 @@ const Navbar: React.FC<NavbarProps> = ({
       console.error("Error signing out:", error);
     }
   };
-
-  const isActive = (path: string) => location.pathname === path;
-
-  useEffect(() => {
-    const currentUser = auth.currentUser;
-    if (currentUser && currentUser.displayName) {
-      setUserInitial(currentUser.displayName.charAt(0).toUpperCase());
-    } else {
-      setUserInitial("");
-    }
-  }, [auth.currentUser]);
 
   return (
     <nav
