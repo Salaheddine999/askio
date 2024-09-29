@@ -1,17 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
-import {
-  Bot,
-  MessageCircleMore,
-  Send,
-  X,
-  ThumbsUp,
-  ThumbsDown,
-} from "lucide-react";
+import { Bot, Send, X, ThumbsUp, ThumbsDown } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Fuse from "fuse.js";
 import { db } from "../utils/firebase";
 import { doc, setDoc, getDoc, serverTimestamp } from "firebase/firestore";
 import toast from "react-hot-toast";
+import bot1 from "../assets/chat1.svg";
 
 type Message = {
   text: string;
@@ -319,7 +313,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
       whileTap={{ scale: 0.95 }}
     >
       <div className="relative">
-        <MessageCircleMore size={28} className="text-white" />
+        <img src={bot1} alt="bot" className="w-8 h-8" />
       </div>
     </motion.button>
   );
