@@ -26,11 +26,9 @@ import Input from "../components/Input";
 import Button from "../components/Button";
 import { toast } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
-import PageHeader from "../components/PageHeader";
+import { Helmet } from "react-helmet-async";
 
-const Settings: React.FC<{ toggleSidebar: () => void }> = ({
-  toggleSidebar,
-}) => {
+const Settings: React.FC<{ toggleSidebar: () => void }> = ({}) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
@@ -153,8 +151,14 @@ const Settings: React.FC<{ toggleSidebar: () => void }> = ({
 
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900">
+      <Helmet>
+        <title>Settings | Askio Chatbot</title>
+        <meta
+          name="description"
+          content="Manage your Askio Chatbot account settings and preferences."
+        />
+      </Helmet>
       <div className="w-full lg:w-[80%] px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
-        <PageHeader title="Settings" toggleSidebar={toggleSidebar} />
         {/* User Profile Card */}
         <Card className="bg-white dark:bg-gray-800 p-6 mb-6">
           <h2 className="text-xl font-semibold mb-4 dark:text-gray-100">

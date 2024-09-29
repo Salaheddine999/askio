@@ -5,7 +5,6 @@ import {
   Routes,
   Navigate,
 } from "react-router-dom";
-import { HelmetProvider } from "react-helmet-async";
 import { auth } from "./utils/firebase";
 import { onAuthStateChanged, User } from "firebase/auth";
 import Dashboard from "./pages/Dashboard";
@@ -17,6 +16,8 @@ import Documentation from "./pages/Documentation";
 import Navbar from "./components/Navbar";
 import { Toaster } from "react-hot-toast";
 import Settings from "./pages/Settings";
+import { HelmetProvider } from "react-helmet-async";
+
 const App: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
@@ -97,13 +98,7 @@ const App: React.FC = () => {
               />
               <Route
                 path="/configure/:id?"
-                element={
-                  user ? (
-                    <EditChatbot toggleSidebar={toggleSidebar} />
-                  ) : (
-                    <Navigate to="/auth" />
-                  )
-                }
+                element={user ? <EditChatbot /> : <Navigate to="/auth" />}
               />
               <Route path="/chatbot/:id" element={<ChatbotEmbed />} />
               <Route

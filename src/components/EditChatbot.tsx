@@ -13,8 +13,11 @@ import Chatbot, { ChatbotProps } from "./Chatbot";
 import { HexColorPicker, HexColorInput } from "react-colorful";
 import {
   Save,
+  ArrowLeft,
   Plus,
   Trash2,
+  Eye,
+  EyeOff,
   ChevronDown,
   ChevronUp,
   Code,
@@ -26,7 +29,7 @@ import { toast } from "react-hot-toast";
 import Button from "./Button";
 import Input from "./Input";
 import Card from "./Card";
-import PageHeader from "./PageHeader";
+import { Helmet } from "react-helmet-async";
 
 interface EditChatbotProps extends ChatbotProps {
   name: string;
@@ -38,9 +41,7 @@ interface FAQItem {
   isOpen: boolean;
 }
 
-const EditChatbot: React.FC<{ toggleSidebar: () => void }> = ({
-  toggleSidebar,
-}) => {
+const EditChatbot: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [config, setConfig] = useState<EditChatbotProps>({
@@ -58,6 +59,7 @@ const EditChatbot: React.FC<{ toggleSidebar: () => void }> = ({
   const [faqList, setFaqList] = useState<FAQItem[]>([]);
   const [activeTab, setActiveTab] = useState("general");
   const [showEmbedPreview, setShowEmbedPreview] = useState(false);
+  const [showChatbot, setShowChatbot] = useState(false);
   const [editingFaqIndex, setEditingFaqIndex] = useState<number | null>(null);
   const [isDeleteFaqModalOpen, setIsDeleteFaqModalOpen] = useState(false);
   const [faqToDelete, setFaqToDelete] = useState<number | null>(null);
@@ -360,11 +362,42 @@ const EditChatbot: React.FC<{ toggleSidebar: () => void }> = ({
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <div className="w-full lg:w-[80%] px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
-        <PageHeader
-          title={id ? `Edit Chatbot: ${config.name}` : "Create New Chatbot"}
-          toggleSidebar={toggleSidebar}
+      <Helmet>
+        <title>
+          {id ? `Edit Chatbot: ${config.name}` : "Create New Chatbot"} | Askio
+        </title>
+        <meta
+          name="description"
+          content={
+            id
+              ? `Edit and configure your ${config.name} chatbot`
+              : "Create and configure a new chatbot for your website"
+          }
         />
+      </Helmet>
+      <div className="w-full lg:w-[80%] px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-10">
+          <h1 className="text-3xl font-medium text-gray-900 dark:text-gray-100 mb-4 sm:mb-0">
+            {id ? `Edit Chatbot: ${config.name}` : "Create New Chatbot"}
+          </h1>
+          <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4">
+            <Button
+              onClick={() => setShowChatbot(!showChatbot)}
+              className="bg-[#aab2ff] hover:bg-indigo-400 text-black"
+              icon={showChatbot ? EyeOff : Eye}
+            >
+              {showChatbot ? "Hide Chatbot" : "Show Chatbot"}
+            </Button>
+            <Button
+              onClick={() => navigate("/")}
+              className="bg-gray-200 hover:bg-gray-300 text-gray-800"
+              icon={ArrowLeft}
+            >
+              Back to Chatbot List
+            </Button>
+          </div>
+        </div>
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <Card className="lg:col-span-2 p-6 bg-white">
             <div className="flex flex-wrap gap-2 mb-6">
@@ -738,6 +771,16 @@ const EditChatbot: React.FC<{ toggleSidebar: () => void }> = ({
         </div>
 
         {showEmbedPreview && <EmbedPreviewModal />}
+
+        {showChatbot && (
+          <div className="fixed z-50">
+            <Chatbot
+              {...config}
+              isEmbedded={true}
+              customPositionClass={`${positionClasses[config.position]} m-4`}
+            />
+          </div>
+        )}
 
         <ConfirmationModal
           isOpen={isDeleteFaqModalOpen}

@@ -24,7 +24,9 @@ import {
   ThumbsDown,
   Calendar,
   BarChart2,
+  RefreshCw,
   Filter,
+  Menu,
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
@@ -49,8 +51,7 @@ import {
   Legend,
   ArcElement,
 } from "chart.js";
-import PageHeader from "../components/PageHeader";
-
+import { Helmet } from "react-helmet-async";
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -265,6 +266,11 @@ const Dashboard: React.FC<DashboardProps> = ({ toggleSidebar }) => {
     }
   };
 
+  const refreshDashboard = () => {
+    fetchChatbots();
+    toast.success("Dashboard refreshed");
+  };
+
   const selectChatbotMetrics = (chatbotId: string) => {
     setSelectedChatbotMetrics(chatbotId);
   };
@@ -328,9 +334,41 @@ const Dashboard: React.FC<DashboardProps> = ({ toggleSidebar }) => {
   const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <div className="w-full lg:w-[80%] px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
-        <PageHeader title="Dashboard" toggleSidebar={toggleSidebar} />
+    <div className="bg-gray-50 dark:bg-gray-900 min-h-screen">
+      <Helmet>
+        <title>Dashboard | Askio Chatbot</title>
+        <meta
+          name="description"
+          content="Manage and optimize your chatbots with Askio's dashboard."
+        />
+      </Helmet>
+      <div className="w-full 2xl:w-[85%] px-4 sm:px-6 lg:px-12 py-8 sm:py-12">
+        <header className="mb-8 sm:mb-12 flex justify-between items-center">
+          <div className="flex items-center">
+            <button
+              onClick={toggleSidebar}
+              className="mr-4 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 lg:hidden"
+            >
+              <Menu size={24} />
+            </button>
+            <div>
+              <h1 className="text-3xl sm:text-4xl font-semibold text-gray-900 dark:text-white mb-2">
+                Chatbot Dashboard
+              </h1>
+              <p className="text-lg sm:text-xl text-gray-600 dark:text-gray-400">
+                Manage and optimize your chatbots
+              </p>
+            </div>
+          </div>
+          <Button
+            onClick={refreshDashboard}
+            className="bg-[#aab2ff] text-black hover:bg-[#9da6ff] dark:text-white"
+            icon={RefreshCw}
+          >
+            Refresh
+          </Button>
+        </header>
+
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-8">
           <Card className="bg-white dark:bg-gray-800 p-6">
             <div className="flex items-center justify-between">

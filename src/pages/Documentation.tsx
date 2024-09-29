@@ -9,12 +9,10 @@ import {
   Layers,
   Upload,
 } from "lucide-react";
-import PageHeader from "../components/PageHeader";
 import Card from "../components/Card";
+import { Helmet } from "react-helmet-async";
 
-const Documentation: React.FC<{ toggleSidebar: () => void }> = ({
-  toggleSidebar,
-}) => {
+const Documentation: React.FC<{ toggleSidebar: () => void }> = () => {
   const [openSection, setOpenSection] = useState<string | null>(null);
 
   const toggleSection = (title: string) => {
@@ -23,8 +21,14 @@ const Documentation: React.FC<{ toggleSidebar: () => void }> = ({
 
   return (
     <div className="min-h-screen py-12 bg-gray-100 dark:bg-gray-900">
+      <Helmet>
+        <title>Documentation | Askio Chatbot</title>
+        <meta
+          name="description"
+          content="Comprehensive guide for creating, customizing, and integrating Askio Chatbot into your website."
+        />
+      </Helmet>
       <main className="w-full lg:w-[80%] px-4 sm:px-6 lg:px-8 mx-auto">
-        <PageHeader title="Documentation" toggleSidebar={toggleSidebar} />
         <h1 className="text-4xl font-bold text-gray-900 mb-8 dark:text-white">
           Askio Chatbot Documentation
         </h1>
