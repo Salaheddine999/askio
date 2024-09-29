@@ -660,7 +660,7 @@ const Dashboard: React.FC<DashboardProps> = ({ toggleSidebar }) => {
                               className="w-full sm:w-auto bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
                               icon={Code}
                             >
-                              Embed
+                              Code
                             </Button>
                             <Button
                               onClick={() => openDeleteModal(chatbot.id)}
