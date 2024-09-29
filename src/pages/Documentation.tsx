@@ -1,7 +1,20 @@
 import React, { useState } from "react";
-import { ChevronRight, ChevronDown } from "lucide-react";
+import {
+  ChevronRight,
+  ChevronDown,
+  Book,
+  Code,
+  Palette,
+  Cog,
+  Layers,
+  Upload,
+} from "lucide-react";
+import PageHeader from "../components/PageHeader";
+import Card from "../components/Card";
 
-const Documentation: React.FC = () => {
+const Documentation: React.FC<{ toggleSidebar: () => void }> = ({
+  toggleSidebar,
+}) => {
   const [openSection, setOpenSection] = useState<string | null>(null);
 
   const toggleSection = (title: string) => {
@@ -10,13 +23,14 @@ const Documentation: React.FC = () => {
 
   return (
     <div className="min-h-screen py-12 bg-gray-100 dark:bg-gray-900">
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h1 className="text-4xl font-bold text-black mb-8 dark:text-white">
+      <main className="w-full lg:w-[80%] px-4 sm:px-6 lg:px-8 mx-auto">
+        <PageHeader title="Documentation" toggleSidebar={toggleSidebar} />
+        <h1 className="text-4xl font-bold text-gray-900 mb-8 dark:text-white">
           Askio Chatbot Documentation
         </h1>
         <p className="text-xl text-gray-700 mb-12 dark:text-gray-300">
-          Learn how to create, customize, and embed your chatbot on your website
-          using Askio Chatbot.
+          Welcome to the comprehensive guide for creating, customizing, and
+          integrating Askio Chatbot into your website.
         </p>
 
         {sections.map((section) => (
@@ -24,31 +38,39 @@ const Documentation: React.FC = () => {
             key={section.title}
             title={section.title}
             content={section.content}
+            icon={section.icon}
             isOpen={openSection === section.title}
             toggleSection={() => toggleSection(section.title)}
           />
         ))}
 
-        <div className="mt-12 bg-blue-50 border-l-4 border-blue-500 p-4 rounded-md">
-          <h3 className="text-lg font-semibold text-black mb-2 dark:text-white">
-            Pro Tips
+        <Card className="mt-12 bg-blue-50 dark:bg-blue-900 border-l-4 border-blue-500 p-6">
+          <h3 className="text-lg font-semibold text-blue-800 mb-4 dark:text-blue-200">
+            Best Practices
           </h3>
           <ul className="list-disc list-inside space-y-2 text-gray-700 dark:text-gray-300">
             <li>
               Regularly update your FAQs based on user interactions and
               feedback.
             </li>
-            <li>Use clear and concise language in your chatbot responses.</li>
             <li>
-              Test your chatbot thoroughly before embedding it on your live
-              website.
+              Use clear, concise language in your chatbot responses to enhance
+              user experience.
             </li>
             <li>
-              Monitor chatbot performance and user satisfaction to make
-              improvements.
+              Conduct thorough testing of your chatbot before embedding it on
+              your live website.
+            </li>
+            <li>
+              Continuously monitor chatbot performance and user satisfaction to
+              drive improvements.
+            </li>
+            <li>
+              Ensure your chatbot's tone and style align with your brand's voice
+              and values.
             </li>
           </ul>
-        </div>
+        </Card>
       </main>
     </div>
   );
@@ -57,18 +79,22 @@ const Documentation: React.FC = () => {
 const Section: React.FC<{
   title: string;
   content: string[];
+  icon: React.ElementType;
   isOpen: boolean;
   toggleSection: () => void;
-}> = ({ title, content, isOpen, toggleSection }) => (
-  <div className="mb-6 bg-gray-50 dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
+}> = ({ title, content, icon: Icon, isOpen, toggleSection }) => (
+  <Card className="mb-6 bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
     <button
       className="w-full text-left p-6 focus:outline-none"
       onClick={toggleSection}
     >
       <div className="flex justify-between items-center">
-        <h2 className="text-xl font-semibold text-black dark:text-white">
-          {title}
-        </h2>
+        <div className="flex items-center">
+          <Icon size={24} className="text-indigo-500 mr-4" />
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+            {title}
+          </h2>
+        </div>
         {isOpen ? <ChevronDown size={24} /> : <ChevronRight size={24} />}
       </div>
     </button>
@@ -83,65 +109,71 @@ const Section: React.FC<{
         </ol>
       </div>
     )}
-  </div>
+  </Card>
 );
 
 const sections = [
   {
-    title: "1. Creating Your First Chatbot",
+    title: "Getting Started",
+    icon: Book,
     content: [
-      "Log in to your Askio Chatbot account and navigate to the Dashboard.",
-      "Click the 'Create New Chatbot' button at the top of the page.",
-      "Enter a name for your chatbot and click 'Create'.",
-      "You'll be redirected to the chatbot configuration page.",
+      "Sign in to your Askio Chatbot account and navigate to the Dashboard.",
+      "Click the 'Create New Chatbot' button located at the top of the page.",
+      "Provide a name for your chatbot and click 'Create'.",
+      "You will be redirected to the chatbot configuration page to begin customization.",
     ],
   },
   {
-    title: "2. Customizing Appearance",
+    title: "Customizing Appearance",
+    icon: Palette,
     content: [
-      "In the chatbot configuration page, go to the 'Appearance' tab.",
-      "Choose primary and secondary colors for your chatbot using the color pickers or predefined color options.",
-      "Select the position where your chatbot will appear on your website (e.g., bottom-right, bottom-left).",
-      "Preview your changes in real-time using the chatbot preview on the right side of the screen.",
+      "In the chatbot configuration page, navigate to the 'Appearance' tab.",
+      "Select primary and secondary colors for your chatbot using the color pickers or predefined color options.",
+      "Choose the position where your chatbot will appear on your website (e.g., bottom-right, bottom-left).",
+      "Utilize the real-time preview on the right side of the screen to visualize your changes.",
     ],
   },
   {
-    title: "3. Setting Up FAQs",
+    title: "Configuring FAQs",
+    icon: Layers,
     content: [
-      "Navigate to the 'FAQ' tab in the chatbot configuration.",
+      "Go to the 'FAQ' tab in the chatbot configuration.",
       "Click 'Add FAQ' to create a new question-answer pair.",
-      "Enter the question in the 'Question' field and the corresponding answer in the 'Answer' field.",
-      "Click 'Add FAQ' to save the new FAQ.",
-      "Repeat this process for all the FAQs you want to add.",
-      "To edit an existing FAQ, click the edit icon next to the FAQ, make your changes, and click 'Update FAQ'.",
-      "To delete an FAQ, click the delete icon next to the FAQ and confirm the deletion.",
+      "Input the question in the 'Question' field and the corresponding answer in the 'Answer' field.",
+      "Click 'Add FAQ' to save the new FAQ entry.",
+      "Repeat this process for all the FAQs you wish to include.",
+      "To modify an existing FAQ, click the edit icon next to the FAQ, make your changes, and click 'Update FAQ'.",
+      "To remove an FAQ, click the delete icon next to the FAQ and confirm the deletion.",
     ],
   },
   {
-    title: "4. Configuring General Settings",
+    title: "General Settings",
+    icon: Cog,
     content: [
-      "Go to the 'General' tab in the chatbot configuration.",
-      "Set the chatbot's title, which will appear in the chat header.",
-      "Enter an initial message that users will see when they first open the chat.",
+      "Access the 'General' tab in the chatbot configuration.",
+      "Set the chatbot's title, which will be displayed in the chat header.",
+      "Craft an initial message that users will see when they first open the chat.",
       "Customize the placeholder text for the user input field.",
       "Click 'Save' to apply your changes.",
     ],
   },
   {
-    title: "5. Getting the Embed Code",
+    title: "Generating Embed Code",
+    icon: Code,
     content: [
-      "Once you've configured your chatbot, go to the 'Embed' tab.",
-      "You'll see a code snippet that you need to add to your website.",
-      "Click the 'Copy to Clipboard' button to copy the embed code.",
+      "Once you've completed configuring your chatbot, go to the 'Embed' tab.",
+      "You'll find a code snippet that needs to be added to your website.",
+      "Use the 'Copy to Clipboard' button to copy the embed code.",
     ],
   },
   {
-    title: "6. Embedding on Your Website",
+    title: "Website Integration",
+    icon: Upload,
     content: [
-      "Open your website's HTML file or template in your preferred editor.",
+      "Open your website's HTML file or template in your preferred code editor.",
       "Paste the copied embed code just before the closing </body> tag.",
       "Save the changes to your HTML file.",
-      "If you're using a content management system (CMS), paste the code in the appropriate section for adding custom scripts.",
+      "If you're using a content management system (CMS), paste the code in the designated section for adding custom scripts.",
       "Test your website to ensure the chatbot appears and functions correctly.",
     ],
   },

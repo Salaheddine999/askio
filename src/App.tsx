@@ -16,11 +16,12 @@ import Documentation from "./pages/Documentation";
 import Navbar from "./components/Navbar";
 import Profile from "./pages/Profile";
 import { Toaster } from "react-hot-toast";
-
+import Settings from "./pages/Settings";
 const App: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [darkMode, setDarkMode] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -28,7 +29,6 @@ const App: React.FC = () => {
       setLoading(false);
     });
 
-    // Check for user's dark mode preference
     const isDarkMode = localStorage.getItem("darkMode") === "true";
     setDarkMode(isDarkMode);
 
@@ -45,7 +45,11 @@ const App: React.FC = () => {
   }, [darkMode]);
 
   const toggleDarkMode = () => {
-    setDarkMode(!darkMode);
+    setDarkMode((prevMode) => !prevMode);
+  };
+
+  const toggleSidebar = () => {
+    setSidebarOpen((prevOpen) => !prevOpen);
   };
 
   if (loading) {
@@ -54,39 +58,75 @@ const App: React.FC = () => {
 
   return (
     <Router>
-      <div className={`min-h-screen flex flex-col ${darkMode ? "dark" : ""}`}>
-        {user && <Navbar darkMode={darkMode} toggleDarkMode={toggleDarkMode} />}
-        <div className="flex-grow bg-gray-50 dark:bg-gray-900">
-          <div className="mx-auto">
-            <Routes>
-              <Route
-                path="/"
-                element={user ? <Navigate to="/dashboard" /> : <Home />}
-              />
-              <Route
-                path="/auth"
-                element={!user ? <Auth /> : <Navigate to="/dashboard" />}
-              />
-              <Route
-                path="/dashboard"
-                element={user ? <Dashboard /> : <Navigate to="/auth" />}
-              />
-              <Route
-                path="/configure/:id?"
-                element={user ? <EditChatbot /> : <Navigate to="/auth" />}
-              />
-              <Route path="/chatbot/:id" element={<ChatbotEmbed />} />
-              <Route
-                path="/documentation"
-                element={user ? <Documentation /> : <Navigate to="/auth" />}
-              />
-              <Route
-                path="/profile"
-                element={user ? <Profile /> : <Navigate to="/auth" />}
-              />
-            </Routes>
-            <Toaster position="top-center" />
-          </div>
+      <div className={`min-h-screen ${darkMode ? "dark" : ""} flex`}>
+        {user && (
+          <Navbar
+            darkMode={darkMode}
+            toggleDarkMode={toggleDarkMode}
+            sidebarOpen={sidebarOpen}
+            toggleSidebar={toggleSidebar}
+          />
+        )}
+        <div
+          className={`flex-1 transition-all duration-300 ${
+            user ? (sidebarOpen ? "lg:ml-64" : "lg:ml-20") : ""
+          }`}
+        >
+          <Routes>
+            <Route
+              path="/"
+              element={user ? <Navigate to="/dashboard" /> : <Home />}
+            />
+            <Route
+              path="/auth"
+              element={!user ? <Auth /> : <Navigate to="/dashboard" />}
+            />
+            <Route
+              path="/dashboard"
+              element={
+                user ? (
+                  <Dashboard
+                    sidebarOpen={sidebarOpen}
+                    toggleSidebar={toggleSidebar}
+                  />
+                ) : (
+                  <Navigate to="/auth" />
+                )
+              }
+            />
+            <Route
+              path="/configure/:id?"
+              element={
+                user ? (
+                  <EditChatbot toggleSidebar={toggleSidebar} />
+                ) : (
+                  <Navigate to="/auth" />
+                )
+              }
+            />
+            <Route path="/chatbot/:id" element={<ChatbotEmbed />} />
+            <Route
+              path="/documentation"
+              element={
+                user ? (
+                  <Documentation toggleSidebar={toggleSidebar} />
+                ) : (
+                  <Navigate to="/auth" />
+                )
+              }
+            />
+            <Route
+              path="/settings"
+              element={
+                user ? (
+                  <Settings toggleSidebar={toggleSidebar} />
+                ) : (
+                  <Navigate to="/auth" />
+                )
+              }
+            />
+          </Routes>
+          <Toaster position="top-center" />
         </div>
       </div>
     </Router>

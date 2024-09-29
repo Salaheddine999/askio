@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { auth } from "../utils/firebase";
 import { signOut } from "firebase/auth";
@@ -6,26 +6,30 @@ import {
   List,
   HelpCircle,
   LogOut,
-  Menu,
-  X,
   User,
   Moon,
   Sun,
-  ChevronDown,
+  Home,
+  Settings,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 
 interface NavbarProps {
   darkMode: boolean;
   toggleDarkMode: () => void;
+  sidebarOpen: boolean;
+  toggleSidebar: () => void;
 }
 
-const Navbar: React.FC<NavbarProps> = ({ darkMode, toggleDarkMode }) => {
+const Navbar: React.FC<NavbarProps> = ({
+  darkMode,
+  toggleDarkMode,
+  sidebarOpen,
+  toggleSidebar,
+}) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
-  const profileMenuRef = useRef<HTMLDivElement>(null);
   const [userInitial, setUserInitial] = useState<string>("");
 
   const handleSignOut = async () => {
@@ -40,25 +44,6 @@ const Navbar: React.FC<NavbarProps> = ({ darkMode, toggleDarkMode }) => {
   const isActive = (path: string) => location.pathname === path;
 
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setIsMenuOpen(false);
-      }
-      if (
-        profileMenuRef.current &&
-        !profileMenuRef.current.contains(event.target as Node)
-      ) {
-        setIsProfileMenuOpen(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
-
-  useEffect(() => {
     const currentUser = auth.currentUser;
     if (currentUser && currentUser.displayName) {
       setUserInitial(currentUser.displayName.charAt(0).toUpperCase());
@@ -67,147 +52,106 @@ const Navbar: React.FC<NavbarProps> = ({ darkMode, toggleDarkMode }) => {
     }
   }, [auth.currentUser]);
 
-  const NavLink: React.FC<{
-    to: string;
-    icon: React.ReactNode;
-    text: string;
-  }> = ({ to, icon, text }) => (
-    <Link
-      to={to}
-      className={`flex items-center px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
-        isActive(to)
-          ? "bg-[#aab2ff] text-black hover:bg-[#8e98ff]"
-          : "text-gray-700 hover:bg-[#aab2ff] hover:text-black dark:text-gray-200 dark:hover:bg-gray-700 dark:hover:text-indigo-100"
+  return (
+    <nav
+      className={`bg-white dark:bg-gray-800 h-screen fixed left-0 top-0 shadow-lg transition-all duration-200 z-50 ${
+        sidebarOpen ? "w-64" : "w-20"
+      } lg:translate-x-0 ${
+        sidebarOpen ? "translate-x-0" : "-translate-x-full"
       }`}
     >
-      {icon}
-      <span className="ml-2">{text}</span>
-    </Link>
-  );
-
-  return (
-    <nav className="bg-gray-100 shadow-md dark:bg-gray-800 transition-colors duration-200 top-0 z-10 p-2">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          <div className="flex items-center">
-            <Link
-              to="/"
-              className="flex items-center text-2xl font-bold text-black dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 transition-colors duration-200"
-            >
-              <img
-                src="/icon.svg"
-                alt="Askio Chatbot"
-                className="w-12 h-12 mr-2"
-              />
-              <span>Askio</span>
-            </Link>
-          </div>
-          <div className="hidden md:flex items-center space-x-4">
-            <NavLink
+      <div className="flex flex-col h-full">
+        <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
+          <Link
+            to="/"
+            className={`flex items-center text-2xl font-bold text-black dark:text-white hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors duration-200 ${
+              !sidebarOpen && "justify-center"
+            }`}
+          >
+            <img src="/icon.svg" alt="Askio Chatbot" className="w-8 h-8 mr-2" />
+            {sidebarOpen && <span>Askio</span>}
+          </Link>
+          <button
+            onClick={toggleSidebar}
+            className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+          >
+            {sidebarOpen ? (
+              <ChevronLeft size={24} />
+            ) : (
+              <ChevronRight size={24} />
+            )}
+          </button>
+        </div>
+        <div className="flex-grow p-4">
+          <ul className="space-y-2">
+            <NavItem
               to="/dashboard"
-              icon={<List size={18} />}
+              icon={Home}
               text="Dashboard"
+              sidebarOpen={sidebarOpen}
             />
-            <NavLink
+            <NavItem
               to="/documentation"
-              icon={<HelpCircle size={18} />}
+              icon={HelpCircle}
               text="Documentation"
+              sidebarOpen={sidebarOpen}
             />
-            <div className="relative" ref={profileMenuRef}>
-              <button
-                onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
-                className="flex items-center px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-[#aab2ff] hover:text-black transition-all duration-200 dark:text-gray-200 dark:hover:bg-gray-700 dark:hover:text-indigo-100"
-                aria-haspopup="true"
-                aria-expanded={isProfileMenuOpen}
-              >
-                {userInitial ? (
-                  <span className="inline-flex items-center justify-center h-6 w-6 rounded-full bg-[#aab2ff] text-black font-medium">
-                    {userInitial}
-                  </span>
-                ) : (
-                  <User size={18} />
-                )}
-                <span className="ml-2">Profile</span>
-                <ChevronDown size={16} className="ml-1" />
-              </button>
-              {isProfileMenuOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg py-1 ring-1 ring-black ring-opacity-5 z-20">
-                  <Link
-                    to="/profile"
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50 dark:text-gray-200 dark:hover:bg-gray-700 flex items-center"
-                  >
-                    <User size={16} className="mr-2" />
-                    View Profile
-                  </Link>
-                  <button
-                    onClick={handleSignOut}
-                    className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900 flex items-center"
-                  >
-                    <LogOut size={16} className="mr-2" />
-                    Sign Out
-                  </button>
-                </div>
-              )}
-            </div>
-            <button
-              onClick={toggleDarkMode}
-              className="p-2 rounded-full text-gray-700 hover:bg-indigo-50 dark:text-gray-200 dark:hover:bg-gray-700 transition-all duration-200"
-              aria-label={
-                darkMode ? "Switch to light mode" : "Switch to dark mode"
-              }
-            >
-              {darkMode ? <Sun size={18} /> : <Moon size={18} />}
-            </button>
-          </div>
-          <div className="md:hidden">
-            <button
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="text-gray-700 dark:text-gray-200 hover:bg-indigo-50 dark:hover:bg-gray-700 p-2 rounded-md transition-all duration-200"
-              aria-expanded={isMenuOpen}
-              aria-label="Toggle menu"
-            >
-              {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
-            </button>
-          </div>
+            <NavItem
+              to="/settings"
+              icon={Settings}
+              text="Settings"
+              sidebarOpen={sidebarOpen}
+            />
+          </ul>
+        </div>
+        <div className="p-4 border-t border-gray-200 dark:border-gray-700">
+          <button
+            onClick={toggleDarkMode}
+            className={`flex items-center w-full p-2 rounded-md text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 transition-colors duration-200 ${
+              !sidebarOpen && "justify-center"
+            }`}
+          >
+            {darkMode ? (
+              <Sun size={20} className={sidebarOpen ? "mr-3" : ""} />
+            ) : (
+              <Moon size={20} className={sidebarOpen ? "mr-3" : ""} />
+            )}
+            {sidebarOpen && (darkMode ? "Light Mode" : "Dark Mode")}
+          </button>
+          <button
+            onClick={handleSignOut}
+            className={`flex items-center w-full mt-2 p-2 rounded-md text-red-600 hover:bg-red-100 dark:text-red-400 dark:hover:bg-red-900 transition-colors duration-200 ${
+              !sidebarOpen && "justify-center"
+            }`}
+          >
+            <LogOut size={20} className={sidebarOpen ? "mr-3" : ""} />
+            {sidebarOpen && "Sign Out"}
+          </button>
         </div>
       </div>
-      {isMenuOpen && (
-        <div className="md:hidden" ref={menuRef}>
-          <div className="px-2 pt-2 pb-3 space-y-1">
-            <NavLink
-              to="/dashboard"
-              icon={<List size={18} />}
-              text="Dashboard"
-            />
-            <NavLink
-              to="/documentation"
-              icon={<HelpCircle size={18} />}
-              text="Documentation"
-            />
-            <NavLink to="/profile" icon={<User size={18} />} text="Profile" />
-            <button
-              onClick={toggleDarkMode}
-              className="flex items-center w-full px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-indigo-50 dark:text-gray-200 dark:hover:bg-gray-700 transition-all duration-200"
-            >
-              {darkMode ? (
-                <Sun size={18} className="mr-2" />
-              ) : (
-                <Moon size={18} className="mr-2" />
-              )}
-              {darkMode ? "Light Mode" : "Dark Mode"}
-            </button>
-            <button
-              onClick={handleSignOut}
-              className="flex items-center w-full px-3 py-2 rounded-md text-sm font-medium text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900 transition-all duration-200"
-            >
-              <LogOut size={18} className="mr-2" />
-              Sign Out
-            </button>
-          </div>
-        </div>
-      )}
     </nav>
   );
 };
+
+const NavItem: React.FC<{
+  to: string;
+  icon: React.ElementType;
+  text: string;
+  sidebarOpen: boolean;
+}> = ({ to, icon: Icon, text, sidebarOpen }) => (
+  <li>
+    <Link
+      to={to}
+      className={`flex items-center p-2 rounded-md text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 transition-colors duration-200 ${
+        location.pathname === to
+          ? "bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-200"
+          : ""
+      } ${!sidebarOpen && "justify-center"}`}
+    >
+      <Icon size={20} className={sidebarOpen ? "mr-3" : ""} />
+      {sidebarOpen && text}
+    </Link>
+  </li>
+);
 
 export default Navbar;

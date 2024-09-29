@@ -29,6 +29,7 @@ import { toast } from "react-hot-toast";
 import Button from "./Button";
 import Input from "./Input";
 import Card from "./Card";
+import PageHeader from "./PageHeader";
 
 interface EditChatbotProps extends ChatbotProps {
   name: string;
@@ -40,7 +41,9 @@ interface FAQItem {
   isOpen: boolean;
 }
 
-const EditChatbot: React.FC = () => {
+const EditChatbot: React.FC<{ toggleSidebar: () => void }> = ({
+  toggleSidebar,
+}) => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [config, setConfig] = useState<EditChatbotProps>({
@@ -360,30 +363,12 @@ const EditChatbot: React.FC = () => {
   const tabs = ["general", "appearance", "faq", "embed"];
 
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-gray-900">
-      <div className="container mx-auto p-4 max-w-6xl py-8 sm:py-12">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-10">
-          <h1 className="text-3xl font-medium text-gray-900 dark:text-gray-100 mb-4 sm:mb-0">
-            {id ? `Edit Chatbot: ${config.name}` : "Create New Chatbot"}
-          </h1>
-          <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4">
-            <Button
-              onClick={() => setShowChatbot(!showChatbot)}
-              className="bg-[#aab2ff] hover:bg-indigo-400 text-black"
-              icon={showChatbot ? EyeOff : Eye}
-            >
-              {showChatbot ? "Hide Chatbot" : "Show Chatbot"}
-            </Button>
-            <Button
-              onClick={() => navigate("/")}
-              className="bg-gray-200 hover:bg-gray-300 text-gray-800"
-              icon={ArrowLeft}
-            >
-              Back to Chatbot List
-            </Button>
-          </div>
-        </div>
-
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <div className="w-full lg:w-[80%] px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+        <PageHeader
+          title={id ? `Edit Chatbot: ${config.name}` : "Create New Chatbot"}
+          toggleSidebar={toggleSidebar}
+        />
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <Card className="lg:col-span-2 p-6 bg-white">
             <div className="flex flex-wrap gap-2 mb-6">

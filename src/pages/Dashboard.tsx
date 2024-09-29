@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { db, auth } from "../utils/firebase";
 import {
   collection,
@@ -7,8 +7,6 @@ import {
   getDocs,
   deleteDoc,
   doc,
-  getDoc,
-  updateDoc,
 } from "firebase/firestore";
 import { Link, useNavigate } from "react-router-dom";
 import {
@@ -18,43 +16,51 @@ import {
   Trash2,
   Bot,
   Search,
-  ChevronRight,
   Info,
   Grid,
   List,
   Code,
   ThumbsUp,
   ThumbsDown,
-  MessageCircle,
+  Calendar,
+  BarChart2,
+  RefreshCw,
+  Filter,
+  Menu,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import ConfirmationModal from "../components/ConfirmationModal";
 import { toast } from "react-hot-toast";
 import { Transition } from "@headlessui/react";
 import { useModal } from "../hooks/useModal";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import Button from "../components/Button";
 import Input from "../components/Input";
 import Card from "../components/Card";
 import { format } from "date-fns";
 import { useCollection } from "react-firebase-hooks/firestore";
+import { Bar, Doughnut } from "react-chartjs-2";
 import {
   Chart as ChartJS,
-  ArcElement,
-  Tooltip,
-  Legend,
   CategoryScale,
   LinearScale,
   BarElement,
-} from "chart.js";
-import { Pie, Bar } from "react-chartjs-2";
-
-ChartJS.register(
-  ArcElement,
+  Title,
   Tooltip,
   Legend,
+  ArcElement,
+} from "chart.js";
+import PageHeader from "../components/PageHeader";
+
+ChartJS.register(
   CategoryScale,
   LinearScale,
-  BarElement
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+  ArcElement
 );
 
 interface Chatbot {
@@ -70,7 +76,12 @@ interface FeedbackCounts {
   negative: number;
 }
 
-const Dashboard: React.FC = () => {
+interface DashboardProps {
+  sidebarOpen: boolean;
+  toggleSidebar: () => void;
+}
+
+const Dashboard: React.FC<DashboardProps> = ({ toggleSidebar }) => {
   const navigate = useNavigate();
   const [chatbots, setChatbots] = useState<Chatbot[]>([]);
   const [loading, setLoading] = useState(true);
@@ -78,7 +89,6 @@ const Dashboard: React.FC = () => {
   const deleteModal = useModal();
   const embedModal = useModal();
   const [chatbotToDelete, setChatbotToDelete] = useState<string | null>(null);
-  const [isNewUser, setIsNewUser] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [selectedChatbotId, setSelectedChatbotId] = useState<string | null>(
@@ -96,10 +106,16 @@ const Dashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState<"chatbots" | "metrics">(
     "chatbots"
   );
+  const [sortBy, setSortBy] = useState<"title" | "createdAt" | "lastUpdated">(
+    "title"
+  );
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+  const [isSortDropdownOpen, setIsSortDropdownOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [chatbotsPerPage] = useState(6);
 
   useEffect(() => {
     fetchChatbots();
-    checkIfNewUser();
   }, []);
 
   useEffect(() => {
@@ -134,20 +150,6 @@ const Dashboard: React.FC = () => {
       );
     }
   }, [feedbackSnapshot, chatbots]);
-
-  const checkIfNewUser = async () => {
-    const user = auth.currentUser;
-    if (user) {
-      const docRef = doc(db, "users", user.uid);
-      const docSnap = await getDoc(docRef);
-
-      if (docSnap.exists() && docSnap.data().first_login) {
-        setIsNewUser(true);
-        // Update the first_login flag
-        await updateDoc(docRef, { first_login: false });
-      }
-    }
-  };
 
   const fetchChatbots = async () => {
     setLoading(true);
@@ -236,29 +238,42 @@ const Dashboard: React.FC = () => {
     setViewMode(viewMode === "grid" ? "list" : "grid");
   };
 
-  const filteredChatbots = chatbots.filter((chatbot) =>
-    chatbot.title.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const sortedChatbots = useMemo(() => {
+    return [...chatbots].sort((a, b) => {
+      if (sortBy === "title") {
+        return sortOrder === "asc"
+          ? a.title.localeCompare(b.title)
+          : b.title.localeCompare(a.title);
+      } else {
+        const dateA = new Date(a[sortBy]).getTime();
+        const dateB = new Date(b[sortBy]).getTime();
+        return sortOrder === "asc" ? dateA - dateB : dateB - dateA;
+      }
+    });
+  }, [chatbots, sortBy, sortOrder]);
+
+  const filteredChatbots = useMemo(() => {
+    return sortedChatbots.filter((chatbot) =>
+      chatbot.title.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [sortedChatbots, searchTerm]);
+
+  const handleSort = (newSortBy: "title" | "createdAt" | "lastUpdated") => {
+    if (sortBy === newSortBy) {
+      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+    } else {
+      setSortBy(newSortBy);
+      setSortOrder("asc");
+    }
+  };
+
+  const refreshDashboard = () => {
+    fetchChatbots();
+    toast.success("Dashboard refreshed");
+  };
 
   const selectChatbotMetrics = (chatbotId: string) => {
     setSelectedChatbotMetrics(chatbotId);
-  };
-
-  const getSelectedChatbotMetrics = () => {
-    if (selectedChatbotMetrics) {
-      const feedback = feedbackCounts[selectedChatbotMetrics] || {
-        positive: 0,
-        negative: 0,
-      };
-      const total = feedback.positive + feedback.negative;
-      const satisfactionRate =
-        total > 0 ? (feedback.positive / total) * 100 : 0;
-      return {
-        totalFeedback: total,
-        satisfactionRate: satisfactionRate,
-      };
-    }
-    return null;
   };
 
   const getMetricsData = () => {
@@ -305,57 +320,69 @@ const Dashboard: React.FC = () => {
     };
   };
 
-  return (
-    <div className="min-h-screen bg-gray-100 dark:bg-gray-900">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
-        <header className="mb-8 sm:mb-12">
-          <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-2">
-            Chatbot Dashboard
-          </h1>
-          <p className="text-lg sm:text-xl text-gray-600 dark:text-gray-400">
-            Manage and optimize your chatbots
-          </p>
-        </header>
+  const toggleSortDropdown = () => {
+    setIsSortDropdownOpen(!isSortDropdownOpen);
+  };
 
-        {isNewUser && (
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 sm:p-6 mb-8 border-l-4 border-indigo-500">
-            <div className="flex items-start">
-              <Info
-                className="text-indigo-500 mr-4 mt-1 flex-shrink-0"
-                size={24}
-              />
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                  Welcome to Askio Chatbot
-                </h3>
-                <p className="text-gray-600 dark:text-gray-300 mb-4">
-                  Get started by creating your first chatbot. Our documentation
-                  can help you make the most of our platform.
-                </p>
-                <Link
-                  to="/docs"
-                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200"
-                >
-                  View Documentation
-                  <ChevronRight
-                    className="ml-2 -mr-1 h-5 w-5"
-                    aria-hidden="true"
-                  />
-                </Link>
-              </div>
+  // Calculate pagination
+  const indexOfLastChatbot = currentPage * chatbotsPerPage;
+  const indexOfFirstChatbot = indexOfLastChatbot - chatbotsPerPage;
+  const currentChatbots = filteredChatbots.slice(
+    indexOfFirstChatbot,
+    indexOfLastChatbot
+  );
+
+  const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
+
+  return (
+    <div className="bg-gray-50 dark:bg-gray-900 min-h-screen">
+      <div className="w-full 2xl:w-[85%] px-4 sm:px-6 lg:px-12 py-8 sm:py-12">
+        <PageHeader title="Chatbot Dashboard" toggleSidebar={toggleSidebar} />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-8">
+          <Card className="bg-white dark:bg-gray-800 p-6">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                Total Chatbots
+              </h3>
+              <Bot className="text-[#aab2ff] w-8 h-8" />
             </div>
-          </div>
-        )}
+            <p className="text-3xl font-bold text-gray-900 dark:text-white mt-2">
+              {chatbots.length}
+            </p>
+          </Card>
+          <Card className="bg-white dark:bg-gray-800 p-6">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                Total Feedback
+              </h3>
+              <ThumbsUp className="text-[#aab2ff] w-8 h-8" />
+            </div>
+            <p className="text-3xl font-bold text-gray-900 dark:text-white mt-2">
+              {totalFeedback}
+            </p>
+          </Card>
+          <Card className="bg-white dark:bg-gray-800 p-6">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                Satisfaction Rate
+              </h3>
+              <BarChart2 className="text-[#aab2ff] w-8 h-8" />
+            </div>
+            <p className="text-3xl font-bold text-gray-900 dark:text-white mt-2">
+              {satisfactionRate.toFixed(1)}%
+            </p>
+          </Card>
+        </div>
 
         <div className="mb-6">
-          <div className="border-b border-gray-200">
+          <div className="border-b border-gray-200 dark:border-gray-700">
             <nav className="-mb-px flex space-x-8" aria-label="Tabs">
               <button
                 onClick={() => setActiveTab("chatbots")}
                 className={`${
                   activeTab === "chatbots"
-                    ? "border-indigo-500 text-indigo-500 dark:text-indigo-400 dark:border-indigo-400"
-                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                    ? "border-[#aab2ff] text-[#aab2ff]"
+                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300"
                 } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
               >
                 Chatbots
@@ -364,8 +391,8 @@ const Dashboard: React.FC = () => {
                 onClick={() => setActiveTab("metrics")}
                 className={`${
                   activeTab === "metrics"
-                    ? "border-indigo-500 text-indigo-500 dark:text-indigo-400 dark:border-indigo-400"
-                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                    ? "border-[#aab2ff] text-[#aab2ff]"
+                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300"
                 } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
               >
                 Metrics
@@ -375,51 +402,91 @@ const Dashboard: React.FC = () => {
         </div>
 
         {activeTab === "chatbots" && (
-          <Card className="bg-white">
-            <div className="p-4 sm:p-6 border-b border-gray-200 dark:border-gray-700">
+          <Card className="bg-white dark:bg-gray-800">
+            <div className="p-6 border-b border-gray-200 dark:border-gray-700">
               <div className="flex flex-col md:flex-row justify-between md:items-center space-y-4 md:space-y-0">
                 <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
                   Your Chatbots
                 </h2>
-                <div className="flex flex-wrap items-center gap-2 sm:gap-4">
-                  <div className="relative w-full sm:w-64">
+                <div className="flex flex-wrap items-center gap-4">
+                  <div className="relative flex-grow md:flex-grow-0 md:w-64">
                     <Input
                       type="text"
                       placeholder="Search chatbots..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-10 bg-gray-50 dark:bg-gray-700"
+                      className="pl-10 pr-4 py-2 w-full bg-gray-100 dark:bg-gray-700 rounded-md"
                     />
                     <Search
                       className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-                      size={20}
+                      size={18}
                     />
                   </div>
                   <div className="flex items-center space-x-2">
                     <button
                       onClick={toggleViewMode}
-                      className={`p-2 rounded-md ${
+                      className={`p-2 rounded-md transition-colors duration-200 ${
                         viewMode === "grid"
-                          ? "bg-indigo-100 dark:bg-indigo-300"
-                          : "bg-gray-100 dark:bg-gray-700"
+                          ? "bg-[#aab2ff] text-white dark:text-black"
+                          : "bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300"
                       }`}
                     >
                       <Grid size={20} />
                     </button>
                     <button
                       onClick={toggleViewMode}
-                      className={`p-2 rounded-md ${
+                      className={`p-2 rounded-md transition-colors duration-200 ${
                         viewMode === "list"
-                          ? "bg-indigo-100 dark:bg-indigo-300"
-                          : "bg-gray-100 dark:bg-gray-700"
+                          ? "bg-[#aab2ff] text-white dark:text-black"
+                          : "bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300"
                       }`}
                     >
                       <List size={20} />
                     </button>
                   </div>
+                  <div className="relative">
+                    <Button
+                      onClick={toggleSortDropdown}
+                      className="bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+                      icon={Filter}
+                    >
+                      Sort
+                    </Button>
+                    {isSortDropdownOpen && (
+                      <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg py-1 z-10">
+                        <button
+                          onClick={() => {
+                            handleSort("title");
+                            setIsSortDropdownOpen(false);
+                          }}
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 w-full text-left"
+                        >
+                          Sort by Title
+                        </button>
+                        <button
+                          onClick={() => {
+                            handleSort("createdAt");
+                            setIsSortDropdownOpen(false);
+                          }}
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 w-full text-left"
+                        >
+                          Sort by Creation Date
+                        </button>
+                        <button
+                          onClick={() => {
+                            handleSort("lastUpdated");
+                            setIsSortDropdownOpen(false);
+                          }}
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 w-full text-left"
+                        >
+                          Sort by Last Updated
+                        </button>
+                      </div>
+                    )}
+                  </div>
                   <Button
                     onClick={() => navigate("/configure")}
-                    className="bg-[#aab2ff] hover:bg-indigo-400 text-black"
+                    className="bg-[#aab2ff] hover:bg-[#9da6ff] text-black dark:text-white"
                     icon={PlusCircle}
                   >
                     Create New Chatbot
@@ -440,7 +507,7 @@ const Dashboard: React.FC = () => {
               >
                 <div className="flex justify-center items-center h-64">
                   <LoaderCircle
-                    className="animate-spin text-indigo-600 dark:text-indigo-400"
+                    className="animate-spin text-indigo-500 dark:text-indigo-400"
                     size={48}
                   />
                 </div>
@@ -471,95 +538,113 @@ const Dashboard: React.FC = () => {
                   </button>
                 </div>
               )}
-              <Transition
-                show={!loading && !error}
-                enter="transition-opacity duration-300"
-                enterFrom="opacity-0"
-                enterTo="opacity-100"
-                leave="transition-opacity duration-300"
-                leaveFrom="opacity-100"
-                leaveTo="opacity-0"
-              >
-                <div
-                  className={`${
-                    viewMode === "grid"
-                      ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-                      : "space-y-4"
-                  }`}
-                >
-                  {filteredChatbots.map((chatbot) => (
-                    <Card
-                      key={chatbot.id}
-                      className={`overflow-hidden bg-white dark:bg-gray-800 shadow-lg border border-gray-100 dark:border  dark:border-gray-700 hover:shadow-lg transition-shadow duration-200 ${
-                        viewMode === "list"
-                          ? "flex flex-col sm:flex-row items-center"
-                          : ""
-                      }`}
-                    >
-                      <div
-                        className={`p-6 space-y-4 ${
-                          viewMode === "list" ? "flex-grow w-full" : ""
+              <AnimatePresence>
+                {!loading && !error && (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.5 }}
+                    className={`${
+                      viewMode === "grid"
+                        ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6"
+                        : "space-y-4 sm:space-y-6"
+                    }`}
+                  >
+                    {currentChatbots.map((chatbot, index) => (
+                      <motion.div
+                        key={chatbot.id}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 20 }}
+                        transition={{
+                          duration: 0.3,
+                          delay: index * 0.1,
+                          ease: "easeInOut",
+                        }}
+                        className={`bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden border border-gray-200 dark:border-gray-700 hover:shadow-xl transition-all duration-200 ${
+                          viewMode === "list" ? "flex flex-col sm:flex-row" : ""
                         }`}
                       >
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center space-x-3">
-                            <div className="bg-indigo-100 p-2 rounded-full">
-                              <Bot size={24} className="text-indigo-500" />
+                        <div
+                          className={`p-4 sm:p-6 flex flex-col ${
+                            viewMode === "list" ? "flex-grow" : "h-full"
+                          }`}
+                        >
+                          <div className="flex items-center justify-between mb-4">
+                            <div className="flex items-center space-x-3">
+                              <div className="bg-gradient-to-br from-[#aab2ff] to-[#7d87ff] p-2 rounded-lg shadow-md">
+                                <Bot size={24} className="text-white" />
+                              </div>
+                              <h3 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white">
+                                {chatbot.title}
+                              </h3>
                             </div>
-                            <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
-                              {chatbot.title}
-                            </h3>
+                            <div className="flex items-center space-x-2 bg-gray-100 dark:bg-gray-700 px-2 sm:px-3 py-1 rounded-full">
+                              <ThumbsUp size={14} className="text-[#aab2ff]" />
+                              <span className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">
+                                {feedbackCounts[chatbot.id]?.positive || 0}
+                              </span>
+                              <ThumbsDown
+                                size={14}
+                                className="text-red-500 ml-2"
+                              />
+                              <span className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">
+                                {feedbackCounts[chatbot.id]?.negative || 0}
+                              </span>
+                            </div>
                           </div>
-                          <div className="text-sm text-gray-500 dark:text-gray-400">
-                            {format(chatbot.createdAt, "MMM d, yyyy")}
-                          </div>
-                        </div>
 
-                        <div className="flex items-center justify-between text-sm text-gray-600 dark:text-gray-300">
-                          <div>
-                            Last updated:{" "}
-                            {format(chatbot.lastUpdated, "MMM d, yyyy")}
+                          <div className="flex-grow">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4 mb-4 text-xs sm:text-sm text-gray-600 dark:text-gray-300">
+                              <div className="flex items-center space-x-2">
+                                <Calendar size={14} className="text-gray-400" />
+                                <span>
+                                  Created:{" "}
+                                  {format(chatbot.createdAt, "MMM d, yyyy")}
+                                </span>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <Calendar size={14} className="text-gray-400" />
+                                <span>
+                                  Updated:{" "}
+                                  {format(chatbot.lastUpdated, "MMM d, yyyy")}
+                                </span>
+                              </div>
+                            </div>
                           </div>
-                          <div className="flex items-center space-x-2">
-                            <ThumbsUp size={16} className="text-green-500" />
-                            <span>
-                              {feedbackCounts[chatbot.id]?.positive || 0}
-                            </span>
-                            <ThumbsDown size={16} className="text-red-500" />
-                            <span>
-                              {feedbackCounts[chatbot.id]?.negative || 0}
-                            </span>
-                          </div>
-                        </div>
 
-                        <div className="flex justify-between items-center pt-4 border-t border-gray-200 dark:border-gray-700">
-                          <Button
-                            onClick={() => navigate(`/configure/${chatbot.id}`)}
-                            className="bg-indigo-100 text-indigo-700 hover:bg-indigo-200 dark:bg-indigo-500 dark:text-indigo-50 dark:hover:bg-indigo-600"
-                            icon={Edit2}
-                          >
-                            Edit
-                          </Button>
-                          <Button
-                            onClick={() => openEmbedModal(chatbot.id)}
-                            className="bg-gray-100 text-gray-700 hover:bg-gray-200"
-                            icon={Code}
-                          >
-                            Embed
-                          </Button>
-                          <Button
-                            onClick={() => openDeleteModal(chatbot.id)}
-                            className="bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-400 dark:text-red-50 dark:hover:bg-red-600"
-                            icon={Trash2}
-                          >
-                            Delete
-                          </Button>
+                          <div className="flex flex-col sm:flex-row justify-between items-center pt-4 border-t border-gray-200 dark:border-gray-700 space-y-2 sm:space-y-0 sm:space-x-2">
+                            <Button
+                              onClick={() =>
+                                navigate(`/configure/${chatbot.id}`)
+                              }
+                              className="w-full sm:w-auto bg-[#aab2ff] text-black hover:bg-[#9da6ff] dark:text-white"
+                              icon={Edit2}
+                            >
+                              Edit
+                            </Button>
+                            <Button
+                              onClick={() => openEmbedModal(chatbot.id)}
+                              className="w-full sm:w-auto bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+                              icon={Code}
+                            >
+                              Embed
+                            </Button>
+                            <Button
+                              onClick={() => openDeleteModal(chatbot.id)}
+                              className="w-full sm:w-auto bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-900 dark:text-red-100 dark:hover:bg-red-800"
+                              icon={Trash2}
+                            >
+                              Delete
+                            </Button>
+                          </div>
                         </div>
-                      </div>
-                    </Card>
-                  ))}
-                </div>
-              </Transition>
+                      </motion.div>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
               {!loading && !error && filteredChatbots.length === 0 && (
                 <div className="text-center text-gray-500 dark:text-gray-400 mt-16">
                   <p className="text-xl mb-6">
@@ -578,6 +663,53 @@ const Dashboard: React.FC = () => {
                   )}
                 </div>
               )}
+              {!loading &&
+                !error &&
+                filteredChatbots.length > chatbotsPerPage && (
+                  <div className="mt-8 flex justify-center">
+                    <nav
+                      className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px"
+                      aria-label="Pagination"
+                    >
+                      <button
+                        onClick={() => paginate(currentPage - 1)}
+                        disabled={currentPage === 1}
+                        className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <span className="sr-only">Previous</span>
+                        <ChevronLeft className="h-5 w-5" aria-hidden="true" />
+                      </button>
+                      {Array.from({
+                        length: Math.ceil(
+                          filteredChatbots.length / chatbotsPerPage
+                        ),
+                      }).map((_, index) => (
+                        <button
+                          key={index}
+                          onClick={() => paginate(index + 1)}
+                          className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
+                            currentPage === index + 1
+                              ? "z-10 bg-indigo-50 border-indigo-500 text-indigo-600"
+                              : "bg-white border-gray-300 text-gray-500 hover:bg-gray-50"
+                          }`}
+                        >
+                          {index + 1}
+                        </button>
+                      ))}
+                      <button
+                        onClick={() => paginate(currentPage + 1)}
+                        disabled={
+                          currentPage ===
+                          Math.ceil(filteredChatbots.length / chatbotsPerPage)
+                        }
+                        className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <span className="sr-only">Next</span>
+                        <ChevronRight className="h-5 w-5" aria-hidden="true" />
+                      </button>
+                    </nav>
+                  </div>
+                )}
             </div>
           </Card>
         )}
@@ -585,157 +717,77 @@ const Dashboard: React.FC = () => {
         {activeTab === "metrics" && (
           <Card className="bg-white dark:bg-gray-800 p-6">
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
-              User Satisfaction Metrics
+              Chatbot Performance Metrics
             </h2>
-            <div className="flex flex-col lg:flex-row space-y-8 lg:space-y-0 lg:space-x-8">
-              <div className="lg:w-1/4">
-                <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 sticky top-6">
-                  <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
-                    Select Chatbot
-                  </h3>
-                  <div className="max-h-[calc(100vh-200px)] overflow-y-auto">
-                    <ul className="space-y-2">
-                      {chatbots.map((chatbot) => (
-                        <li key={chatbot.id}>
-                          <button
-                            onClick={() => selectChatbotMetrics(chatbot.id)}
-                            className={`w-full text-left p-2 rounded transition-colors duration-200 ${
-                              selectedChatbotMetrics === chatbot.id
-                                ? "bg-[#aab2ff] dark:bg-indigo-400 text-black dark:text-black"
-                                : "hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200"
-                            }`}
-                          >
-                            {chatbot.title}
-                          </button>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              <div className="lg:col-span-2">
+                <Bar
+                  data={getMetricsData()}
+                  options={{
+                    responsive: true,
+                    plugins: {
+                      legend: {
+                        position: "top" as const,
+                      },
+                      title: {
+                        display: true,
+                        text: "Feedback by Chatbot",
+                      },
+                    },
+                  }}
+                />
               </div>
-              <div className="lg:w-3/4 space-y-8">
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-                  <MetricCard
-                    title="Total Feedback"
-                    value={
-                      selectedChatbotMetrics
-                        ? getSelectedChatbotMetrics()?.totalFeedback ?? 0
-                        : totalFeedback
-                    }
-                    icon={<MessageCircle className="text-blue-500" size={24} />}
-                  />
-                  <MetricCard
-                    title="Satisfaction Rate"
-                    value={`${(selectedChatbotMetrics
-                      ? getSelectedChatbotMetrics()?.satisfactionRate ?? 0
-                      : satisfactionRate
-                    ).toFixed(1)}%`}
-                    icon={<ThumbsUp className="text-green-500" size={24} />}
-                  />
-                  <MetricCard
-                    title="Total Chatbots"
-                    value={chatbots.length}
-                    icon={<Bot className="text-purple-500" size={24} />}
-                  />
-                </div>
-
-                <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-6">
-                  <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
-                    Feedback Distribution
-                  </h3>
-                  <div className="h-80 w-full">
-                    <Bar
-                      data={getMetricsData()}
-                      options={{
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        scales: {
-                          x: {
-                            stacked: true,
-                            grid: {
-                              display: false,
-                            },
-                          },
-                          y: {
-                            stacked: true,
-                            grid: {
-                              color: "rgba(0, 0, 0, 0.1)",
-                            },
-                          },
-                        },
-                        plugins: {
-                          legend: {
-                            position: "top" as const,
-                          },
-                          tooltip: {
-                            mode: "index",
-                            intersect: false,
-                          },
-                        },
-                      }}
-                    />
-                  </div>
-                </div>
-
-                <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-6">
-                  <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
-                    {selectedChatbotMetrics
-                      ? "Selected Chatbot Metrics"
-                      : "Overall Metrics"}
-                  </h3>
-                  {selectedChatbotMetrics ? (
-                    <div className="space-y-4">
-                      <p className="text-gray-700 dark:text-gray-300">
-                        <span className="font-semibold">Chatbot:</span>{" "}
-                        {
-                          chatbots.find((c) => c.id === selectedChatbotMetrics)
-                            ?.title
-                        }
-                      </p>
-                      <p className="text-gray-700 dark:text-gray-300">
-                        <span className="font-semibold">Total Feedback:</span>{" "}
-                        {getSelectedChatbotMetrics()?.totalFeedback}
-                      </p>
-                      <p className="text-gray-700 dark:text-gray-300">
-                        <span className="font-semibold">
-                          Satisfaction Rate:
-                        </span>{" "}
-                        {getSelectedChatbotMetrics()?.satisfactionRate.toFixed(
-                          1
-                        )}
-                        %
-                      </p>
-                      <div className="mt-4 h-64">
-                        <Pie
-                          data={{
-                            labels: ["Positive", "Negative"],
-                            datasets: [
-                              {
-                                data: [
-                                  feedbackCounts[selectedChatbotMetrics]
-                                    ?.positive || 0,
-                                  feedbackCounts[selectedChatbotMetrics]
-                                    ?.negative || 0,
-                                ],
-                                backgroundColor: ["#4CAF50", "#F44336"],
-                                hoverBackgroundColor: ["#45a049", "#e53935"],
-                              },
-                            ],
-                          }}
-                          options={{
-                            responsive: true,
-                            maintainAspectRatio: false,
-                          }}
-                        />
-                      </div>
-                    </div>
-                  ) : (
-                    <p className="text-gray-700 dark:text-gray-300">
-                      Select a chatbot to view its specific metrics
-                    </p>
-                  )}
-                </div>
+              <div>
+                <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
+                  Overall Satisfaction
+                </h3>
+                <Doughnut
+                  data={{
+                    labels: ["Positive", "Negative"],
+                    datasets: [
+                      {
+                        data: [
+                          totalFeedback - (totalFeedback - satisfactionRate),
+                          totalFeedback - satisfactionRate,
+                        ],
+                        backgroundColor: ["#4CAF50", "#F44336"],
+                      },
+                    ],
+                  }}
+                  options={{
+                    responsive: true,
+                    plugins: {
+                      legend: {
+                        position: "bottom" as const,
+                      },
+                    },
+                  }}
+                />
               </div>
+            </div>
+            <div className="mt-8">
+              <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
+                Chatbot List
+              </h3>
+              <ul className="space-y-2 max-h-96 overflow-y-auto">
+                {chatbots.map((chatbot) => (
+                  <li
+                    key={chatbot.id}
+                    className="flex items-center justify-between p-2 bg-gray-100 dark:bg-gray-700 rounded-md"
+                  >
+                    <span className="text-gray-800 dark:text-gray-200">
+                      {chatbot.title}
+                    </span>
+                    <Button
+                      onClick={() => selectChatbotMetrics(chatbot.id)}
+                      className="text-xs bg-indigo-100 text-indigo-700 hover:bg-indigo-200 dark:bg-indigo-900 dark:text-indigo-100 dark:hover:bg-indigo-800"
+                      icon={BarChart2}
+                    >
+                      View Metrics
+                    </Button>
+                  </li>
+                ))}
+              </ul>
             </div>
           </Card>
         )}
@@ -781,24 +833,5 @@ const Dashboard: React.FC = () => {
     </div>
   );
 };
-
-// New component for metric cards
-const MetricCard: React.FC<{
-  title: string;
-  value: number | string;
-  icon: React.ReactNode;
-}> = ({ title, value, icon }) => (
-  <div className="bg-white dark:bg-gray-700 rounded-lg shadow p-6 flex items-center space-x-4">
-    <div className="bg-gray-100 dark:bg-gray-600 rounded-full p-3">{icon}</div>
-    <div>
-      <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
-        {title}
-      </p>
-      <p className="text-2xl font-semibold text-gray-900 dark:text-white">
-        {value}
-      </p>
-    </div>
-  </div>
-);
 
 export default Dashboard;
