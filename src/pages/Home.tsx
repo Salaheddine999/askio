@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import { useInView } from "react-intersection-observer";
 import {
   MessageCircle,
   ToyBrick,
@@ -11,7 +12,6 @@ import {
   Twitter,
   Facebook,
   Linkedin,
-  Instagram,
   Paintbrush,
   Zap,
   Settings,
@@ -22,7 +22,8 @@ import { Link } from "react-router-dom";
 import { FaGithub } from "react-icons/fa";
 import { Helmet } from "react-helmet-async";
 import { motion } from "framer-motion";
-import { ChevronRight } from "lucide-react";
+import { ChevronDown } from "lucide-react";
+import { AnimatePresence } from "framer-motion";
 
 export default function ChatbotLanding() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -197,25 +198,6 @@ export default function ChatbotLanding() {
     };
   }, []);
 
-  useEffect(() => {
-    // Load Alpine.js and Intersect plugin
-    const script = document.createElement("script");
-    script.src = "https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js";
-    script.defer = true;
-    document.head.appendChild(script);
-
-    const intersectScript = document.createElement("script");
-    intersectScript.src =
-      "https://cdn.jsdelivr.net/npm/@alpinejs/intersect@3.x.x/dist/cdn.min.js";
-    intersectScript.defer = true;
-    document.head.appendChild(intersectScript);
-
-    return () => {
-      document.head.removeChild(script);
-      document.head.removeChild(intersectScript);
-    };
-  }, []);
-
   const testimonials = [
     {
       name: "Sarah L.",
@@ -239,6 +221,28 @@ export default function ChatbotLanding() {
       avatar: "https://randomuser.me/api/portraits/women/42.jpg",
     },
   ];
+
+  // {{ Add: State to manage active FAQ index }}
+  const [activeIndex, setActiveIndex] = useState<number | null>(null);
+
+  // {{ Add: Function to toggle FAQ items }}
+  const toggleFAQ = (index: number) => {
+    setActiveIndex(activeIndex === index ? null : index);
+  };
+
+  // Helper function to create useInView hook with default options
+  const useInViewSection = (threshold = 0.1) => {
+    return useInView({
+      triggerOnce: true,
+      threshold,
+    });
+  };
+
+  // Create refs for each section
+  const [featuresRef, featuresInView] = useInViewSection();
+  const [howItWorksRef, howItWorksInView] = useInViewSection();
+  const [testimonialsRef, testimonialsInView] = useInViewSection();
+  const [faqRef, faqInView] = useInViewSection();
 
   return (
     <div className="bg-gradient-to-r from-[#f0f2ff] to-[#ffffff] min-h-screen">
@@ -454,7 +458,12 @@ export default function ChatbotLanding() {
           </div>
         </section>
 
-        <section
+        {/* Features Section */}
+        <motion.section
+          ref={featuresRef}
+          initial={{ opacity: 0, y: 50 }}
+          animate={featuresInView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.5, delay: 0.2 }}
           id="features"
           className="py-20 bg-gradient-to-r from-[#f0f2ff] to-[#ffffff]"
         >
@@ -522,9 +531,14 @@ export default function ChatbotLanding() {
               ))}
             </div>
           </div>
-        </section>
+        </motion.section>
 
-        <section
+        {/* How It Works Section */}
+        <motion.section
+          ref={howItWorksRef}
+          initial={{ opacity: 0, y: 50 }}
+          animate={howItWorksInView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.5, delay: 0.2 }}
           id="how-it-works"
           className="py-20 bg-gradient-to-r from-[#f0f2ff] to-[#ffffff]"
         >
@@ -535,85 +549,77 @@ export default function ChatbotLanding() {
                 Works
               </span>
             </h2>
-            <div className="max-w-6xl mx-auto">
-              <div
-                className="relative z-0 space-y-20"
-                x-data="{ entered: '0' }"
-              >
-                {[
-                  {
-                    step: 1,
-                    title: "Create & Configure",
-                    description:
-                      "Craft your chatbot by inputting custom Q&As and selecting its placement on your website.",
-                    icon: <Settings className="w-24 h-24 text-indigo-500" />,
-                    label: "Interesting",
-                  },
-                  {
-                    step: 2,
-                    title: "Customize",
-                    description:
-                      "Tailor your bot's appearance to match your brand and website design—all without any coding.",
-                    icon: (
-                      <PaintbrushIcon className="w-24 h-24 text-indigo-500" />
-                    ),
-                    label: "Engaging",
-                  },
-                  {
-                    step: 3,
-                    title: "Plug & Play",
-                    description:
-                      "Obtain your unique embed code and effortlessly add the chatbot to your website.",
-                    icon: <CodeIcon className="w-24 h-24 text-indigo-500" />,
-                    label: "Appealing",
-                  },
-                ].map((item, index) => (
-                  <section
-                    key={index}
-                    x-intersect={`entered = '${index}'`}
-                    x-intersect:margin="-70% 0 -30% 0"
-                    className={`[--i:${index}]`}
-                    x-bind:style={`'--e:' + entered`}
-                  >
-                    <div
-                      className={`relative bg-gradient-to-br from-white to-indigo-50 rounded-3xl overflow-hidden transition-all duration-700 ease-in-out shadow-lg hover:shadow-2xl z-[${
-                        2 - index
-                      }] group`}
-                      x-bind:class={`entered >= ${index} ? 'translate-y-0 opacity-100' : '-translate-y-[calc(100%*(var(--i)-var(--e)))] opacity-50'`}
-                    >
-                      <div className="md:flex justify-between items-center p-8 md:p-12">
-                        <div className="shrink-0 md:w-2/3 pr-8">
-                          <div className="md:max-w-xl">
-                            <div className="flex items-center mb-4">
-                              <div className="w-12 h-12 flex items-center justify-center bg-gradient-to-r from-[#aab2ff] to-indigo-500 text-white text-2xl font-bold rounded-full mr-4">
-                                {item.step}
-                              </div>
-                              <h3 className="text-3xl font-medium text-gray-800 group-hover:text-indigo-600 transition-colors duration-300">
-                                {item.title}
-                              </h3>
-                            </div>
-                            <p className="text-gray-600 text-lg mb-6 leading-relaxed">
-                              {item.description}
-                            </p>
+            <div className="max-w-6xl mx-auto space-y-20">
+              {[
+                {
+                  step: 1,
+                  title: "Create & Configure",
+                  description:
+                    "Craft your chatbot by inputting custom Q&As and selecting its placement on your website.",
+                  icon: <Settings className="w-24 h-24 text-indigo-500" />,
+                },
+                {
+                  step: 2,
+                  title: "Customize",
+                  description:
+                    "Tailor your bot's appearance to match your brand and website design—all without any coding.",
+                  icon: (
+                    <PaintbrushIcon className="w-24 h-24 text-indigo-500" />
+                  ),
+                },
+                {
+                  step: 3,
+                  title: "Plug & Play",
+                  description:
+                    "Obtain your unique embed code and effortlessly add the chatbot to your website.",
+                  icon: <CodeIcon className="w-24 h-24 text-indigo-500" />,
+                },
+              ].map((item, index) => (
+                // **Modify:** Replace Alpine.js attributes with Framer Motion
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, y: 50 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, amount: 0.2 }}
+                  transition={{ duration: 0.6, delay: index * 0.3 }}
+                  className="relative bg-gradient-to-br from-white to-indigo-50 rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl group"
+                >
+                  <div className="md:flex justify-between items-center p-8 md:p-12">
+                    <div className="shrink-0 md:w-2/3 pr-8">
+                      <div className="md:max-w-xl">
+                        <div className="flex items-center mb-4">
+                          <div className="w-12 h-12 flex items-center justify-center bg-gradient-to-r from-[#aab2ff] to-indigo-500 text-white text-2xl font-bold rounded-full mr-4">
+                            {item.step}
                           </div>
+                          <h3 className="text-3xl font-medium text-gray-800 group-hover:text-indigo-600 transition-colors duration-300">
+                            {item.title}
+                          </h3>
                         </div>
-                        <div className="flex items-center justify-center md:w-1/3 p-8 bg-gradient-to-br from-[#f0f2ff] to-[#ffffff] rounded-2xl transform group-hover:scale-105 transition-transform duration-300">
-                          {item.icon}
-                        </div>
+                        <p className="text-gray-600 text-lg mb-6 leading-relaxed">
+                          {item.description}
+                        </p>
                       </div>
-                      <div className="absolute top-0 right-0 mt-4 mr-6 text-4xl font-bold text-indigo-200 opacity-50 group-hover:opacity-100 transition-opacity duration-300">
-                        0{item.step}
-                      </div>
-                      <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-[#aab2ff] to-indigo-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500"></div>
                     </div>
-                  </section>
-                ))}
-              </div>
+                    <div className="flex items-center justify-center md:w-1/3 p-8 bg-gradient-to-br from-[#f0f2ff] to-[#ffffff] rounded-2xl transform group-hover:scale-105 transition-transform duration-300">
+                      {item.icon}
+                    </div>
+                  </div>
+                  <div className="absolute top-0 right-0 mt-4 mr-6 text-4xl font-bold text-indigo-200 opacity-50 group-hover:opacity-100 transition-opacity duration-300">
+                    0{item.step}
+                  </div>
+                  <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-[#aab2ff] to-indigo-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500"></div>
+                </motion.div>
+              ))}
             </div>
           </div>
-        </section>
+        </motion.section>
 
-        <section
+        {/* Testimonials Section */}
+        <motion.section
+          ref={testimonialsRef}
+          initial={{ opacity: 0, y: 50 }}
+          animate={testimonialsInView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.5, delay: 0.2 }}
           id="testimonials"
           className="py-20 bg-gradient-to-r from-[#f0f2ff] to-[#ffffff]"
         >
@@ -674,10 +680,14 @@ export default function ChatbotLanding() {
               ))}
             </div>
           </div>
-        </section>
+        </motion.section>
 
-        {/* New FAQ section */}
-        <section
+        {/* FAQ Section */}
+        <motion.section
+          ref={faqRef}
+          initial={{ opacity: 0, y: 50 }}
+          animate={faqInView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.5, delay: 0.2 }}
           id="faq"
           className="py-20 bg-gradient-to-r from-[#f0f2ff] to-[#ffffff]"
         >
@@ -688,7 +698,7 @@ export default function ChatbotLanding() {
                 Questions
               </span>
             </h2>
-            <div className="max-w-3xl mx-auto">
+            <div className="max-w-3xl mx-auto space-y-6">
               {[
                 {
                   question: "What is Askio?",
@@ -718,97 +728,90 @@ export default function ChatbotLanding() {
                   answer:
                     "Yes, you can create multiple chatbots, allowing you to have different chatbots for your various websites or web pages, each tailored to specific needs.",
                 },
-              ].map((item, index) => (
+              ].map((faq, index) => (
                 <motion.div
                   key={index}
                   initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, amount: 0.5 }}
                   transition={{ duration: 0.5, delay: index * 0.1 }}
-                  className="mb-6"
                 >
-                  <details className="group bg-white rounded-2xl shadow-md hover:shadow-lg transition-all duration-300">
-                    <summary className="flex justify-between items-center font-medium cursor-pointer list-none p-6">
-                      <span className="text-lg text-gray-800 font-semibold group-hover:text-indigo-600 transition-colors duration-300">
-                        {item.question}
-                      </span>
-                      <div className="transition-transform duration-300 group-open:rotate-180">
-                        <ChevronRight size={24} className="text-indigo-500" />
-                      </div>
-                    </summary>
-                    <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: "auto" }}
-                      exit={{ opacity: 0, height: 0 }}
-                      transition={{ duration: 0.3 }}
-                      className="px-6 pb-6 text-gray-600"
+                  <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+                    <button
+                      className="w-full px-6 py-4 text-left flex justify-between items-center focus:outline-none"
+                      onClick={() => toggleFAQ(index)}
+                      aria-expanded={activeIndex === index}
+                      aria-controls={`faq-${index}`}
                     >
-                      <div className="bg-gradient-to-br from-[#f0f2ff] to-[#ffffff] rounded-xl p-4 shadow-inner">
-                        {item.answer}
-                      </div>
-                    </motion.div>
-                  </details>
+                      <span className="text-xl font-semibold text-gray-800">
+                        {faq.question}
+                      </span>
+                      <motion.div
+                        animate={{ rotate: activeIndex === index ? 180 : 0 }}
+                        transition={{ duration: 0.3 }}
+                      >
+                        <ChevronDown className="w-6 h-6 text-indigo-500" />
+                      </motion.div>
+                    </button>
+                    <AnimatePresence initial={false}>
+                      {activeIndex === index && (
+                        <motion.div
+                          key={`answer-${index}`}
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: "auto" }}
+                          exit={{ opacity: 0, height: 0 }}
+                          transition={{ duration: 0.3, ease: "easeInOut" }}
+                        >
+                          <div className="px-6 pb-4 text-gray-600">
+                            <p className="text-lg">{faq.answer}</p>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
                 </motion.div>
               ))}
             </div>
           </div>
-        </section>
-
-        {/* CTA section */}
-        <section className="py-20 bg-gradient-to-r from-[#aab2ff] to-[#c2c8ff] text-gray-800">
-          <div className="container mx-auto px-4 text-center">
-            <h2 className="text-4xl font-bold mb-6">
-              Boost Your Website's Engagement Today!
-            </h2>
-            <p className="text-xl mb-8 max-w-2xl mx-auto">
-              Enhance customer support and engagement on all your websites -
-              instantly and effortlessly, with no coding needed.
-            </p>
-            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-              <Link
-                to="/auth"
-                className="bg-white text-[#aab2ff] px-8 py-4 rounded-full text-lg font-semibold hover:bg-[#f0f2ff] transition-colors duration-300 inline-flex items-center"
-              >
-                Start Building Now
-                <ArrowRight className="ml-2" />
-              </Link>
-            </motion.div>
-          </div>
-        </section>
+        </motion.section>
       </main>
 
-      <footer className="bg-gray-900 text-white py-12">
+      <footer className="bg-gradient-to-r from-gray-900 to-indigo-900 text-white py-12">
         <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            <div>
-              <div className="text-2xl font-bold mb-4">Askio</div>
-              <p className="text-gray-400">
-                Elevate Your Website - Free Chatbot!
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+            <div className="flex flex-col items-center md:items-start">
+              <Link to="/" className="flex items-center mb-4">
+                <img src="./icon.svg" alt="Askio" className="w-10 h-10 mr-2" />
+                <span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#aab2ff] to-indigo-400">
+                  Askio
+                </span>
+              </Link>
+              <p className="text-gray-300 text-center md:text-left mb-4">
+                Elevate Your Website with Free AI-Powered Chatbots
               </p>
+              <div className="flex space-x-4">
+                {[Twitter, Facebook, Linkedin, FaGithub].map((Icon, index) => (
+                  <a
+                    key={index}
+                    href="#"
+                    className="text-gray-400 hover:text-white transition-colors duration-300 hover:scale-110 transform"
+                    aria-label={`Follow us on ${Icon.name}`}
+                  >
+                    <Icon size={20} />
+                  </a>
+                ))}
+              </div>
             </div>
-            <div>
+
+            <div className="flex flex-col items-center md:items-start">
               <h3 className="text-lg font-semibold mb-4">Quick Links</h3>
               <ul className="space-y-2">
-                {["Features", "How it Works", "Testimonials"].map((item) => (
-                  <li key={item}>
-                    <a
-                      href={`#${item.toLowerCase().replace(" ", "-")}`}
-                      className="text-gray-400 hover:text-white transition-colors"
-                    >
-                      {item}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold mb-4">Legal</h3>
-              <ul className="space-y-2">
-                {["Privacy Policy", "Terms of Service", "Cookie Policy"].map(
+                {["Features", "How it Works", "Testimonials", "FAQ"].map(
                   (item) => (
                     <li key={item}>
                       <a
-                        href="#"
-                        className="text-gray-400 hover:text-white transition-colors"
+                        href={`#${item.toLowerCase().replace(" ", "-")}`}
+                        className="text-gray-300 hover:text-white transition-colors duration-300"
                       >
                         {item}
                       </a>
@@ -817,23 +820,45 @@ export default function ChatbotLanding() {
                 )}
               </ul>
             </div>
-            <div>
-              <h3 className="text-lg font-semibold mb-4">Connect</h3>
-              <div className="flex space-x-4">
-                {[Twitter, Facebook, Linkedin, Instagram].map((Icon, index) => (
-                  <a
-                    key={index}
-                    href="#"
-                    className="text-gray-400 hover:text-white transition-colors"
-                  >
-                    <Icon size={24} />
-                  </a>
-                ))}
-              </div>
+
+            <div className="flex flex-col items-center md:items-start">
+              <h3 className="text-lg font-semibold mb-4">Stay Updated</h3>
+              <p className="text-gray-300 mb-4">
+                Subscribe to our newsletter for the latest updates and features.
+              </p>
+              <form className="flex w-full max-w-sm">
+                <input
+                  type="email"
+                  placeholder="Enter your email"
+                  className="bg-gray-800 text-white px-4 py-2 rounded-l-md focus:outline-none focus:ring-2 focus:ring-indigo-500 flex-grow"
+                />
+                <button
+                  type="submit"
+                  className="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded-r-md transition-colors duration-300"
+                >
+                  Subscribe
+                </button>
+              </form>
             </div>
           </div>
-          <div className="mt-8 pt-8 border-t border-gray-700 text-center text-gray-400">
-            © 2024 Askio. All rights reserved.
+
+          <div className="border-t border-gray-700 pt-8 flex flex-col md:flex-row justify-between items-center">
+            <p className="text-gray-400 text-sm mb-4 md:mb-0">
+              © {new Date().getFullYear()} Askio. All rights reserved.
+            </p>
+            <div className="flex space-x-4">
+              {["Privacy Policy", "Terms of Service", "Cookie Policy"].map(
+                (item) => (
+                  <a
+                    key={item}
+                    href="#"
+                    className="text-gray-400 hover:text-white text-sm transition-colors duration-300"
+                  >
+                    {item}
+                  </a>
+                )
+              )}
+            </div>
           </div>
         </div>
       </footer>
