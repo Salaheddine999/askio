@@ -13,14 +13,16 @@ import {
   Linkedin,
   Instagram,
   Paintbrush,
-  ChevronRight,
   Zap,
   Settings,
+  Paintbrush as PaintbrushIcon,
+  Code as CodeIcon,
 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
 import { FaGithub } from "react-icons/fa";
 import { Helmet } from "react-helmet-async";
+import { motion } from "framer-motion";
+import { ChevronRight } from "lucide-react";
 
 export default function ChatbotLanding() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -195,6 +197,49 @@ export default function ChatbotLanding() {
     };
   }, []);
 
+  useEffect(() => {
+    // Load Alpine.js and Intersect plugin
+    const script = document.createElement("script");
+    script.src = "https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js";
+    script.defer = true;
+    document.head.appendChild(script);
+
+    const intersectScript = document.createElement("script");
+    intersectScript.src =
+      "https://cdn.jsdelivr.net/npm/@alpinejs/intersect@3.x.x/dist/cdn.min.js";
+    intersectScript.defer = true;
+    document.head.appendChild(intersectScript);
+
+    return () => {
+      document.head.removeChild(script);
+      document.head.removeChild(intersectScript);
+    };
+  }, []);
+
+  const testimonials = [
+    {
+      name: "Sarah L.",
+      role: "Boutique Owner",
+      quote:
+        "As a small business owner, I was skeptical about chatbots. But this free tool changed everything! It's like having a 24/7 customer service rep.",
+      avatar: "https://randomuser.me/api/portraits/women/68.jpg",
+    },
+    {
+      name: "Mark L.",
+      role: "E-commerce Entrepreneur",
+      quote:
+        "Multiple sites, one solution. Cart abandonment down 15%. Best free tool ever!",
+      avatar: "https://randomuser.me/api/portraits/men/79.jpg",
+    },
+    {
+      name: "Pat M.",
+      role: "Freelance Designer",
+      quote:
+        "Easy to customize, easier to use. It's like having a tireless assistant.",
+      avatar: "https://randomuser.me/api/portraits/women/42.jpg",
+    },
+  ];
+
   return (
     <div className="bg-gradient-to-r from-[#f0f2ff] to-[#ffffff] min-h-screen">
       <Helmet>
@@ -244,43 +289,6 @@ export default function ChatbotLanding() {
           </button>
         </div>
       </header>
-
-      <AnimatePresence>
-        {isMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.3 }}
-            className="md:hidden fixed top-[72px] left-0 right-0 bg-gradient-to-r from-[#f0f2ff] to-[#ffffff] backdrop-blur-md py-6 px-4 shadow-md z-40"
-          >
-            <nav className="flex flex-col space-y-4">
-              {["Features", "How it Works", "Testimonials", "FAQ"].map(
-                (item) => (
-                  <a
-                    key={item}
-                    href={`#${item.toLowerCase().replace(" ", "-")}`}
-                    className="text-gray-700 hover:text-[#3b82f6] transition-colors duration-300 text-lg"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    {item}
-                  </a>
-                )
-              )}
-              <Link
-                to="/auth"
-                className="bg-gradient-to-r from-[#aab2ff] to-indigo-500 text-white px-4 py-2 rounded-full font-semibold hover:shadow-md transition-all duration-300 text-center flex items-center justify-center group"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                <span className="group-hover:mr-2 transition-all duration-300">
-                  Get Started
-                </span>
-                <ArrowRight className="ml-2 h-5 w-5 opacity-100 group-hover:opacity-100 transition-all duration-300" />
-              </Link>
-            </nav>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       <main className="pt-0 sm:pt-12">
         <section className="py-12 sm:py-20 overflow-hidden relative bg-gradient-to-r from-[#f0f2ff] to-[#ffffff]">
@@ -451,7 +459,7 @@ export default function ChatbotLanding() {
           className="py-20 bg-gradient-to-r from-[#f0f2ff] to-[#ffffff]"
         >
           <div className="container mx-auto px-6">
-            <h2 className="text-4xl font-bold text-center mb-12 text-gray-800">
+            <h2 className="text-4xl font-bold text-center mb-16 text-gray-800">
               Powerful{" "}
               <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#aab2ff] to-indigo-500">
                 Features
@@ -460,37 +468,37 @@ export default function ChatbotLanding() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
               {[
                 {
-                  icon: <Brush className="h-12 w-12 text-[#aab2ff]" />,
+                  icon: <Brush className="h-12 w-12 text-indigo-500" />,
                   title: "Easy Customization",
                   description:
                     "Create chatbots that perfectly match your brand identity with our intuitive customization tools.",
                 },
                 {
-                  icon: <ToyBrick className="h-12 w-12 text-[#aab2ff]" />,
+                  icon: <ToyBrick className="h-12 w-12 text-indigo-500" />,
                   title: "Seamless Integration",
                   description:
                     "Add your chatbot to any website with just a few clicks, no coding required.",
                 },
                 {
-                  icon: <MessageCircle className="h-12 w-12 text-[#aab2ff]" />,
+                  icon: <MessageCircle className="h-12 w-12 text-indigo-500" />,
                   title: "Real-Time Engagement",
                   description:
                     "Engage visitors instantly with automated conversations tailored to your business needs.",
                 },
                 {
-                  icon: <Paintbrush className="h-12 w-12 text-[#aab2ff]" />,
+                  icon: <Paintbrush className="h-12 w-12 text-indigo-500" />,
                   title: "Visual Customization",
                   description:
                     "Design your chatbot's appearance to perfectly match your website's look and feel.",
                 },
                 {
-                  icon: <Zap className="h-12 w-12 text-[#aab2ff]" />,
+                  icon: <Zap className="h-12 w-12 text-indigo-500" />,
                   title: "Instant Deployment",
                   description:
                     "Deploy your chatbot instantly with a simple embed code, getting you up and running in no time.",
                 },
                 {
-                  icon: <Settings className="h-12 w-12 text-[#aab2ff]" />,
+                  icon: <Settings className="h-12 w-12 text-indigo-500" />,
                   title: "Easy Configuration",
                   description:
                     "Set up your chatbot's responses and behavior quickly with our user-friendly configuration interface.",
@@ -498,15 +506,15 @@ export default function ChatbotLanding() {
               ].map((feature, index) => (
                 <motion.div
                   key={index}
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: index * 0.1 }}
-                  className="bg-white rounded-2xl p-8 shadow-md hover:shadow-xl transition-all duration-300 flex flex-col items-center text-center group"
+                  className="bg-white rounded-2xl p-8 shadow-md hover:shadow-xl transition-all duration-300 group"
                 >
-                  <div className="mb-6 group-hover:scale-110 transition-transform duration-300">
+                  <div className="mb-6 group-hover:scale-110 transition-transform duration-300 bg-gradient-to-br from-[#f0f2ff] to-[#ffffff] p-4 rounded-full inline-block">
                     {feature.icon}
                   </div>
-                  <h3 className="text-2xl font-semibold mb-4 text-gray-800">
+                  <h3 className="text-2xl font-semibold mb-4 text-gray-800 group-hover:text-indigo-600 transition-colors duration-300">
                     {feature.title}
                   </h3>
                   <p className="text-gray-600">{feature.description}</p>
@@ -521,67 +529,86 @@ export default function ChatbotLanding() {
           className="py-20 bg-gradient-to-r from-[#f0f2ff] to-[#ffffff]"
         >
           <div className="container mx-auto px-6">
-            <h2 className="text-4xl font-bold text-center mb-12 text-gray-800">
+            <h2 className="text-5xl font-bold text-center mb-16 text-gray-800">
               How It{" "}
               <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#aab2ff] to-indigo-500">
                 Works
               </span>
             </h2>
-            <div className="flex flex-col md:flex-row justify-center items-center gap-8 relative">
-              {[
-                {
-                  step: 1,
-                  title: "Create & Configure",
-                  description:
-                    "Craft your chatbot by inputting custom Q&As and selecting its placement on your website.",
-                },
-                {
-                  step: 2,
-                  title: "Customize",
-                  description:
-                    "Tailor your bot's appearance to match your brand and website design—all without any coding.",
-                },
-                {
-                  step: 3,
-                  title: "Plug & Play",
-                  description:
-                    "Obtain your unique embed code and effortlessly add the chatbot to your website.",
-                },
-              ].map((item, index) => (
-                <React.Fragment key={index}>
-                  <motion.div
-                    initial={{ opacity: 0, y: 30 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: index * 0.2 }}
-                    className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-shadow duration-300 flex flex-col items-center text-center w-full md:w-1/3 relative z-10"
+            <div className="max-w-6xl mx-auto">
+              <div
+                className="relative z-0 space-y-20"
+                x-data="{ entered: '0' }"
+              >
+                {[
+                  {
+                    step: 1,
+                    title: "Create & Configure",
+                    description:
+                      "Craft your chatbot by inputting custom Q&As and selecting its placement on your website.",
+                    icon: <Settings className="w-24 h-24 text-indigo-500" />,
+                    label: "Interesting",
+                  },
+                  {
+                    step: 2,
+                    title: "Customize",
+                    description:
+                      "Tailor your bot's appearance to match your brand and website design—all without any coding.",
+                    icon: (
+                      <PaintbrushIcon className="w-24 h-24 text-indigo-500" />
+                    ),
+                    label: "Engaging",
+                  },
+                  {
+                    step: 3,
+                    title: "Plug & Play",
+                    description:
+                      "Obtain your unique embed code and effortlessly add the chatbot to your website.",
+                    icon: <CodeIcon className="w-24 h-24 text-indigo-500" />,
+                    label: "Appealing",
+                  },
+                ].map((item, index) => (
+                  <section
+                    key={index}
+                    x-intersect={`entered = '${index}'`}
+                    x-intersect:margin="-70% 0 -30% 0"
+                    className={`[--i:${index}]`}
+                    x-bind:style={`'--e:' + entered`}
                   >
-                    <div className="mb-6">
-                      <div className="w-16 h-16 bg-[#aab2ff] text-white rounded-full flex items-center justify-center text-2xl font-bold">
-                        {item.step}
-                      </div>
-                    </div>
-                    <h3 className="text-2xl font-semibold text-gray-800 mb-2">
-                      {item.title}
-                    </h3>
-                    <p className="text-gray-600">{item.description}</p>
-                  </motion.div>
-                  {index < 2 && (
-                    <svg
-                      className="hidden md:block w-12 h-12 text-indigo-500 mx-2 transform translate-y-1/2"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
+                    <div
+                      className={`relative bg-gradient-to-br from-white to-indigo-50 rounded-3xl overflow-hidden transition-all duration-700 ease-in-out shadow-lg hover:shadow-2xl z-[${
+                        2 - index
+                      }] group`}
+                      x-bind:class={`entered >= ${index} ? 'translate-y-0 opacity-100' : '-translate-y-[calc(100%*(var(--i)-var(--e)))] opacity-50'`}
                     >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M14 5l7 7m0 0l-7 7m7-7H3"
-                      />
-                    </svg>
-                  )}
-                </React.Fragment>
-              ))}
+                      <div className="md:flex justify-between items-center p-8 md:p-12">
+                        <div className="shrink-0 md:w-2/3 pr-8">
+                          <div className="md:max-w-xl">
+                            <div className="flex items-center mb-4">
+                              <div className="w-12 h-12 flex items-center justify-center bg-gradient-to-r from-[#aab2ff] to-indigo-500 text-white text-2xl font-bold rounded-full mr-4">
+                                {item.step}
+                              </div>
+                              <h3 className="text-3xl font-medium text-gray-800 group-hover:text-indigo-600 transition-colors duration-300">
+                                {item.title}
+                              </h3>
+                            </div>
+                            <p className="text-gray-600 text-lg mb-6 leading-relaxed">
+                              {item.description}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-center md:w-1/3 p-8 bg-gradient-to-br from-[#f0f2ff] to-[#ffffff] rounded-2xl transform group-hover:scale-105 transition-transform duration-300">
+                          {item.icon}
+                        </div>
+                      </div>
+                      <div className="absolute top-0 right-0 mt-4 mr-6 text-4xl font-bold text-indigo-200 opacity-50 group-hover:opacity-100 transition-opacity duration-300">
+                        0{item.step}
+                      </div>
+                      <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-[#aab2ff] to-indigo-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500"></div>
+                    </div>
+                  </section>
+                ))}
+              </div>
             </div>
           </div>
         </section>
@@ -597,45 +624,23 @@ export default function ChatbotLanding() {
                 Stories
               </span>
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-12 max-w-6xl mx-auto">
-              {[
-                {
-                  name: "Sarah L.",
-                  role: "Boutique Owner",
-                  quote:
-                    "As a small business owner, I was skeptical about chatbots. But this free tool changed everything! It's like having a 24/7 customer service rep.",
-                  avatar: "https://randomuser.me/api/portraits/women/68.jpg",
-                },
-                {
-                  name: "Mark L.",
-                  role: "E-commerce Entrepreneur",
-                  quote:
-                    "Multiple sites, one solution. Cart abandonment down 15%. Best free tool ever!",
-                  avatar: "https://randomuser.me/api/portraits/men/79.jpg",
-                },
-                {
-                  name: "Pat M.",
-                  role: "Freelance Designer",
-                  quote:
-                    "Easy to customize, easier to use. It's like having a tireless assistant.",
-                  avatar: "https://randomuser.me/api/portraits/women/42.jpg",
-                },
-              ].map((testimonial, index) => (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+              {testimonials.map((testimonial, index) => (
                 <motion.div
                   key={index}
-                  initial={{ opacity: 0, y: 30 }}
+                  initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: index * 0.1 }}
-                  className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-300 flex flex-col items-center text-center relative overflow-hidden group"
+                  className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-300 flex flex-col items-center text-center relative overflow-hidden group h-full"
                 >
                   <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#aab2ff] to-indigo-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></div>
-                  <div className="relative">
+                  <div className="relative mb-6">
                     <img
                       src={testimonial.avatar}
                       alt={testimonial.name}
-                      className="w-24 h-24 rounded-full mb-6 border-4 border-[#aab2ff] shadow-md group-hover:scale-110 transition-transform duration-300"
+                      className="w-24 h-24 rounded-full border-4 border-[#aab2ff] shadow-md group-hover:scale-110 transition-transform duration-300"
                     />
-                    <div className="absolute -top-2 -right-2 bg-[#aab2ff] text-white rounded-full p-2">
+                    <div className="absolute -top-2 -right-2 bg-gradient-to-r from-[#aab2ff] to-indigo-500 text-white rounded-full p-2">
                       <MessageCircle size={16} />
                     </div>
                   </div>
@@ -723,11 +728,11 @@ export default function ChatbotLanding() {
                 >
                   <details className="group bg-white rounded-2xl shadow-md hover:shadow-lg transition-all duration-300">
                     <summary className="flex justify-between items-center font-medium cursor-pointer list-none p-6">
-                      <span className="text-lg text-gray-800 font-semibold">
+                      <span className="text-lg text-gray-800 font-semibold group-hover:text-indigo-600 transition-colors duration-300">
                         {item.question}
                       </span>
                       <div className="transition-transform duration-300 group-open:rotate-180">
-                        <ChevronRight size={24} className="text-[#aab2ff]" />
+                        <ChevronRight size={24} className="text-indigo-500" />
                       </div>
                     </summary>
                     <motion.div
@@ -737,7 +742,7 @@ export default function ChatbotLanding() {
                       transition={{ duration: 0.3 }}
                       className="px-6 pb-6 text-gray-600"
                     >
-                      <div className="bg-[#f8f9ff] rounded-xl p-4 shadow-inner">
+                      <div className="bg-gradient-to-br from-[#f0f2ff] to-[#ffffff] rounded-xl p-4 shadow-inner">
                         {item.answer}
                       </div>
                     </motion.div>
