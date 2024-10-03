@@ -244,6 +244,12 @@ export default function ChatbotLanding() {
   const [testimonialsRef, testimonialsInView] = useInViewSection();
   const [faqRef, faqInView] = useInViewSection();
 
+  // Add this near your other useInView hooks
+  const [ctaRef, ctaInView] = useInView({
+    triggerOnce: true,
+    threshold: 0.1,
+  });
+
   return (
     <div className="bg-gradient-to-r from-[#f0f2ff] to-[#ffffff] min-h-screen">
       <Helmet>
@@ -771,6 +777,33 @@ export default function ChatbotLanding() {
                   </div>
                 </motion.div>
               ))}
+            </div>
+          </div>
+        </motion.section>
+
+        {/* Compact CTA Section with Animation */}
+        <motion.section
+          ref={ctaRef}
+          initial={{ opacity: 0, y: 50 }}
+          animate={ctaInView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.5, delay: 0.2 }}
+          className="cta-section bg-gradient-to-r from-[#f0f2ff] to-[#ffffff] py-16"
+        >
+          <div className="container mx-auto px-4">
+            <div className="bg-white rounded-2xl shadow-lg p-8 sm:p-12 text-center max-w-5xl mx-auto">
+              <h2 className="text-3xl sm:text-4xl font-bold mb-4 text-gray-800">
+                Elevate Your Website's Engagement
+              </h2>
+              <p className="text-lg text-gray-600 mb-8 max-w-2xl mx-auto">
+                Join thousands of websites using Askio to provide instant
+                support and enhance user experience.
+              </p>
+              <Link
+                to="/auth"
+                className="inline-block bg-gradient-to-r from-[#aab2ff] to-indigo-500 text-white px-8 py-3 rounded-full text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
+              >
+                Start Free Trial
+              </Link>
             </div>
           </div>
         </motion.section>
