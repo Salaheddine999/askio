@@ -253,7 +253,7 @@ export default function ChatbotLanding() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   return (
-    <div className="bg-gradient-to-r from-[#f0f2ff] to-[#ffffff] min-h-screen">
+    <div className="bg-gradient-to-r from-[#f0f2ff] to-[#ffffff]">
       <Helmet>
         <title>Askio - Your Chatbot Builder</title>
         <meta
