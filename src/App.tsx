@@ -20,14 +20,12 @@ import { HelmetProvider } from "react-helmet-async";
 
 const App: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
   const [darkMode, setDarkMode] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
-      setLoading(false);
     });
 
     const isDarkMode = localStorage.getItem("darkMode") === "true";
@@ -52,10 +50,6 @@ const App: React.FC = () => {
   const toggleSidebar = () => {
     setSidebarOpen((prevOpen) => !prevOpen);
   };
-
-  // if (loading) {
-  //   return <div>Loading...</div>;
-  // }
 
   return (
     <HelmetProvider>
