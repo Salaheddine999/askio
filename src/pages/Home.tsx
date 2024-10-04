@@ -26,7 +26,6 @@ import { ChevronDown } from "lucide-react";
 import { AnimatePresence } from "framer-motion";
 
 export default function ChatbotLanding() {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [chatMessages, setChatMessages] = useState<
     Array<{ type: string; content: string }>
   >([]);
@@ -250,6 +249,9 @@ export default function ChatbotLanding() {
     threshold: 0.1,
   });
 
+  // Add this state for managing the mobile menu
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
   return (
     <div className="bg-gradient-to-r from-[#f0f2ff] to-[#ffffff] min-h-screen">
       <Helmet>
@@ -259,7 +261,7 @@ export default function ChatbotLanding() {
           content="Manage and optimize your chatbots with Askio's dashboard."
         />
       </Helmet>
-      <header className="w-full mx-auto z-50 transition-all duration-300 pt-6 pb-4">
+      <header className="w-full mx-auto z-50 transition-all duration-300 pt-6 pb-4 relative">
         <div className="container mx-auto px-4 flex justify-between items-center">
           <Link
             to="/"
@@ -287,17 +289,54 @@ export default function ChatbotLanding() {
               to="/auth"
               className="bg-gradient-to-r from-[#aab2ff] to-indigo-500 text-white px-6 py-2 font-semibold rounded-full hover:shadow-lg transition-all duration-300 flex items-center group"
             >
-              <span className=" transition-all duration-300">Get Started</span>
+              <span className="transition-all duration-300">Get Started</span>
               <ArrowRight className="ml-2 h-5 w-5 opacity-100 transition-all duration-300" />
             </Link>
           </div>
           <button
             className="md:hidden text-gray-700 hover:text-[#3b82f6] transition-colors duration-300"
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           >
-            {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
         </div>
+
+        {/* Mobile Menu */}
+        <AnimatePresence>
+          {isMobileMenuOpen && (
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+              className="md:hidden absolute top-full left-0 right-0 bg-gradient-to-r from-[#f0f2ff] to-[#ffffff] shadow-lg z-50"
+            >
+              <div className="container mx-auto px-4 py-4">
+                <nav className="flex flex-col space-y-4">
+                  {["Features", "How it Works", "Testimonials", "FAQ"].map(
+                    (item) => (
+                      <a
+                        key={item}
+                        href={`#${item.toLowerCase().replace(" ", "-")}`}
+                        className="text-gray-700 hover:text-indigo-500 transition-colors duration-300"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                      >
+                        {item}
+                      </a>
+                    )
+                  )}
+                  <Link
+                    to="/auth"
+                    className="bg-gradient-to-r from-[#aab2ff] to-indigo-500 text-white px-6 py-2 font-semibold rounded-full hover:shadow-lg transition-all duration-300 text-center"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Get Started
+                  </Link>
+                </nav>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </header>
 
       <main className="pt-0 sm:pt-12">
