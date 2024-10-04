@@ -53,9 +53,9 @@ const App: React.FC = () => {
     setSidebarOpen((prevOpen) => !prevOpen);
   };
 
-  if (loading) {
-    return <div>Loading...</div>;
-  }
+  // if (loading) {
+  //   return <div>Loading...</div>;
+  // }
 
   return (
     <HelmetProvider>
