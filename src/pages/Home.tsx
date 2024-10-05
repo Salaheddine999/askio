@@ -253,7 +253,7 @@ export default function ChatbotLanding() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   return (
-    <div className="bg-gradient-to-r from-[#f0f2ff] to-[#ffffff]">
+    <div className="bg-gradient-to-r from-[#f0f2ff] to-[#ffffff] min-h-screen">
       <Helmet>
         <title>Askio - Your Chatbot Builder</title>
         <meta
@@ -841,7 +841,7 @@ export default function ChatbotLanding() {
                 to="/auth"
                 className="inline-block bg-gradient-to-r from-[#aab2ff] to-indigo-500 text-white px-8 py-3 rounded-full text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
               >
-                Start Free Trial
+                Try it now
               </Link>
             </div>
           </div>
@@ -859,7 +859,7 @@ export default function ChatbotLanding() {
                 </span>
               </Link>
               <p className="text-gray-300 text-center md:text-left mb-4">
-                Elevate Your Website with Free AI-Powered Chatbots
+                Elevate Your Website with Free Custom Chatbots
               </p>
               <div className="flex space-x-4">
                 {[Twitter, Facebook, Linkedin, FaGithub].map((Icon, index) => (
