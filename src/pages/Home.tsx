@@ -261,8 +261,8 @@ export default function ChatbotLanding() {
           content="Manage and optimize your chatbots with Askio's dashboard."
         />
       </Helmet>
-      <header className="w-full mx-auto z-50 transition-all duration-300 pt-6 pb-4 relative">
-        <div className="container mx-auto px-4 flex justify-between items-center">
+      <header className="w-full mx-auto z-50 transition-all duration-300 pt-6 pb-4 relative max-w-7xl px-4">
+        <div className="container mx-auto flex justify-between items-center">
           <Link
             to="/"
             className="text-2xl font-bold flex items-center transition-transform duration-300 hover:scale-105"
@@ -311,7 +311,7 @@ export default function ChatbotLanding() {
               transition={{ duration: 0.3 }}
               className="md:hidden absolute top-full left-0 right-0 bg-gradient-to-r from-[#f0f2ff] to-[#ffffff] shadow-lg z-50"
             >
-              <div className="container mx-auto px-4 py-4">
+              <div className="container mx-auto px-4 py-4 max-w-7xl">
                 <nav className="flex flex-col space-y-4">
                   {["Features", "How it Works", "Testimonials", "FAQ"].map(
                     (item) => (
@@ -358,7 +358,7 @@ export default function ChatbotLanding() {
             ></motion.div>
           </div>
 
-          <div className="container mx-auto px-4 relative z-10">
+          <div className="container mx-auto px-4 relative z-10 max-w-7xl">
             <div className="flex flex-col md:flex-row items-center justify-between">
               <motion.div
                 initial={{ opacity: 0, x: -50 }}
@@ -512,14 +512,14 @@ export default function ChatbotLanding() {
           id="features"
           className="py-20 bg-gradient-to-r from-[#f0f2ff] to-[#ffffff]"
         >
-          <div className="container mx-auto px-6">
+          <div className="container mx-auto px-6 max-w-7xl">
             <h2 className="text-4xl font-bold text-center mb-16 text-gray-800">
               Powerful{" "}
               <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#aab2ff] to-indigo-500">
                 Features
               </span>
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-7xl mx-auto">
               {[
                 {
                   icon: <Brush className="h-12 w-12 text-indigo-500" />,
@@ -587,14 +587,14 @@ export default function ChatbotLanding() {
           id="how-it-works"
           className="py-20 bg-gradient-to-r from-[#f0f2ff] to-[#ffffff]"
         >
-          <div className="container mx-auto px-6">
+          <div className="container mx-auto px-6 max-w-7xl">
             <h2 className="text-5xl font-bold text-center mb-16 text-gray-800">
               How It{" "}
               <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#aab2ff] to-indigo-500">
                 Works
               </span>
             </h2>
-            <div className="max-w-6xl mx-auto space-y-20">
+            <div className="max-w-7xl mx-auto space-y-20">
               {[
                 {
                   step: 1,
@@ -668,14 +668,14 @@ export default function ChatbotLanding() {
           id="testimonials"
           className="py-20 bg-gradient-to-r from-[#f0f2ff] to-[#ffffff]"
         >
-          <div className="container mx-auto px-6">
+          <div className="container mx-auto px-6 max-w-7xl">
             <h2 className="text-4xl font-bold text-center mb-16 text-gray-800">
               User{" "}
               <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#aab2ff] to-indigo-500">
                 Stories
               </span>
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-7xl mx-auto">
               {testimonials.map((testimonial, index) => (
                 <motion.div
                   key={index}
@@ -736,14 +736,14 @@ export default function ChatbotLanding() {
           id="faq"
           className="py-20 bg-gradient-to-r from-[#f0f2ff] to-[#ffffff]"
         >
-          <div className="container mx-auto px-4">
+          <div className="container mx-auto px-4 max-w-7xl">
             <h2 className="text-4xl font-bold text-center mb-16 text-gray-800">
               Frequently Asked{" "}
               <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#aab2ff] to-indigo-500">
                 Questions
               </span>
             </h2>
-            <div className="max-w-3xl mx-auto space-y-6">
+            <div className="max-w-4xl mx-auto space-y-6">
               {[
                 {
                   question: "What is Askio?",
@@ -828,8 +828,8 @@ export default function ChatbotLanding() {
           transition={{ duration: 0.5, delay: 0.2 }}
           className="cta-section bg-gradient-to-r from-[#f0f2ff] to-[#ffffff] py-16"
         >
-          <div className="container mx-auto px-4">
-            <div className="bg-white rounded-2xl shadow-lg p-8 sm:p-12 text-center max-w-5xl mx-auto">
+          <div className="container mx-auto px-4 max-w-7xl">
+            <div className="bg-white rounded-2xl shadow-lg p-8 sm:p-12 text-center max-w-4xl mx-auto">
               <h2 className="text-3xl sm:text-4xl font-bold mb-4 text-gray-800">
                 Elevate Your Website's Engagement
               </h2>
@@ -849,7 +849,7 @@ export default function ChatbotLanding() {
       </main>
 
       <footer className="bg-gradient-to-r from-gray-900 to-indigo-900 text-white py-12">
-        <div className="container mx-auto px-4">
+        <div className="container mx-auto px-4 max-w-7xl">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
             <div className="flex flex-col items-center md:items-start">
               <Link to="/" className="flex items-center mb-4">
