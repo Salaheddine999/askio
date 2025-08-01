@@ -342,7 +342,7 @@ const Dashboard: React.FC<DashboardProps> = ({ toggleSidebar }) => {
           content="Manage and optimize your chatbots with Askio's dashboard."
         />
       </Helmet>
-      <div className="w-full 2xl:w-[85%] px-4 sm:px-6 lg:px-12 py-8 sm:py-12">
+      <div className="w-full px-4 sm:px-6 lg:px-12 py-8 sm:py-12">
         <header className="mb-8 sm:mb-12 flex justify-between items-center">
           <div className="flex items-center">
             <button
