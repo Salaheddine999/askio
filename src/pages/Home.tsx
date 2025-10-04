@@ -2,7 +2,6 @@ import React, { useState, useRef, useEffect } from "react";
 import { useInView } from "react-intersection-observer";
 import {
   MessageCircle,
-  ToyBrick,
   ArrowRight,
   Brush,
   Menu,
@@ -12,18 +11,133 @@ import {
   Twitter,
   Facebook,
   Linkedin,
-  Paintbrush,
-  Zap,
   Settings,
   Paintbrush as PaintbrushIcon,
   Code as CodeIcon,
+  Palette,
+  Blocks,
+  Sparkles,
+  Rocket,
+  Sliders,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { FaGithub } from "react-icons/fa";
 import { Helmet } from "react-helmet-async";
-import { motion } from "framer-motion";
+import { motion, useScroll, useTransform } from "framer-motion";
 import { ChevronDown } from "lucide-react";
 import { AnimatePresence } from "framer-motion";
+
+// Stack Card Component with scroll animations
+function StackCard({ item, index }: { item: any; index: number }) {
+  const cardRef = useRef<HTMLDivElement>(null);
+  
+  const { scrollYProgress } = useScroll({
+    target: cardRef,
+    offset: ["start end", "start start"]
+  });
+
+  const scale = useTransform(scrollYProgress, [0, 1], [0.9, 1]);
+  const opacity = useTransform(scrollYProgress, [0, 1], [0.6, 1]);
+
+  return (
+    <motion.div
+      ref={cardRef}
+      style={{
+        position: "sticky",
+        top: `${80 + index * 40}px`,
+        zIndex: index + 1,
+        scale,
+        opacity,
+      }}
+      className="mb-8"
+    >
+      <div
+        className={`relative bg-gradient-to-br ${item.color} rounded-3xl overflow-hidden shadow-2xl group border-2 border-gray-100 hover:border-indigo-200`}
+        style={{
+          transformOrigin: "top center",
+        }}
+      >
+        {/* Animated gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-tr from-indigo-100/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
+        
+        {/* Top decorative line */}
+        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-indigo-300/60 to-transparent"></div>
+
+        {/* Card Content */}
+        <div className="relative z-10 p-10 md:p-14">
+          {/* Header with step badge */}
+          <div className="flex items-start justify-between mb-8">
+            <div className="flex items-center gap-5">
+              <div className="relative">
+                <div className="w-16 h-16 flex items-center justify-center bg-gradient-to-br from-indigo-400 to-indigo-300 text-white text-2xl font-bold rounded-2xl shadow-xl">
+                  {item.step}
+                </div>
+                <div className="absolute -top-1 -right-1 w-5 h-5 bg-indigo-400 rounded-full shadow-lg"></div>
+              </div>
+              <div>
+                <div className="text-indigo-500 text-sm font-medium uppercase tracking-wider mb-1">
+                  Step {item.step}
+                </div>
+                <h3 className="text-4xl md:text-5xl font-bold text-gray-800">
+                  {item.title}
+                </h3>
+              </div>
+            </div>
+          </div>
+
+          {/* Content Grid */}
+          <div className="grid md:grid-cols-[1fr,auto] gap-8 items-center">
+            {/* Description */}
+            <div className="space-y-6">
+              <p className="text-gray-700 text-xl leading-relaxed">
+                {item.description}
+              </p>
+              
+              {/* Feature tags */}
+              {item.features && (
+                <div className="flex flex-wrap gap-3">
+                  {item.features.map((feature: string, idx: number) => (
+                    <span
+                      key={idx}
+                      className="px-4 py-2 bg-white/80 backdrop-blur-sm text-indigo-500 text-sm font-medium rounded-full border border-indigo-200 hover:bg-white hover:border-indigo-300 transition-colors shadow-sm"
+                    >
+                      {feature}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Icon Container */}
+            <div className="shrink-0 flex justify-center md:justify-end">
+              <div className="relative">
+                <div className="w-24 h-24 md:w-28 md:h-28 flex items-center justify-center bg-white backdrop-blur-md rounded-3xl shadow-2xl border-2 border-indigo-200 group-hover:scale-110 group-hover:rotate-3 transition-all duration-500">
+                  {item.icon}
+                </div>
+                {/* Glow effect */}
+                <div className="absolute inset-0 bg-indigo-300/30 rounded-3xl blur-xl scale-90 opacity-50 group-hover:opacity-75 transition-opacity duration-500"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Decorative Elements */}
+        <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-200/20 rounded-full blur-3xl -translate-y-48 translate-x-48"></div>
+        <div className="absolute bottom-0 left-0 w-72 h-72 bg-indigo-200/20 rounded-full blur-3xl translate-y-36 -translate-x-36"></div>
+        
+        {/* Large Step Number Background */}
+        <div className="absolute bottom-6 right-6 md:bottom-8 md:right-10 text-[140px] md:text-[200px] font-black text-indigo-200/20 leading-none select-none pointer-events-none">
+          {item.step}
+        </div>
+
+        {/* Shimmer effect on hover */}
+        <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-1000">
+          <div className="absolute inset-0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000 bg-gradient-to-r from-transparent via-indigo-200/20 to-transparent skew-x-12"></div>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
 
 export default function ChatbotLanding() {
   const [chatMessages, setChatMessages] = useState<
@@ -280,14 +394,14 @@ export default function ChatbotLanding() {
                 className="hover:text-indigo-500 transition-colors duration-300 relative group py-2"
               >
                 {item}
-                <span className="absolute left-0 bottom-0 w-full h-0.5 bg-gradient-to-r from-[#aab2ff] to-indigo-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></span>
+                <span className="absolute left-0 bottom-0 w-full h-0.5 bg-gradient-to-r from-indigo-300 to-indigo-400 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></span>
               </a>
             ))}
           </nav>
           <div className="hidden md:flex items-center">
             <Link
               to="/auth"
-              className="bg-gradient-to-r from-[#aab2ff] to-indigo-500 text-white px-6 py-2 font-semibold rounded-full hover:shadow-lg transition-all duration-300 flex items-center group"
+              className="bg-gradient-to-r from-indigo-300 to-indigo-400 text-white px-6 py-2 font-semibold rounded-full hover:shadow-lg transition-all duration-300 flex items-center group"
             >
               <span className="transition-all duration-300">Get Started</span>
               <ArrowRight className="ml-2 h-5 w-5 opacity-100 transition-all duration-300" />
@@ -327,7 +441,7 @@ export default function ChatbotLanding() {
                   )}
                   <Link
                     to="/auth"
-                    className="bg-gradient-to-r from-[#aab2ff] to-indigo-500 text-white px-6 py-2 font-semibold rounded-full hover:shadow-lg transition-all duration-300 text-center"
+                    className="bg-gradient-to-r from-indigo-300 to-indigo-400 text-white px-6 py-2 font-semibold rounded-full hover:shadow-lg transition-all duration-300 text-center"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     Get Started
@@ -366,9 +480,9 @@ export default function ChatbotLanding() {
                 transition={{ duration: 0.5 }}
                 className="md:w-1/2 mb-10 md:mb-0"
               >
-                <h1 className="text-5xl md:text-6xl font-bold mb-6 leading-tight">
+                <h1 className="text-4xl md:text-6xl font-bold mb-6 leading-tight">
                   Custom Chatbots, Limitless{" "}
-                  <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#aab2ff] to-indigo-500">
+                  <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-300 to-indigo-400">
                     Possibilities
                   </span>
                 </h1>
@@ -377,11 +491,50 @@ export default function ChatbotLanding() {
                   integrate them into your website and engage visitors with
                   smarter, personalized interactions.
                 </p>
+                
+                {/* Statistics & Social Proof */}
+                <div className="mb-8 space-y-4">
+                  {/* Star Rating */}
+                  <div className="flex items-center gap-3">
+                    <div className="flex gap-1">
+                      {[...Array(5)].map((_, i) => (
+                        <Star key={i} className="w-5 h-5 fill-yellow-400 text-yellow-400" />
+                      ))}
+                    </div>
+                    <span className="text-gray-700 font-medium">
+                      Loved by 500+ users
+                    </span>
+                  </div>
+                  
+                  {/* Statistics Grid */}
+                  <div className="flex flex-wrap items-center gap-6 md:gap-8">
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.5, delay: 0.3 }}
+                      className="flex items-baseline gap-2"
+                    >
+                      <div className="text-3xl md:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-indigo-500">1.2K+</div>
+                      <div className="text-sm text-gray-600">Chatbots Created</div>
+                    </motion.div>
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.5, delay: 0.4 }}
+                      className="flex items-baseline gap-2"
+                    >
+                      <div className="text-3xl md:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-indigo-500">4.8/5</div>
+                      <div className="text-sm text-gray-600">Average Rating</div>
+                    </motion.div>
+
+                  </div>
+                </div>
+
                 <div className="flex flex-col sm:flex-row gap-4">
                   <motion.button
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
-                    className="bg-gradient-to-r from-[#aab2ff] to-indigo-500 text-white px-8 py-3 rounded-full text-lg font-semibold hover:shadow-lg transition-all duration-300 group"
+                    className="bg-gradient-to-r from-indigo-300 to-indigo-400 text-white px-8 py-3 rounded-full text-lg font-semibold hover:shadow-lg transition-all duration-300 group"
                   >
                     <Link
                       to="/auth"
@@ -410,7 +563,7 @@ export default function ChatbotLanding() {
                 transition={{ duration: 0.5, delay: 0.2 }}
                 className="md:w-1/2 relative"
               >
-                <div className="absolute inset-0 bg-gradient-to-r from-[#aab2ff] to-indigo-500 transform rotate-3 scale-105 opacity-25 blur-xl"></div>
+                <div className="absolute inset-0 bg-gradient-to-r from-indigo-300 to-indigo-400 transform rotate-3 scale-105 opacity-25 blur-xl"></div>
                 <div className="relative rounded-2xl shadow-lg max-w-md mx-auto transform hover:scale-105 transition-transform duration-300 overflow-hidden border-2 border-indigo-400">
                   {/* <span className="absolute inset-[-1000%] animate-[spin_4s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,#3b82f6_0%,#8b5cf6_50%,#3b82f6_100%)]" /> */}
                   <div className="bg-white rounded-2xl p-6 relative z-10 ">
@@ -426,7 +579,7 @@ export default function ChatbotLanding() {
                           }`}
                         >
                           {message.type === "bot" && (
-                            <div className="w-8 h-8 bg-gradient-to-r from-[#aab2ff] to-indigo-500 rounded-full flex items-center justify-center text-white font-bold mr-2 shadow-md">
+                            <div className="w-8 h-8 bg-gradient-to-r from-indigo-300 to-indigo-400 rounded-full flex items-center justify-center text-white font-bold mr-2 shadow-md">
                               <img
                                 src="./logo-transparent.svg"
                                 alt="Askio"
@@ -449,7 +602,7 @@ export default function ChatbotLanding() {
                       {/* **Add:** Render bot's typed message */}
                       {isTyping && (
                         <div className="flex items-start">
-                          <div className="w-8 h-8 bg-gradient-to-r from-[#aab2ff] to-indigo-500 rounded-full flex items-center justify-center text-white font-bold mr-2 shadow-md">
+                          <div className="w-8 h-8 bg-gradient-to-r from-indigo-300 to-indigo-400 rounded-full flex items-center justify-center text-white font-bold mr-2 shadow-md">
                             <img
                               src="./logo-transparent.svg"
                               alt="Askio"
@@ -490,7 +643,7 @@ export default function ChatbotLanding() {
                       />
                       <button
                         type="submit"
-                        className="bg-gradient-to-r from-[#aab2ff] to-indigo-500 hover:bg-indigo-700 text-white transition duration-300 shadow-md hover:shadow-lg rounded-md p-3"
+                        className="bg-gradient-to-r from-indigo-300 to-indigo-400 hover:bg-indigo-700 text-white transition duration-300 shadow-md hover:shadow-lg rounded-md p-3"
                         disabled={!isConversationComplete}
                       >
                         <Send className="h-5 w-5" />
@@ -510,154 +663,242 @@ export default function ChatbotLanding() {
           animate={featuresInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.5, delay: 0.2 }}
           id="features"
-          className="py-20 bg-gradient-to-r from-[#f0f2ff] to-[#ffffff]"
+          className="py-20 bg-gradient-to-r from-[#f0f2ff] to-[#ffffff] relative overflow-hidden"
         >
-          <div className="container mx-auto px-6 max-w-7xl">
-            <h2 className="text-4xl font-bold text-center mb-16 text-gray-800">
-              Powerful{" "}
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#aab2ff] to-indigo-500">
-                Features
-              </span>
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-7xl mx-auto">
-              {[
-                {
-                  icon: <Brush className="h-12 w-12 text-indigo-500" />,
-                  title: "Easy Customization",
-                  description:
-                    "Create chatbots that perfectly match your brand identity with our intuitive customization tools.",
-                },
-                {
-                  icon: <ToyBrick className="h-12 w-12 text-indigo-500" />,
-                  title: "Seamless Integration",
-                  description:
-                    "Add your chatbot to any website with just a few clicks, no coding required.",
-                },
-                {
-                  icon: <MessageCircle className="h-12 w-12 text-indigo-500" />,
-                  title: "Real-Time Engagement",
-                  description:
-                    "Engage visitors instantly with automated conversations tailored to your business needs.",
-                },
-                {
-                  icon: <Paintbrush className="h-12 w-12 text-indigo-500" />,
-                  title: "Visual Customization",
-                  description:
-                    "Design your chatbot's appearance to perfectly match your website's look and feel.",
-                },
-                {
-                  icon: <Zap className="h-12 w-12 text-indigo-500" />,
-                  title: "Instant Deployment",
-                  description:
-                    "Deploy your chatbot instantly with a simple embed code, getting you up and running in no time.",
-                },
-                {
-                  icon: <Settings className="h-12 w-12 text-indigo-500" />,
-                  title: "Easy Configuration",
-                  description:
-                    "Set up your chatbot's responses and behavior quickly with our user-friendly configuration interface.",
-                },
-              ].map((feature, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: index * 0.1 }}
-                  className="bg-white rounded-2xl p-8 shadow-md hover:shadow-xl transition-all duration-300 group"
-                >
-                  <div className="mb-6 group-hover:scale-110 transition-transform duration-300 bg-gradient-to-br from-[#f0f2ff] to-[#ffffff] p-4 rounded-full inline-block">
-                    {feature.icon}
+          {/* Decorative background elements */}
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            <div className="absolute top-20 left-10 w-72 h-72 bg-gradient-to-br from-indigo-200 to-indigo-100 rounded-full opacity-10 blur-3xl"></div>
+            <div className="absolute bottom-20 right-10 w-96 h-96 bg-gradient-to-tl from-indigo-100 to-indigo-200 rounded-full opacity-10 blur-3xl"></div>
+          </div>
+
+          <div className="container mx-auto px-6 max-w-7xl relative z-10">
+            <div className="text-center mb-20">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={featuresInView ? { opacity: 1, y: 0 } : {}}
+                transition={{ duration: 0.6 }}
+              >
+                <h2 className="text-4xl md:text-5xl font-bold mb-6 text-gray-800">
+                  Powerful{" "}
+                  <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-300 to-indigo-400">
+                    Features
+                  </span>
+                </h2>
+                <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+                  Everything you need to create, customize, and deploy chatbots that engage your visitors
+                </p>
+              </motion.div>
+            </div>
+
+            {/* Bento-style grid layout */}
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-6 max-w-7xl mx-auto">
+              {/* Large feature card - spans 2 rows */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5 }}
+                className="md:col-span-7 md:row-span-2 bg-white rounded-3xl p-10 shadow-lg hover:shadow-2xl transition-all duration-500 group relative overflow-hidden border-2 border-gray-100 hover:border-indigo-200"
+              >
+                <div className="absolute inset-0 bg-gradient-to-br from-[#f0f2ff]/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                <div className="relative z-10">
+                  <div className="mb-8 inline-flex p-4 rounded-2xl bg-gradient-to-br from-indigo-400 to-indigo-300 group-hover:scale-110 group-hover:rotate-3 transition-all duration-500 shadow-lg">
+                    <Palette className="h-12 w-12 text-white" />
                   </div>
-                  <h3 className="text-2xl font-semibold mb-4 text-gray-800 group-hover:text-indigo-600 transition-colors duration-300">
-                    {feature.title}
+                  <h3 className="text-3xl md:text-4xl font-bold mb-6 text-gray-800 group-hover:text-indigo-400 transition-colors duration-300">
+                    Easy Customization
                   </h3>
-                  <p className="text-gray-600">{feature.description}</p>
-                </motion.div>
-              ))}
+                  <p className="text-lg text-gray-600 leading-relaxed mb-6">
+                    Create chatbots that perfectly match your brand identity with our intuitive customization tools. Design every aspect from colors to conversation flows.
+                  </p>
+                  <div className="flex flex-wrap gap-3">
+                    <span className="px-4 py-2 bg-gradient-to-r from-[#f0f2ff] to-white rounded-full text-sm font-medium text-indigo-400 border border-indigo-200 hover:border-indigo-300 transition-colors">
+                      Brand Colors
+                    </span>
+                    <span className="px-4 py-2 bg-gradient-to-r from-[#f0f2ff] to-white rounded-full text-sm font-medium text-indigo-400 border border-indigo-200 hover:border-indigo-300 transition-colors">
+                      Custom Fonts
+                    </span>
+                    <span className="px-4 py-2 bg-gradient-to-r from-[#f0f2ff] to-white rounded-full text-sm font-medium text-indigo-400 border border-indigo-200 hover:border-indigo-300 transition-colors">
+                      Flexible Layout
+                    </span>
+                  </div>
+                </div>
+              </motion.div>
+
+              {/* Medium feature card */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: 0.1 }}
+                className="md:col-span-5 bg-gradient-to-br from-white to-[#f0f2ff] rounded-3xl p-8 shadow-lg hover:shadow-2xl transition-all duration-500 group relative overflow-hidden border-2 border-indigo-100 hover:border-indigo-200"
+              >
+                <div className="absolute inset-0 bg-gradient-to-tl from-indigo-50/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                <div className="relative z-10">
+                  <div className="mb-6 inline-flex p-3 rounded-xl bg-gradient-to-br from-indigo-400 to-indigo-300 shadow-lg group-hover:scale-110 group-hover:-rotate-3 transition-all duration-500">
+                    <Blocks className="h-10 w-10 text-white" />
+                  </div>
+                  <h3 className="text-2xl font-bold mb-4 text-gray-800 group-hover:text-indigo-400 transition-colors duration-300">
+                    Seamless Integration
+                  </h3>
+                  <p className="text-base text-gray-600 leading-relaxed">
+                    Add your chatbot to any website with just a few clicks, no coding required.
+                  </p>
+                </div>
+              </motion.div>
+
+              {/* Medium feature card */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: 0.2 }}
+                className="md:col-span-5 bg-white rounded-3xl p-8 shadow-lg hover:shadow-2xl transition-all duration-500 group relative overflow-hidden border-2 border-gray-100 hover:border-indigo-200"
+              >
+                <div className="absolute inset-0 bg-gradient-to-tr from-[#f0f2ff]/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                <div className="relative z-10">
+                  <div className="mb-6 inline-flex p-3 rounded-xl bg-gradient-to-br from-indigo-400 to-indigo-300 shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all duration-500">
+                    <Sparkles className="h-10 w-10 text-white" />
+                  </div>
+                  <h3 className="text-2xl font-bold mb-4 text-gray-800 group-hover:text-indigo-400 transition-colors duration-300">
+                    Real-Time Engagement
+                  </h3>
+                  <p className="text-base text-gray-600 leading-relaxed">
+                    Engage visitors instantly with automated conversations tailored to your business needs.
+                  </p>
+                </div>
+              </motion.div>
+
+              {/* Small feature cards row */}
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: 0.3 }}
+                className="md:col-span-4 bg-gradient-to-br from-indigo-400 to-indigo-300 rounded-3xl p-8 shadow-lg hover:shadow-2xl transition-all duration-500 group relative overflow-hidden hover:scale-105"
+              >
+                <div className="absolute inset-0 bg-gradient-to-tl from-white/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                <div className="relative z-10">
+                  <div className="mb-6 inline-flex p-3 rounded-xl bg-white/20 backdrop-blur-sm shadow-lg group-hover:scale-110 group-hover:-rotate-3 transition-all duration-500">
+                    <Brush className="h-8 w-8 text-white" />
+                  </div>
+                  <h3 className="text-xl font-bold mb-3 text-white">
+                    Visual Customization
+                  </h3>
+                  <p className="text-base text-white/90 leading-relaxed">
+                    Design your chatbot's appearance to match your website perfectly.
+                  </p>
+                </div>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: 0.4 }}
+                className="md:col-span-4 bg-white rounded-3xl p-8 shadow-lg hover:shadow-2xl transition-all duration-500 group relative overflow-hidden border-2 border-gray-100 hover:border-indigo-200 hover:scale-105"
+              >
+                <div className="absolute inset-0 bg-gradient-to-bl from-[#f0f2ff]/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                <div className="relative z-10">
+                  <div className="mb-6 inline-flex p-3 rounded-xl bg-gradient-to-br from-indigo-400 to-indigo-300 shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all duration-500">
+                    <Rocket className="h-8 w-8 text-white" />
+                  </div>
+                  <h3 className="text-xl font-bold mb-3 text-gray-800 group-hover:text-indigo-400 transition-colors duration-300">
+                    Instant Deployment
+                  </h3>
+                  <p className="text-base text-gray-600 leading-relaxed">
+                    Deploy instantly with a simple embed code.
+                  </p>
+                </div>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: 0.5 }}
+                className="md:col-span-4 bg-gradient-to-br from-white to-[#f0f2ff] rounded-3xl p-8 shadow-lg hover:shadow-2xl transition-all duration-500 group relative overflow-hidden border-2 border-indigo-100 hover:border-indigo-200 hover:scale-105"
+              >
+                <div className="absolute inset-0 bg-gradient-to-tr from-indigo-50/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                <div className="relative z-10">
+                  <div className="mb-6 inline-flex p-3 rounded-xl bg-gradient-to-br from-indigo-400 to-indigo-300 shadow-lg group-hover:scale-110 group-hover:-rotate-3 transition-all duration-500">
+                    <Sliders className="h-8 w-8 text-white" />
+                  </div>
+                  <h3 className="text-xl font-bold mb-3 text-gray-800 group-hover:text-indigo-400 transition-colors duration-300">
+                    Easy Configuration
+                  </h3>
+                  <p className="text-base text-gray-600 leading-relaxed">
+                    Set up responses and behavior with our user-friendly interface.
+                  </p>
+                </div>
+              </motion.div>
             </div>
           </div>
         </motion.section>
 
         {/* How It Works Section */}
-        <motion.section
-          ref={howItWorksRef}
-          initial={{ opacity: 0, y: 50 }}
-          animate={howItWorksInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.5, delay: 0.2 }}
+        <section
           id="how-it-works"
-          className="py-20 bg-gradient-to-r from-[#f0f2ff] to-[#ffffff]"
+          className="py-20 bg-gradient-to-r from-[#f0f2ff] to-[#ffffff] relative"
         >
           <div className="container mx-auto px-6 max-w-7xl">
-            <h2 className="text-5xl font-bold text-center mb-16 text-gray-800">
-              How It{" "}
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#aab2ff] to-indigo-500">
-                Works
-              </span>
-            </h2>
-            <div className="max-w-7xl mx-auto space-y-20">
+            <motion.div
+              ref={howItWorksRef}
+              initial={{ opacity: 0, y: 50 }}
+              animate={howItWorksInView ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 0.5 }}
+              className="text-center mb-32"
+            >
+              <h2 className="text-4xl md:text-5xl font-bold mb-6 text-gray-800">
+                How It{" "}
+                <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-300 to-indigo-400">
+                  Works
+                </span>
+              </h2>
+              <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+                Three simple steps to create and deploy your custom chatbot
+              </p>
+            </motion.div>
+
+            {/* Scroll Stack Cards */}
+            <div className="relative">
               {[
                 {
                   step: 1,
                   title: "Create & Configure",
                   description:
-                    "Craft your chatbot by inputting custom Q&As and selecting its placement on your website.",
-                  icon: <Settings className="w-24 h-24 text-indigo-500" />,
+                    "Craft your chatbot by inputting custom Q&As and selecting its placement on your website. Define conversation flows and set up automated responses.",
+                  icon: <Settings className="w-14 h-14 md:w-16 md:h-16 text-indigo-500" />,
+                  color: "from-white to-indigo-50",
+                  features: ["Q&A Builder", "Flow Designer", "Auto-Responses"],
                 },
                 {
                   step: 2,
                   title: "Customize",
                   description:
-                    "Tailor your bot's appearance to match your brand and website design—all without any coding.",
-                  icon: (
-                    <PaintbrushIcon className="w-24 h-24 text-indigo-500" />
-                  ),
+                    "Tailor your bot's appearance to match your brand and website design—all without any coding. Choose colors, fonts, and positioning.",
+                  icon: <PaintbrushIcon className="w-14 h-14 md:w-16 md:h-16 text-indigo-500" />,
+                  color: "from-indigo-50 to-white",
+                  features: ["Brand Colors", "Custom Fonts", "Positioning"],
                 },
                 {
                   step: 3,
                   title: "Plug & Play",
                   description:
-                    "Obtain your unique embed code and effortlessly add the chatbot to your website.",
-                  icon: <CodeIcon className="w-24 h-24 text-indigo-500" />,
+                    "Obtain your unique embed code and effortlessly add the chatbot to your website. Go live in seconds with a simple copy-paste.",
+                  icon: <CodeIcon className="w-14 h-14 md:w-16 md:h-16 text-indigo-500" />,
+                  color: "from-white via-indigo-50 to-white",
+                  features: ["Embed Code", "One-Click Deploy", "Instant Live"],
                 },
-              ].map((item, index) => (
-                // **Modify:** Replace Alpine.js attributes with Framer Motion
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, y: 50 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, amount: 0.2 }}
-                  transition={{ duration: 0.6, delay: index * 0.3 }}
-                  className="relative bg-gradient-to-br from-white to-indigo-50 rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl group"
-                >
-                  <div className="md:flex justify-between items-center p-8 md:p-12">
-                    <div className="shrink-0 md:w-2/3 pr-8">
-                      <div className="md:max-w-xl">
-                        <div className="flex items-center mb-4">
-                          <div className="w-12 h-12 flex items-center justify-center bg-gradient-to-r from-[#aab2ff] to-indigo-500 text-white text-2xl font-bold rounded-full mr-4">
-                            {item.step}
-                          </div>
-                          <h3 className="text-3xl font-medium text-gray-800 group-hover:text-indigo-600 transition-colors duration-300">
-                            {item.title}
-                          </h3>
-                        </div>
-                        <p className="text-gray-600 text-lg mb-6 leading-relaxed">
-                          {item.description}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center justify-center md:w-1/3 p-8 bg-gradient-to-br from-[#f0f2ff] to-[#ffffff] rounded-2xl transform group-hover:scale-105 transition-transform duration-300">
-                      {item.icon}
-                    </div>
-                  </div>
-                  <div className="absolute top-0 right-0 mt-4 mr-6 text-4xl font-bold text-indigo-200 opacity-50 group-hover:opacity-100 transition-opacity duration-300">
-                    0{item.step}
-                  </div>
-                  <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-[#aab2ff] to-indigo-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500"></div>
-                </motion.div>
-              ))}
+              ].map((item, index) => {
+                return <StackCard key={index} item={item} index={index} />;
+              })}
             </div>
+
+            {/* Spacer for scroll effect */}
+            <div className="h-32"></div>
           </div>
-        </motion.section>
+        </section>
 
         {/* Testimonials Section */}
         <motion.section
@@ -669,38 +910,40 @@ export default function ChatbotLanding() {
           className="py-20 bg-gradient-to-r from-[#f0f2ff] to-[#ffffff]"
         >
           <div className="container mx-auto px-6 max-w-7xl">
-            <h2 className="text-4xl font-bold text-center mb-16 text-gray-800">
+            <h2 className="text-4xl md:text-5xl font-bold text-center mb-16 text-gray-800">
               User{" "}
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#aab2ff] to-indigo-500">
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-300 to-indigo-400">
                 Stories
               </span>
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-7xl mx-auto">
+            
+            {/* Grid Container */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
               {testimonials.map((testimonial, index) => (
                 <motion.div
                   key={index}
                   initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
+                  animate={testimonialsInView ? { opacity: 1, y: 0 } : {}}
                   transition={{ duration: 0.5, delay: index * 0.1 }}
-                  className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-300 flex flex-col items-center text-center relative overflow-hidden group h-full"
+                  className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-300 flex flex-col items-center text-center relative overflow-hidden group"
                 >
-                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#aab2ff] to-indigo-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></div>
+                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-300 to-indigo-400 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></div>
                   <div className="relative mb-6">
                     <img
                       src={testimonial.avatar}
                       alt={testimonial.name}
-                      className="w-24 h-24 rounded-full border-4 border-[#aab2ff] shadow-md group-hover:scale-110 transition-transform duration-300"
+                      className="w-24 h-24 rounded-full border-4 border-indigo-300 shadow-md group-hover:scale-110 transition-transform duration-300"
                     />
-                    <div className="absolute -top-2 -right-2 bg-gradient-to-r from-[#aab2ff] to-indigo-500 text-white rounded-full p-2">
+                    <div className="absolute -top-2 -right-2 bg-gradient-to-r from-indigo-300 to-indigo-400 text-white rounded-full p-2">
                       <MessageCircle size={16} />
                     </div>
                   </div>
                   <p className="text-gray-600 mb-6 italic text-lg relative">
-                    <span className="text-5xl text-[#aab2ff] absolute -top-4 -left-2 opacity-20">
+                    <span className="text-5xl text-indigo-300 absolute -top-4 -left-2 opacity-20">
                       "
                     </span>
                     {testimonial.quote}
-                    <span className="text-5xl text-[#aab2ff] absolute -bottom-8 -right-2 opacity-20">
+                    <span className="text-5xl text-indigo-300 absolute -bottom-8 -right-2 opacity-20">
                       "
                     </span>
                   </p>
@@ -734,16 +977,34 @@ export default function ChatbotLanding() {
           animate={faqInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.5, delay: 0.2 }}
           id="faq"
-          className="py-20 bg-gradient-to-r from-[#f0f2ff] to-[#ffffff]"
+          className="py-20 bg-gradient-to-r from-[#f0f2ff] to-[#ffffff] relative overflow-hidden"
         >
-          <div className="container mx-auto px-4 max-w-7xl">
-            <h2 className="text-4xl font-bold text-center mb-16 text-gray-800">
-              Frequently Asked{" "}
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#aab2ff] to-indigo-500">
-                Questions
-              </span>
-            </h2>
-            <div className="max-w-4xl mx-auto space-y-6">
+          {/* Decorative background elements */}
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            <div className="absolute top-20 right-10 w-96 h-96 bg-gradient-to-br from-indigo-200 to-indigo-100 rounded-full opacity-10 blur-3xl"></div>
+            <div className="absolute bottom-20 left-10 w-72 h-72 bg-gradient-to-tl from-indigo-100 to-indigo-200 rounded-full opacity-10 blur-3xl"></div>
+          </div>
+
+          <div className="container mx-auto px-4 max-w-7xl relative z-10">
+            <div className="text-center mb-20">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={faqInView ? { opacity: 1, y: 0 } : {}}
+                transition={{ duration: 0.6 }}
+              >
+                <h2 className="text-4xl md:text-5xl font-bold mb-6 text-gray-800">
+                  Frequently Asked{" "}
+                  <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-300 to-indigo-400">
+                    Questions
+                  </span>
+                </h2>
+                <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+                  Everything you need to know about Askio
+                </p>
+              </motion.div>
+            </div>
+
+            <div className="max-w-4xl mx-auto space-y-4">
               {[
                 {
                   question: "What is Askio?",
@@ -781,21 +1042,35 @@ export default function ChatbotLanding() {
                   viewport={{ once: true, amount: 0.5 }}
                   transition={{ duration: 0.5, delay: index * 0.1 }}
                 >
-                  <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+                  <div className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden border-2 border-gray-100 hover:border-indigo-200 group">
                     <button
-                      className="w-full px-6 py-4 text-left flex justify-between items-center focus:outline-none"
+                      className="w-full px-8 py-6 text-left flex justify-between items-center focus:outline-none group-hover:bg-gradient-to-r group-hover:from-indigo-50/50 group-hover:to-transparent transition-all duration-300"
                       onClick={() => toggleFAQ(index)}
                       aria-expanded={activeIndex === index}
                       aria-controls={`faq-${index}`}
                     >
-                      <span className="text-xl font-semibold text-gray-800">
-                        {faq.question}
-                      </span>
+                      <div className="flex items-center gap-4 flex-1">
+                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-300 ${
+                          activeIndex === index 
+                            ? 'bg-gradient-to-br from-indigo-400 to-indigo-300' 
+                            : 'bg-gradient-to-br from-indigo-100 to-indigo-50'
+                        }`}>
+                          <span className={`text-lg font-bold ${
+                            activeIndex === index ? 'text-white' : 'text-indigo-500'
+                          }`}>
+                            {index + 1}
+                          </span>
+                        </div>
+                        <span className="text-xl font-semibold text-gray-800 group-hover:text-indigo-600 transition-colors duration-300">
+                          {faq.question}
+                        </span>
+                      </div>
                       <motion.div
                         animate={{ rotate: activeIndex === index ? 180 : 0 }}
                         transition={{ duration: 0.3 }}
+                        className={`ml-4 ${activeIndex === index ? 'text-indigo-500' : 'text-gray-400'}`}
                       >
-                        <ChevronDown className="w-6 h-6 text-indigo-500" />
+                        <ChevronDown className="w-6 h-6" />
                       </motion.div>
                     </button>
                     <AnimatePresence initial={false}>
@@ -807,8 +1082,10 @@ export default function ChatbotLanding() {
                           exit={{ opacity: 0, height: 0 }}
                           transition={{ duration: 0.3, ease: "easeInOut" }}
                         >
-                          <div className="px-6 pb-4 text-gray-600">
-                            <p className="text-lg">{faq.answer}</p>
+                          <div className="px-8 pb-6">
+                            <div className="border-l-4 border-indigo-300 pl-6 py-2">
+                              <p className="text-lg text-gray-600 leading-relaxed">{faq.answer}</p>
+                            </div>
                           </div>
                         </motion.div>
                       )}
@@ -820,93 +1097,241 @@ export default function ChatbotLanding() {
           </div>
         </motion.section>
 
-        {/* Compact CTA Section with Animation */}
+        {/* Enhanced CTA Section with Modern Design */}
         <motion.section
           ref={ctaRef}
           initial={{ opacity: 0, y: 50 }}
           animate={ctaInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.5, delay: 0.2 }}
-          className="cta-section bg-gradient-to-r from-[#f0f2ff] to-[#ffffff] py-16"
+          className="cta-section bg-gradient-to-r from-[#f0f2ff] to-[#ffffff] py-20 relative overflow-hidden"
         >
-          <div className="container mx-auto px-4 max-w-7xl">
-            <div className="bg-white rounded-2xl shadow-lg p-8 sm:p-12 text-center max-w-4xl mx-auto">
-              <h2 className="text-3xl sm:text-4xl font-bold mb-4 text-gray-800">
-                Elevate Your Website's Engagement
-              </h2>
-              <p className="text-lg text-gray-600 mb-8 max-w-2xl mx-auto">
-                Join thousands of websites using Askio to provide instant
-                support and enhance user experience.
-              </p>
-              <Link
-                to="/auth"
-                className="inline-block bg-gradient-to-r from-[#aab2ff] to-indigo-500 text-white px-8 py-3 rounded-full text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
-              >
-                Try it now
-              </Link>
+          {/* Decorative background elements */}
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            <div className="absolute top-0 left-1/4 w-96 h-96 bg-gradient-to-br from-indigo-200 to-indigo-100 rounded-full opacity-20 blur-3xl"></div>
+            <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-gradient-to-tl from-indigo-100 to-indigo-200 rounded-full opacity-20 blur-3xl"></div>
+          </div>
+
+          <div className="container mx-auto px-4 max-w-7xl relative z-10">
+            <div className="relative bg-gradient-to-br from-white via-white to-indigo-50/30 rounded-3xl shadow-2xl overflow-hidden max-w-5xl mx-auto border-2 border-indigo-100 group">
+              {/* Animated gradient overlay */}
+              <div className="absolute inset-0 bg-gradient-to-r from-indigo-400/10 via-transparent to-indigo-300/10 opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
+              
+              {/* Top decorative line */}
+              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-indigo-400 to-transparent"></div>
+
+              {/* Content */}
+              <div className="relative z-10 p-10 sm:p-16 text-center">
+                {/* Icon badge */}
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={ctaInView ? { scale: 1 } : {}}
+                  transition={{ duration: 0.5, delay: 0.4, type: "spring" }}
+                  className="inline-flex mb-8"
+                >
+                  <div className="relative">
+                    <div className="w-20 h-20 flex items-center justify-center bg-gradient-to-br from-indigo-400 to-indigo-300 rounded-2xl shadow-xl">
+                      <Rocket className="w-10 h-10 text-white" />
+                    </div>
+                    <div className="absolute -top-2 -right-2 w-6 h-6 bg-indigo-400 rounded-full shadow-lg"></div>
+                    {/* Glow effect */}
+                    <div className="absolute inset-0 bg-indigo-400/40 rounded-2xl blur-xl scale-110 opacity-60"></div>
+                  </div>
+                </motion.div>
+
+                <motion.h2
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={ctaInView ? { opacity: 1, y: 0 } : {}}
+                  transition={{ duration: 0.5, delay: 0.5 }}
+                  className="text-3xl sm:text-4xl md:text-5xl font-bold mb-6 text-gray-800"
+                >
+                  Ready to{" "}
+                  <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-indigo-300">
+                    Transform
+                  </span>{" "}
+                  Your Website?
+                </motion.h2>
+
+                <motion.p
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={ctaInView ? { opacity: 1, y: 0 } : {}}
+                  transition={{ duration: 0.5, delay: 0.6 }}
+                  className="text-xl text-gray-600 mb-10 max-w-2xl mx-auto leading-relaxed"
+                >
+                  Join thousands of websites using Askio to provide instant
+                  support and enhance user experience. Start building your custom chatbot today.
+                </motion.p>
+
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={ctaInView ? { opacity: 1, y: 0 } : {}}
+                  transition={{ duration: 0.5, delay: 0.7 }}
+                  className="flex flex-col sm:flex-row gap-4 justify-center items-center"
+                >
+                  <Link
+                    to="/auth"
+                    className="group/btn relative inline-flex items-center bg-gradient-to-r from-indigo-400 to-indigo-300 text-white px-10 py-4 rounded-full text-lg font-semibold shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 overflow-hidden"
+                  >
+                    <span className="relative z-10 flex items-center">
+                      Get Started Free
+                      <ArrowRight className="ml-2 h-5 w-5 group-hover/btn:translate-x-1 transition-transform duration-300" />
+                    </span>
+                    {/* Shimmer effect */}
+                    <div className="absolute inset-0 opacity-0 group-hover/btn:opacity-100 transition-opacity duration-500">
+                      <div className="absolute inset-0 translate-x-[-100%] group-hover/btn:translate-x-[100%] transition-transform duration-700 bg-gradient-to-r from-transparent via-white/30 to-transparent"></div>
+                    </div>
+                  </Link>
+
+                  <div className="flex items-center gap-2 text-gray-600">
+                    <div className="flex -space-x-2">
+                      {[1, 2, 3].map((i) => (
+                        <div
+                          key={i}
+                          className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-200 to-indigo-300 border-2 border-white flex items-center justify-center text-white font-semibold text-xs"
+                        >
+                          ✓
+                        </div>
+                      ))}
+                    </div>
+                    <span className="text-sm font-medium">
+                      <span className="font-bold text-indigo-400">500+</span> users already started
+                    </span>
+                  </div>
+                </motion.div>
+
+                {/* Feature badges */}
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={ctaInView ? { opacity: 1 } : {}}
+                  transition={{ duration: 0.5, delay: 0.8 }}
+                  className="flex flex-wrap justify-center gap-4 mt-10"
+                >
+                  {[
+                    { icon: Sparkles, text: "No Credit Card" },
+                    { icon: Sliders, text: "Easy Setup" },
+                    { icon: Settings, text: "Full Customization" },
+                  ].map((item, idx) => (
+                    <div
+                      key={idx}
+                      className="flex items-center gap-2 px-4 py-2 bg-white/80 backdrop-blur-sm rounded-full border border-indigo-200 shadow-sm hover:shadow-md hover:border-indigo-300 transition-all duration-300"
+                    >
+                      <item.icon className="w-4 h-4 text-indigo-500" />
+                      <span className="text-sm font-medium text-gray-700">{item.text}</span>
+                    </div>
+                  ))}
+                </motion.div>
+              </div>
+
+              {/* Decorative corner elements */}
+              <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-indigo-200/20 to-transparent rounded-full blur-2xl -translate-y-32 translate-x-32"></div>
+              <div className="absolute bottom-0 left-0 w-64 h-64 bg-gradient-to-tr from-indigo-200/20 to-transparent rounded-full blur-2xl translate-y-32 -translate-x-32"></div>
             </div>
           </div>
         </motion.section>
       </main>
 
-      <footer className="bg-gradient-to-r from-gray-900 to-indigo-900 text-white py-12">
-        <div className="container mx-auto px-4 max-w-7xl">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
-            <div className="flex flex-col items-center md:items-start">
-              <Link to="/" className="flex items-center mb-4">
-                <img src="./icon.svg" alt="Askio" className="w-10 h-10 mr-2" />
-                <span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#aab2ff] to-indigo-400">
+      <footer className="relative bg-gradient-to-br from-gray-900 via-indigo-950 to-gray-900 text-white py-16 overflow-hidden">
+        {/* Decorative background elements */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-0 left-1/4 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-indigo-400/10 rounded-full blur-3xl"></div>
+        </div>
+
+        <div className="container mx-auto px-4 max-w-7xl relative z-10">
+          {/* Main footer content */}
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-12 mb-12">
+            {/* Brand section */}
+            <div className="md:col-span-4 flex flex-col items-center md:items-start">
+              <Link to="/" className="flex items-center mb-6 group">
+                <div className="relative">
+                  <img src="./icon.svg" alt="Askio" className="w-12 h-12 mr-3 group-hover:scale-110 transition-transform duration-300" />
+                  <div className="absolute inset-0 bg-indigo-400/20 rounded-full blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                </div>
+                <span className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-300 to-indigo-400">
                   Askio
                 </span>
               </Link>
-              <p className="text-gray-300 text-center md:text-left mb-4">
-                Elevate Your Website with Free Custom Chatbots
+              <p className="text-gray-400 text-center md:text-left mb-6 leading-relaxed max-w-sm">
+                Elevate your website with intelligent, customizable chatbots. Engage visitors and provide instant support effortlessly.
               </p>
-              <div className="flex space-x-4">
-                {[Twitter, Facebook, Linkedin, FaGithub].map((Icon, index) => (
+              <div className="flex space-x-3">
+                {[
+                  { Icon: Twitter, href: "#", label: "Twitter" },
+                  { Icon: Facebook, href: "#", label: "Facebook" },
+                  { Icon: Linkedin, href: "#", label: "LinkedIn" },
+                  { Icon: FaGithub, href: "https://github.com/Salaheddine999/askio", label: "GitHub" },
+                ].map(({ Icon, href, label }, index) => (
                   <a
                     key={index}
-                    href="#"
-                    className="text-gray-400 hover:text-white transition-colors duration-300 hover:scale-110 transform"
-                    aria-label={`Follow us on ${Icon.name}`}
+                    href={href}
+                    className="w-10 h-10 flex items-center justify-center bg-gray-800/50 hover:bg-indigo-500/20 border border-gray-700 hover:border-indigo-500/50 rounded-lg transition-all duration-300 hover:scale-110 group"
+                    aria-label={label}
                   >
-                    <Icon size={20} />
+                    <Icon className="w-5 h-5 text-gray-400 group-hover:text-indigo-400 transition-colors duration-300" />
                   </a>
                 ))}
               </div>
             </div>
 
-            <div className="flex flex-col items-center md:items-start">
-              <h3 className="text-lg font-semibold mb-4">Quick Links</h3>
-              <ul className="space-y-2">
-                {["Features", "How it Works", "Testimonials", "FAQ"].map(
-                  (item) => (
-                    <li key={item}>
-                      <a
-                        href={`#${item.toLowerCase().replace(" ", "-")}`}
-                        className="text-gray-300 hover:text-white transition-colors duration-300"
-                      >
-                        {item}
-                      </a>
-                    </li>
-                  )
-                )}
+            {/* Quick Links */}
+            <div className="md:col-span-3 flex flex-col items-center md:items-start">
+              <h3 className="text-lg font-bold mb-6 text-white relative">
+                Quick Links
+                <span className="absolute -bottom-2 left-0 w-12 h-0.5 bg-gradient-to-r from-indigo-400 to-transparent"></span>
+              </h3>
+              <ul className="space-y-3">
+                {["Features", "How it Works", "Testimonials", "FAQ"].map((item) => (
+                  <li key={item}>
+                    <a
+                      href={`#${item.toLowerCase().replace(" ", "-")}`}
+                      className="text-gray-400 hover:text-indigo-400 transition-colors duration-300 flex items-center group"
+                    >
+                      <ArrowRight className="w-4 h-4 mr-2 opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all duration-300" />
+                      <span className="group-hover:translate-x-1 transition-transform duration-300">{item}</span>
+                    </a>
+                  </li>
+                ))}
               </ul>
             </div>
 
-            <div className="flex flex-col items-center md:items-start">
-              <h3 className="text-lg font-semibold mb-4">Stay Updated</h3>
-              <p className="text-gray-300 mb-4">
-                Subscribe to our newsletter for the latest updates and features.
+            {/* Resources */}
+            <div className="md:col-span-2 flex flex-col items-center md:items-start">
+              <h3 className="text-lg font-bold mb-6 text-white relative">
+                Resources
+                <span className="absolute -bottom-2 left-0 w-12 h-0.5 bg-gradient-to-r from-indigo-400 to-transparent"></span>
+              </h3>
+              <ul className="space-y-3">
+                {["Documentation", "API", "Support", "Blog"].map((item) => (
+                  <li key={item}>
+                    <a
+                      href="#"
+                      className="text-gray-400 hover:text-indigo-400 transition-colors duration-300 flex items-center group"
+                    >
+                      <ArrowRight className="w-4 h-4 mr-2 opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all duration-300" />
+                      <span className="group-hover:translate-x-1 transition-transform duration-300">{item}</span>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Newsletter */}
+            <div className="md:col-span-3 flex flex-col items-center md:items-start">
+              <h3 className="text-lg font-bold mb-6 text-white relative">
+                Stay Updated
+                <span className="absolute -bottom-2 left-0 w-12 h-0.5 bg-gradient-to-r from-indigo-400 to-transparent"></span>
+              </h3>
+              <p className="text-gray-400 mb-4 text-sm leading-relaxed">
+                Get the latest updates and features delivered to your inbox.
               </p>
-              <form className="flex w-full max-w-sm">
+              <form className="flex flex-col sm:flex-row gap-2 w-full">
                 <input
                   type="email"
                   placeholder="Enter your email"
-                  className="bg-gray-800 text-white px-4 py-2 rounded-l-md focus:outline-none focus:ring-2 focus:ring-indigo-500 flex-grow"
+                  className="bg-gray-800/50 border border-gray-700 text-white px-4 py-2.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent flex-grow placeholder:text-gray-500 transition-all duration-300"
                 />
                 <button
                   type="submit"
-                  className="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded-r-md transition-colors duration-300"
+                  className="bg-gradient-to-r from-indigo-500 to-indigo-400 hover:from-indigo-600 hover:to-indigo-500 text-white px-6 py-2.5 rounded-lg transition-all duration-300 font-semibold shadow-lg hover:shadow-indigo-500/25 whitespace-nowrap"
                 >
                   Subscribe
                 </button>
@@ -914,22 +1339,22 @@ export default function ChatbotLanding() {
             </div>
           </div>
 
-          <div className="border-t border-gray-700 pt-8 flex flex-col md:flex-row justify-between items-center">
-            <p className="text-gray-400 text-sm mb-4 md:mb-0">
-              © {new Date().getFullYear()} Askio. All rights reserved.
+          {/* Bottom bar */}
+          <div className="border-t border-gray-800/50 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+            <p className="text-gray-500 text-sm">
+              © {new Date().getFullYear()} Askio. All rights reserved. Built with ❤️ for better conversations.
             </p>
-            <div className="flex space-x-4">
-              {["Privacy Policy", "Terms of Service", "Cookie Policy"].map(
-                (item) => (
-                  <a
-                    key={item}
-                    href="#"
-                    className="text-gray-400 hover:text-white text-sm transition-colors duration-300"
-                  >
-                    {item}
-                  </a>
-                )
-              )}
+            <div className="flex flex-wrap justify-center gap-6">
+              {["Privacy Policy", "Terms of Service", "Cookie Policy"].map((item) => (
+                <a
+                  key={item}
+                  href="#"
+                  className="text-gray-500 hover:text-indigo-400 text-sm transition-colors duration-300 relative group"
+                >
+                  {item}
+                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-indigo-400 group-hover:w-full transition-all duration-300"></span>
+                </a>
+              ))}
             </div>
           </div>
         </div>
