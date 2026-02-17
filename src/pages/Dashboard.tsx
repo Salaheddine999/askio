@@ -26,6 +26,8 @@ import {
   Trash2,
   Info,
   LoaderCircle,
+  Download,
+  RefreshCw,
 } from "lucide-react";
 import { format } from "date-fns";
 import ConfirmationModal from "../components/ConfirmationModal";
@@ -41,6 +43,7 @@ import ChatbotCard from "../components/ChatbotCard";
 import OverviewChart from "../components/OverviewChart";
 import RecentActivity, { ActivityItem } from "../components/RecentActivity";
 import { useCollection } from "react-firebase-hooks/firestore";
+import { DUMMY_CHATBOTS, DUMMY_FEEDBACK_COUNTS, DUMMY_RECENT_ACTIVITY } from "../utils/dummyData";
 import { Helmet } from "react-helmet-async";
 
 interface Chatbot {
@@ -59,9 +62,10 @@ interface FeedbackCounts {
 interface DashboardProps {
   sidebarOpen: boolean;
   toggleSidebar: () => void;
+  testMode: boolean;
 }
 
-const Dashboard: React.FC<DashboardProps> = ({ toggleSidebar }) => {
+const Dashboard: React.FC<DashboardProps> = ({ toggleSidebar, testMode }) => {
   const navigate = useNavigate();
   const [chatbots, setChatbots] = useState<Chatbot[]>([]);
   const [loading, setLoading] = useState(true);
@@ -93,10 +97,33 @@ const Dashboard: React.FC<DashboardProps> = ({ toggleSidebar }) => {
   const [recentActivities, setRecentActivities] = useState<ActivityItem[]>([]);
 
   useEffect(() => {
-    fetchChatbots();
-  }, []);
+    if (testMode) {
+      // Load dummy data
+      setChatbots(DUMMY_CHATBOTS);
+      setFeedbackCounts(DUMMY_FEEDBACK_COUNTS);
+      
+      let totalPos = 0;
+      let totalNeg = 0;
+      Object.values(DUMMY_FEEDBACK_COUNTS).forEach((count: FeedbackCounts) => {
+        totalPos += count.positive;
+        totalNeg += count.negative;
+      });
+      
+      setTotalFeedback(totalPos + totalNeg);
+      setSatisfactionRate(
+        (totalPos + totalNeg) > 0 ? (totalPos / (totalPos + totalNeg)) * 100 : 0
+      );
+      setRecentActivities(DUMMY_RECENT_ACTIVITY);
+      setLoading(false);
+    } else {
+      // Fetch real data
+      fetchChatbots();
+    }
+  }, [testMode]);
 
   useEffect(() => {
+    if (testMode) return; // Skip real data processing in test mode
+
     if (feedbackSnapshot && chatbots.length > 0) {
       const newFeedbackCounts: { [key: string]: FeedbackCounts } = {};
       let totalPositive = 0;
@@ -148,7 +175,7 @@ const Dashboard: React.FC<DashboardProps> = ({ toggleSidebar }) => {
       );
       setRecentActivities(activities);
     }
-  }, [feedbackSnapshot, chatbots]);
+  }, [feedbackSnapshot, chatbots, testMode]);
 
   const fetchChatbots = async () => {
     setLoading(true);
@@ -298,6 +325,41 @@ const Dashboard: React.FC<DashboardProps> = ({ toggleSidebar }) => {
     toast.success("Dashboard refreshed");
   };
 
+  const downloadReport = () => {
+    try {
+      const headers = ["Chatbot Name", "Positive Feedback", "Negative Feedback", "Created At", "Last Updated"];
+      const csvContent = [
+        headers.join(","),
+        ...chatbots.map(chatbot => {
+          const stats = feedbackCounts[chatbot.id] || { positive: 0, negative: 0 };
+          return [
+            `"${chatbot.title.replace(/"/g, '""')}"`,
+            stats.positive,
+            stats.negative,
+            `"${chatbot.createdAt.toISOString()}"`,
+            `"${chatbot.lastUpdated.toISOString()}"`
+          ].join(",");
+        })
+      ].join("\n");
+
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+      const link = document.createElement("a");
+      if (link.download !== undefined) {
+        const url = URL.createObjectURL(blob);
+        link.setAttribute("href", url);
+        link.setAttribute("download", `askio_report_${format(new Date(), "yyyy-MM-dd")}.csv`);
+        link.style.visibility = "hidden";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        toast.success("Report downloaded successfully");
+      }
+    } catch (error) {
+      console.error("Error downloading report:", error);
+      toast.error("Failed to download report");
+    }
+  };
+
   const toggleSortDropdown = () => {
     setIsSortDropdownOpen(!isSortDropdownOpen);
   };
@@ -330,33 +392,49 @@ const Dashboard: React.FC<DashboardProps> = ({ toggleSidebar }) => {
                 >
                     <Menu size={24} />
                 </button>
-                <h2 className="text-3xl font-bold tracking-tight font-serif text-[#37322F] dark:text-[#F5F5F4]">Dashboard</h2>
+                <h2 className="text-h1 font-medium tracking-tight font-serif text-[#37322F] dark:text-[#F5F5F4]">Dashboard</h2>
             </div>
             <div className="flex items-center space-x-2">
-                 {/* Placeholder for Date Range Picker */}
-                 <div className="hidden md:flex items-center rounded-md border border-[#E0DEDB] dark:border-[#44403C] bg-white dark:bg-[#292524] px-3 py-2 text-sm">
-                    <span className="text-[#605A57] dark:text-[#A8A29E] mr-2">Jan 20, 2023 - Feb 09, 2023</span>
-                 </div>
-                <Button
-                    onClick={refreshDashboard}
-                    className="bg-[#37322F] text-white hover:bg-[#2a2522] shadow-sm dark:bg-[#F5F5F4] dark:text-[#1C1917]"
+                 <Link
+                    to="/configure"
+                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-[#37322F] hover:bg-[#2a2522] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#37322F] transition-all duration-200 shadow-sm dark:bg-[#F5F5F4] dark:text-[#1C1917] dark:hover:bg-[#E7E5E4]"
                 >
-                    Download
-                </Button>
+                    <PlusCircle size={16} className="mr-2" />
+                    Quick Create
+                </Link>
             </div>
         </div>
 
-        <Tabs
-            tabs={[
-            { id: "overview", label: "Overview" },
-            { id: "chatbots", label: "Chatbots" },
-            { id: "reports", label: "Reports" },
-            { id: "notifications", label: "Notifications" },
-            ]}
-            activeTab={activeTab}
-            onChange={(id) => setActiveTab(id as any)}
-            className="w-[400px]"
-        />
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 my-6">
+            <Tabs
+                tabs={[
+                { id: "overview", label: "Overview" },
+                { id: "chatbots", label: "Chatbots" },
+                { id: "reports", label: "Reports" },
+                { id: "notifications", label: "Notifications" },
+                ]}
+                activeTab={activeTab}
+                onChange={(id) => setActiveTab(id as any)}
+                className="w-fit"
+            />
+
+            <div className="flex items-center gap-2">
+                <Button
+                    onClick={refreshDashboard}
+                    className="bg-white text-[#605A57] border border-[#E0DEDB] hover:bg-[#FAFAF9] hover:text-[#37322F] shadow-sm dark:bg-[#292524] dark:text-[#A8A29E] dark:border-[#44403C] dark:hover:bg-[#44403C] dark:hover:text-[#F5F5F4]"
+                    icon={RefreshCw}
+                >
+                    Refresh
+                </Button>
+                <Button
+                    onClick={downloadReport}
+                    className="bg-white text-[#605A57] border border-[#E0DEDB] hover:bg-[#FAFAF9] hover:text-[#37322F] shadow-sm dark:bg-[#292524] dark:text-[#A8A29E] dark:border-[#44403C] dark:hover:bg-[#44403C] dark:hover:text-[#F5F5F4]"
+                    icon={Download}
+                >
+                    Download Report
+                </Button>
+            </div>
+        </div>
 
         {activeTab === "overview" && (
             <>
@@ -400,7 +478,7 @@ const Dashboard: React.FC<DashboardProps> = ({ toggleSidebar }) => {
 
                 <div className="mt-8">
                      <div className="flex flex-col md:flex-row justify-between md:items-center space-y-4 md:space-y-0 mb-6">
-                        <h2 className="text-2xl font-bold text-[#37322F] dark:text-[#F5F5F4]">
+                        <h2 className="text-h3 font-medium text-[#37322F] dark:text-[#F5F5F4]">
                             Your Chatbots
                         </h2>
                         <div className="flex flex-wrap items-center gap-4">
@@ -511,16 +589,16 @@ const Dashboard: React.FC<DashboardProps> = ({ toggleSidebar }) => {
                                 <table className="min-w-full divide-y divide-[#E0DEDB] dark:divide-[#44403C]">
                                     <thead className="bg-[#FAFAF9] dark:bg-[#292524]">
                                         <tr>
-                                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-[#605A57] dark:text-[#A8A29E] uppercase tracking-wider font-sans">
+                                            <th scope="col" className="px-6 py-3 text-left text-caption font-medium text-[#605A57] dark:text-[#A8A29E] uppercase tracking-wider font-sans">
                                                 Name
                                             </th>
-                                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-[#605A57] dark:text-[#A8A29E] uppercase tracking-wider font-sans">
+                                            <th scope="col" className="px-6 py-3 text-left text-caption font-medium text-[#605A57] dark:text-[#A8A29E] uppercase tracking-wider font-sans">
                                                 Feedback
                                             </th>
-                                            <th scope="col" className="hidden sm:table-cell px-6 py-3 text-left text-xs font-medium text-[#605A57] dark:text-[#A8A29E] uppercase tracking-wider font-sans">
+                                            <th scope="col" className="hidden sm:table-cell px-6 py-3 text-left text-caption font-medium text-[#605A57] dark:text-[#A8A29E] uppercase tracking-wider font-sans">
                                                 Created
                                             </th>
-                                            <th scope="col" className="hidden md:table-cell px-6 py-3 text-left text-xs font-medium text-[#605A57] dark:text-[#A8A29E] uppercase tracking-wider font-sans">
+                                            <th scope="col" className="hidden md:table-cell px-6 py-3 text-left text-caption font-medium text-[#605A57] dark:text-[#A8A29E] uppercase tracking-wider font-sans">
                                                 Last Updated
                                             </th>
                                             <th scope="col" className="relative px-6 py-3">
@@ -539,7 +617,7 @@ const Dashboard: React.FC<DashboardProps> = ({ toggleSidebar }) => {
                                                                 <Bot size={20} />
                                                             </div>
                                                             <div className="ml-4">
-                                                                <div className="text-sm font-medium text-[#37322F] dark:text-[#F5F5F4] font-sans">
+                                                                <div className="text-body-sm font-medium text-[#37322F] dark:text-[#F5F5F4] font-sans">
                                                                     {chatbot.title}
                                                                 </div>
                                                             </div>
@@ -553,17 +631,17 @@ const Dashboard: React.FC<DashboardProps> = ({ toggleSidebar }) => {
                                                             </div>
                                                             <div className="flex items-center text-rose-600 dark:text-rose-400 text-sm">
                                                                 <ThumbsDown size={14} className="mr-1.5" />
-                                                                <span className="font-medium">{fb.negative}</span>
+                                                                <span className="font-medium text-body-sm">{fb.negative}</span>
                                                             </div>
                                                         </div>
                                                     </td>
-                                                    <td className="hidden sm:table-cell px-6 py-4 whitespace-nowrap text-sm text-[#605A57] dark:text-[#A8A29E]">
+                                                    <td className="hidden sm:table-cell px-6 py-4 whitespace-nowrap text-body-sm text-[#605A57] dark:text-[#A8A29E]">
                                                         {format(chatbot.createdAt, "MMM d, yyyy")}
                                                     </td>
-                                                    <td className="hidden md:table-cell px-6 py-4 whitespace-nowrap text-sm text-[#605A57] dark:text-[#A8A29E]">
+                                                    <td className="hidden md:table-cell px-6 py-4 whitespace-nowrap text-body-sm text-[#605A57] dark:text-[#A8A29E]">
                                                         {format(chatbot.lastUpdated, "MMM d, yyyy")}
                                                     </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                                    <td className="px-6 py-4 whitespace-nowrap text-right text-body-sm font-medium">
                                                         <div className="flex items-center justify-end space-x-3">
                                                             <button
                                                                 onClick={() => navigate(`/configure/${chatbot.id}`)}
@@ -601,10 +679,10 @@ const Dashboard: React.FC<DashboardProps> = ({ toggleSidebar }) => {
                             <div className="w-16 h-16 bg-[#FAFAF9] dark:bg-[#292524] rounded-full flex items-center justify-center mb-6 shadow-sm border border-[#E0DEDB] dark:border-[#44403C]">
                                 <Bot className="w-8 h-8 text-[#605A57] dark:text-[#A8A29E]" />
                             </div>
-                            <h3 className="text-xl font-medium text-[#37322F] dark:text-[#F5F5F4] mb-2 font-serif">
+                            <h3 className="text-h3 font-medium text-[#37322F] dark:text-[#F5F5F4] mb-2 font-sans">
                             {searchTerm ? "No chatbots found" : "No chatbots yet"}
                             </h3>
-                            <p className="text-[#605A57] dark:text-[#A8A29E] max-w-sm mb-8">
+                            <p className="text-body text-[#605A57] dark:text-[#A8A29E] max-w-sm mb-8">
                             {searchTerm
                                 ? `We couldn't find any chatbots matching "${searchTerm}". Try a different search term.`
                                 : "Create your first chatbot to start engaging with your visitors automatically."}
@@ -675,7 +753,7 @@ const Dashboard: React.FC<DashboardProps> = ({ toggleSidebar }) => {
           {activeTab === "chatbots" && (
             <div className="space-y-6">
                 <div className="flex flex-col md:flex-row justify-between md:items-center space-y-4 md:space-y-0">
-                  <h2 className="text-2xl font-bold text-[#37322F] dark:text-[#F5F5F4]">
+                  <h2 className="text-h2 font-bold text-[#37322F] dark:text-[#F5F5F4]">
                     Your Chatbots
                   </h2>
 

@@ -16,12 +16,15 @@ import Documentation from "./pages/Documentation";
 import Navbar from "./components/Navbar";
 import { Toaster } from "react-hot-toast";
 import Settings from "./pages/Settings";
+import Analytics from "./pages/Analytics";
+import Integrations from "./pages/Integrations";
 import { HelmetProvider } from "react-helmet-async";
 
 const App: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
   const [darkMode, setDarkMode] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [testMode, setTestMode] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -51,6 +54,10 @@ const App: React.FC = () => {
     setSidebarOpen((prevOpen) => !prevOpen);
   };
 
+  const toggleTestMode = () => {
+    setTestMode((prev) => !prev);
+  };
+
   return (
     <HelmetProvider>
       <Router>
@@ -61,6 +68,8 @@ const App: React.FC = () => {
               toggleDarkMode={toggleDarkMode}
               sidebarOpen={sidebarOpen}
               toggleSidebar={toggleSidebar}
+              testMode={testMode}
+              toggleTestMode={toggleTestMode}
             />
           )}
           <div
@@ -84,6 +93,7 @@ const App: React.FC = () => {
                     <Dashboard
                       sidebarOpen={sidebarOpen}
                       toggleSidebar={toggleSidebar}
+                      testMode={testMode}
                     />
                   ) : (
                     <Navigate to="/auth" />
@@ -114,6 +124,14 @@ const App: React.FC = () => {
                     <Navigate to="/auth" />
                   )
                 }
+              />
+              <Route
+                path="/analytics"
+                element={user ? <Analytics /> : <Navigate to="/auth" />}
+              />
+              <Route
+                path="/integrations"
+                element={user ? <Integrations /> : <Navigate to="/auth" />}
               />
             </Routes>
             <Toaster position="top-center" />

@@ -7,6 +7,23 @@ module.exports = {
         serif: ['"Instrument Serif"', 'serif'],
         sans: ['Inter', 'system-ui', 'sans-serif'],
       },
+      fontSize: {
+        // Display & Hero
+        hero: ['72px', { lineHeight: '1.1', fontWeight: '500', letterSpacing: '-0.02em' }],
+        display: ['48px', { lineHeight: '1.1', fontWeight: '500', letterSpacing: '-0.02em' }],
+        // Headings
+        h1: ['36px', { lineHeight: '1.2', fontWeight: '500' }],
+        h2: ['28px', { lineHeight: '1.25', fontWeight: '500' }],
+        h3: ['22px', { lineHeight: '1.3', fontWeight: '500' }],
+        // Body
+        'body-lg': ['18px', { lineHeight: '1.6', fontWeight: '400' }],
+        body: ['16px', { lineHeight: '1.6', fontWeight: '400' }],
+        'body-sm': ['14px', { lineHeight: '1.5', fontWeight: '400' }],
+        caption: ['12px', { lineHeight: '1.4', fontWeight: '400' }],
+        // UI
+        button: ['14px', { lineHeight: '1.4', fontWeight: '500' }],
+        label: ['14px', { lineHeight: '1.4', fontWeight: '500' }],
+      },
       animation: {
         bounce: "bounce 1.3s infinite",
       },
@@ -27,3 +44,4 @@ module.exports = {
   plugins: [],
   darkMode: "class",
 };
+

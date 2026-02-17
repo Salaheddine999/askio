@@ -17,8 +17,8 @@ const RecentActivity: React.FC<RecentActivityProps> = ({ activities }) => {
   return (
     <div className="rounded-xl border border-[rgba(55,50,47,0.12)] dark:border-[#44403C] bg-white dark:bg-[#292524] text-[#37322F] dark:text-[#F5F5F4] shadow-sm">
       <div className="p-6 pb-4 border-b border-[#E0DEDB] dark:border-[#44403C]">
-        <h3 className="text-lg font-semibold font-sans tracking-tight">Recent Activity</h3>
-        <p className="text-sm text-[#605A57] dark:text-[#A8A29E]">
+        <h3 className="text-body-lg font-semibold font-sans tracking-tight">Recent Activity</h3>
+        <p className="text-body-sm text-[#605A57] dark:text-[#A8A29E]">
           Latest feedback from your users.
         </p>
       </div>
@@ -31,20 +31,20 @@ const RecentActivity: React.FC<RecentActivityProps> = ({ activities }) => {
                     <Bot className="h-4 w-4 text-[#605A57] dark:text-[#A8A29E]" />
                 </div>
                 <div className="ml-4 space-y-1">
-                    <p className="text-sm font-medium leading-none font-sans">
+                    <p className="text-body-sm font-medium leading-none font-sans">
                     {activity.chatbotName}
                     </p>
-                    <p className="text-sm text-[#605A57] dark:text-[#A8A29E]">
+                    <p className="text-body-sm text-[#605A57] dark:text-[#A8A29E]">
                     received {activity.type} feedback
                     </p>
                 </div>
-                <div className="ml-auto font-medium text-xs text-[#605A57] dark:text-[#A8A29E]">
+                <div className="ml-auto font-medium text-caption text-[#605A57] dark:text-[#A8A29E]">
                     {format(activity.date, "MMM d, h:mm a")}
                 </div>
                 </div>
             ))
           ) : (
-             <p className="text-sm text-[#605A57] dark:text-[#A8A29E]">No recent activity.</p>
+             <p className="text-body-sm text-[#605A57] dark:text-[#A8A29E]">No recent activity.</p>
           )}
         </div>
       </div>

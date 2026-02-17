@@ -16,7 +16,7 @@ const StatsCard: React.FC<StatsCardProps> = ({
   return (
     <div className="rounded-xl border border-[#E0DEDB] dark:border-[#44403C] bg-white dark:bg-[#121212] text-[#37322F] dark:text-[#F5F5F4] shadow-sm p-6 flex flex-col justify-between h-full">
       <div className="flex flex-row items-center justify-between space-y-0 pb-4">
-        <h3 className="tracking-tight text-sm font-medium text-[#605A57] dark:text-[#A8A29E] font-sans">
+        <h3 className="tracking-tight text-body-sm font-medium text-[#605A57] dark:text-[#A8A29E] font-sans">
           {title}
         </h3>
         {trend && (
@@ -34,10 +34,10 @@ const StatsCard: React.FC<StatsCardProps> = ({
         )}
       </div>
       <div>
-        <div className="text-3xl font-bold font-serif text-[#37322F] dark:text-[#F5F5F4] mb-2">
+        <div className="text-h2 font-bold font-sans text-[#37322F] dark:text-[#F5F5F4] mb-2">
           {value}
         </div>
-        <p className="text-xs text-[#605A57] dark:text-[#666] font-medium">
+        <p className="text-caption text-[#605A57] dark:text-[#666] font-medium">
             {title === "Total Chatbots" && "Active across all platforms"}
             {title === "Total Feedback" && "Collected from users"}
             {title === "Satisfaction Rate" && "Based on positive rating"}

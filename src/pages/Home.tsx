@@ -24,7 +24,7 @@ function Badge({ text }: { text: string }) {
   return (
     <div className="px-4 py-1.5 bg-white shadow-[0px_0px_0px_4px_rgba(55,50,47,0.05)] rounded-full flex items-center gap-2 border border-[rgba(2,6,23,0.08)]">
       <div className="w-2 h-2 rounded-full bg-[#37322F]" />
-      <span className="text-[#37322F] text-xs font-medium font-sans">{text}</span>
+      <span className="text-[#37322F] text-caption font-medium">{text}</span>
     </div>
   );
 }
@@ -245,18 +245,18 @@ export default function ChatbotLanding() {
             <div className="flex items-center">
               <Link to="/" className="flex items-center gap-1.5">
                 <img src="./icon.svg" alt="Askio" className="w-6 h-6" />
-                <span className="text-[#2F3037] dark:text-[#F5F5F4] text-lg font-medium font-sans">Askio</span>
+                <span className="text-[#2F3037] dark:text-[#F5F5F4] text-body-lg font-medium">Askio</span>
               </Link>
               <div className="hidden sm:flex pl-5 gap-4">
                 {["Features", "How it Works", "Testimonials", "FAQ"].map((item) => (
-                  <a key={item} href={`#${item.toLowerCase().replace(" ", "-")}`} className="text-[rgba(49,45,43,0.80)] dark:text-[#A8A29E] text-[13px] font-medium hover:text-[#37322F] dark:hover:text-[#F5F5F4] transition-colors">
+                  <a key={item} href={`#${item.toLowerCase().replace(" ", "-")}`} className="text-[rgba(49,45,43,0.80)] dark:text-[#A8A29E] text-body-sm font-medium hover:text-[#37322F] dark:hover:text-[#F5F5F4] transition-colors">
                     {item}
                   </a>
                 ))}
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <Link to="/auth" className="px-3.5 py-1.5 bg-white dark:bg-[#292524] shadow-[0px_1px_2px_rgba(55,50,47,0.12)] dark:shadow-none rounded-full text-[#37322F] dark:text-[#F5F5F4] text-[13px] font-medium hover:shadow-md transition-shadow border border-transparent dark:border-[#44403C]">
+              <Link to="/auth" className="px-3.5 py-1.5 bg-white dark:bg-[#292524] shadow-[0px_1px_2px_rgba(55,50,47,0.12)] dark:shadow-none rounded-full text-[#37322F] dark:text-[#F5F5F4] text-button font-medium hover:shadow-md transition-shadow border border-transparent dark:border-[#44403C]">
                 Log in
               </Link>
               <button className="sm:hidden text-[#37322F] dark:text-[#F5F5F4]" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
@@ -283,22 +283,22 @@ export default function ChatbotLanding() {
         {/* ═══ HERO SECTION ═══ */}
         <section className={`pt-16 sm:pt-20 lg:pt-32 pb-12 lg:pb-20 flex flex-col items-center text-center ${sectionBorder}`}>
           <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="max-w-[750px] px-4">
-            <h1 className="text-[28px] sm:text-[44px] md:text-[60px] lg:text-[80px] font-normal leading-[1.1] font-serif text-[#37322F] dark:text-[#F5F5F4] mb-6">
+            <h1 className="text-hero font-serif text-[#37322F] dark:text-[#F5F5F4] mb-6">
               Custom Chatbots,{" "}
               <br className="hidden sm:block" />
               Limitless Possibilities
             </h1>
-            <p className="text-[rgba(55,50,47,0.80)] dark:text-[#A8A29E] text-base sm:text-lg font-medium leading-7 max-w-[510px] mx-auto mb-8">
+            <p className="text-[rgba(55,50,47,0.80)] dark:text-[#A8A29E] text-body-lg font-medium max-w-[510px] mx-auto mb-8">
               Create custom chatbots tailored to your brand. Effortlessly integrate them into your website and engage visitors with smarter interactions.
             </p>
           </motion.div>
 
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.2 }} className="flex flex-col sm:flex-row items-center gap-4 mb-12">
-            <Link to="/auth" className="h-11 px-10 bg-[#37322F] dark:bg-[#F5F5F4] shadow-[0px_0px_0px_2.5px_rgba(255,255,255,0.08)_inset] rounded-full flex items-center text-white dark:text-[#1C1917] text-[15px] font-medium hover:bg-[#2a2522] dark:hover:bg-[#E7E5E4] transition-colors">
+            <Link to="/auth" className="h-11 px-10 bg-[#37322F] dark:bg-[#F5F5F4] shadow-[0px_0px_0px_2.5px_rgba(255,255,255,0.08)_inset] rounded-full flex items-center text-white dark:text-[#1C1917] text-button font-medium hover:bg-[#2a2522] dark:hover:bg-[#E7E5E4] transition-colors">
               Start for free
               <ArrowRight className="ml-2 h-4 w-4" />
             </Link>
-            <Link to="https://github.com/Salaheddine999/askio" className="flex items-center gap-2 text-[rgba(49,45,43,0.80)] dark:text-[#A8A29E] text-[13px] font-medium hover:text-[#37322F] dark:hover:text-[#F5F5F4] transition-colors group">
+            <Link to="https://github.com/Salaheddine999/askio" className="flex items-center gap-2 text-[rgba(49,45,43,0.80)] dark:text-[#A8A29E] text-body-sm font-medium hover:text-[#37322F] dark:hover:text-[#F5F5F4] transition-colors group">
               <FaGithub className="h-5 w-5 group-hover:rotate-12 transition-transform" />
               Star on Github
             </Link>
@@ -307,16 +307,16 @@ export default function ChatbotLanding() {
           {/* Stats Row */}
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.3 }} className="flex flex-wrap justify-center gap-8 mb-12">
             <div className="flex items-baseline gap-2">
-              <span className="text-3xl font-bold text-[#37322F] dark:text-[#F5F5F4]">1.2K+</span>
-              <span className="text-sm text-[#605A57] dark:text-[#A8A29E]">Chatbots Created</span>
+              <span className="text-h2 font-serif text-[#37322F] dark:text-[#F5F5F4]">1.2K+</span>
+              <span className="text-body-sm text-[#605A57] dark:text-[#A8A29E]">Chatbots Created</span>
             </div>
             <div className="flex items-center gap-1">
               {[...Array(5)].map((_, i) => <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />)}
-              <span className="text-sm text-[#605A57] dark:text-[#A8A29E] ml-1">500+ users</span>
+              <span className="text-body-sm text-[#605A57] dark:text-[#A8A29E] ml-1">500+ users</span>
             </div>
             <div className="flex items-baseline gap-2">
-              <span className="text-3xl font-bold text-[#37322F] dark:text-[#F5F5F4]">4.8/5</span>
-              <span className="text-sm text-[#605A57] dark:text-[#A8A29E]">Rating</span>
+              <span className="text-h2 font-serif text-[#37322F] dark:text-[#F5F5F4]">4.8/5</span>
+              <span className="text-body-sm text-[#605A57] dark:text-[#A8A29E]">Rating</span>
             </div>
           </motion.div>
 
@@ -367,8 +367,8 @@ export default function ChatbotLanding() {
         <motion.section ref={featuresRef} initial={{ opacity: 0, y: 40 }} animate={featuresInView ? { opacity: 1, y: 0 } : {}} transition={{ duration: 0.5 }} id="features" className={sectionBorder}>
           <div className="py-16 flex flex-col items-center text-center px-4">
             <Badge text="Features" />
-            <h2 className="mt-5 text-2xl sm:text-3xl lg:text-5xl font-semibold tracking-tight text-[#49423D] dark:text-[#F5F5F4] font-sans">Powerful features for your chatbots</h2>
-            <p className="mt-3 text-[#605A57] dark:text-[#A8A29E] text-sm sm:text-base max-w-md">Everything you need to create, customize, and deploy chatbots that engage your visitors.</p>
+            <h2 className="mt-5 text-display font-serif tracking-tight text-[#49423D] dark:text-[#F5F5F4]">Powerful features for your chatbots</h2>
+            <p className="mt-3 text-[#605A57] dark:text-[#A8A29E] text-body max-w-md">Everything you need to create, customize, and deploy chatbots that engage your visitors.</p>
           </div>
 
           <div className="flex">
@@ -378,9 +378,9 @@ export default function ChatbotLanding() {
               <div className="p-6 sm:p-8 lg:p-10 flex flex-col gap-4 border-b border-r-0 md:border-r border-[rgba(55,50,47,0.12)] dark:border-[#44403C]">
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-lg bg-[rgba(55,50,47,0.06)] dark:bg-[#44403C] flex items-center justify-center"><Paintbrush className="w-4 h-4 text-[#49423D] dark:text-[#F5F5F4]" /></div>
-                  <h3 className="text-[#37322F] dark:text-[#F5F5F4] text-base sm:text-lg font-semibold">Easy Customization</h3>
+                  <h3 className="text-[#37322F] dark:text-[#F5F5F4] text-h3 font-sans">Easy Customization</h3>
                 </div>
-                <p className="text-[#605A57] dark:text-[#A8A29E] text-sm leading-relaxed">Design every aspect from colors and fonts to conversation flows, all without coding.</p>
+                <p className="text-[#605A57] dark:text-[#A8A29E] text-body-sm leading-relaxed">Design every aspect from colors and fonts to conversation flows, all without coding.</p>
                 <div className="mt-auto w-full h-[180px] rounded-[9px] bg-white dark:bg-[#292524] shadow-[0px_0px_0px_0.9px_rgba(0,0,0,0.08),0px_2px_4px_rgba(0,0,0,0.04)] overflow-hidden flex">
                   <div className="w-20 border-r border-[#E0DEDB] dark:border-[#44403C] p-3 flex flex-col gap-3 bg-[#FAFAF9] dark:bg-[#1C1917]">
                     <div className="w-full h-1.5 bg-[#37322F] dark:bg-[#F5F5F4] rounded-full" />
@@ -411,9 +411,9 @@ export default function ChatbotLanding() {
               <div className="p-6 sm:p-8 lg:p-10 flex flex-col gap-4 border-b border-[rgba(55,50,47,0.12)] dark:border-[#44403C]">
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-lg bg-[rgba(55,50,47,0.06)] dark:bg-[#44403C] flex items-center justify-center"><Code className="w-4 h-4 text-[#49423D] dark:text-[#F5F5F4]" /></div>
-                  <h3 className="text-[#37322F] dark:text-[#F5F5F4] text-base sm:text-lg font-semibold">Seamless Integration</h3>
+                  <h3 className="text-[#37322F] dark:text-[#F5F5F4] text-h3 font-sans">Seamless Integration</h3>
                 </div>
-                <p className="text-[#605A57] dark:text-[#A8A29E] text-sm leading-relaxed">Add your chatbot to any website with just a few clicks using a simple embed code.</p>
+                <p className="text-[#605A57] dark:text-[#A8A29E] text-body-sm leading-relaxed">Add your chatbot to any website with just a few clicks using a simple embed code.</p>
                 <div className="mt-auto w-full h-[180px] rounded-[9px] bg-white dark:bg-[#292524] shadow-[0px_0px_0px_0.9px_rgba(0,0,0,0.08),0px_2px_4px_rgba(0,0,0,0.04)] overflow-hidden flex flex-col">
                   <div className="flex items-center gap-1.5 px-3 py-2 border-b border-[#E0DEDB] dark:border-[#44403C] bg-[#FAFAF9] dark:bg-[#1C1917]">
                     <div className="w-2 h-2 rounded-full bg-[#E0DEDB] dark:bg-[#44403C]" /><div className="w-2 h-2 rounded-full bg-[#E0DEDB] dark:bg-[#44403C]" /><div className="w-2 h-2 rounded-full bg-[#E0DEDB] dark:bg-[#44403C]" />
@@ -437,9 +437,9 @@ export default function ChatbotLanding() {
               <div className="p-6 sm:p-8 lg:p-10 flex flex-col gap-4 border-r-0 md:border-r border-[rgba(55,50,47,0.12)] dark:border-[#44403C]">
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-lg bg-[rgba(55,50,47,0.06)] dark:bg-[#44403C] flex items-center justify-center"><MessageCircle className="w-4 h-4 text-[#49423D] dark:text-[#F5F5F4]" /></div>
-                  <h3 className="text-[#37322F] dark:text-[#F5F5F4] text-base sm:text-lg font-semibold">Real-Time Engagement</h3>
+                  <h3 className="text-[#37322F] dark:text-[#F5F5F4] text-h3 font-sans">Real-Time Engagement</h3>
                 </div>
-                <p className="text-[#605A57] dark:text-[#A8A29E] text-sm leading-relaxed">Engage visitors instantly with automated conversations tailored to your business needs.</p>
+                <p className="text-[#605A57] dark:text-[#A8A29E] text-body-sm leading-relaxed">Engage visitors instantly with automated conversations tailored to your business needs.</p>
                 <div className="mt-auto w-full h-[180px] rounded-[9px] bg-white dark:bg-[#292524] shadow-[0px_0px_0px_0.9px_rgba(0,0,0,0.08),0px_2px_4px_rgba(0,0,0,0.04)] overflow-hidden flex flex-col">
                   <div className="px-4 py-2 border-b border-[#E0DEDB] dark:border-[#44403C] flex items-center gap-2 bg-[#FAFAF9] dark:bg-[#1C1917]">
                     <div className="w-5 h-5 rounded-full bg-[#37322F] dark:bg-[#F5F5F4] flex items-center justify-center"><MessageCircle className="w-3 h-3 text-white dark:text-[#1C1917]" /></div>
@@ -474,9 +474,9 @@ export default function ChatbotLanding() {
               <div className="p-6 sm:p-8 lg:p-10 flex flex-col gap-4 border-[rgba(55,50,47,0.12)]">
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-lg bg-[rgba(55,50,47,0.06)] dark:bg-[#44403C] flex items-center justify-center"><Settings className="w-4 h-4 text-[#49423D] dark:text-[#F5F5F4]" /></div>
-                  <h3 className="text-[#37322F] dark:text-[#F5F5F4] text-base sm:text-lg font-semibold">Easy Configuration</h3>
+                  <h3 className="text-[#37322F] dark:text-[#F5F5F4] text-h3 font-sans">Easy Configuration</h3>
                 </div>
-                <p className="text-[#605A57] dark:text-[#A8A29E] text-sm leading-relaxed">Set up responses, behavior, and placement with our user-friendly interface.</p>
+                <p className="text-[#605A57] dark:text-[#A8A29E] text-body-sm leading-relaxed">Set up responses, behavior, and placement with our user-friendly interface.</p>
                 <div className="mt-auto w-full h-[180px] rounded-[9px] bg-white dark:bg-[#292524] shadow-[0px_0px_0px_0.9px_rgba(0,0,0,0.08),0px_2px_4px_rgba(0,0,0,0.04)] overflow-hidden flex flex-col">
                   <div className="px-4 py-2 border-b border-[#E0DEDB] dark:border-[#44403C] flex items-center gap-3 bg-[#FAFAF9] dark:bg-[#1C1917]">
                     <span className="text-[10px] text-[#37322F] dark:text-[#F5F5F4] font-semibold font-sans border-b-2 border-[#37322F] dark:border-[#F5F5F4] pb-1">General</span>
@@ -513,8 +513,8 @@ export default function ChatbotLanding() {
           <div className="py-16 lg:py-20 flex flex-col items-center text-center px-4">
             <Badge text="How it Works" />
             <motion.div ref={howItWorksRef} initial={{ opacity: 0, y: 30 }} animate={howItWorksInView ? { opacity: 1, y: 0 } : {}} transition={{ duration: 0.5 }}>
-              <h2 className="mt-5 text-2xl sm:text-3xl lg:text-5xl font-semibold tracking-tight text-[#49423D] dark:text-[#F5F5F4] font-sans">Three simple steps to go live</h2>
-              <p className="mt-3 text-[#605A57] dark:text-[#A8A29E] text-sm sm:text-base max-w-md mx-auto">Create and deploy your custom chatbot in minutes — no coding required.</p>
+              <h2 className="mt-5 text-display font-serif tracking-tight text-[#49423D] dark:text-[#F5F5F4]">Three simple steps to go live</h2>
+              <p className="mt-3 text-[#605A57] dark:text-[#A8A29E] text-body max-w-md mx-auto">Create and deploy your custom chatbot in minutes — no coding required.</p>
             </motion.div>
           </div>
 
@@ -549,10 +549,10 @@ export default function ChatbotLanding() {
                         />
                       </div>
                       <div className="px-6 py-5 w-full flex flex-col gap-2">
-                        <div className="self-stretch flex justify-center flex-col text-[#49423D] dark:text-[#F5F5F4] text-sm font-semibold leading-6 font-sans">
+                        <div className="self-stretch flex justify-center flex-col text-[#49423D] dark:text-[#F5F5F4] text-body-sm font-semibold leading-6 font-sans">
                           {step.title}
                         </div>
-                        <div className="self-stretch text-[#605A57] dark:text-[#A8A29E] text-[13px] font-normal leading-[22px] font-sans">
+                        <div className="self-stretch text-[#605A57] dark:text-[#A8A29E] text-body-sm font-normal leading-[22px] font-sans">
                           {step.desc}
                         </div>
                       </div>
@@ -568,30 +568,30 @@ export default function ChatbotLanding() {
                     {/* Step 1: Configuration panel */}
                     <div className={`absolute inset-0 transition-all duration-500 ease-in-out flex flex-col ${activeStep === 0 ? "opacity-100 scale-100 blur-0" : "opacity-0 scale-95 blur-sm"}`}>
                       <div className="px-4 py-2.5 border-b border-[#E0DEDB] dark:border-[#44403C] flex items-center gap-3 bg-[#FAFAF9] dark:bg-[#1C1917]">
-                        <span className="text-[11px] text-[#37322F] dark:text-[#F5F5F4] font-semibold font-sans border-b-2 border-[#37322F] dark:border-[#F5F5F4] pb-1">General</span>
-                        <span className="text-[11px] text-[#9CA3AF] font-medium font-sans pb-1">FAQ</span>
-                        <span className="text-[11px] text-[#9CA3AF] font-medium font-sans pb-1">Embed</span>
+                        <span className="text-caption text-[#37322F] dark:text-[#F5F5F4] font-semibold font-sans border-b-2 border-[#37322F] dark:border-[#F5F5F4] pb-1">General</span>
+                        <span className="text-caption text-[#9CA3AF] font-medium font-sans pb-1">FAQ</span>
+                        <span className="text-caption text-[#9CA3AF] font-medium font-sans pb-1">Embed</span>
                       </div>
                       <div className="flex-1 p-6 space-y-5">
                         <div className="space-y-2">
-                          <div className="text-[11px] text-[#37322F] dark:text-[#F5F5F4] font-medium font-sans">Chatbot Name</div>
-                          <div className="h-9 rounded-md border border-[#E0DEDB] dark:border-[#44403C] bg-[#FAFAF9] dark:bg-[#1C1917] flex items-center px-3"><span className="text-[12px] text-[#605A57] dark:text-[#A8A29E] font-sans">My Support Bot</span></div>
+                          <div className="text-caption text-[#37322F] dark:text-[#F5F5F4] font-medium font-sans">Chatbot Name</div>
+                          <div className="h-9 rounded-md border border-[#E0DEDB] dark:border-[#44403C] bg-[#FAFAF9] dark:bg-[#1C1917] flex items-center px-3"><span className="text-caption text-[#605A57] dark:text-[#A8A29E] font-sans">My Support Bot</span></div>
                         </div>
                         <div className="space-y-2">
-                          <div className="text-[11px] text-[#37322F] dark:text-[#F5F5F4] font-medium font-sans">Welcome Message</div>
-                          <div className="h-9 rounded-md border border-[#E0DEDB] dark:border-[#44403C] bg-[#FAFAF9] dark:bg-[#1C1917] flex items-center px-3"><span className="text-[12px] text-[#605A57] dark:text-[#A8A29E] font-sans">Hi! How can I help you today?</span></div>
+                          <div className="text-caption text-[#37322F] dark:text-[#F5F5F4] font-medium font-sans">Welcome Message</div>
+                          <div className="h-9 rounded-md border border-[#E0DEDB] dark:border-[#44403C] bg-[#FAFAF9] dark:bg-[#1C1917] flex items-center px-3"><span className="text-caption text-[#605A57] dark:text-[#A8A29E] font-sans">Hi! How can I help you today?</span></div>
                         </div>
                         <div className="space-y-2">
-                          <div className="text-[11px] text-[#37322F] dark:text-[#F5F5F4] font-medium font-sans">Placeholder Text</div>
-                          <div className="h-9 rounded-md border border-[#E0DEDB] dark:border-[#44403C] bg-[#FAFAF9] dark:bg-[#1C1917] flex items-center px-3"><span className="text-[12px] text-[#605A57] dark:text-[#A8A29E] font-sans">Type your message...</span></div>
+                          <div className="text-caption text-[#37322F] dark:text-[#F5F5F4] font-medium font-sans">Placeholder Text</div>
+                          <div className="h-9 rounded-md border border-[#E0DEDB] dark:border-[#44403C] bg-[#FAFAF9] dark:bg-[#1C1917] flex items-center px-3"><span className="text-caption text-[#605A57] dark:text-[#A8A29E] font-sans">Type your message...</span></div>
                         </div>
                         <div className="flex items-center justify-between pt-2">
-                          <div className="flex flex-col gap-0.5"><span className="text-[11px] text-[#37322F] dark:text-[#F5F5F4] font-medium font-sans">Auto-reply</span><span className="text-[10px] text-[#9CA3AF] font-sans">Respond automatically to visitors</span></div>
+                          <div className="flex flex-col gap-0.5"><span className="text-caption text-[#37322F] dark:text-[#F5F5F4] font-medium font-sans">Auto-reply</span><span className="text-[10px] text-[#9CA3AF] font-sans">Respond automatically to visitors</span></div>
                           <div className="w-9 h-[20px] rounded-full bg-[#37322F] dark:bg-[#F5F5F4] flex items-center justify-end px-0.5"><div className="w-4 h-4 rounded-full bg-white dark:bg-[#292524] shadow-sm" /></div>
                         </div>
                         <div className="flex gap-3 pt-2">
-                          <div className="flex-1 h-9 rounded-md bg-[#37322F] dark:bg-[#F5F5F4] flex items-center justify-center"><span className="text-[11px] text-white dark:text-[#1C1917] font-sans font-medium">Save Changes</span></div>
-                          <div className="flex-1 h-9 rounded-md border border-[#E0DEDB] dark:border-[#44403C] flex items-center justify-center"><span className="text-[11px] text-[#605A57] dark:text-[#A8A29E] font-sans font-medium">Preview</span></div>
+                          <div className="flex-1 h-9 rounded-md bg-[#37322F] dark:bg-[#F5F5F4] flex items-center justify-center"><span className="text-caption text-white dark:text-[#1C1917] font-sans font-medium">Save Changes</span></div>
+                          <div className="flex-1 h-9 rounded-md border border-[#E0DEDB] dark:border-[#44403C] flex items-center justify-center"><span className="text-caption text-[#605A57] dark:text-[#A8A29E] font-sans font-medium">Preview</span></div>
                         </div>
                       </div>
                     </div>
@@ -599,7 +599,7 @@ export default function ChatbotLanding() {
                     {/* Step 2: Design customizer */}
                     <div className={`absolute inset-0 transition-all duration-500 ease-in-out flex ${activeStep === 1 ? "opacity-100 scale-100 blur-0" : "opacity-0 scale-95 blur-sm"}`}>
                       <div className="w-1/3 border-r border-[#E0DEDB] dark:border-[#44403C] p-5 flex flex-col gap-4 bg-[#FAFAF9] dark:bg-[#1C1917]">
-                        <div className="text-[11px] text-[#37322F] dark:text-[#F5F5F4] font-semibold font-sans">Appearance</div>
+                        <div className="text-caption text-[#37322F] dark:text-[#F5F5F4] font-semibold font-sans">Appearance</div>
                         <div className="space-y-3">
                           <div className="text-[10px] text-[#605A57] dark:text-[#A8A29E] font-medium font-sans">Theme Color</div>
                           <div className="grid grid-cols-4 gap-2">
@@ -623,7 +623,7 @@ export default function ChatbotLanding() {
                         <div className="w-full max-w-[220px] bg-white dark:bg-[#292524] rounded-xl shadow-lg p-4 space-y-3">
                           <div className="flex items-center gap-2 pb-2 border-b border-[#E0DEDB] dark:border-[#44403C]">
                             <div className="w-7 h-7 rounded-full bg-[#37322F] dark:bg-[#F5F5F4] flex items-center justify-center"><MessageCircle className="w-3.5 h-3.5 text-white dark:text-[#1C1917]" /></div>
-                            <span className="text-[11px] text-[#37322F] dark:text-[#F5F5F4] font-semibold font-sans">Askio Bot</span>
+                            <span className="text-caption text-[#37322F] dark:text-[#F5F5F4] font-semibold font-sans">Askio Bot</span>
                             <span className="w-1.5 h-1.5 rounded-full bg-[#10B981] ml-auto" />
                           </div>
                           <div className="space-y-2">
@@ -643,8 +643,8 @@ export default function ChatbotLanding() {
                       <div className="flex items-center gap-1.5 px-4 py-3 border-b border-[#E0DEDB] dark:border-[#44403C] bg-[#FAFAF9] dark:bg-[#1C1917]">
                         <div className="w-2.5 h-2.5 rounded-full bg-[#EF4444]/60" /><div className="w-2.5 h-2.5 rounded-full bg-[#F59E0B]/60" /><div className="w-2.5 h-2.5 rounded-full bg-[#10B981]/60" />
                         <div className="ml-4 flex gap-0">
-                          <div className="px-4 py-1 bg-white dark:bg-[#292524] rounded-t-md border border-[#E0DEDB] dark:border-[#44403C] border-b-white dark:border-b-[#292524] -mb-px"><span className="text-[11px] text-[#37322F] dark:text-[#F5F5F4] font-mono font-medium">index.html</span></div>
-                          <div className="px-4 py-1"><span className="text-[11px] text-[#9CA3AF] font-mono">style.css</span></div>
+                          <div className="px-4 py-1 bg-white dark:bg-[#292524] rounded-t-md border border-[#E0DEDB] dark:border-[#44403C] border-b-white dark:border-b-[#292524] -mb-px"><span className="text-caption text-[#37322F] dark:text-[#F5F5F4] font-mono font-medium">index.html</span></div>
+                          <div className="px-4 py-1"><span className="text-caption text-[#9CA3AF] font-mono">style.css</span></div>
                         </div>
                       </div>
                       <div className="flex-1 px-5 py-4 font-mono text-[12px] leading-[22px] bg-white dark:bg-[#292524] space-y-0.5">
@@ -661,9 +661,9 @@ export default function ChatbotLanding() {
                       <div className="px-5 py-3 border-t border-[#E0DEDB] dark:border-[#44403C] bg-[#FAFAF9] dark:bg-[#1C1917] flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <div className="w-2 h-2 rounded-full bg-[#10B981]" />
-                          <span className="text-[11px] text-[#605A57] dark:text-[#A8A29E] font-sans">Ready to embed</span>
+                          <span className="text-caption text-[#605A57] dark:text-[#A8A29E] font-sans">Ready to embed</span>
                         </div>
-                        <div className="px-4 py-1.5 rounded-md bg-[#37322F] dark:bg-[#F5F5F4] flex items-center justify-center"><span className="text-[11px] text-white dark:text-[#1C1917] font-sans font-medium">Copy Code</span></div>
+                        <div className="px-4 py-1.5 rounded-md bg-[#37322F] dark:bg-[#F5F5F4] flex items-center justify-center"><span className="text-caption text-white dark:text-[#1C1917] font-sans font-medium">Copy Code</span></div>
                       </div>
                     </div>
                   </div>
@@ -683,7 +683,7 @@ export default function ChatbotLanding() {
             {/* Quote + Name */}
             <div className="flex-1 flex flex-col gap-6">
               <div
-                className="text-[#49423D] dark:text-[#F5F5F4] text-2xl md:text-[32px] font-medium leading-10 md:leading-[42px] font-sans tracking-tight min-h-[120px] md:min-h-[160px] transition-all duration-700 ease-in-out"
+                className="text-[#49423D] dark:text-[#F5F5F4] text-h2 md:text-[32px] font-medium leading-10 md:leading-[42px] font-sans tracking-tight min-h-[120px] md:min-h-[160px] transition-all duration-700 ease-in-out"
                 style={{ filter: isTransitioning ? "blur(4px)" : "blur(0px)" }}
               >
                 "{testimonials[activeTestimonial].quote}"
@@ -721,18 +721,16 @@ export default function ChatbotLanding() {
 
         {/* ═══ FAQ SECTION ═══ */}
         <motion.section ref={faqRef} initial={{ opacity: 0, y: 40 }} animate={faqInView ? { opacity: 1, y: 0 } : {}} transition={{ duration: 0.5 }} id="faq" className={sectionBorder}>
-          <div className="flex">
-            <HatchStrip />
-            <div className="flex-1 border-l border-r border-[rgba(55,50,47,0.12)] dark:border-[#44403C]">
+            <div className="flex-1">
               <div className="px-4 md:px-12 py-16 md:py-20 flex flex-col lg:flex-row justify-start items-start gap-6 lg:gap-12">
 
                 {/* Left Column — Header */}
                 <div className="w-full lg:w-[340px] shrink-0 flex flex-col justify-center items-start gap-4 lg:py-5">
                   <Badge text="FAQ" />
-                  <div className="w-full flex flex-col justify-center text-[#49423D] dark:text-[#F5F5F4] font-semibold leading-tight md:leading-[44px] font-sans text-2xl sm:text-3xl lg:text-4xl tracking-tight">
+                  <div className="w-full flex flex-col justify-center text-[#49423D] dark:text-[#F5F5F4] font-semibold leading-tight md:leading-[44px] text-h2 sm:text-3xl lg:text-4xl tracking-tight">
                     Frequently Asked Questions
                   </div>
-                  <div className="w-full text-[#605A57] dark:text-[#A8A29E] text-base font-normal leading-7 font-sans">
+                  <div className="w-full text-[#605A57] dark:text-[#A8A29E] text-body font-normal leading-7 font-sans">
                     Everything you need to know about Askio.
                     <br className="hidden md:block" />
                     Can't find an answer? Reach out to us.
@@ -754,7 +752,7 @@ export default function ChatbotLanding() {
                         className="w-full px-5 py-[18px] flex justify-between items-center gap-5 text-left hover:bg-[rgba(73,66,61,0.02)] dark:hover:bg-[rgba(255,255,255,0.02)] transition-colors duration-200"
                         aria-expanded={activeIndex === index}
                       >
-                        <div className="flex-1 text-[#49423D] dark:text-[#F5F5F4] text-base font-medium leading-6 font-sans">{faq.q}</div>
+                        <div className="flex-1 text-[#49423D] dark:text-[#F5F5F4] text-body font-medium leading-6 font-sans">{faq.q}</div>
                         <motion.div animate={{ rotate: activeIndex === index ? 180 : 0 }} transition={{ duration: 0.3, ease: "easeInOut" }} className="flex justify-center items-center">
                           <ChevronDown className="w-5 h-5 text-[rgba(73,66,61,0.60)] dark:text-[#78716C]" />
                         </motion.div>
@@ -762,7 +760,7 @@ export default function ChatbotLanding() {
                       <AnimatePresence initial={false}>
                         {activeIndex === index && (
                           <motion.div key={`a-${index}`} initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.3, ease: "easeInOut" }}>
-                            <div className="px-5 pb-[18px] text-[#605A57] dark:text-[#A8A29E] text-sm font-normal leading-6 font-sans">
+                            <div className="px-5 pb-[18px] text-[#605A57] dark:text-[#A8A29E] text-body-sm font-normal leading-6 font-sans">
                               {faq.a}
                             </div>
                           </motion.div>
@@ -772,10 +770,9 @@ export default function ChatbotLanding() {
                   ))}
                 </div>
 
+                </div>
+
               </div>
-            </div>
-            <HatchStrip />
-          </div>
         </motion.section>
 
         {/* ═══ CTA SECTION ═══ */}
@@ -783,10 +780,10 @@ export default function ChatbotLanding() {
           <div className="flex">
             <HatchStrip />
           <div className="flex-1 py-20 sm:py-28 flex flex-col items-center text-center px-4 border-l border-r border-[rgba(55,50,47,0.12)] dark:border-[#44403C]">
-            <h2 className="text-3xl sm:text-4xl lg:text-6xl font-normal font-serif text-[#37322F] dark:text-[#F5F5F4] mb-6">
+            <h2 className="text-display font-serif text-[#37322F] dark:text-[#F5F5F4] mb-6">
               Ready to transform<br className="hidden sm:block" /> your website?
             </h2>
-            <p className="text-[#605A57] dark:text-[#A8A29E] text-base sm:text-lg max-w-md mb-10 leading-relaxed">
+            <p className="text-[#605A57] dark:text-[#A8A29E] text-body-lg max-w-md mb-10 leading-relaxed">
               Join thousands of websites using Askio to provide instant support and enhance user experience.
             </p>
             <div className="flex flex-col sm:flex-row items-center gap-4">
@@ -812,7 +809,6 @@ export default function ChatbotLanding() {
             <HatchStrip />
           </div>
         </motion.section>
-      </div>
 
       {/* ═══ FOOTER (Brillance-style light) ═══ */}
       <footer className="w-full pt-10 border-t border-[rgba(55,50,47,0.12)] dark:border-[#44403C]">
@@ -865,6 +861,7 @@ export default function ChatbotLanding() {
           </div>
         </div>
       </footer>
+      </div>
     </div>
   );
 }

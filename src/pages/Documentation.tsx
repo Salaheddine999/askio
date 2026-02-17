@@ -29,10 +29,10 @@ const Documentation: React.FC<{ toggleSidebar: () => void }> = () => {
         />
       </Helmet>
       <main className="w-full lg:w-[80%] px-4 sm:px-6 lg:px-8 mx-auto">
-        <h1 className="text-4xl font-normal font-serif text-[#37322F] mb-8 dark:text-white tracking-tight">
+        <h1 className="text-h1 font-normal font-serif text-[#37322F] mb-8 dark:text-white tracking-tight">
           Askio Chatbot Documentation
         </h1>
-        <p className="text-xl text-[#605A57] mb-12 dark:text-gray-300">
+        <p className="text-body-lg text-[#605A57] mb-12 dark:text-gray-300">
           Welcome to the comprehensive guide for creating, customizing, and
           integrating Askio Chatbot into your website.
         </p>
@@ -49,10 +49,10 @@ const Documentation: React.FC<{ toggleSidebar: () => void }> = () => {
         ))}
 
         <Card className="mt-12 bg-white dark:bg-[#292524] border-none p-6 shadow-[0px_0px_0px_0.9px_rgba(0,0,0,0.08),0px_2px_4px_rgba(0,0,0,0.04)] rounded-[9px]">
-          <h3 className="text-lg font-semibold text-[#37322F] mb-4 dark:text-[#F5F5F4]">
+          <h3 className="text-h3 font-semibold text-[#37322F] mb-4 dark:text-[#F5F5F4] font-sans">
             Best Practices
           </h3>
-          <ul className="list-disc list-inside space-y-2 text-[#605A57] dark:text-gray-300">
+          <ul className="list-disc list-inside space-y-2 text-[#605A57] dark:text-gray-300 text-body">
             <li>
               Regularly update your FAQs based on user interactions and
               feedback.
@@ -97,7 +97,7 @@ const Section: React.FC<{
           <div className="bg-[#FAFAF9] dark:bg-[#44403C] border border-[#E0DEDB] dark:border-[#57534E] p-2 rounded-lg mr-4">
             <Icon size={24} className="text-[#37322F] dark:text-[#F5F5F4]" />
           </div>
-          <h2 className="text-xl font-semibold text-[#37322F] dark:text-white">
+          <h2 className="text-h3 font-semibold text-[#37322F] dark:text-white font-sans">
             {title}
           </h2>
         </div>
@@ -108,7 +108,7 @@ const Section: React.FC<{
       <div className="px-6 pb-6 pt-2 border-t border-[#E0DEDB] dark:border-[#57534E]">
         <ol className="list-decimal list-inside space-y-4">
           {content.map((step, index) => (
-            <li key={index} className="text-[#605A57] dark:text-gray-300">
+            <li key={index} className="text-[#605A57] dark:text-gray-300 text-body">
               {step}
             </li>
           ))}

@@ -26,8 +26,8 @@ const OverviewChart: React.FC<OverviewChartProps> = ({ data }) => {
   return (
     <div className="rounded-xl border border-[rgba(55,50,47,0.12)] dark:border-[#44403C] bg-white dark:bg-[#292524] text-[#37322F] dark:text-[#F5F5F4] shadow-sm col-span-4 lg:col-span-3">
         <div className="p-6 pb-4">
-            <h3 className="text-lg font-semibold font-sans tracking-tight">Overview</h3>
-             <p className="text-sm text-[#605A57] dark:text-[#A8A29E]">
+            <h3 className="text-body-lg font-semibold font-sans tracking-tight">Overview</h3>
+             <p className="text-body-sm text-[#605A57] dark:text-[#A8A29E]">
               Feedback volume per chatbot for the last 30 days.
             </p>
         </div>
