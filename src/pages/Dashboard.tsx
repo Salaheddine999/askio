@@ -10,26 +10,24 @@ import {
 } from "firebase/firestore";
 import { Link, useNavigate } from "react-router-dom";
 import {
+  Menu,
   PlusCircle,
-  Edit2,
-  LoaderCircle,
-  Trash2,
-  Bot,
   Search,
-  Info,
   Grid,
   List,
-  Code,
-  ThumbsUp,
-  ThumbsDown,
-  Calendar,
-  BarChart2,
-  RefreshCw,
   Filter,
-  Menu,
   ChevronLeft,
   ChevronRight,
+  Bot,
+  ThumbsUp,
+  ThumbsDown,
+  Edit2,
+  Code,
+  Trash2,
+  Info,
+  LoaderCircle,
 } from "lucide-react";
+import { format } from "date-fns";
 import ConfirmationModal from "../components/ConfirmationModal";
 import { toast } from "react-hot-toast";
 import { Transition } from "@headlessui/react";
@@ -37,30 +35,13 @@ import { useModal } from "../hooks/useModal";
 import { motion, AnimatePresence } from "framer-motion";
 import Button from "../components/Button";
 import Input from "../components/Input";
-import Card from "../components/Card";
-import { format } from "date-fns";
+import StatsCard from "../components/StatsCard";
+import Tabs from "../components/Tabs";
+import ChatbotCard from "../components/ChatbotCard";
+import OverviewChart from "../components/OverviewChart";
+import RecentActivity, { ActivityItem } from "../components/RecentActivity";
 import { useCollection } from "react-firebase-hooks/firestore";
-import { Bar, Doughnut } from "react-chartjs-2";
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend,
-  ArcElement,
-} from "chart.js";
 import { Helmet } from "react-helmet-async";
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend,
-  ArcElement
-);
 
 interface Chatbot {
   id: string;
@@ -99,11 +80,8 @@ const Dashboard: React.FC<DashboardProps> = ({ toggleSidebar }) => {
   const [feedbackSnapshot] = useCollection(query(collection(db, "feedback")));
   const [totalFeedback, setTotalFeedback] = useState<number>(0);
   const [satisfactionRate, setSatisfactionRate] = useState<number>(0);
-  const [selectedChatbotMetrics, setSelectedChatbotMetrics] = useState<
-    string | null
-  >(null);
-  const [activeTab, setActiveTab] = useState<"chatbots" | "metrics">(
-    "chatbots"
+  const [activeTab, setActiveTab] = useState<"overview" | "chatbots" | "reports" | "notifications">(
+    "overview"
   );
   const [sortBy, setSortBy] = useState<"title" | "createdAt" | "lastUpdated">(
     "title"
@@ -112,6 +90,7 @@ const Dashboard: React.FC<DashboardProps> = ({ toggleSidebar }) => {
   const [isSortDropdownOpen, setIsSortDropdownOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [chatbotsPerPage] = useState(6);
+  const [recentActivities, setRecentActivities] = useState<ActivityItem[]>([]);
 
   useEffect(() => {
     fetchChatbots();
@@ -122,11 +101,21 @@ const Dashboard: React.FC<DashboardProps> = ({ toggleSidebar }) => {
       const newFeedbackCounts: { [key: string]: FeedbackCounts } = {};
       let totalPositive = 0;
       let totalNegative = 0;
+      const activities: ActivityItem[] = [];
 
-      feedbackSnapshot.docs.forEach((doc) => {
+      // Sort feedback by date descending
+      const sortedDocs = [...feedbackSnapshot.docs].sort((a, b) => {
+          const dateA = a.data().createdAt?.toDate() || new Date(0);
+          const dateB = b.data().createdAt?.toDate() || new Date(0);
+          return dateB.getTime() - dateA.getTime();
+      });
+
+      sortedDocs.forEach((doc) => {
         const data = doc.data();
-        // Only count feedback for chatbots belonging to the current user
-        if (chatbots.some((chatbot) => chatbot.id === data.chatbotId)) {
+        const chatbot = chatbots.find((c) => c.id === data.chatbotId);
+
+        // Only process feedback for current user's chatbots
+        if (chatbot) {
           if (!newFeedbackCounts[data.chatbotId]) {
             newFeedbackCounts[data.chatbotId] = { positive: 0, negative: 0 };
           }
@@ -136,6 +125,16 @@ const Dashboard: React.FC<DashboardProps> = ({ toggleSidebar }) => {
           } else {
             newFeedbackCounts[data.chatbotId].negative++;
             totalNegative++;
+          }
+
+          // Add to recent activities (limit to 5)
+          if (activities.length < 5) {
+              activities.push({
+                  id: doc.id,
+                  chatbotName: chatbot.title,
+                  type: data.isPositive ? "positive" : "negative",
+                  date: data.createdAt?.toDate() || new Date(),
+              });
           }
         }
       });
@@ -147,6 +146,7 @@ const Dashboard: React.FC<DashboardProps> = ({ toggleSidebar }) => {
           ? (totalPositive / (totalPositive + totalNegative)) * 100
           : 0
       );
+      setRecentActivities(activities);
     }
   }, [feedbackSnapshot, chatbots]);
 
@@ -257,6 +257,33 @@ const Dashboard: React.FC<DashboardProps> = ({ toggleSidebar }) => {
     );
   }, [sortedChatbots, searchTerm]);
 
+  // Calculate chart data
+  const chartData = useMemo(() => {
+    const labels = chatbots.map((c) => c.title);
+    const positiveData = chatbots.map(
+      (c) => feedbackCounts[c.id]?.positive || 0
+    );
+    const negativeData = chatbots.map(
+      (c) => feedbackCounts[c.id]?.negative || 0
+    );
+
+    return {
+      labels,
+      datasets: [
+        {
+          label: "Positive",
+          data: positiveData,
+          backgroundColor: "#37322F",
+        },
+        {
+            label: "Negative",
+            data: negativeData,
+            backgroundColor: "#E0DEDB",
+        }
+      ],
+    };
+  }, [chatbots, feedbackCounts]);
+
   const handleSort = (newSortBy: "title" | "createdAt" | "lastUpdated") => {
     if (sortBy === newSortBy) {
       setSortOrder(sortOrder === "asc" ? "desc" : "asc");
@@ -269,54 +296,6 @@ const Dashboard: React.FC<DashboardProps> = ({ toggleSidebar }) => {
   const refreshDashboard = () => {
     fetchChatbots();
     toast.success("Dashboard refreshed");
-  };
-
-  const selectChatbotMetrics = (chatbotId: string) => {
-    setSelectedChatbotMetrics(chatbotId);
-  };
-
-  const getMetricsData = () => {
-    if (selectedChatbotMetrics) {
-      const chatbot = chatbots.find((c) => c.id === selectedChatbotMetrics);
-      const feedback = feedbackCounts[selectedChatbotMetrics] || {
-        positive: 0,
-        negative: 0,
-      };
-      return {
-        labels: [chatbot?.title || "Selected Chatbot"],
-        datasets: [
-          {
-            label: "Positive",
-            data: [feedback.positive],
-            backgroundColor: "#37322F",
-          },
-          {
-            label: "Negative",
-            data: [feedback.negative],
-            backgroundColor: "#E0DEDB",
-          },
-        ],
-      };
-    }
-    return {
-      labels: chatbots.map((chatbot) => chatbot.title),
-      datasets: [
-        {
-          label: "Positive",
-          data: chatbots.map(
-            (chatbot) => feedbackCounts[chatbot.id]?.positive || 0
-          ),
-          backgroundColor: "#37322F",
-        },
-        {
-          label: "Negative",
-          data: chatbots.map(
-            (chatbot) => feedbackCounts[chatbot.id]?.negative || 0
-          ),
-          backgroundColor: "#E0DEDB",
-        },
-      ],
-    };
   };
 
   const toggleSortDropdown = () => {
@@ -342,109 +321,364 @@ const Dashboard: React.FC<DashboardProps> = ({ toggleSidebar }) => {
           content="Manage and optimize your chatbots with Askio's dashboard."
         />
       </Helmet>
-      <div className="w-full px-4 sm:px-6 lg:px-12 py-8 sm:py-12">
-        <header className="mb-8 sm:mb-12 flex justify-between items-center">
-          <div className="flex items-center">
-              <button
-                onClick={toggleSidebar}
-                className="mr-4 text-[#605A57] hover:text-[#37322F] dark:text-[#A8A29E] dark:hover:text-[#F5F5F4] lg:hidden"
-              >
-                <Menu size={24} />
-              </button>
-              <div>
-                <h1 className="text-3xl sm:text-4xl font-normal font-serif text-[#37322F] dark:text-[#F5F5F4] mb-2 tracking-tight">
-                  Chatbot Dashboard
-                </h1>
-                <p className="text-lg sm:text-xl text-[#605A57] dark:text-[#A8A29E] font-medium">
-                  Manage and optimize your chatbots
-                </p>
-              </div>
-            </div>
-            <Button
-              onClick={refreshDashboard}
-              className="bg-white text-[#37322F] border border-[#E0DEDB] hover:bg-[#FAFAF9] shadow-sm dark:bg-[#292524] dark:text-[#F5F5F4] dark:border-[#44403C]"
-              icon={RefreshCw}
-            >
-              Refresh
-            </Button>
-          </header>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-8">
-            <Card className="bg-white dark:bg-[#292524] p-6 shadow-[0px_0px_0px_0.9px_rgba(0,0,0,0.08),0px_2px_4px_rgba(0,0,0,0.04)] rounded-[9px] border-none">
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-[#37322F] dark:text-[#F5F5F4]">
-                  Total Chatbots
-                </h3>
-                <div className="p-2 bg-[#FAFAF9] dark:bg-[#44403C] rounded-lg border border-[#E0DEDB] dark:border-[#57534E]">
-                  <Bot className="text-[#37322F] dark:text-[#F5F5F4] w-5 h-5" />
-                </div>
-              </div>
-              <p className="text-3xl font-bold font-serif text-[#37322F] dark:text-[#F5F5F4] mt-4">
-                {chatbots.length}
-              </p>
-            </Card>
-            <Card className="bg-white dark:bg-[#292524] p-6 shadow-[0px_0px_0px_0.9px_rgba(0,0,0,0.08),0px_2px_4px_rgba(0,0,0,0.04)] rounded-[9px] border-none">
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-[#37322F] dark:text-[#F5F5F4]">
-                  Total Feedback
-                </h3>
-                <div className="p-2 bg-[#FAFAF9] dark:bg-[#44403C] rounded-lg border border-[#E0DEDB] dark:border-[#57534E]">
-                  <ThumbsUp className="text-[#37322F] dark:text-[#F5F5F4] w-5 h-5" />
-                </div>
-              </div>
-              <p className="text-3xl font-bold font-serif text-[#37322F] dark:text-[#F5F5F4] mt-4">
-                {totalFeedback}
-              </p>
-            </Card>
-            <Card className="bg-white dark:bg-[#292524] p-6 shadow-[0px_0px_0px_0.9px_rgba(0,0,0,0.08),0px_2px_4px_rgba(0,0,0,0.04)] rounded-[9px] border-none">
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-[#37322F] dark:text-[#F5F5F4]">
-                  Satisfaction Rate
-                </h3>
-                <div className="p-2 bg-[#FAFAF9] dark:bg-[#44403C] rounded-lg border border-[#E0DEDB] dark:border-[#57534E]">
-                  <BarChart2 className="text-[#37322F] dark:text-[#F5F5F4] w-5 h-5" />
-                </div>
-              </div>
-              <p className="text-3xl font-bold font-serif text-[#37322F] dark:text-[#F5F5F4] mt-4">
-                {satisfactionRate.toFixed(1)}%
-              </p>
-            </Card>
-          </div>
-
-          <div className="mb-6">
-            <div className="border-b border-gray-200 dark:border-[#44403C]">
-              <nav className="-mb-px flex space-x-8" aria-label="Tabs">
+      <div className="w-full px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+        <div className="flex items-center justify-between space-y-2">
+            <div className="flex items-center gap-4">
                 <button
-                  onClick={() => setActiveTab("chatbots")}
-                  className={`${
-                    activeTab === "chatbots"
-                      ? "border-[#37322F] dark:border-[#F5F5F4] text-[#37322F] dark:text-[#F5F5F4]"
-                      : "border-transparent text-[#605A57] hover:text-[#37322F] hover:border-[#E0DEDB] dark:text-[#A8A29E] dark:hover:text-[#F5F5F4]"
-                  } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors`}
+                    onClick={toggleSidebar}
+                    className="lg:hidden text-[#605A57] hover:text-[#37322F] dark:text-[#A8A29E] dark:hover:text-[#F5F5F4]"
                 >
-                  Chatbots
+                    <Menu size={24} />
                 </button>
-                <button
-                  onClick={() => setActiveTab("metrics")}
-                  className={`${
-                    activeTab === "metrics"
-                      ? "border-[#37322F] dark:border-[#F5F5F4] text-[#37322F] dark:text-[#F5F5F4]"
-                      : "border-transparent text-[#605A57] hover:text-[#37322F] hover:border-[#E0DEDB] dark:text-[#A8A29E] dark:hover:text-[#F5F5F4]"
-                  } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors`}
-                >
-                  Metrics
-                </button>
-              </nav>
+                <h2 className="text-3xl font-bold tracking-tight font-serif text-[#37322F] dark:text-[#F5F5F4]">Dashboard</h2>
             </div>
-          </div>
+            <div className="flex items-center space-x-2">
+                 {/* Placeholder for Date Range Picker */}
+                 <div className="hidden md:flex items-center rounded-md border border-[#E0DEDB] dark:border-[#44403C] bg-white dark:bg-[#292524] px-3 py-2 text-sm">
+                    <span className="text-[#605A57] dark:text-[#A8A29E] mr-2">Jan 20, 2023 - Feb 09, 2023</span>
+                 </div>
+                <Button
+                    onClick={refreshDashboard}
+                    className="bg-[#37322F] text-white hover:bg-[#2a2522] shadow-sm dark:bg-[#F5F5F4] dark:text-[#1C1917]"
+                >
+                    Download
+                </Button>
+            </div>
+        </div>
+
+        <Tabs
+            tabs={[
+            { id: "overview", label: "Overview" },
+            { id: "chatbots", label: "Chatbots" },
+            { id: "reports", label: "Reports" },
+            { id: "notifications", label: "Notifications" },
+            ]}
+            activeTab={activeTab}
+            onChange={(id) => setActiveTab(id as any)}
+            className="w-[400px]"
+        />
+
+        {activeTab === "overview" && (
+            <>
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                    <StatsCard
+                        title="Total Chatbots"
+                        value={chatbots.length.toString()}
+                        trend="+12%"
+                        trendDirection="up"
+                    />
+                    <StatsCard
+                        title="Total Feedback"
+                        value={totalFeedback.toString()}
+                        trend="+5%"
+                        trendDirection="up"
+                    />
+                    <StatsCard
+                        title="Satisfaction Rate"
+                        value={`${satisfactionRate.toFixed(0)}%`}
+                        trend="-2%"
+                        trendDirection="down"
+                    />
+                    <StatsCard
+                        title="Avg. Feedback"
+                        value={(totalFeedback / (chatbots.length || 1)).toFixed(1)}
+                        trend="+0.5"
+                        trendDirection="up"
+                    />
+                </div>
+
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+                     <div className="col-span-4">
+                        <OverviewChart 
+                            data={chartData}
+                        />
+                     </div>
+                     <div className="col-span-3 h-full">
+                        <RecentActivity activities={recentActivities} />
+                     </div>
+                </div>
+
+                <div className="mt-8">
+                     <div className="flex flex-col md:flex-row justify-between md:items-center space-y-4 md:space-y-0 mb-6">
+                        <h2 className="text-2xl font-bold text-[#37322F] dark:text-[#F5F5F4]">
+                            Your Chatbots
+                        </h2>
+                        <div className="flex flex-wrap items-center gap-4">
+                            <div className="relative flex-grow md:flex-grow-0 md:w-64">
+                            <Input
+                                type="text"
+                                placeholder="Search chatbots..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                className="pl-10 pr-4 py-2 w-full bg-white border border-[#E0DEDB] text-[#37322F] placeholder-[#9CA3AF] focus:ring-[#37322F] focus:border-[#37322F] dark:bg-[#44403C] dark:text-[#F5F5F4] dark:border-[#57534E] rounded-md shadow-sm"
+                            />
+                            <Search
+                                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#9CA3AF]"
+                                size={18}
+                            />
+                            </div>
+                            
+                             <div className="relative">
+                                <Button
+                                    onClick={toggleSortDropdown}
+                                    className="bg-white border border-[#E0DEDB] text-[#605A57] hover:bg-[#FAFAF9] hover:text-[#37322F] shadow-sm dark:bg-[#292524] dark:text-[#A8A29E] dark:border-[#44403C] dark:hover:bg-[#44403C] dark:hover:text-[#F5F5F4]"
+                                    icon={Filter}
+                                >
+                                    Sort
+                                </Button>
+                                {isSortDropdownOpen && (
+                                    <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-[#292524] rounded-md shadow-lg py-1 z-10 border border-[#E0DEDB] dark:border-[#44403C]">
+                                    <button
+                                        onClick={() => {
+                                        handleSort("title");
+                                        setIsSortDropdownOpen(false);
+                                        }}
+                                        className="block px-4 py-2 text-sm text-[#605A57] hover:bg-[#FAFAF9] hover:text-[#37322F] dark:text-[#A8A29E] dark:hover:bg-[#44403C] dark:hover:text-[#F5F5F4] w-full text-left"
+                                    >
+                                        Sort by Title
+                                    </button>
+                                    <button
+                                        onClick={() => {
+                                        handleSort("createdAt");
+                                        setIsSortDropdownOpen(false);
+                                        }}
+                                        className="block px-4 py-2 text-sm text-[#605A57] hover:bg-[#FAFAF9] hover:text-[#37322F] dark:text-[#A8A29E] dark:hover:bg-[#44403C] dark:hover:text-[#F5F5F4] w-full text-left"
+                                    >
+                                        Sort by Creation Date
+                                    </button>
+                                    <button
+                                        onClick={() => {
+                                        handleSort("lastUpdated");
+                                        setIsSortDropdownOpen(false);
+                                        }}
+                                        className="block px-4 py-2 text-sm text-[#605A57] hover:bg-[#FAFAF9] hover:text-[#37322F] dark:text-[#A8A29E] dark:hover:bg-[#44403C] dark:hover:text-[#F5F5F4] w-full text-left"
+                                    >
+                                        Sort by Last Updated
+                                    </button>
+                                    </div>
+                                )}
+                                </div>
+                            </div>
+                        </div>
+
+                    {/* Chatbot Cards Grid/List */}
+                     <div className="p-4 sm:p-0">
+                        <Transition
+                        show={loading}
+                        enter="transition-opacity duration-300"
+                        enterFrom="opacity-0"
+                        enterTo="opacity-100"
+                        leave="transition-opacity duration-300"
+                        leaveFrom="opacity-100"
+                        leaveTo="opacity-0"
+                        >
+                        <div className="flex justify-center items-center h-64">
+                            <LoaderCircle
+                            className="animate-spin text-indigo-500 dark:text-indigo-400"
+                            size={48}
+                            />
+                        </div>
+                        </Transition>
+                        {error && (
+                        <div
+                            className="bg-red-50 dark:bg-red-900 border-l-4 border-red-400 p-4 mb-4 rounded-md"
+                            role="alert"
+                        >
+                            <div className="flex">
+                            <div className="flex-shrink-0">
+                                <Info
+                                className="h-5 w-5 text-red-400"
+                                aria-hidden="true"
+                                />
+                            </div>
+                            <div className="ml-3">
+                                <p className="text-sm text-red-700 dark:text-red-200">
+                                {error}
+                                </p>
+                            </div>
+                            </div>
+                            <button
+                            onClick={() => fetchChatbots()}
+                            className="mt-3 w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+                            >
+                            Retry
+                            </button>
+                        </div>
+                        )}
+                        <AnimatePresence>
+                        {!loading && !error && (
+                            <div className="bg-white dark:bg-[#1C1917] rounded-lg border border-[#E0DEDB] dark:border-[#44403C] overflow-hidden shadow-sm">
+                                <table className="min-w-full divide-y divide-[#E0DEDB] dark:divide-[#44403C]">
+                                    <thead className="bg-[#FAFAF9] dark:bg-[#292524]">
+                                        <tr>
+                                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-[#605A57] dark:text-[#A8A29E] uppercase tracking-wider font-sans">
+                                                Name
+                                            </th>
+                                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-[#605A57] dark:text-[#A8A29E] uppercase tracking-wider font-sans">
+                                                Feedback
+                                            </th>
+                                            <th scope="col" className="hidden sm:table-cell px-6 py-3 text-left text-xs font-medium text-[#605A57] dark:text-[#A8A29E] uppercase tracking-wider font-sans">
+                                                Created
+                                            </th>
+                                            <th scope="col" className="hidden md:table-cell px-6 py-3 text-left text-xs font-medium text-[#605A57] dark:text-[#A8A29E] uppercase tracking-wider font-sans">
+                                                Last Updated
+                                            </th>
+                                            <th scope="col" className="relative px-6 py-3">
+                                                <span className="sr-only">Actions</span>
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="bg-white dark:bg-[#1C1917] divide-y divide-[#E0DEDB] dark:divide-[#44403C]">
+                                        {currentChatbots.map((chatbot) => {
+                                             const fb = feedbackCounts[chatbot.id] || { positive: 0, negative: 0 };
+                                            return (
+                                                <tr key={chatbot.id} className="hover:bg-[#FAFAF9] dark:hover:bg-[#292524] transition-colors">
+                                                    <td className="px-6 py-4 whitespace-nowrap">
+                                                        <div className="flex items-center">
+                                                            <div className="flex-shrink-0 h-10 w-10 flex items-center justify-center bg-[#F7F5F3] dark:bg-[#292524] rounded-lg border border-[#E0DEDB] dark:border-[#44403C] text-[#37322F] dark:text-[#F5F5F4]">
+                                                                <Bot size={20} />
+                                                            </div>
+                                                            <div className="ml-4">
+                                                                <div className="text-sm font-medium text-[#37322F] dark:text-[#F5F5F4] font-sans">
+                                                                    {chatbot.title}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-6 py-4 whitespace-nowrap">
+                                                        <div className="flex items-center space-x-4">
+                                                            <div className="flex items-center text-emerald-600 dark:text-emerald-400 text-sm">
+                                                                <ThumbsUp size={14} className="mr-1.5" />
+                                                                <span className="font-medium">{fb.positive}</span>
+                                                            </div>
+                                                            <div className="flex items-center text-rose-600 dark:text-rose-400 text-sm">
+                                                                <ThumbsDown size={14} className="mr-1.5" />
+                                                                <span className="font-medium">{fb.negative}</span>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td className="hidden sm:table-cell px-6 py-4 whitespace-nowrap text-sm text-[#605A57] dark:text-[#A8A29E]">
+                                                        {format(chatbot.createdAt, "MMM d, yyyy")}
+                                                    </td>
+                                                    <td className="hidden md:table-cell px-6 py-4 whitespace-nowrap text-sm text-[#605A57] dark:text-[#A8A29E]">
+                                                        {format(chatbot.lastUpdated, "MMM d, yyyy")}
+                                                    </td>
+                                                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                                        <div className="flex items-center justify-end space-x-3">
+                                                            <button
+                                                                onClick={() => navigate(`/configure/${chatbot.id}`)}
+                                                                className="text-[#605A57] dark:text-[#A8A29E] hover:text-[#37322F] dark:hover:text-[#F5F5F4] transition-colors"
+                                                                title="Edit"
+                                                            >
+                                                                <Edit2 size={16} />
+                                                            </button>
+                                                            <button
+                                                                onClick={() => openEmbedModal(chatbot.id)}
+                                                                className="text-[#605A57] dark:text-[#A8A29E] hover:text-[#37322F] dark:hover:text-[#F5F5F4] transition-colors"
+                                                                title="Embed"
+                                                            >
+                                                                <Code size={16} />
+                                                            </button>
+                                                            <button
+                                                                onClick={() => openDeleteModal(chatbot.id)}
+                                                                className="text-[#605A57] dark:text-[#A8A29E] hover:text-red-600 dark:hover:text-red-400 transition-colors"
+                                                                title="Delete"
+                                                            >
+                                                                <Trash2 size={16} />
+                                                            </button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })}
+                                    </tbody>
+                                </table>
+                            </div>
+                        )}
+                        </AnimatePresence>
+                        {!loading && !error && filteredChatbots.length === 0 && (
+                        <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
+                            <div className="w-16 h-16 bg-[#FAFAF9] dark:bg-[#292524] rounded-full flex items-center justify-center mb-6 shadow-sm border border-[#E0DEDB] dark:border-[#44403C]">
+                                <Bot className="w-8 h-8 text-[#605A57] dark:text-[#A8A29E]" />
+                            </div>
+                            <h3 className="text-xl font-medium text-[#37322F] dark:text-[#F5F5F4] mb-2 font-serif">
+                            {searchTerm ? "No chatbots found" : "No chatbots yet"}
+                            </h3>
+                            <p className="text-[#605A57] dark:text-[#A8A29E] max-w-sm mb-8">
+                            {searchTerm
+                                ? `We couldn't find any chatbots matching "${searchTerm}". Try a different search term.`
+                                : "Create your first chatbot to start engaging with your visitors automatically."}
+                            </p>
+                            {!searchTerm && (
+                            <Link
+                                to="/configure"
+                                className="inline-flex items-center px-6 py-3 border border-transparent text-sm font-medium rounded-full text-white bg-[#37322F] hover:bg-[#2a2522] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#37322F] transition-all duration-200 shadow-lg hover:shadow-xl dark:bg-[#F5F5F4] dark:text-[#1C1917] dark:hover:bg-[#E7E5E4]"
+                            >
+                                <PlusCircle size={18} className="mr-2" />
+                                Create Chatbot
+                            </Link>
+                            )}
+                        </div>
+                        )}
+                        {!loading &&
+                        !error &&
+                        filteredChatbots.length > chatbotsPerPage && (
+                            <div className="mt-8 flex justify-center">
+                            <nav
+                                className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px"
+                                aria-label="Pagination"
+                            >
+                                <button
+                                onClick={() => paginate(currentPage - 1)}
+                                disabled={currentPage === 1}
+                                className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-[#292524] dark:border-[#44403C] dark:text-[#A8A29E] dark:hover:bg-[#44403C]"
+                                >
+                                <span className="sr-only">Previous</span>
+                                <ChevronLeft className="h-5 w-5" aria-hidden="true" />
+                                </button>
+                                {Array.from({
+                                length: Math.ceil(
+                                    filteredChatbots.length / chatbotsPerPage
+                                ),
+                                }).map((_, index) => (
+                                <button
+                                    key={index}
+                                    onClick={() => paginate(index + 1)}
+                                    className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
+                                    currentPage === index + 1
+                                        ? "z-10 bg-[#37322F] border-[#37322F] text-white dark:bg-[#F5F5F4] dark:border-[#F5F5F4] dark:text-[#1C1917]"
+                                        : "bg-white border-gray-300 text-gray-500 hover:bg-gray-50 dark:bg-[#292524] dark:border-[#44403C] dark:text-[#A8A29E] dark:hover:bg-[#44403C]"
+                                    }`}
+                                >
+                                    {index + 1}
+                                </button>
+                                ))}
+                                <button
+                                onClick={() => paginate(currentPage + 1)}
+                                disabled={
+                                    currentPage ===
+                                    Math.ceil(filteredChatbots.length / chatbotsPerPage)
+                                }
+                                className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-[#292524] dark:border-[#44403C] dark:text-[#A8A29E] dark:hover:bg-[#44403C]"
+                                >
+                                <span className="sr-only">Next</span>
+                                <ChevronRight className="h-5 w-5" aria-hidden="true" />
+                                </button>
+                            </nav>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </>
+        )}
 
           {activeTab === "chatbots" && (
-            <Card className="bg-white dark:bg-[#292524] shadow-[0px_0px_0px_0.9px_rgba(0,0,0,0.08),0px_2px_4px_rgba(0,0,0,0.04)] rounded-[9px] border-none">
-              <div className="p-6 border-b border-[#E0DEDB] dark:border-[#44403C]">
+            <div className="space-y-6">
                 <div className="flex flex-col md:flex-row justify-between md:items-center space-y-4 md:space-y-0">
                   <h2 className="text-2xl font-bold text-[#37322F] dark:text-[#F5F5F4]">
                     Your Chatbots
                   </h2>
+
                   <div className="flex flex-wrap items-center gap-4">
                     <div className="relative flex-grow md:flex-grow-0 md:w-64">
                       <Input
@@ -482,394 +716,217 @@ const Dashboard: React.FC<DashboardProps> = ({ toggleSidebar }) => {
                       </button>
                     </div>
                     <div className="relative">
-                      <Button
-                        onClick={toggleSortDropdown}
-                        className="bg-white border border-[#E0DEDB] text-[#605A57] hover:bg-[#FAFAF9] hover:text-[#37322F] shadow-sm dark:bg-[#292524] dark:text-[#A8A29E] dark:border-[#44403C] dark:hover:bg-[#44403C] dark:hover:text-[#F5F5F4]"
-                        icon={Filter}
-                      >
-                        Sort
-                      </Button>
-                      {isSortDropdownOpen && (
-                        <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-[#292524] rounded-md shadow-lg py-1 z-10 border border-[#E0DEDB] dark:border-[#44403C]">
-                          <button
-                            onClick={() => {
-                              handleSort("title");
-                              setIsSortDropdownOpen(false);
-                            }}
-                            className="block px-4 py-2 text-sm text-[#605A57] hover:bg-[#FAFAF9] hover:text-[#37322F] dark:text-[#A8A29E] dark:hover:bg-[#44403C] dark:hover:text-[#F5F5F4] w-full text-left"
-                          >
-                            Sort by Title
-                          </button>
-                          <button
-                            onClick={() => {
-                              handleSort("createdAt");
-                              setIsSortDropdownOpen(false);
-                            }}
-                            className="block px-4 py-2 text-sm text-[#605A57] hover:bg-[#FAFAF9] hover:text-[#37322F] dark:text-[#A8A29E] dark:hover:bg-[#44403C] dark:hover:text-[#F5F5F4] w-full text-left"
-                          >
-                            Sort by Creation Date
-                          </button>
-                          <button
-                            onClick={() => {
-                              handleSort("lastUpdated");
-                              setIsSortDropdownOpen(false);
-                            }}
-                            className="block px-4 py-2 text-sm text-[#605A57] hover:bg-[#FAFAF9] hover:text-[#37322F] dark:text-[#A8A29E] dark:hover:bg-[#44403C] dark:hover:text-[#F5F5F4] w-full text-left"
-                          >
-                            Sort by Last Updated
-                          </button>
+                        <Button
+                            onClick={toggleSortDropdown}
+                            className="bg-white border border-[#E0DEDB] text-[#605A57] hover:bg-[#FAFAF9] hover:text-[#37322F] shadow-sm dark:bg-[#292524] dark:text-[#A8A29E] dark:border-[#44403C] dark:hover:bg-[#44403C] dark:hover:text-[#F5F5F4]"
+                            icon={Filter}
+                        >
+                            Sort
+                        </Button>
+                        {isSortDropdownOpen && (
+                            <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-[#292524] rounded-md shadow-lg py-1 z-10 border border-[#E0DEDB] dark:border-[#44403C]">
+                            <button
+                                onClick={() => {
+                                handleSort("title");
+                                setIsSortDropdownOpen(false);
+                                }}
+                                className="block px-4 py-2 text-sm text-[#605A57] hover:bg-[#FAFAF9] hover:text-[#37322F] dark:text-[#A8A29E] dark:hover:bg-[#44403C] dark:hover:text-[#F5F5F4] w-full text-left"
+                            >
+                                Sort by Title
+                            </button>
+                            <button
+                                onClick={() => {
+                                handleSort("createdAt");
+                                setIsSortDropdownOpen(false);
+                                }}
+                                className="block px-4 py-2 text-sm text-[#605A57] hover:bg-[#FAFAF9] hover:text-[#37322F] dark:text-[#A8A29E] dark:hover:bg-[#44403C] dark:hover:text-[#F5F5F4] w-full text-left"
+                            >
+                                Sort by Creation Date
+                            </button>
+                            <button
+                                onClick={() => {
+                                handleSort("lastUpdated");
+                                setIsSortDropdownOpen(false);
+                                }}
+                                className="block px-4 py-2 text-sm text-[#605A57] hover:bg-[#FAFAF9] hover:text-[#37322F] dark:text-[#A8A29E] dark:hover:bg-[#44403C] dark:hover:text-[#F5F5F4] w-full text-left"
+                            >
+                                Sort by Last Updated
+                            </button>
+                            </div>
+                        )}
                         </div>
-                      )}
-                    </div>
                     <Button
-                      onClick={() => navigate("/configure")}
-                      className="bg-[#37322F] hover:bg-[#2a2522] text-white shadow-md dark:text-white"
-                      icon={PlusCircle}
+                    onClick={() => navigate("/configure")}
+                    className="bg-[#37322F] hover:bg-[#2a2522] text-white shadow-md dark:text-white"
+                    icon={PlusCircle}
                     >
-                      Create New Chatbot
+                    Create New Chatbot
                     </Button>
                   </div>
                 </div>
-              </div>
 
-              <div className="p-4 sm:p-6">
-                <Transition
-                  show={loading}
-                  enter="transition-opacity duration-300"
-                  enterFrom="opacity-0"
-                  enterTo="opacity-100"
-                  leave="transition-opacity duration-300"
-                  leaveFrom="opacity-100"
-                  leaveTo="opacity-0"
-                >
-                  <div className="flex justify-center items-center h-64">
-                    <LoaderCircle
-                      className="animate-spin text-indigo-500 dark:text-indigo-400"
-                      size={48}
-                    />
-                  </div>
-                </Transition>
-                {error && (
-                  <div
-                    className="bg-red-50 dark:bg-red-900 border-l-4 border-red-400 p-4 mb-4 rounded-md"
-                    role="alert"
-                  >
-                    <div className="flex">
-                      <div className="flex-shrink-0">
-                        <Info
-                          className="h-5 w-5 text-red-400"
-                          aria-hidden="true"
-                        />
-                      </div>
-                      <div className="ml-3">
-                        <p className="text-sm text-red-700 dark:text-red-200">
-                          {error}
-                        </p>
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => fetchChatbots()}
-                      className="mt-3 w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+                <div className="p-4 sm:p-0">
+                    <Transition
+                        show={loading}
+                        enter="transition-opacity duration-300"
+                        enterFrom="opacity-0"
+                        enterTo="opacity-100"
+                        leave="transition-opacity duration-300"
+                        leaveFrom="opacity-100"
+                        leaveTo="opacity-0"
                     >
-                      Retry
-                    </button>
-                  </div>
-                )}
-                <AnimatePresence>
-                  {!loading && !error && (
-                    <motion.div
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      transition={{ duration: 0.5 }}
-                      className={`${
-                        viewMode === "grid"
-                          ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6"
-                          : "space-y-4 sm:space-y-6"
-                      }`}
+                        <div className="flex justify-center items-center h-64">
+                            <LoaderCircle
+                            className="animate-spin text-indigo-500 dark:text-indigo-400"
+                            size={48}
+                            />
+                        </div>
+                    </Transition>
+                    {error && (
+                    <div
+                        className="bg-red-50 dark:bg-red-900 border-l-4 border-red-400 p-4 mb-4 rounded-md"
+                        role="alert"
                     >
-                      {currentChatbots.map((chatbot, index) => (
-                        <motion.div
-                          key={chatbot.id}
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: 20 }}
-                          transition={{
-                            duration: 0.3,
-                            delay: index * 0.1,
-                            ease: "easeInOut",
-                          }}
-                          className={`bg-white dark:bg-[#292524] rounded-[9px] shadow-[0px_0px_0px_0.9px_rgba(0,0,0,0.08),0px_2px_4px_rgba(0,0,0,0.04)] dark:shadow-none overflow-hidden border dark:border-[#44403C] hover:shadow-md transition-all duration-200 ${
-                            viewMode === "list" ? "flex flex-col sm:flex-row" : ""
-                          }`}
+                        <div className="flex">
+                        <div className="flex-shrink-0">
+                            <Info
+                            className="h-5 w-5 text-red-400"
+                            aria-hidden="true"
+                            />
+                        </div>
+                        <div className="ml-3">
+                            <p className="text-sm text-red-700 dark:text-red-200">
+                            {error}
+                            </p>
+                        </div>
+                        </div>
+                        <button
+                        onClick={() => fetchChatbots()}
+                        className="mt-3 w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
                         >
-                          <div
-                            className={`p-4 sm:p-6 flex flex-col ${
-                              viewMode === "list" ? "flex-grow" : "h-full"
-                            }`}
-                          >
-                            <div className="flex items-center justify-between mb-4">
-                              <div className="flex items-center space-x-3">
-                                <div className="bg-[#FAFAF9] dark:bg-[#44403C] border border-[#E0DEDB] dark:border-[#57534E] p-2 rounded-lg">
-                                  <Bot size={24} className="text-[#37322F] dark:text-[#F5F5F4]" />
-                                </div>
-                                <h3 className="text-lg sm:text-xl font-semibold text-[#37322F] dark:text-[#F5F5F4]">
-                                  {chatbot.title}
-                                </h3>
-                              </div>
-                              <div className="flex items-center space-x-2 bg-[#FAFAF9] border border-[#E0DEDB] dark:bg-[#44403C] dark:border-[#57534E] px-2 sm:px-3 py-1 rounded-full">
-                                <ThumbsUp size={14} className="text-[#37322F] dark:text-[#A8A29E]" />
-                                <span className="text-xs sm:text-sm font-medium text-[#605A57] dark:text-[#D6D3D1]">
-                                  {feedbackCounts[chatbot.id]?.positive || 0}
-                                </span>
-                                <ThumbsDown
-                                  size={14}
-                                  className="text-[#9CA3AF] ml-2"
-                                />
-                                <span className="text-xs sm:text-sm font-medium text-[#605A57] dark:text-[#D6D3D1]">
-                                  {feedbackCounts[chatbot.id]?.negative || 0}
-                                </span>
-                              </div>
-                            </div>
-
-                            <div className="flex-grow">
-                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4 mb-4 text-xs sm:text-sm text-[#605A57] dark:text-[#A8A29E]">
-                                <div className="flex items-center space-x-2">
-                                  <Calendar size={14} className="text-[#9CA3AF]" />
-                                  <span>
-                                    Created:{" "}
-                                    {format(chatbot.createdAt, "MMM d, yyyy")}
-                                  </span>
-                                </div>
-                                <div className="flex items-center space-x-2">
-                                  <Calendar size={14} className="text-[#9CA3AF]" />
-                                  <span>
-                                    Updated:{" "}
-                                    {format(chatbot.lastUpdated, "MMM d, yyyy")}
-                                  </span>
-                                </div>
-                              </div>
-                            </div>
-
-                            <div className="flex flex-col sm:flex-row justify-between items-center pt-4 border-t border-[#E0DEDB] dark:border-[#44403C] space-y-2 sm:space-y-0 sm:space-x-2">
-                              <Button
-                                onClick={() =>
-                                  navigate(`/configure/${chatbot.id}`)
-                                }
-                                className="w-full sm:w-auto bg-[#37322F] text-white hover:bg-[#2a2522] shadow-md dark:text-white"
-                                icon={Edit2}
-                              >
-                                Edit
-                              </Button>
-                              <Button
-                                onClick={() => openEmbedModal(chatbot.id)}
-                                className="w-full sm:w-auto bg-white border border-[#E0DEDB] text-[#605A57] hover:bg-[#FAFAF9] hover:text-[#37322F] shadow-sm dark:bg-[#292524] dark:border-[#44403C] dark:text-[#A8A29E] dark:hover:bg-[#44403C] dark:hover:text-[#F5F5F4]"
-                                icon={Code}
-                              >
-                                Code
-                              </Button>
-                              <Button
-                                onClick={() => openDeleteModal(chatbot.id)}
-                                className="w-full sm:w-auto bg-white border border-red-200 text-red-600 hover:bg-red-50 shadow-sm dark:bg-[#292524] dark:border-red-900 dark:text-red-400 dark:hover:bg-red-900/20"
-                                icon={Trash2}
-                              >
-                                Delete
-                              </Button>
-                            </div>
-                          </div>
-                        </motion.div>
-                      ))}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-                {!loading && !error && filteredChatbots.length === 0 && (
-                  <div className="text-center text-gray-500 dark:text-[#A8A29E] mt-16">
-                    <p className="text-xl mb-6">
-                      {searchTerm
-                        ? "No chatbots found matching your search."
-                        : "No chatbots found. Create one to get started!"}
-                    </p>
-                    {!searchTerm && (
-                      <Link
-                        to="/configure"
-                        className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-[#37322F] hover:bg-[#2a2522] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#37322F] transition-colors duration-200 dark:bg-[#F5F5F4] dark:text-[#1C1917] dark:hover:bg-[#E7E5E4]"
-                      >
-                        <PlusCircle size={20} className="mr-2" />
-                        Create Your First Chatbot
-                      </Link>
+                        Retry
+                        </button>
+                    </div>
                     )}
-                  </div>
-                )}
-                {!loading &&
-                  !error &&
-                  filteredChatbots.length > chatbotsPerPage && (
-                    <div className="mt-8 flex justify-center">
-                      <nav
-                        className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px"
-                        aria-label="Pagination"
-                      >
-                        <button
-                          onClick={() => paginate(currentPage - 1)}
-                          disabled={currentPage === 1}
-                          className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-[#292524] dark:border-[#44403C] dark:text-[#A8A29E] dark:hover:bg-[#44403C]"
+                    <AnimatePresence>
+                    {!loading && !error && (
+                        <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.5 }}
+                        className={`${
+                            viewMode === "grid"
+                            ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6"
+                            : "space-y-4 sm:space-y-6"
+                        }`}
                         >
-                          <span className="sr-only">Previous</span>
-                          <ChevronLeft className="h-5 w-5" aria-hidden="true" />
-                        </button>
-                        {Array.from({
-                          length: Math.ceil(
-                            filteredChatbots.length / chatbotsPerPage
-                          ),
-                        }).map((_, index) => (
-                          <button
-                            key={index}
-                            onClick={() => paginate(index + 1)}
-                            className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
-                              currentPage === index + 1
-                                ? "z-10 bg-[#37322F] border-[#37322F] text-white dark:bg-[#F5F5F4] dark:border-[#F5F5F4] dark:text-[#1C1917]"
-                                : "bg-white border-gray-300 text-gray-500 hover:bg-gray-50 dark:bg-[#292524] dark:border-[#44403C] dark:text-[#A8A29E] dark:hover:bg-[#44403C]"
-                            }`}
-                          >
-                            {index + 1}
-                          </button>
+                        {currentChatbots.map((chatbot, index) => (
+                            <ChatbotCard
+                            key={chatbot.id}
+                            chatbot={chatbot}
+                            feedback={
+                                feedbackCounts[chatbot.id] || {
+                                positive: 0,
+                                negative: 0,
+                                }
+                            }
+                            viewMode={viewMode}
+                            onEdit={(id) => navigate(`/configure/${id}`)}
+                            onEmbed={openEmbedModal}
+                            onDelete={openDeleteModal}
+                            index={index}
+                            />
                         ))}
-                        <button
-                          onClick={() => paginate(currentPage + 1)}
-                          disabled={
-                            currentPage ===
-                            Math.ceil(filteredChatbots.length / chatbotsPerPage)
-                          }
-                          className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-[#292524] dark:border-[#44403C] dark:text-[#A8A29E] dark:hover:bg-[#44403C]"
-                        >
-                          <span className="sr-only">Next</span>
-                          <ChevronRight className="h-5 w-5" aria-hidden="true" />
-                        </button>
-                      </nav>
-                    </div>
-                  )}
-              </div>
-            </Card>
+                        </motion.div>
+                    )}
+                    </AnimatePresence>
+                    {!loading && !error && filteredChatbots.length === 0 && (
+                        <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
+                            <div className="w-16 h-16 bg-[#FAFAF9] dark:bg-[#292524] rounded-full flex items-center justify-center mb-6 shadow-sm border border-[#E0DEDB] dark:border-[#44403C]">
+                                <Bot className="w-8 h-8 text-[#605A57] dark:text-[#A8A29E]" />
+                            </div>
+                            <h3 className="text-xl font-medium text-[#37322F] dark:text-[#F5F5F4] mb-2 font-serif">
+                            {searchTerm ? "No chatbots found" : "No chatbots yet"}
+                            </h3>
+                            <p className="text-[#605A57] dark:text-[#A8A29E] max-w-sm mb-8">
+                            {searchTerm
+                                ? `We couldn't find any chatbots matching "${searchTerm}". Try a different search term.`
+                                : "Create your first chatbot to start engaging with your visitors automatically."}
+                            </p>
+                            {!searchTerm && (
+                            <Link
+                                to="/configure"
+                                className="inline-flex items-center px-6 py-3 border border-transparent text-sm font-medium rounded-full text-white bg-[#37322F] hover:bg-[#2a2522] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#37322F] transition-all duration-200 shadow-lg hover:shadow-xl dark:bg-[#F5F5F4] dark:text-[#1C1917] dark:hover:bg-[#E7E5E4]"
+                            >
+                                <PlusCircle size={18} className="mr-2" />
+                                Create Chatbot
+                            </Link>
+                            )}
+                        </div>
+                    )}
+                    {!loading &&
+                        !error &&
+                        filteredChatbots.length > chatbotsPerPage && (
+                            <div className="mt-8 flex justify-center">
+                            <nav
+                                className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px"
+                                aria-label="Pagination"
+                            >
+                                <button
+                                onClick={() => paginate(currentPage - 1)}
+                                disabled={currentPage === 1}
+                                className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-[#292524] dark:border-[#44403C] dark:text-[#A8A29E] dark:hover:bg-[#44403C]"
+                                >
+                                <span className="sr-only">Previous</span>
+                                <ChevronLeft className="h-5 w-5" aria-hidden="true" />
+                                </button>
+                                {Array.from({
+                                length: Math.ceil(
+                                    filteredChatbots.length / chatbotsPerPage
+                                ),
+                                }).map((_, index) => (
+                                <button
+                                    key={index}
+                                    onClick={() => paginate(index + 1)}
+                                    className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
+                                    currentPage === index + 1
+                                        ? "z-10 bg-[#37322F] border-[#37322F] text-white dark:bg-[#F5F5F4] dark:border-[#F5F5F4] dark:text-[#1C1917]"
+                                        : "bg-white border-gray-300 text-gray-500 hover:bg-gray-50 dark:bg-[#292524] dark:border-[#44403C] dark:text-[#A8A29E] dark:hover:bg-[#44403C]"
+                                    }`}
+                                >
+                                    {index + 1}
+                                </button>
+                                ))}
+                                <button
+                                onClick={() => paginate(currentPage + 1)}
+                                disabled={
+                                    currentPage ===
+                                    Math.ceil(filteredChatbots.length / chatbotsPerPage)
+                                }
+                                className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-[#292524] dark:border-[#44403C] dark:text-[#A8A29E] dark:hover:bg-[#44403C]"
+                                >
+                                <span className="sr-only">Next</span>
+                                <ChevronRight className="h-5 w-5" aria-hidden="true" />
+                                </button>
+                            </nav>
+                            </div>
+                        )}
+                </div>
+            </div>
           )}
 
-          {activeTab === "metrics" && (
-            <Card className="bg-white dark:bg-[#292524] p-6 shadow-[0px_0px_0px_0.9px_rgba(0,0,0,0.08),0px_2px_4px_rgba(0,0,0,0.04)] rounded-[9px] border-none">
-              <h2 className="text-2xl font-bold text-[#37322F] dark:text-[#F5F5F4] mb-6">
-                Chatbot Performance Metrics
-              </h2>
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              <div className="lg:col-span-2">
-                <Bar
-                  data={getMetricsData()}
-                  options={{
-                    responsive: true,
-                    plugins: {
-                      legend: {
-                        position: "top" as const,
-                        labels: {
-                          font: {
-                            family: '"Inter", sans-serif',
-                          },
-                          color: document.documentElement.classList.contains('dark') ? '#D6D3D1' : '#605A57'
-                        }
-                      },
-                      title: {
-                        display: true,
-                        text: "Feedback by Chatbot",
-                        font: {
-                            family: '"Instrument Serif", serif',
-                            size: 16
-                        },
-                        color: document.documentElement.classList.contains('dark') ? '#F5F5F4' : '#37322F'
-                      },
-                    },
-                    scales: {
-                        x: {
-                            grid: {
-                                color: document.documentElement.classList.contains('dark') ? '#57534E' : '#E0DEDB'
-                            },
-                            ticks: {
-                                color: document.documentElement.classList.contains('dark') ? '#D6D3D1' : '#605A57',
-                                font: {
-                                    family: '"Inter", sans-serif'
-                                }
-                            }
-                        },
-                        y: {
-                            grid: {
-                                color: document.documentElement.classList.contains('dark') ? '#57534E' : '#E0DEDB'
-                            },
-                            ticks: {
-                                color: document.documentElement.classList.contains('dark') ? '#D6D3D1' : '#605A57',
-                                font: {
-                                    family: '"Inter", sans-serif'
-                                }
-                            }
-                        }
-                    }
-                  }}
-                />
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold mb-4 font-serif text-[#37322F] dark:text-[#F5F5F4]">
-                  Overall Satisfaction
-                </h3>
-                <Doughnut
-                  data={{
-                    labels: ["Positive", "Negative"],
-                    datasets: [
-                      {
-                        data: [
-                          totalFeedback - (totalFeedback - satisfactionRate),
-                          totalFeedback - satisfactionRate,
-                        ],
-                        backgroundColor: ["#605A57", "#E0DEDB"],
-                        borderColor: ["#605A57", "#E0DEDB"],
-                      },
-                    ],
-                  }}
-                  options={{
-                    responsive: true,
-                    plugins: {
-                      legend: {
-                        position: "bottom" as const,
-                        labels: {
-                          font: {
-                            family: '"Inter", sans-serif',
-                          },
-                          color: document.documentElement.classList.contains('dark') ? '#D6D3D1' : '#605A57'
-                        }
-                      },
-                    },
-                  }}
-                />
-              </div>
-            </div>
-            <div className="mt-8">
-              <h3 className="text-lg font-semibold mb-4 text-[#37322F] dark:text-[#F5F5F4]">
-                Chatbot List
-              </h3>
-              <ul className="space-y-2 max-h-96 overflow-y-auto pr-2">
-                {chatbots.map((chatbot) => (
-                  <li
-                    key={chatbot.id}
-                    className="flex items-center justify-between p-3 bg-[#FAFAF9] border border-[#E0DEDB] dark:bg-[#44403C] dark:border-[#57534E] rounded-[9px]"
-                  >
-                    <span className="text-[#37322F] font-medium dark:text-[#F5F5F4]">
-                      {chatbot.title}
-                    </span>
-                    <Button
-                      onClick={() => selectChatbotMetrics(chatbot.id)}
-                      className="text-xs bg-white border border-[#E0DEDB] text-[#605A57] hover:bg-[#FAFAF9] hover:text-[#37322F] shadow-sm dark:bg-[#292524] dark:border-[#44403C] dark:text-[#A8A29E] dark:hover:bg-[#1C1917] dark:hover:text-[#F5F5F4]"
-                      icon={BarChart2}
-                    >
-                      View Metrics
-                    </Button>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </Card>
-        )}
+          {activeTab === "reports" && (
+             <div className="flex items-center justify-center p-12 text-[#605A57] dark:text-[#A8A29E]">
+                <p>Reports module coming soon.</p>
+             </div>
+          )}
+
+          {activeTab === "notifications" && (
+             <div className="flex items-center justify-center p-12 text-[#605A57] dark:text-[#A8A29E]">
+                <p>No new notifications.</p>
+             </div>
+          )}
       </div>
 
       <ConfirmationModal
