@@ -418,7 +418,7 @@ const EditChatbot: React.FC = () => {
 
             {activeTab === "general" && (
               <div className="space-y-6 ">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                   <div>
                     <label className="block mb-2 text-[#37322F] dark:text-gray-100 font-medium text-body-sm">
                       Chatbot Name
@@ -515,7 +515,7 @@ const EditChatbot: React.FC = () => {
                 </div>
                 {useGradient ? (
                   <div className="space-y-6">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                       <div>
                         <label className="block mb-2 text-[#37322F] dark:text-[#F5F5F4] font-medium text-body-sm">
                           Gradient Start
@@ -750,8 +750,8 @@ const EditChatbot: React.FC = () => {
               Preview
             </h2>
             <div
-              className="border border-[#E0DEDB] dark:border-[#44403C] rounded-[9px] bg-white dark:bg-[#292524] relative overflow-hidden"
-              style={{ height: "520px", maxWidth: "370px" }}
+              className="border border-[#E0DEDB] dark:border-[#44403C] rounded-[9px] bg-white dark:bg-[#292524] relative overflow-hidden w-full max-w-[370px] mx-auto"
+              style={{ height: "520px" }}
             >
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="w-full h-full">

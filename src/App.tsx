@@ -73,7 +73,7 @@ const App: React.FC = () => {
             />
           )}
           <div
-            className={`flex-1 transition-all duration-300 ${
+            className={`flex-1 min-w-0 transition-all duration-300 ${
               user ? (sidebarOpen ? "lg:ml-64" : "lg:ml-20") : ""
             }`}
           >

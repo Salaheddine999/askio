@@ -26,19 +26,21 @@ const RecentActivity: React.FC<RecentActivityProps> = ({ activities }) => {
         <div className="space-y-8">
           {activities.length > 0 ? (
             activities.map((activity) => (
-                <div key={activity.id} className="flex items-center">
-                <div className="h-9 w-9 rounded-full border border-[#E0DEDB] dark:border-[#44403C] bg-[#FAFAF9] dark:bg-[#1C1917] flex items-center justify-center">
-                    <Bot className="h-4 w-4 text-[#605A57] dark:text-[#A8A29E]" />
+                <div key={activity.id} className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-0">
+                <div className="flex items-center">
+                    <div className="h-9 w-9 rounded-full border border-[#E0DEDB] dark:border-[#44403C] bg-[#FAFAF9] dark:bg-[#1C1917] flex items-center justify-center flex-shrink-0">
+                        <Bot className="h-4 w-4 text-[#605A57] dark:text-[#A8A29E]" />
+                    </div>
+                    <div className="ml-4 space-y-1">
+                        <p className="text-body-sm font-medium leading-none font-sans line-clamp-1">
+                        {activity.chatbotName}
+                        </p>
+                        <p className="text-body-sm text-[#605A57] dark:text-[#A8A29E]">
+                        received {activity.type} feedback
+                        </p>
+                    </div>
                 </div>
-                <div className="ml-4 space-y-1">
-                    <p className="text-body-sm font-medium leading-none font-sans">
-                    {activity.chatbotName}
-                    </p>
-                    <p className="text-body-sm text-[#605A57] dark:text-[#A8A29E]">
-                    received {activity.type} feedback
-                    </p>
-                </div>
-                <div className="ml-auto font-medium text-caption text-[#605A57] dark:text-[#A8A29E]">
+                <div className="ml-14 sm:ml-auto font-medium text-caption text-[#605A57] dark:text-[#A8A29E]">
                     {format(activity.date, "MMM d, h:mm a")}
                 </div>
                 </div>

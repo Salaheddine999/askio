@@ -34,10 +34,10 @@ const StatsCard: React.FC<StatsCardProps> = ({
         )}
       </div>
       <div>
-        <div className="text-h2 font-bold font-sans text-[#37322F] dark:text-[#F5F5F4] mb-2">
+        <div className="text-h2 font-bold font-sans text-[#37322F] dark:text-[#F5F5F4] mb-2 truncate" title={String(value)}>
           {value}
         </div>
-        <p className="text-caption text-[#605A57] dark:text-[#666] font-medium">
+        <p className="text-caption text-[#605A57] dark:text-[#666] font-medium break-words">
             {title === "Total Chatbots" && "Active across all platforms"}
             {title === "Total Feedback" && "Collected from users"}
             {title === "Satisfaction Rate" && "Based on positive rating"}

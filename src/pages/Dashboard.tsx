@@ -465,13 +465,13 @@ const Dashboard: React.FC<DashboardProps> = ({ toggleSidebar, testMode }) => {
                     />
                 </div>
 
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-                     <div className="col-span-4">
+                <div className="grid gap-4 grid-cols-1 lg:grid-cols-7">
+                     <div className="lg:col-span-4">
                         <OverviewChart 
                             data={chartData}
                         />
                      </div>
-                     <div className="col-span-3 h-full">
+                     <div className="lg:col-span-3 h-full">
                         <RecentActivity activities={recentActivities} />
                      </div>
                 </div>
@@ -585,7 +585,7 @@ const Dashboard: React.FC<DashboardProps> = ({ toggleSidebar, testMode }) => {
                         )}
                         <AnimatePresence>
                         {!loading && !error && (
-                            <div className="bg-white dark:bg-[#1C1917] rounded-lg border border-[#E0DEDB] dark:border-[#44403C] overflow-hidden shadow-sm">
+                            <div className="bg-white dark:bg-[#1C1917] rounded-lg border border-[#E0DEDB] dark:border-[#44403C] overflow-hidden shadow-sm overflow-x-auto">
                                 <table className="min-w-full divide-y divide-[#E0DEDB] dark:divide-[#44403C]">
                                     <thead className="bg-[#FAFAF9] dark:bg-[#292524]">
                                         <tr>
