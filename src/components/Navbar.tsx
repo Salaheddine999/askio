@@ -39,26 +39,26 @@ const Navbar: React.FC<NavbarProps> = ({
 
   return (
     <nav
-      className={`bg-white dark:bg-gray-800 h-screen fixed left-0 top-0 shadow-lg transition-all duration-200 z-50 ${
+      className={`bg-[#FAFAF9] dark:bg-[#292524] h-screen fixed left-0 top-0 shadow-[1px_0_0_0_rgba(55,50,47,0.08)] transition-all duration-200 z-50 ${
         sidebarOpen ? "w-64" : "w-20"
       } lg:translate-x-0 ${
         sidebarOpen ? "translate-x-0" : "-translate-x-full"
       }`}
     >
       <div className="flex flex-col h-full">
-        <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
+        <div className="p-4 border-b border-[rgba(55,50,47,0.08)] dark:border-[#44403C] flex justify-between items-center">
           <Link
             to="/"
-            className={`flex items-center text-2xl font-bold text-black dark:text-white hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors duration-200 ${
+            className={`flex items-center text-2xl font-bold text-[#37322F] dark:text-[#F5F5F4] hover:text-[#000] dark:hover:text-white transition-colors duration-200 ${
               !sidebarOpen && "justify-center"
             }`}
           >
             <img src="/icon.svg" alt="Askio Chatbot" className="w-8 h-8 mr-2" />
-            {sidebarOpen && <span>Askio</span>}
+            {sidebarOpen && <span className="font-serif tracking-tight">Askio</span>}
           </Link>
           <button
             onClick={toggleSidebar}
-            className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+            className="text-[#605A57] hover:text-[#37322F] dark:text-[#A8A29E] dark:hover:text-[#F5F5F4]"
           >
             {sidebarOpen ? (
               <ChevronLeft size={24} />
@@ -89,10 +89,10 @@ const Navbar: React.FC<NavbarProps> = ({
             />
           </ul>
         </div>
-        <div className="p-4 border-t border-gray-200 dark:border-gray-700">
+        <div className="p-4 border-t border-[rgba(55,50,47,0.08)] dark:border-[#44403C]">
           <button
             onClick={toggleDarkMode}
-            className={`flex items-center w-full p-2 rounded-md text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 transition-colors duration-200 ${
+            className={`flex items-center w-full p-2 rounded-[9px] text-[#605A57] hover:bg-[#E0DEDB]/50 hover:text-[#37322F] dark:text-[#A8A29E] dark:hover:bg-[#44403C] transition-colors duration-200 ${
               !sidebarOpen && "justify-center"
             }`}
           >
@@ -105,7 +105,7 @@ const Navbar: React.FC<NavbarProps> = ({
           </button>
           <button
             onClick={handleSignOut}
-            className={`flex items-center w-full mt-2 p-2 rounded-md text-red-600 hover:bg-red-100 dark:text-red-400 dark:hover:bg-red-900 transition-colors duration-200 ${
+            className={`flex items-center w-full mt-2 p-2 rounded-[9px] text-[#605A57] hover:bg-[#E0DEDB]/50 hover:text-[#37322F] dark:text-red-400 dark:hover:bg-red-900/30 transition-colors duration-200 ${
               !sidebarOpen && "justify-center"
             }`}
           >
@@ -127,10 +127,10 @@ const NavItem: React.FC<{
   <li>
     <Link
       to={to}
-      className={`flex items-center p-2 rounded-md text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 transition-colors duration-200 ${
+      className={`flex items-center p-2 rounded-[9px] transition-colors duration-200 font-medium font-sans ${
         location.pathname === to
-          ? "bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-200"
-          : ""
+          ? "bg-[#E0DEDB] text-[#37322F] dark:bg-[#44403C] dark:text-[#F5F5F4]"
+          : "text-[#605A57] hover:bg-[#E0DEDB]/50 hover:text-[#37322F] dark:text-[#A8A29E] dark:hover:bg-[#44403C]"
       } ${!sidebarOpen && "justify-center"}`}
     >
       <Icon size={20} className={sidebarOpen ? "mr-3" : ""} />

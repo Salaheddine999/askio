@@ -67,11 +67,11 @@ const Auth: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#f0f2ff] via-white to-[#e8ecff] relative overflow-hidden">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#f0f2ff] via-white to-[#e8ecff] dark:from-[#1C1917] dark:via-[#292524] dark:to-[#1C1917] relative overflow-hidden">
       {/* Animated background elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 -left-20 w-96 h-96 bg-gradient-to-br from-indigo-200 to-indigo-100 rounded-full opacity-20 blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-20 -right-20 w-96 h-96 bg-gradient-to-tl from-indigo-100 to-indigo-200 rounded-full opacity-20 blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
+        <div className="absolute top-20 -left-20 w-96 h-96 bg-gradient-to-br from-indigo-200 to-indigo-100 dark:from-[#292524] dark:to-[#1C1917] rounded-full opacity-20 blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-20 -right-20 w-96 h-96 bg-gradient-to-tl from-indigo-100 to-indigo-200 dark:from-[#1C1917] dark:to-[#292524] rounded-full opacity-20 blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-r from-indigo-100/10 to-transparent rounded-full blur-3xl"></div>
       </div>
 
@@ -83,15 +83,15 @@ const Auth: React.FC = () => {
             <div className="space-y-4">
               <div className="flex items-center space-x-3">
                 <img src="./icon.svg" alt="Askio" className="w-12 h-12" />
-                <span className="text-3xl font-bold text-gray-800">Askio</span>
+                <span className="text-3xl font-bold text-gray-800 dark:text-[#F5F5F4]">Askio</span>
               </div>
-              <h1 className="text-5xl font-bold text-gray-800 leading-tight">
+              <h1 className="text-5xl font-bold text-gray-800 dark:text-[#F5F5F4] leading-tight">
                 Build Amazing
                 <span className="block bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-indigo-500">
                   Chatbots
                 </span>
               </h1>
-              <p className="text-xl text-gray-600 leading-relaxed">
+              <p className="text-xl text-gray-600 dark:text-[#A8A29E] leading-relaxed">
                 Create custom chatbots tailored to your brand. Engage visitors with smarter, personalized interactions.
               </p>
             </div>
@@ -105,8 +105,8 @@ const Auth: React.FC = () => {
                   </svg>
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-800">Easy Customization</h3>
-                  <p className="text-gray-600 text-sm">Match your brand perfectly</p>
+                  <h3 className="font-semibold text-gray-800 dark:text-[#F5F5F4]">Easy Customization</h3>
+                  <p className="text-gray-600 dark:text-[#A8A29E] text-sm">Match your brand perfectly</p>
                 </div>
               </div>
               <div className="flex items-start space-x-4 group">
@@ -116,8 +116,8 @@ const Auth: React.FC = () => {
                   </svg>
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-800">Quick Integration</h3>
-                  <p className="text-gray-600 text-sm">Deploy in minutes, not hours</p>
+                  <h3 className="font-semibold text-gray-800 dark:text-[#F5F5F4]">Quick Integration</h3>
+                  <p className="text-gray-600 dark:text-[#A8A29E] text-sm">Deploy in minutes, not hours</p>
                 </div>
               </div>
               <div className="flex items-start space-x-4 group">
@@ -127,8 +127,8 @@ const Auth: React.FC = () => {
                   </svg>
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-800">24/7 Engagement</h3>
-                  <p className="text-gray-600 text-sm">Never miss a customer query</p>
+                  <h3 className="font-semibold text-gray-800 dark:text-[#F5F5F4]">24/7 Engagement</h3>
+                  <p className="text-gray-600 dark:text-[#A8A29E] text-sm">Never miss a customer query</p>
                 </div>
               </div>
             </div>
@@ -136,7 +136,7 @@ const Auth: React.FC = () => {
 
           {/* Right side - Auth form */}
           <div className="w-full">
-            <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-gray-200/50 overflow-hidden">
+            <div className="bg-white/80 dark:bg-[#292524]/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-gray-200/50 dark:border-[#44403C]/50 overflow-hidden">
               {/* Header */}
               <div className="bg-gradient-to-r from-indigo-400 to-indigo-300 px-8 py-6">
                 <div className="flex items-center justify-center lg:hidden mb-4">
@@ -170,7 +170,7 @@ const Auth: React.FC = () => {
                   <div>
                     <label
                       htmlFor="email"
-                      className="block text-sm font-semibold text-gray-700 mb-2"
+                      className="block text-sm font-semibold text-gray-700 dark:text-[#F5F5F4] mb-2"
                     >
                       Email Address
                     </label>
@@ -187,7 +187,7 @@ const Auth: React.FC = () => {
                         required
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-400 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white"
+                        className="w-full pl-12 pr-4 py-3 border border-gray-300 dark:border-[#44403C] rounded-xl focus:ring-2 focus:ring-indigo-400 focus:border-transparent transition-all duration-200 bg-gray-50 dark:bg-[#1C1917] hover:bg-white dark:hover:bg-[#292524] text-gray-900 dark:text-[#F5F5F4]"
                       />
                     </div>
                   </div>
@@ -195,7 +195,7 @@ const Auth: React.FC = () => {
                   <div>
                     <label
                       htmlFor="password"
-                      className="block text-sm font-semibold text-gray-700 mb-2"
+                      className="block text-sm font-semibold text-gray-700 dark:text-[#F5F5F4] mb-2"
                     >
                       Password
                     </label>
@@ -212,7 +212,7 @@ const Auth: React.FC = () => {
                         required
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-400 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white"
+                        className="w-full pl-12 pr-4 py-3 border border-gray-300 dark:border-[#44403C] rounded-xl focus:ring-2 focus:ring-indigo-400 focus:border-transparent transition-all duration-200 bg-gray-50 dark:bg-[#1C1917] hover:bg-white dark:hover:bg-[#292524] text-gray-900 dark:text-[#F5F5F4]"
                       />
                     </div>
                   </div>
@@ -239,17 +239,17 @@ const Auth: React.FC = () => {
                 {/* Divider */}
                 <div className="relative my-6">
                   <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-gray-300"></div>
+                    <div className="w-full border-t border-gray-300 dark:border-[#44403C]"></div>
                   </div>
                   <div className="relative flex justify-center text-sm">
-                    <span className="px-4 bg-white text-gray-500 font-medium">Or continue with</span>
+                    <span className="px-4 bg-white dark:bg-[#292524] text-gray-500 dark:text-[#A8A29E] font-medium">Or continue with</span>
                   </div>
                 </div>
 
                 {/* OAuth */}
                 <button
                   onClick={handleOAuth}
-                  className="w-full flex items-center justify-center py-3 px-4 border-2 border-gray-300 rounded-xl shadow-sm bg-white text-gray-700 font-medium hover:bg-gray-50 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2 transition-all duration-200 group"
+                  className="w-full flex items-center justify-center py-3 px-4 border-2 border-gray-300 dark:border-[#44403C] rounded-xl shadow-sm bg-white dark:bg-[#292524] text-gray-700 dark:text-[#F5F5F4] font-medium hover:bg-gray-50 dark:hover:bg-[#1C1917] hover:border-gray-400 dark:hover:border-[#57534E] focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2 transition-all duration-200 group"
                 >
                   <svg className="h-5 w-5 mr-3 group-hover:scale-110 transition-transform" viewBox="0 0 24 24">
                     <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -264,7 +264,7 @@ const Auth: React.FC = () => {
                 <div className="mt-6 text-center">
                   <button
                     onClick={() => setMode(mode === "login" ? "register" : "login")}
-                    className="text-sm text-gray-600 hover:text-indigo-500 font-medium transition-colors duration-200"
+                    className="text-sm text-gray-600 dark:text-[#A8A29E] hover:text-indigo-500 font-medium transition-colors duration-200"
                   >
                     {mode === "login" ? (
                       <span>
@@ -283,7 +283,7 @@ const Auth: React.FC = () => {
             </div>
 
             {/* Trust indicators */}
-            <div className="mt-6 text-center text-sm text-gray-600">
+            <div className="mt-6 text-center text-sm text-gray-600 dark:text-[#A8A29E]">
               <p className="flex items-center justify-center space-x-2">
                 <svg className="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />

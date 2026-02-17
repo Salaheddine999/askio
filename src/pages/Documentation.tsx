@@ -20,7 +20,7 @@ const Documentation: React.FC<{ toggleSidebar: () => void }> = () => {
   };
 
   return (
-    <div className="min-h-screen py-12 bg-gray-100 dark:bg-gray-900">
+    <div className="min-h-screen py-12 bg-[#F7F5F3] dark:bg-[#1C1917] font-sans text-[#37322F]">
       <Helmet>
         <title>Documentation | Askio Chatbot</title>
         <meta
@@ -29,10 +29,10 @@ const Documentation: React.FC<{ toggleSidebar: () => void }> = () => {
         />
       </Helmet>
       <main className="w-full lg:w-[80%] px-4 sm:px-6 lg:px-8 mx-auto">
-        <h1 className="text-4xl font-bold text-gray-900 mb-8 dark:text-white">
+        <h1 className="text-4xl font-normal font-serif text-[#37322F] mb-8 dark:text-white tracking-tight">
           Askio Chatbot Documentation
         </h1>
-        <p className="text-xl text-gray-700 mb-12 dark:text-gray-300">
+        <p className="text-xl text-[#605A57] mb-12 dark:text-gray-300">
           Welcome to the comprehensive guide for creating, customizing, and
           integrating Askio Chatbot into your website.
         </p>
@@ -48,11 +48,11 @@ const Documentation: React.FC<{ toggleSidebar: () => void }> = () => {
           />
         ))}
 
-        <Card className="mt-12 bg-blue-50 dark:bg-blue-900 border-l-4 border-blue-500 p-6">
-          <h3 className="text-lg font-semibold text-blue-800 mb-4 dark:text-blue-200">
+        <Card className="mt-12 bg-white dark:bg-[#292524] border-none p-6 shadow-[0px_0px_0px_0.9px_rgba(0,0,0,0.08),0px_2px_4px_rgba(0,0,0,0.04)] rounded-[9px]">
+          <h3 className="text-lg font-semibold text-[#37322F] mb-4 dark:text-[#F5F5F4]">
             Best Practices
           </h3>
-          <ul className="list-disc list-inside space-y-2 text-gray-700 dark:text-gray-300">
+          <ul className="list-disc list-inside space-y-2 text-[#605A57] dark:text-gray-300">
             <li>
               Regularly update your FAQs based on user interactions and
               feedback.
@@ -87,26 +87,28 @@ const Section: React.FC<{
   isOpen: boolean;
   toggleSection: () => void;
 }> = ({ title, content, icon: Icon, isOpen, toggleSection }) => (
-  <Card className="mb-6 bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
+  <Card className="mb-6 bg-white dark:bg-[#292524] rounded-[9px] shadow-[0px_0px_0px_0.9px_rgba(0,0,0,0.08),0px_2px_4px_rgba(0,0,0,0.04)] overflow-hidden border-none">
     <button
-      className="w-full text-left p-6 focus:outline-none"
+      className="w-full text-left p-6 focus:outline-none hover:bg-[#FAFAF9] dark:hover:bg-[#44403C] transition-colors duration-200"
       onClick={toggleSection}
     >
       <div className="flex justify-between items-center">
         <div className="flex items-center">
-          <Icon size={24} className="text-indigo-500 mr-4" />
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+          <div className="bg-[#FAFAF9] dark:bg-[#44403C] border border-[#E0DEDB] dark:border-[#57534E] p-2 rounded-lg mr-4">
+            <Icon size={24} className="text-[#37322F] dark:text-[#F5F5F4]" />
+          </div>
+          <h2 className="text-xl font-semibold text-[#37322F] dark:text-white">
             {title}
           </h2>
         </div>
-        {isOpen ? <ChevronDown size={24} /> : <ChevronRight size={24} />}
+        {isOpen ? <ChevronDown size={24} className="text-[#605A57] dark:text-[#A8A29E]" /> : <ChevronRight size={24} className="text-[#605A57] dark:text-[#A8A29E]" />}
       </div>
     </button>
     {isOpen && (
-      <div className="px-6 pb-6">
+      <div className="px-6 pb-6 pt-2 border-t border-[#E0DEDB] dark:border-[#57534E]">
         <ol className="list-decimal list-inside space-y-4">
           {content.map((step, index) => (
-            <li key={index} className="text-gray-700 dark:text-gray-300">
+            <li key={index} className="text-[#605A57] dark:text-gray-300">
               {step}
             </li>
           ))}

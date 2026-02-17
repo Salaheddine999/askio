@@ -326,7 +326,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
       transition={{ duration: 0.3 }}
       className={`${
         isEmbedded ? `fixed ${combinedPositionClass} z-50` : "w-full h-full"
-      } bg-white flex flex-col shadow-lg rounded-lg ${
+      } bg-white dark:bg-[#1C1917] flex flex-col shadow-lg rounded-lg ${
         !isEmbedded && isPreview ? "" : ""
       } ${isEmbedded ? "w-[350px] h-[520px]" : ""}`}
     >
@@ -372,7 +372,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
                 className={`inline-block p-2 rounded-lg max-w-[80%] ${
                   message.sender === "user"
                     ? "text-white"
-                    : "bg-gray-200 text-gray-800"
+                    : "bg-[#F5F5F4] dark:bg-[#292524] text-[#37322F] dark:text-[#F5F5F4]"
                 }`}
                 style={message.sender === "user" ? userMessageStyle : {}}
               >
@@ -395,7 +395,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
                     <button
                       key={idx}
                       onClick={(e) => handleSuggestionClick(e, question)}
-                      className="text-sm bg-gray-100 w-fit hover:bg-gray-200 text-gray-800 py-2 px-3 rounded-lg transition-colors duration-200 border border-gray-300 text-left"
+                      className="text-sm bg-[#FAFAF9] dark:bg-[#292524] w-fit hover:bg-[#F5F5F4] dark:hover:bg-[#44403C] text-[#37322F] dark:text-[#F5F5F4] py-2 px-3 rounded-lg transition-colors duration-200 border border-[#E0DEDB] dark:border-[#44403C] text-left"
                     >
                       {question}
                     </button>
@@ -411,15 +411,15 @@ const Chatbot: React.FC<ChatbotProps> = ({
             exit={{ opacity: 0, y: -10 }}
             className="flex justify-start"
           >
-            <span className="inline-block p-2 rounded-lg bg-gray-200 text-gray-800">
+            <span className="inline-block p-2 rounded-lg bg-[#F5F5F4] dark:bg-[#292524] text-[#37322F] dark:text-[#F5F5F4]">
               <div className="flex items-center h-5">
-                <span className="h-1.5 w-1.5 bg-gray-600 rounded-full mr-1 animate-bounce"></span>
+                <span className="h-1.5 w-1.5 bg-[#605A57] dark:bg-[#A8A29E] rounded-full mr-1 animate-bounce"></span>
                 <span
-                  className="h-1.5 w-1.5 bg-gray-600 rounded-full mr-1 animate-bounce"
+                  className="h-1.5 w-1.5 bg-[#605A57] dark:bg-[#A8A29E] rounded-full mr-1 animate-bounce"
                   style={{ animationDelay: "-0.3s" }}
                 ></span>
                 <span
-                  className="h-1.5 w-1.5 bg-gray-600 rounded-full animate-bounce"
+                  className="h-1.5 w-1.5 bg-[#605A57] dark:bg-[#A8A29E] rounded-full animate-bounce"
                   style={{ animationDelay: "-0.15s" }}
                 ></span>
               </div>
@@ -428,13 +428,13 @@ const Chatbot: React.FC<ChatbotProps> = ({
         )}
         <div ref={messagesEndRef} />
       </div>
-      <div className="p-4 border-t">
+      <div className="p-4 border-t border-[#E0DEDB] dark:border-[#44403C]">
         <form onSubmit={handleSend} className="flex">
           <input
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            className="flex-grow p-2 border rounded-l-lg focus:outline-none"
+            className="flex-grow p-2 border border-[#E0DEDB] dark:border-[#44403C] rounded-l-lg focus:outline-none bg-white dark:bg-[#292524] text-[#37322F] dark:text-[#F5F5F4] placeholder-[#A8A29E] dark:placeholder-[#605A57]"
             placeholder={placeholder}
           />
           <motion.button
@@ -450,17 +450,17 @@ const Chatbot: React.FC<ChatbotProps> = ({
         </form>
       </div>
       {!hasFeedback && !showFeedback && messages.length > 1 && (
-        <div className="p-2 border-t text-center">
+        <div className="p-2 border-t border-[#E0DEDB] dark:border-[#44403C] text-center">
           <button
             onClick={handleFeedbackClick}
-            className="text-sm text-gray-600 hover:text-indigo-600 transition-colors duration-200"
+            className="text-sm text-[#605A57] dark:text-[#A8A29E] hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors duration-200"
           >
             Was this conversation helpful? Provide feedback
           </button>
         </div>
       )}
       {showFeedback && !hasFeedback && (
-        <div className="p-4 border-t flex justify-center items-center space-x-4">
+        <div className="p-4 border-t border-[#E0DEDB] dark:border-[#44403C] flex justify-center items-center space-x-4">
           <button
             onClick={(e) => handleFeedback(true, e)}
             className="flex items-center text-green-500 hover:text-green-700 transition-colors duration-200"
@@ -477,13 +477,13 @@ const Chatbot: React.FC<ChatbotProps> = ({
           </button>
         </div>
       )}
-      <div className="p-2 border-t text-center text-xs font-semibold text-gray-500 bg-gray-50">
+      <div className="p-2 border-t border-[#E0DEDB] dark:border-[#44403C] text-center text-xs font-semibold text-[#A8A29E] bg-[#FAFAF9] dark:bg-[#1C1917]">
         Powered by{" "}
         <a
           href="https://askio.vercel.app/"
           target="_blank"
           rel="noopener noreferrer"
-          className="hover:text-indigo-500 text-gray-600"
+          className="hover:text-indigo-500 text-[#605A57] dark:text-[#A8A29E]"
         >
           Askio
         </a>

@@ -299,7 +299,7 @@ const EditChatbot: React.FC = () => {
             <code>{generateEmbedCode()}</code>
           </div>
           <button
-            className="mt-2 bg-[#aab2ff] hover:bg-indigo-400 text-black px-4 py-2 rounded transition-colors duration-200 flex items-center"
+            className="mt-2 bg-[#37322F] hover:bg-[#2a2522] text-white px-4 py-2 rounded transition-colors duration-200 flex items-center dark:bg-[#F5F5F4] dark:text-[#1C1917] dark:hover:bg-[#E7E5E4]"
             onClick={() => {
               navigator.clipboard.writeText(generateEmbedCode());
               toast.success("Embed code copied to clipboard!");
@@ -361,7 +361,7 @@ const EditChatbot: React.FC = () => {
   const tabs = ["general", "appearance", "faq", "embed"];
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-[#F7F5F3] dark:bg-[#1C1917] font-sans text-[#37322F] dark:text-[#F5F5F4]">
       <Helmet>
         <title>
           {id ? `Edit Chatbot: ${config.name}` : "Create New Chatbot"} | Askio
@@ -377,20 +377,20 @@ const EditChatbot: React.FC = () => {
       </Helmet>
       <div className="w-full 2xl:w-[80%] px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-10">
-          <h1 className="text-3xl font-medium text-gray-900 dark:text-gray-100 mb-4 sm:mb-0">
+          <h1 className="text-3xl font-normal font-serif text-[#37322F] dark:text-[#F5F5F4] mb-4 sm:mb-0 tracking-tight">
             {id ? `Edit Chatbot: ${config.name}` : "Create New Chatbot"}
           </h1>
           <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4">
             <Button
               onClick={() => setShowChatbot(!showChatbot)}
-              className="bg-[#aab2ff] hover:bg-indigo-400 text-black"
+              className="bg-[#37322F] dark:bg-[#F5F5F4] hover:bg-[#2a2522] dark:hover:bg-[#E7E5E4] text-white dark:text-[#1C1917] shadow-md font-medium px-4 py-2 rounded-[9px]"
               icon={showChatbot ? EyeOff : Eye}
             >
               {showChatbot ? "Hide Chatbot" : "Show Chatbot"}
             </Button>
             <Button
               onClick={() => navigate("/")}
-              className="bg-gray-200 hover:bg-gray-300 text-gray-800"
+              className="bg-white dark:bg-[#292524] border border-[#E0DEDB] dark:border-[#44403C] text-[#605A57] dark:text-[#A8A29E] hover:bg-[#FAFAF9] dark:hover:bg-[#1C1917] hover:text-[#37322F] dark:hover:text-[#F5F5F4] shadow-sm font-medium px-4 py-2 rounded-[9px]"
               icon={ArrowLeft}
             >
               Back to Chatbot List
@@ -399,20 +399,20 @@ const EditChatbot: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <Card className="lg:col-span-2 p-6 bg-white">
-            <div className="flex flex-wrap gap-2 mb-6">
+          <Card className="lg:col-span-2 p-6 bg-white dark:bg-[#292524] shadow-[0px_0px_0px_0.9px_rgba(0,0,0,0.08),0px_2px_4px_rgba(0,0,0,0.04)] dark:shadow-none rounded-[9px] border-none dark:border dark:border-[#44403C]">
+            <div className="flex flex-wrap gap-6 mb-8 border-b border-[#E0DEDB] dark:border-[#44403C] pb-2">
               {tabs.map((tab) => (
-                <Button
+                <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
-                  className={`${
+                  className={`pb-2 px-1 text-sm font-medium transition-colors duration-200 ${
                     activeTab === tab
-                      ? "bg-[#aab2ff] text-black"
-                      : "bg-gray-200 text-gray-800 hover:bg-[#aab2ff] dark:bg-gray-700 dark:text-gray-100 dark:hover:bg-gray-600"
+                      ? "border-b-2 border-[#37322F] dark:border-[#F5F5F4] text-[#37322F] dark:text-[#F5F5F4]"
+                      : "text-[#605A57] dark:text-[#A8A29E] hover:text-[#37322F] dark:hover:text-[#F5F5F4] border-transparent"
                   }`}
                 >
                   {tab.charAt(0).toUpperCase() + tab.slice(1)}
-                </Button>
+                </button>
               ))}
             </div>
 
@@ -420,7 +420,7 @@ const EditChatbot: React.FC = () => {
               <div className="space-y-6 ">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   <div>
-                    <label className="block mb-2 text-black dark:text-gray-100 font-medium">
+                    <label className="block mb-2 text-[#37322F] dark:text-gray-100 font-medium text-sm">
                       Chatbot Name
                     </label>
                     <Input
@@ -429,11 +429,12 @@ const EditChatbot: React.FC = () => {
                       onChange={(e) =>
                         handleConfigChange("name", e.target.value)
                       }
+                      className="w-full bg-white dark:bg-[#44403C] border border-[#E0DEDB] dark:border-[#57534E] text-[#37322F] dark:text-[#F5F5F4] placeholder-[#9CA3AF] dark:placeholder-[#78716C] focus:ring-[#37322F] dark:focus:ring-[#F5F5F4] focus:border-[#37322F] dark:focus:border-[#F5F5F4] rounded-[9px] shadow-sm py-2 px-3"
                     />
                   </div>
 
                   <div>
-                    <label className="block mb-2 text-black dark:text-gray-100 font-medium">
+                    <label className="block mb-2 text-[#37322F] dark:text-gray-100 font-medium text-sm">
                       Chatbot Title
                     </label>
                     <Input
@@ -442,17 +443,18 @@ const EditChatbot: React.FC = () => {
                       onChange={(e) =>
                         handleConfigChange("title", e.target.value)
                       }
+                      className="w-full bg-white dark:bg-[#44403C] border border-[#E0DEDB] dark:border-[#57534E] text-[#37322F] dark:text-[#F5F5F4] placeholder-[#9CA3AF] dark:placeholder-[#78716C] focus:ring-[#37322F] dark:focus:ring-[#F5F5F4] focus:border-[#37322F] dark:focus:border-[#F5F5F4] rounded-[9px] shadow-sm py-2 px-3"
                     />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   <div>
-                    <label className="block mb-2 text-black dark:text-gray-100 font-medium">
+                    <label className="block mb-2 text-[#37322F] dark:text-gray-100 font-medium text-sm">
                       Position
                     </label>
                     <select
-                      className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-50 dark:text-gray-100 dark:focus:ring-gray-500 dark:focus:border-gray-500"
+                      className="w-full p-2 bg-white border border-[#E0DEDB] text-[#37322F] focus:ring-[#37322F] focus:border-[#37322F] rounded-[9px] shadow-sm dark:bg-[#44403C] dark:border-[#57534E] dark:text-[#F5F5F4] dark:focus:ring-[#F5F5F4] dark:focus:border-[#F5F5F4]"
                       value={config.position}
                       onChange={(e) =>
                         handleConfigChange("position", e.target.value)
@@ -465,11 +467,11 @@ const EditChatbot: React.FC = () => {
                     </select>
                   </div>
                   <div>
-                    <label className="block mb-2 text-black dark:text-gray-100 font-medium">
+                    <label className="block mb-2 text-[#37322F] dark:text-gray-100 font-medium text-sm">
                       Initial Message
                     </label>
                     <input
-                      className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-50 dark:text-gray-100 dark:focus:ring-gray-500 dark:focus:border-gray-500"
+                      className="w-full p-2 bg-white dark:bg-[#44403C] border border-[#E0DEDB] dark:border-[#57534E] text-[#37322F] dark:text-[#F5F5F4] placeholder-[#9CA3AF] dark:placeholder-[#78716C] focus:ring-[#37322F] dark:focus:ring-[#F5F5F4] focus:border-[#37322F] dark:focus:border-[#F5F5F4] rounded-[9px] shadow-sm"
                       placeholder="Initial Message"
                       value={config.initialMessage}
                       onChange={(e) =>
@@ -479,11 +481,11 @@ const EditChatbot: React.FC = () => {
                   </div>
                 </div>
                 <div>
-                  <label className="block mb-2 dark:text-gray-100 font-medium">
+                  <label className="block mb-2 text-[#37322F] dark:text-gray-100 font-medium text-sm">
                     Input Placeholder
                   </label>
                   <input
-                    className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-50 dark:text-gray-100 dark:focus:ring-gray-500 dark:focus:border-gray-500"
+                    className="w-full p-2 bg-white border border-[#E0DEDB] text-[#37322F] placeholder-[#9CA3AF] focus:ring-[#37322F] focus:border-[#37322F] rounded-[9px] shadow-sm dark:bg-[#44403C] dark:border-[#57534E] dark:text-[#F5F5F4] dark:placeholder-[#78716C] dark:focus:ring-[#F5F5F4] dark:focus:border-[#F5F5F4]"
                     placeholder="Input Placeholder"
                     value={config.placeholder}
                     onChange={(e) =>
@@ -502,11 +504,11 @@ const EditChatbot: React.FC = () => {
                     id="useGradient"
                     checked={useGradient}
                     onChange={(e) => setUseGradient(e.target.checked)}
-                    className="mr-2 dark:text-gray-100"
+                    className="mr-2 text-[#37322F] focus:ring-[#37322F] border-gray-300 rounded"
                   />
                   <label
                     htmlFor="useGradient"
-                    className="text-gray-700 dark:text-gray-300"
+                    className="text-[#37322F] font-medium text-sm dark:text-[#F5F5F4]"
                   >
                     Use Gradient for Colors
                   </label>
@@ -515,7 +517,7 @@ const EditChatbot: React.FC = () => {
                   <div className="space-y-6">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                       <div>
-                        <label className="block mb-2 dark:text-gray-100 font-medium">
+                        <label className="block mb-2 text-[#37322F] dark:text-[#F5F5F4] font-medium text-sm">
                           Gradient Start
                         </label>
                         <div className="flex flex-col space-y-2 dark:text-gray-100">
@@ -526,12 +528,12 @@ const EditChatbot: React.FC = () => {
                           <HexColorInput
                             color={gradientStart}
                             onChange={setGradientStart}
-                            className="w-full p-2 border rounded-md dark:bg-gray-700 dark:text-gray-100"
+                            className="w-full p-2 bg-white dark:bg-[#44403C] border border-[#E0DEDB] dark:border-[#57534E] text-[#37322F] dark:text-[#F5F5F4] rounded-[9px] shadow-sm"
                           />
                         </div>
                       </div>
                       <div>
-                        <label className="block mb-2 dark:text-gray-100 font-medium">
+                        <label className="block mb-2 text-[#37322F] dark:text-gray-100 font-medium text-sm">
                           Gradient End
                         </label>
                         <div className="flex flex-col space-y-2 dark:text-gray-100">
@@ -542,13 +544,13 @@ const EditChatbot: React.FC = () => {
                           <HexColorInput
                             color={gradientEnd}
                             onChange={setGradientEnd}
-                            className="w-full p-2 border rounded-md dark:bg-gray-700 dark:text-gray-100"
+                            className="w-full p-2 bg-white dark:bg-[#44403C] border border-[#E0DEDB] dark:border-[#57534E] text-[#37322F] dark:text-[#F5F5F4] rounded-[9px] shadow-sm"
                           />
                         </div>
                       </div>
                     </div>
                     <div>
-                      <label className="block mb-2 dark:text-gray-100 font-medium">
+                      <label className="block mb-2 text-[#37322F] dark:text-gray-100 font-medium text-sm">
                         Gradient Angle
                       </label>
                       <div className="flex items-center space-x-4">
@@ -560,19 +562,19 @@ const EditChatbot: React.FC = () => {
                           onChange={(e) =>
                             setGradientAngle(parseInt(e.target.value))
                           }
-                          className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700 dark:text-gray-100"
+                          className="w-full h-2 bg-[#E0DEDB] rounded-lg appearance-none cursor-pointer accent-[#37322F] dark:bg-gray-700 dark:text-gray-100"
                         />
-                        <span className="text-gray-700 dark:text-gray-300">
+                        <span className="text-[#37322F] dark:text-[#F5F5F4]">
                           {gradientAngle}°
                         </span>
                       </div>
                     </div>
                     <div className="space-y-2">
                       <div
-                        className="h-20 rounded-md"
+                        className="h-20 rounded-[9px] border border-[#E0DEDB]"
                         style={{ background: config.primaryColor }}
                       ></div>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                      <p className="text-sm text-[#605A57] dark:text-[#A8A29E]">
                         This gradient will be applied to both primary and
                         secondary colors.
                       </p>
@@ -581,7 +583,7 @@ const EditChatbot: React.FC = () => {
                 ) : (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     <div>
-                      <label className="block mb-2 dark:text-gray-100 font-medium">
+                      <label className="block mb-2 text-[#37322F] dark:text-gray-100 font-medium text-sm">
                         Primary Color
                       </label>
                       <div className="flex flex-col space-y-2 dark:text-gray-100">
@@ -596,12 +598,12 @@ const EditChatbot: React.FC = () => {
                           onChange={(color) =>
                             handleConfigChange("primaryColor", color)
                           }
-                          className="w-full p-2 border rounded-md dark:bg-gray-700 dark:text-gray-100"
+                          className="w-full p-2 bg-white dark:bg-[#44403C] border border-[#E0DEDB] dark:border-[#57534E] text-[#37322F] dark:text-[#F5F5F4] rounded-[9px] shadow-sm"
                         />
                       </div>
                     </div>
                     <div>
-                      <label className="block mb-2 dark:text-gray-100 font-medium">
+                      <label className="block mb-2 text-[#37322F] dark:text-gray-100 font-medium text-sm">
                         Secondary Color
                       </label>
                       <div className="flex flex-col space-y-2 dark:text-gray-100">
@@ -616,7 +618,7 @@ const EditChatbot: React.FC = () => {
                           onChange={(color) =>
                             handleConfigChange("secondaryColor", color)
                           }
-                          className="w-full p-2 border rounded-md dark:bg-gray-700 dark:text-gray-100"
+                          className="w-full p-2 bg-white dark:bg-[#44403C] border border-[#E0DEDB] dark:border-[#57534E] text-[#37322F] dark:text-[#F5F5F4] rounded-[9px] shadow-sm"
                         />
                       </div>
                     </div>
@@ -626,7 +628,7 @@ const EditChatbot: React.FC = () => {
                   {predefinedColors.map((color) => (
                     <button
                       key={color}
-                      className="w-8 h-8 m-1 rounded-md border border-gray-300"
+                      className="w-8 h-8 m-1 rounded-full border border-[#E0DEDB] dark:border-[#44403C] hover:scale-110 transition-transform duration-200"
                       style={{ backgroundColor: color }}
                       onClick={() => {
                         setUseGradient(false);
@@ -641,9 +643,9 @@ const EditChatbot: React.FC = () => {
 
             {activeTab === "faq" && (
               <>
-                <div className="space-y-2 mb-6">
+                <div className="space-y-4 mb-8">
                   <input
-                    className="w-full p-2 border rounded-md dark:bg-gray-700 dark:text-gray-100"
+                    className="w-full p-2 bg-white dark:bg-[#44403C] border border-[#E0DEDB] dark:border-[#57534E] text-[#37322F] dark:text-[#F5F5F4] placeholder-[#9CA3AF] dark:placeholder-[#78716C] focus:ring-[#37322F] dark:focus:ring-[#F5F5F4] focus:border-[#37322F] dark:focus:border-[#F5F5F4] rounded-[9px] shadow-sm"
                     placeholder="Question"
                     value={faqInput.question}
                     onChange={(e) =>
@@ -654,7 +656,7 @@ const EditChatbot: React.FC = () => {
                     }
                   />
                   <textarea
-                    className="w-full p-2 border rounded-md dark:bg-gray-700 dark:text-gray-100"
+                    className="w-full p-2 bg-white dark:bg-[#44403C] border border-[#E0DEDB] dark:border-[#57534E] text-[#37322F] dark:text-[#F5F5F4] placeholder-[#9CA3AF] dark:placeholder-[#78716C] focus:ring-[#37322F] dark:focus:ring-[#F5F5F4] focus:border-[#37322F] dark:focus:border-[#F5F5F4] rounded-[9px] shadow-sm"
                     placeholder="Answer"
                     value={faqInput.answer}
                     onChange={(e) =>
@@ -668,14 +670,14 @@ const EditChatbot: React.FC = () => {
                     <div className="flex space-x-2">
                       <Button
                         onClick={handleUpdateFaq}
-                        className="bg-green-500 hover:bg-green-600 text-white dark:bg-green-600 dark:hover:bg-green-700"
+                        className="bg-green-600 hover:bg-green-700 text-white shadow-md rounded-[9px]"
                         icon={Save}
                       >
                         Update FAQ
                       </Button>
                       <Button
                         onClick={handleCancelEdit}
-                        className="bg-gray-500 hover:bg-gray-600 text-white dark:bg-gray-600 dark:hover:bg-gray-700"
+                        className="bg-white dark:bg-[#292524] border border-[#E0DEDB] dark:border-[#44403C] text-[#605A57] dark:text-[#A8A29E] hover:bg-[#FAFAF9] dark:hover:bg-[#1C1917] hover:text-[#37322F] dark:hover:text-[#F5F5F4] shadow-sm rounded-[9px]"
                       >
                         Cancel
                       </Button>
@@ -683,27 +685,27 @@ const EditChatbot: React.FC = () => {
                   ) : (
                     <Button
                       onClick={handleAddFaq}
-                      className="bg-[#aab2ff] hover:bg-indigo-400 text-black dark:bg-indigo-600 dark:hover:bg-indigo-700"
+                      className="bg-[#37322F] hover:bg-[#2a2522] text-white shadow-md rounded-[9px]"
                       icon={Plus}
                     >
                       Add FAQ
                     </Button>
                   )}
                 </div>
-                <div className="mt-4 space-y-4 max-h-96 overflow-y-auto pr-2">
+                <div className="mt-4 space-y-3 max-h-96 overflow-y-auto pr-2">
                   {faqList.map((faq, index) => (
                     <div
                       key={index}
-                      className="border rounded-md overflow-hidden"
+                      className="border border-[#E0DEDB] dark:border-[#44403C] rounded-[9px] overflow-hidden shadow-sm"
                     >
                       <div
-                        className="bg-gray-100 p-4 flex justify-between items-center cursor-pointer dark:bg-gray-700 dark:text-gray-100"
+                        className="bg-[#FAFAF9] dark:bg-[#1C1917] p-4 flex justify-between items-center cursor-pointer hover:bg-[#F7F5F3] dark:hover:bg-[#292524] transition-colors duration-200"
                         onClick={() => toggleFAQ(index)}
                       >
-                        <span className="font-semibold">{faq.question}</span>
+                        <span className="font-medium text-[#37322F] dark:text-[#F5F5F4]">{faq.question}</span>
                         <div className="flex items-center space-x-2">
                           <button
-                            className="text-indigo-400 hover:text-indigo-800"
+                            className="text-[#605A57] dark:text-[#A8A29E] hover:text-[#37322F] dark:hover:text-[#F5F5F4] p-1"
                             onClick={(e) => {
                               e.stopPropagation();
                               handleEditFaq(index);
@@ -712,7 +714,7 @@ const EditChatbot: React.FC = () => {
                             <Edit2 size={16} />
                           </button>
                           <button
-                            className="text-red-500 hover:text-red-700"
+                            className="text-red-500 hover:text-red-700 p-1"
                             onClick={(e) => {
                               e.stopPropagation();
                               openDeleteFaqModal(index);
@@ -721,15 +723,15 @@ const EditChatbot: React.FC = () => {
                             <Trash2 size={16} />
                           </button>
                           {faq.isOpen ? (
-                            <ChevronUp size={20} />
+                            <ChevronUp size={20} className="text-[#605A57]" />
                           ) : (
-                            <ChevronDown size={20} />
+                            <ChevronDown size={20} className="text-[#605A57]" />
                           )}
                         </div>
                       </div>
                       {faq.isOpen && (
-                        <div className="p-4">
-                          <p className="text-gray-700 dark:text-gray-100">
+                        <div className="p-4 bg-white dark:bg-[#292524] border-t border-[#E0DEDB] dark:border-[#44403C]">
+                          <p className="text-[#605A57] dark:text-[#A8A29E]">
                             {faq.answer}
                           </p>
                         </div>
@@ -743,12 +745,12 @@ const EditChatbot: React.FC = () => {
             {activeTab === "embed" && <EmbedTab />}
           </Card>
 
-          <Card className="lg:col-span-1 border-none shadow-none dark:bg-gray-900">
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-gray-100">
+          <Card className="lg:col-span-1 border-none shadow-none bg-[#f7f5f3] dark:bg-[#1c1917]">
+            <h2 className="text-xl font-semibold mb-4 text-[#37322F] dark:text-[#F5F5F4]">
               Preview
             </h2>
             <div
-              className="border rounded-md bg-white dark:bg-gray-800 relative overflow-hidden"
+              className="border border-[#E0DEDB] dark:border-[#44403C] rounded-[9px] bg-white dark:bg-[#292524] relative overflow-hidden"
               style={{ height: "520px", maxWidth: "370px" }}
             >
               <div className="absolute inset-0 flex items-center justify-center">
@@ -763,7 +765,7 @@ const EditChatbot: React.FC = () => {
         <div className="mt-8">
           <Button
             onClick={saveConfig}
-            className="bg-green-400 hover:bg-green-500 text-white"
+            className="bg-[#37322F] dark:bg-[#F5F5F4] hover:bg-[#2a2522] dark:hover:bg-[#E7E5E4] text-white dark:text-[#1C1917] shadow-lg py-3 rounded-[9px] font-medium"
             icon={Save}
           >
             {id ? "Save Configuration" : "Create Chatbot"}
@@ -789,9 +791,9 @@ const EditChatbot: React.FC = () => {
           title="Delete FAQ"
           confirmText="Delete"
           cancelText="Cancel"
-          confirmButtonClass="bg-red-600 text-white hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600 focus:ring-red-500 dark:focus:ring-red-400"
+          confirmButtonClass="bg-red-600 text-white hover:bg-red-700 shadow-md"
         >
-          <p className="text-gray-700 dark:text-gray-300">
+          <p className="text-[#605A57] dark:text-[#A8A29E]">
             Are you sure you want to delete this FAQ?
           </p>
         </ConfirmationModal>

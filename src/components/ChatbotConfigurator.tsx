@@ -54,19 +54,19 @@ const ChatbotConfigurator: React.FC = () => {
   };
 
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Chatbot Configurator</h1>
+    <div className="container mx-auto p-4 dark:text-[#F5F5F4]">
+      <h1 className="text-2xl font-bold mb-4 dark:text-[#F5F5F4] font-serif">Chatbot Configurator</h1>
 
       <div className="mb-4">
-        <h2 className="text-xl font-semibold mb-2">Your Chatbots</h2>
+        <h2 className="text-xl font-semibold mb-2 dark:text-[#F5F5F4]">Your Chatbots</h2>
         {chatbots.map((chatbot) => (
           <div
             key={chatbot.id}
-            className="flex justify-between items-center mb-2 p-2 border rounded"
+            className="flex justify-between items-center mb-2 p-2 border rounded dark:bg-[#292524] dark:border-[#57534E]"
           >
-            <span>{chatbot.name}</span>
+            <span className="dark:text-[#D6D3D1]">{chatbot.name}</span>
             <button
-              className="bg-blue-500 text-white p-2 rounded"
+              className="bg-[#37322F] hover:bg-[#2a2522] text-white p-2 rounded dark:bg-[#F5F5F4] dark:text-[#1C1917] dark:hover:bg-[#E7E5E4]"
               onClick={() => handleEditChatbot(chatbot.id)}
             >
               Edit
@@ -76,16 +76,16 @@ const ChatbotConfigurator: React.FC = () => {
       </div>
 
       <div className="mb-4">
-        <h2 className="text-xl font-semibold mb-2">Create New Chatbot</h2>
+        <h2 className="text-xl font-semibold mb-2 dark:text-[#F5F5F4]">Create New Chatbot</h2>
         <div className="flex">
           <input
-            className="flex-grow p-2 border rounded-l"
+            className="flex-grow p-2 border rounded-l dark:bg-[#44403C] dark:text-[#F5F5F4] dark:border-[#57534E] dark:placeholder-[#78716C]"
             placeholder="New Chatbot Name"
             value={newChatbotName}
             onChange={(e) => setNewChatbotName(e.target.value)}
           />
           <button
-            className="bg-green-500 text-white p-2 rounded-r"
+            className="bg-[#37322F] hover:bg-[#2a2522] text-white p-2 rounded-r dark:bg-[#F5F5F4] dark:text-[#1C1917] dark:hover:bg-[#E7E5E4]"
             onClick={createNewChatbot}
           >
             Create
@@ -94,7 +94,7 @@ const ChatbotConfigurator: React.FC = () => {
       </div>
 
       {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4 dark:bg-red-900/20 dark:border-red-800 dark:text-red-400">
           {error}
         </div>
       )}

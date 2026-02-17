@@ -150,7 +150,7 @@ const Settings: React.FC<{ toggleSidebar: () => void }> = ({}) => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-gray-900">
+    <div className="min-h-screen bg-[#F7F5F3] dark:bg-[#1C1917] font-sans text-[#37322F]">
       <Helmet>
         <title>Settings | Askio Chatbot</title>
         <meta
@@ -160,18 +160,18 @@ const Settings: React.FC<{ toggleSidebar: () => void }> = ({}) => {
       </Helmet>
       <div className="w-full lg:w-[80%] px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
         {/* User Profile Card */}
-        <Card className="bg-white dark:bg-gray-800 p-6 mb-6">
-          <h2 className="text-xl font-semibold mb-4 dark:text-gray-100">
+        <Card className="bg-white dark:bg-[#292524] p-6 mb-6 shadow-[0px_0px_0px_0.9px_rgba(0,0,0,0.08),0px_2px_4px_rgba(0,0,0,0.04)] rounded-[9px] border-none">
+          <h2 className="text-xl font-semibold text-[#37322F] mb-4 dark:text-[#F5F5F4]">
             User Profile
           </h2>
           <div className="mb-4">
-            <label className="block text-gray-700 text-sm font-bold mb-2 dark:text-gray-100">
+            <label className="block text-[#37322F] text-sm font-medium mb-2 dark:text-[#F5F5F4]">
               Email
             </label>
-            <p className="text-gray-600 dark:text-gray-100">{email}</p>
+            <p className="text-[#605A57] dark:text-[#D6D3D1]">{email}</p>
           </div>
           <div className="mb-4">
-            <label className="block text-gray-700 text-sm font-bold mb-2 dark:text-gray-100">
+            <label className="block text-[#37322F] text-sm font-medium mb-2 dark:text-[#F5F5F4]">
               Name
             </label>
             {editing ? (
@@ -179,10 +179,10 @@ const Settings: React.FC<{ toggleSidebar: () => void }> = ({}) => {
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600"
+                className="w-full bg-white border border-[#E0DEDB] text-[#37322F] placeholder-[#9CA3AF] focus:ring-[#37322F] focus:border-[#37322F] rounded-[9px] shadow-sm py-2 px-3 dark:bg-[#44403C] dark:text-[#F5F5F4] dark:border-[#57534E] dark:placeholder-[#78716C]"
               />
             ) : (
-              <p className="text-gray-600 dark:text-gray-100">
+              <p className="text-[#605A57] dark:text-[#D6D3D1]">
                 {name || "Not set"}
               </p>
             )}
@@ -190,7 +190,7 @@ const Settings: React.FC<{ toggleSidebar: () => void }> = ({}) => {
           {editing ? (
             <Button
               onClick={updateModal.openModal}
-              className="bg-[#aab2ff] hover:bg-[#8e98ff] text-black dark:text-white font-medium py-2 px-4 rounded focus:outline-none focus:shadow-outline flex items-center"
+              className="bg-[#37322F] hover:bg-[#2a2522] text-white font-medium py-2 px-4 rounded-[9px] shadow-md flex items-center"
               icon={Save}
             >
               Save Changes
@@ -198,7 +198,7 @@ const Settings: React.FC<{ toggleSidebar: () => void }> = ({}) => {
           ) : (
             <Button
               onClick={() => setEditing(true)}
-              className="bg-[#aab2ff] hover:bg-[#8e98ff] text-black dark:text-white font-medium py-2 px-4 rounded focus:outline-none focus:shadow-outline flex items-center"
+              className="bg-white border border-[#E0DEDB] text-[#605A57] hover:bg-[#FAFAF9] hover:text-[#37322F] font-medium py-2 px-4 rounded-[9px] shadow-sm flex items-center"
               icon={Edit2}
             >
               Edit Profile
@@ -207,19 +207,19 @@ const Settings: React.FC<{ toggleSidebar: () => void }> = ({}) => {
         </Card>
 
         {/* Appearance Card */}
-        <Card className="bg-white dark:bg-gray-800 p-6 mb-6">
-          <h2 className="text-xl font-semibold mb-4 dark:text-gray-100">
+        <Card className="bg-white dark:bg-[#292524] p-6 mb-6 shadow-[0px_0px_0px_0.9px_rgba(0,0,0,0.08),0px_2px_4px_rgba(0,0,0,0.04)] rounded-[9px] border-none">
+          <h2 className="text-xl font-semibold text-[#37322F] mb-4 dark:text-[#F5F5F4]">
             Appearance
           </h2>
           <div className="flex items-center justify-between">
-            <span className="text-gray-700 dark:text-gray-100">Dark Mode</span>
+            <span className="text-[#605A57] dark:text-[#D6D3D1]">Dark Mode</span>
             <Button
               onClick={toggleDarkMode}
               className={`${
                 darkMode
-                  ? "bg-[#aab2ff] hover:bg-[#8e98ff]"
-                  : "bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600"
-              } text-black dark:text-white font-medium py-2 px-4 rounded focus:outline-none focus:shadow-outline flex items-center`}
+                  ? "bg-[#37322F] text-white hover:bg-[#2a2522]"
+                  : "bg-white border border-[#E0DEDB] text-[#605A57] hover:bg-[#FAFAF9] hover:text-[#37322F]"
+              } font-medium py-2 px-4 rounded-[9px] shadow-sm flex items-center`}
               icon={darkMode ? Sun : Moon}
             >
               {darkMode ? "Light Mode" : "Dark Mode"}
@@ -228,12 +228,12 @@ const Settings: React.FC<{ toggleSidebar: () => void }> = ({}) => {
         </Card>
 
         {/* Security Card */}
-        <Card className="bg-white dark:bg-gray-800 p-6 mb-6">
-          <h2 className="text-xl font-semibold mb-4 dark:text-gray-100">
+        <Card className="bg-white dark:bg-[#292524] p-6 mb-6 shadow-[0px_0px_0px_0.9px_rgba(0,0,0,0.08),0px_2px_4px_rgba(0,0,0,0.04)] rounded-[9px] border-none">
+          <h2 className="text-xl font-semibold text-[#37322F] mb-4 dark:text-[#F5F5F4]">
             Security
           </h2>
           <div className="flex items-center justify-between mb-4">
-            <span className="text-gray-700 dark:text-gray-100">
+            <span className="text-[#605A57] dark:text-[#D6D3D1]">
               Change Password
             </span>
             {isGoogleAccount ? (
@@ -244,7 +244,7 @@ const Settings: React.FC<{ toggleSidebar: () => void }> = ({}) => {
             ) : (
               <Button
                 onClick={changePasswordModal.openModal}
-                className="bg-[#aab2ff] hover:bg-[#8e98ff] text-black dark:text-white font-medium py-2 px-4 rounded focus:outline-none focus:shadow-outline flex items-center"
+                className="bg-white border border-[#E0DEDB] text-[#605A57] hover:bg-[#FAFAF9] hover:text-[#37322F] font-medium py-2 px-4 rounded-[9px] shadow-sm flex items-center"
                 icon={Lock}
               >
                 Update
@@ -252,12 +252,12 @@ const Settings: React.FC<{ toggleSidebar: () => void }> = ({}) => {
             )}
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-gray-700 dark:text-gray-100">
+            <span className="text-[#605A57] dark:text-[#D6D3D1]">
               Delete Account
             </span>
             <Button
               onClick={deleteAccountModal.openModal}
-              className="bg-red-500 hover:bg-red-600 text-white font-medium py-2 px-4 rounded focus:outline-none focus:shadow-outline flex items-center"
+              className="bg-white border border-red-200 text-red-600 hover:bg-red-50 font-medium py-2 px-4 rounded-[9px] shadow-sm flex items-center"
               icon={Trash2}
             >
               Delete
@@ -273,9 +273,9 @@ const Settings: React.FC<{ toggleSidebar: () => void }> = ({}) => {
           title="Update Profile"
           confirmText="Update"
           cancelText="Cancel"
-          confirmButtonClass="bg-[#aab2ff] text-black hover:bg-[#8e98ff] dark:text-white"
+          confirmButtonClass="bg-[#37322F] text-white hover:bg-[#2a2522] shadow-md dark:text-white"
         >
-          <p>Are you sure you want to update your profile?</p>
+          <p className="text-[#605A57] dark:text-gray-300">Are you sure you want to update your profile?</p>
         </ConfirmationModal>
 
         {/* Change Password Modal */}
@@ -286,7 +286,7 @@ const Settings: React.FC<{ toggleSidebar: () => void }> = ({}) => {
           title="Change Password"
           confirmText="Change Password"
           cancelText="Cancel"
-          confirmButtonClass="bg-[#aab2ff] text-black hover:bg-[#8e98ff] dark:text-white"
+          confirmButtonClass="bg-[#37322F] text-white hover:bg-[#2a2522] shadow-md dark:text-white"
         >
           <div className="space-y-4">
             <Input
@@ -294,18 +294,21 @@ const Settings: React.FC<{ toggleSidebar: () => void }> = ({}) => {
               placeholder="Current Password"
               value={currentPassword}
               onChange={(e) => setCurrentPassword(e.target.value)}
+              className="w-full bg-white border border-[#E0DEDB] text-[#37322F] placeholder-[#9CA3AF] focus:ring-[#37322F] focus:border-[#37322F] rounded-[9px] shadow-sm py-2 px-3 dark:bg-[#44403C] dark:text-[#F5F5F4] dark:border-[#57534E] dark:placeholder-[#78716C]"
             />
             <Input
               type="password"
               placeholder="New Password"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
+              className="w-full bg-white border border-[#E0DEDB] text-[#37322F] placeholder-[#9CA3AF] focus:ring-[#37322F] focus:border-[#37322F] rounded-[9px] shadow-sm py-2 px-3 dark:bg-[#44403C] dark:text-[#F5F5F4] dark:border-[#57534E] dark:placeholder-[#78716C]"
             />
             <Input
               type="password"
               placeholder="Confirm New Password"
               value={confirmNewPassword}
               onChange={(e) => setConfirmNewPassword(e.target.value)}
+              className="w-full bg-white border border-[#E0DEDB] text-[#37322F] placeholder-[#9CA3AF] focus:ring-[#37322F] focus:border-[#37322F] rounded-[9px] shadow-sm py-2 px-3 dark:bg-[#44403C] dark:text-[#F5F5F4] dark:border-[#57534E] dark:placeholder-[#78716C]"
             />
           </div>
         </ConfirmationModal>
@@ -318,9 +321,9 @@ const Settings: React.FC<{ toggleSidebar: () => void }> = ({}) => {
           title="Delete Account"
           confirmText="Delete"
           cancelText="Cancel"
-          confirmButtonClass="bg-red-500 text-white hover:bg-red-600"
+          confirmButtonClass="bg-red-600 text-white hover:bg-red-700 shadow-md"
         >
-          <p className="mb-4">
+          <p className="mb-4 text-[#605A57] dark:text-gray-300">
             Are you sure you want to delete your account? This action cannot be
             undone.
           </p>
@@ -330,6 +333,7 @@ const Settings: React.FC<{ toggleSidebar: () => void }> = ({}) => {
               placeholder="Enter your password to confirm"
               value={currentPassword}
               onChange={(e) => setCurrentPassword(e.target.value)}
+              className="w-full bg-white border border-[#E0DEDB] text-[#37322F] placeholder-[#9CA3AF] focus:ring-[#37322F] focus:border-[#37322F] rounded-[9px] shadow-sm py-2 px-3 dark:bg-[#44403C] dark:text-[#F5F5F4] dark:border-[#57534E] dark:placeholder-[#78716C]"
             />
           )}
           {isGoogleAccount && (
@@ -342,5 +346,4 @@ const Settings: React.FC<{ toggleSidebar: () => void }> = ({}) => {
     </div>
   );
 };
-
 export default Settings;
