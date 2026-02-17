@@ -1,4 +1,4 @@
-import React from "react";
+
 import { Blocks } from "lucide-react";
 
 export default function Integrations() {
