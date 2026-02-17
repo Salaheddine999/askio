@@ -43,94 +43,7 @@ function HatchStrip({ count = 500 }: { count?: number }) {
 }
 
 export default function ChatbotLanding() {
-  const [chatMessages, setChatMessages] = useState<Array<{ type: string; content: string }>>([]);
-  const [userInput, setUserInput] = useState("");
-  const chatEndRef = useRef<HTMLDivElement | null>(null);
-  const [isTyping, setIsTyping] = useState(false);
-  const [isConversationComplete, setIsConversationComplete] = useState(false);
-  const [isUserTyping, setIsUserTyping] = useState(false);
-  const [displayedUserInput, setDisplayedUserInput] = useState("");
-  const [displayedBotInput, setDisplayedBotInput] = useState("");
-  const chatContainerRef = useRef<HTMLDivElement | null>(null);
 
-  const conversation = [
-    { type: "bot", content: "Hi there! I'm Askio. How can I help you today?" },
-    { type: "user", content: "Hello! I'm interested in creating a chatbot for my website." },
-    { type: "bot", content: "That's great! Askio makes it easy to create and customize chatbots for your website. What kind of website do you have?" },
-    { type: "user", content: "I have an e-commerce site selling handmade jewelry." },
-    { type: "bot", content: "Perfect! A chatbot can really enhance the customer experience for your e-commerce site. It can help answer common questions about your products, shipping, and returns. Would you like to know how to get started?" },
-    { type: "user", content: "Yes, please! How do I begin?" },
-    { type: "bot", content: "It's simple! Just follow these steps:\n1. Sign up for a free Askio account\n2. Create a new chatbot and customize its appearance\n3. Add your frequently asked questions and responses\n4. Get your unique embed code\n5. Add the code to your website\nAnd that's it! Your chatbot will be up and running." },
-  ];
-
-  const conversationStarted = useRef(false);
-  const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-
-  useEffect(() => {
-    if (conversationStarted.current) return;
-    conversationStarted.current = true;
-    const handleConversation = async () => {
-      for (const message of conversation) {
-        if (message.type === "bot") {
-          setIsTyping(true);
-          setDisplayedBotInput("");
-          for (let i = 0; i < message.content.length; i++) {
-            setDisplayedBotInput((prev) => prev + message.content[i]);
-            await delay(50);
-          }
-          setChatMessages((prev) => [...prev, { type: "bot", content: message.content }]);
-          setDisplayedBotInput("");
-          setIsTyping(false);
-        } else if (message.type === "user") {
-          setIsUserTyping(true);
-          setDisplayedUserInput("");
-          for (let i = 0; i < message.content.length; i++) {
-            setDisplayedUserInput((prev) => prev + message.content[i]);
-            await delay(50);
-          }
-          setChatMessages((prev) => [...prev, message]);
-          setIsUserTyping(false);
-        }
-      }
-      setIsConversationComplete(true);
-    };
-    handleConversation();
-  }, []);
-
-  useEffect(() => {
-    if (chatContainerRef.current) {
-      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
-    }
-  }, [chatMessages]);
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (isConversationComplete) setUserInput(e.target.value);
-  };
-
-  const handleChatSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (userInput.trim() && isConversationComplete) {
-      setIsUserTyping(true);
-      setDisplayedUserInput("");
-      for (let i = 0; i < userInput.length; i++) {
-        setDisplayedUserInput((prev) => prev + userInput[i]);
-        await delay(50);
-      }
-      setChatMessages((prev) => [...prev, { type: "user", content: userInput }]);
-      setIsUserTyping(false);
-      setUserInput("");
-      setIsTyping(true);
-      setDisplayedBotInput("");
-      const botReply = "Thank you for your message! Is there anything else I can help you with regarding Askio's chatbot creation process?";
-      for (let i = 0; i < botReply.length; i++) {
-        setDisplayedBotInput((prev) => prev + botReply[i]);
-        await delay(50);
-      }
-      setChatMessages((prev) => [...prev, { type: "bot", content: botReply }]);
-      setDisplayedBotInput("");
-      setIsTyping(false);
-    }
-  };
 
   useEffect(() => {
     const chatbotContainer = document.createElement("div");
@@ -240,7 +153,7 @@ export default function ChatbotLanding() {
 
         {/* ═══ NAVIGATION ═══ */}
         <header className="relative z-50 flex justify-center pt-3 pb-4">
-          <div className="absolute left-0 right-0 top-[42px] h-0 border-t border-[rgba(55,50,47,0.12)] dark:border-[#44403C] hidden lg:block" />
+          <div className="absolute left-0 right-0 top-[34px] h-0 border-t border-[rgba(55,50,47,0.12)] dark:border-[#44403C] hidden lg:block" />
           <nav className="relative z-30 w-full max-w-[700px] h-11 px-4 pr-2 bg-[#F7F5F3]/90 dark:bg-[#1C1917]/90 backdrop-blur-sm shadow-[0px_0px_0px_2px_white] dark:shadow-[0px_0px_0px_2px_#292524] rounded-full flex justify-between items-center border border-transparent dark:border-[#44403C]">
             <div className="flex items-center">
               <Link to="/" className="flex items-center gap-1.5">
@@ -304,8 +217,30 @@ export default function ChatbotLanding() {
             </Link>
           </motion.div>
 
+
+
+          {/* Chatbot Demo */}
+          {/* Dashboard Screenshot */}
+          <motion.div 
+            initial={{ opacity: 0, y: 30 }} 
+            animate={{ opacity: 1, y: 0 }} 
+            transition={{ duration: 0.6, delay: 0.4 }} 
+            className="w-full max-w-[1000px] px-4 relative isolate"
+          >
+            {/* Glow Effect */}
+            <div className="absolute top-[0%] left-1/2 -translate-x-1/2 w-[70%] h-[40%] bg-gradient-to-tr from-[#F59E0B] via-[#FBBF24] to-[#F59E0B] opacity-20 blur-[60px] rounded-full -z-10 dark:opacity-10 pointer-events-none" />
+
+            <div className="relative z-10 rounded-xl bg-[rgba(55,50,47,0.05)] dark:bg-[rgba(255,255,255,0.05)] p-2 sm:p-3 border border-[rgba(55,50,47,0.08)] dark:border-[rgba(255,255,255,0.08)]">
+              <img 
+                src="/screenshot askio.png" 
+                alt="Askio Dashboard" 
+                className="w-full h-auto rounded-lg shadow-2xl border border-[rgba(55,50,47,0.08)] dark:border-[#44403C]"
+              />
+            </div>
+          </motion.div>
+
           {/* Stats Row */}
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.3 }} className="flex flex-wrap justify-center gap-8 mb-12">
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.5 }} className="flex flex-wrap justify-center gap-8 mt-12 mb-4">
             <div className="flex items-baseline gap-2">
               <span className="text-h2 font-serif text-[#37322F] dark:text-[#F5F5F4]">1.2K+</span>
               <span className="text-body-sm text-[#605A57] dark:text-[#A8A29E]">Chatbots Created</span>
@@ -317,48 +252,6 @@ export default function ChatbotLanding() {
             <div className="flex items-baseline gap-2">
               <span className="text-h2 font-serif text-[#37322F] dark:text-[#F5F5F4]">4.8/5</span>
               <span className="text-body-sm text-[#605A57] dark:text-[#A8A29E]">Rating</span>
-            </div>
-          </motion.div>
-
-          {/* Chatbot Demo */}
-          <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.4 }} className="w-full max-w-[500px] px-4">
-            <div className="bg-white dark:bg-[#292524] shadow-[0px_0px_0px_0.9px_rgba(0,0,0,0.08)] rounded-[9px] overflow-hidden">
-              <div className="p-5">
-                <div className="space-y-3 h-72 overflow-y-auto mb-4 pr-2" ref={chatContainerRef}>
-                  {chatMessages.map((message, index) => (
-                    <div key={index} className={`flex items-start ${message.type === "user" ? "justify-end" : ""}`}>
-                      {message.type === "bot" && (
-                        <div className="w-7 h-7 bg-[#37322F] dark:bg-[#F5F5F4] rounded-full flex items-center justify-center mr-2 shrink-0">
-                          <img src="./logo-transparent.svg" alt="Askio" className="w-8 h-8" />
-                        </div>
-                      )}
-                      <div className={`rounded-lg px-3 py-2 text-sm max-w-[80%] ${message.type === "user" ? "bg-[#37322F] text-white dark:bg-[#F5F5F4] dark:text-[#1C1917]" : "bg-[#F7F5F3] text-[#37322F] dark:bg-[#44403C] dark:text-[#F5F5F4]"}`}>
-                        {message.content}
-                      </div>
-                    </div>
-                  ))}
-                  {isTyping && (
-                    <div className="flex items-start">
-                      <div className="w-7 h-7 bg-[#37322F] dark:bg-[#F5F5F4] rounded-full flex items-center justify-center mr-2 shrink-0">
-                        <img src="./logo-transparent.svg" alt="Askio" className="w-8 h-8" />
-                      </div>
-                      <div className="rounded-lg px-3 py-2 text-sm bg-[#F7F5F3] text-[#37322F] dark:bg-[#44403C] dark:text-[#F5F5F4] max-w-[80%]">{displayedBotInput}</div>
-                    </div>
-                  )}
-                  {isUserTyping && (
-                    <div className="flex items-start justify-end">
-                      <div className="rounded-lg px-3 py-2 text-sm bg-[#37322F] text-white dark:bg-[#F5F5F4] dark:text-[#1C1917] max-w-[80%]">{displayedUserInput}</div>
-                    </div>
-                  )}
-                  <div ref={chatEndRef} />
-                </div>
-                <form onSubmit={handleChatSubmit} className="flex items-center gap-2 bg-[#F7F5F3] dark:bg-[#44403C] p-3 rounded-lg">
-                  <input type="text" value={userInput} onChange={handleInputChange} placeholder="Type your message..." className="flex-grow border-0 bg-white dark:bg-[#292524] dark:text-[#F5F5F4] rounded-md px-3 py-2 text-sm focus:ring-1 focus:ring-[#37322F] dark:focus:ring-[#F5F5F4] focus:outline-none" disabled={!isConversationComplete} />
-                  <button type="submit" className="bg-[#37322F] dark:bg-[#F5F5F4] text-white dark:text-[#1C1917] rounded-md p-2.5 hover:bg-[#2a2522] dark:hover:bg-[#E7E5E4] transition-colors" disabled={!isConversationComplete}>
-                    <Send className="h-4 w-4" />
-                  </button>
-                </form>
-              </div>
             </div>
           </motion.div>
         </section>
