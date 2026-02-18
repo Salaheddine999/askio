@@ -29,7 +29,7 @@ import {
   Download,
   RefreshCw,
 } from "lucide-react";
-import { format } from "date-fns";
+import { format, subDays, isBefore } from "date-fns";
 import ConfirmationModal from "../components/ConfirmationModal";
 import { toast } from "react-hot-toast";
 import { Transition } from "@headlessui/react";
@@ -59,6 +59,11 @@ interface FeedbackCounts {
   negative: number;
 }
 
+interface TrendData {
+  value: string;
+  direction: "up" | "down" | "neutral";
+}
+
 interface DashboardProps {
   sidebarOpen: boolean;
   toggleSidebar: () => void;
@@ -84,6 +89,17 @@ const Dashboard: React.FC<DashboardProps> = ({ toggleSidebar, testMode }) => {
   const [feedbackSnapshot] = useCollection(query(collection(db, "feedback")));
   const [totalFeedback, setTotalFeedback] = useState<number>(0);
   const [satisfactionRate, setSatisfactionRate] = useState<number>(0);
+  const [trends, setTrends] = useState<{
+    chatbots: TrendData;
+    feedback: TrendData;
+    satisfaction: TrendData;
+    avgFeedback: TrendData;
+  }>({
+    chatbots: { value: "0%", direction: "neutral" },
+    feedback: { value: "0%", direction: "neutral" },
+    satisfaction: { value: "0%", direction: "neutral" },
+    avgFeedback: { value: "0", direction: "neutral" },
+  });
   const [activeTab, setActiveTab] = useState<"overview" | "chatbots" | "reports" | "notifications">(
     "overview"
   );
@@ -174,6 +190,77 @@ const Dashboard: React.FC<DashboardProps> = ({ toggleSidebar, testMode }) => {
           : 0
       );
       setRecentActivities(activities);
+
+      // --- Trend Calculations ---
+      const thirtyDaysAgo = subDays(new Date(), 30);
+
+      // 1. Chatbots Trend
+      const previousChatbotsCount = chatbots.filter(c => isBefore(c.createdAt, thirtyDaysAgo)).length;
+      const currentChatbotsCount = chatbots.length;
+      const chatbotsDiff = currentChatbotsCount - previousChatbotsCount;
+      // For "Total", typical trend is growth rate: (Current - Prev) / Prev
+      // If Prev is 0, we can't divide. If Current > 0, it's 100% growth (effectively).
+      let chatbotsTrendValue = 0;
+      if (previousChatbotsCount > 0) {
+        chatbotsTrendValue = ((currentChatbotsCount - previousChatbotsCount) / previousChatbotsCount) * 100;
+      } else if (currentChatbotsCount > 0) {
+        chatbotsTrendValue = 100;
+      }
+
+      // 2. Feedback Trend
+      // We need to filter feedback snapshot for previous period
+      const previousPeriodFeedback = sortedDocs.filter(doc => {
+          const createdAt = doc.data().createdAt?.toDate();
+          return createdAt && isBefore(createdAt, thirtyDaysAgo);
+      });
+      const previousTotalFeedback = previousPeriodFeedback.length;
+      const currentTotalFeedback = totalPositive + totalNegative;
+      
+      let feedbackTrendValue = 0;
+      if (previousTotalFeedback > 0) {
+        feedbackTrendValue = ((currentTotalFeedback - previousTotalFeedback) / previousTotalFeedback) * 100;
+      } else if (currentTotalFeedback > 0) {
+        feedbackTrendValue = 100;
+      }
+
+      // 3. Satisfaction Trend
+      let previousPos = 0;
+      let previousNeg = 0;
+      previousPeriodFeedback.forEach(doc => {
+           if (doc.data().isPositive) previousPos++;
+           else previousNeg++;
+      });
+      const previousSatisfaction = (previousPos + previousNeg) > 0 
+        ? (previousPos / (previousPos + previousNeg)) * 100 
+        : 0;
+      const currentSatisfaction = (totalPositive + totalNegative) > 0
+          ? (totalPositive / (totalPositive + totalNegative)) * 100
+          : 0;
+      const satisfactionTrendDiff = currentSatisfaction - previousSatisfaction; // Absolute percentage point difference
+
+      // 4. Avg Feedback Trend
+      const previousAvg = previousChatbotsCount > 0 ? (previousTotalFeedback / previousChatbotsCount) : 0;
+      const currentAvg = currentChatbotsCount > 0 ? (currentTotalFeedback / currentChatbotsCount) : 0;
+      const avgDiff = currentAvg - previousAvg;
+
+      setTrends({
+        chatbots: {
+            value: `${chatbotsTrendValue >= 0 ? "+" : ""}${chatbotsTrendValue.toFixed(0)}%`,
+            direction: chatbotsTrendValue > 0 ? "up" : chatbotsTrendValue < 0 ? "down" : "neutral"
+        },
+        feedback: {
+            value: `${feedbackTrendValue >= 0 ? "+" : ""}${feedbackTrendValue.toFixed(0)}%`,
+            direction: feedbackTrendValue > 0 ? "up" : feedbackTrendValue < 0 ? "down" : "neutral"
+        },
+        satisfaction: {
+            value: `${satisfactionTrendDiff >= 0 ? "+" : ""}${satisfactionTrendDiff.toFixed(0)}%`,
+            direction: satisfactionTrendDiff > 0 ? "up" : satisfactionTrendDiff < 0 ? "down" : "neutral"
+        },
+        avgFeedback: {
+            value: `${avgDiff >= 0 ? "+" : ""}${avgDiff.toFixed(1)}`,
+            direction: avgDiff > 0 ? "up" : avgDiff < 0 ? "down" : "neutral"
+        }
+      });
     }
   }, [feedbackSnapshot, chatbots, testMode]);
 
@@ -442,26 +529,26 @@ const Dashboard: React.FC<DashboardProps> = ({ toggleSidebar, testMode }) => {
                     <StatsCard
                         title="Total Chatbots"
                         value={chatbots.length.toString()}
-                        trend="+12%"
-                        trendDirection="up"
+                        trend={trends.chatbots.value}
+                        trendDirection={trends.chatbots.direction}
                     />
                     <StatsCard
                         title="Total Feedback"
                         value={totalFeedback.toString()}
-                        trend="+5%"
-                        trendDirection="up"
+                        trend={trends.feedback.value}
+                        trendDirection={trends.feedback.direction}
                     />
                     <StatsCard
                         title="Satisfaction Rate"
                         value={`${satisfactionRate.toFixed(0)}%`}
-                        trend="-2%"
-                        trendDirection="down"
+                        trend={trends.satisfaction.value}
+                        trendDirection={trends.satisfaction.direction}
                     />
                     <StatsCard
                         title="Avg. Feedback"
                         value={(totalFeedback / (chatbots.length || 1)).toFixed(1)}
-                        trend="+0.5"
-                        trendDirection="up"
+                        trend={trends.avgFeedback.value}
+                        trendDirection={trends.avgFeedback.direction}
                     />
                 </div>
 
