@@ -81,6 +81,11 @@
 
       window.addEventListener("message", function (event) {
         if (event.data.type === "chatbotReady") {
+          if (event.data.config.isActive === false) {
+             iframe.style.display = "none";
+             return;
+          }
+          iframe.style.display = "block"; // Ensure visible if active
           currentPosition = event.data.config.position;
           updatePosition(currentPosition, isOpen);
         } else if (event.data.type === "chatbotState") {

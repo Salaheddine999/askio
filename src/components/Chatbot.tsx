@@ -23,6 +23,7 @@ export interface ChatbotProps {
   faqData: Array<{ question: string; answer: string }>;
   isEmbedded?: boolean;
   isPreview?: boolean;
+  isActive?: boolean;
   customPositionClass?: string;
   gradientStart?: string;
 }

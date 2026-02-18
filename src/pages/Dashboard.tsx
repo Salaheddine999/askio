@@ -6,6 +6,7 @@ import {
   where,
   getDocs,
   deleteDoc,
+  updateDoc,
   doc,
 } from "firebase/firestore";
 import { Link, useNavigate } from "react-router-dom";
@@ -19,11 +20,6 @@ import {
   ChevronLeft,
   ChevronRight,
   Bot,
-  ThumbsUp,
-  ThumbsDown,
-  Edit2,
-  Code,
-  Trash2,
   Info,
   LoaderCircle,
   Download,
@@ -50,6 +46,7 @@ interface Chatbot {
   id: string;
   title: string;
   position: string;
+  isActive?: boolean;
   createdAt: Date;
   lastUpdated: Date;
 }
@@ -294,6 +291,37 @@ const Dashboard: React.FC<DashboardProps> = ({ toggleSidebar, testMode }) => {
       );
     } finally {
       setLoading(false);
+    }
+  };
+
+  const toggleChatbotStatus = async (id: string, currentStatus: boolean) => {
+    try {
+      const newStatus = !currentStatus;
+      
+      // Optimistic update
+      setChatbots(chatbots.map(c => 
+        c.id === id ? { ...c, isActive: newStatus } : c
+      ));
+
+      if (!testMode) {
+        // Update Firestore only if not in test mode
+        await updateDoc(doc(db, "chatbot_configs", id), {
+          isActive: newStatus,
+          lastUpdated: new Date()
+        });
+      } else {
+         toast.success(`(Test Mode) Chatbot ${newStatus ? 'activated' : 'deactivated'}`);
+         return;
+      }
+      
+      toast.success(`Chatbot ${newStatus ? 'activated' : 'deactivated'} successfully`);
+    } catch (error) {
+      console.error("Error toggling chatbot status:", error);
+      toast.error("Failed to update chatbot status");
+      // Revert on error
+      setChatbots(chatbots.map(c => 
+        c.id === id ? { ...c, isActive: currentStatus } : c
+      ));
     }
   };
 
@@ -693,66 +721,20 @@ const Dashboard: React.FC<DashboardProps> = ({ toggleSidebar, testMode }) => {
                                         </tr>
                                     </thead>
                                     <tbody className="bg-white dark:bg-[#1C1917] divide-y divide-[#E0DEDB] dark:divide-[#44403C]">
-                                        {currentChatbots.map((chatbot) => {
+                                        {currentChatbots.map((chatbot, index) => {
                                              const fb = feedbackCounts[chatbot.id] || { positive: 0, negative: 0 };
                                             return (
-                                                <tr key={chatbot.id} className="hover:bg-[#FAFAF9] dark:hover:bg-[#292524] transition-colors">
-                                                    <td className="px-6 py-4 whitespace-nowrap">
-                                                        <div className="flex items-center">
-                                                            <div className="flex-shrink-0 h-10 w-10 flex items-center justify-center bg-[#F7F5F3] dark:bg-[#292524] rounded-lg border border-[#E0DEDB] dark:border-[#44403C] text-[#37322F] dark:text-[#F5F5F4]">
-                                                                <Bot size={20} />
-                                                            </div>
-                                                            <div className="ml-4">
-                                                                <div className="text-body-sm font-medium text-[#37322F] dark:text-[#F5F5F4] font-sans">
-                                                                    {chatbot.title}
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap">
-                                                        <div className="flex items-center space-x-4">
-                                                            <div className="flex items-center text-emerald-600 dark:text-emerald-400 text-sm">
-                                                                <ThumbsUp size={14} className="mr-1.5" />
-                                                                <span className="font-medium">{fb.positive}</span>
-                                                            </div>
-                                                            <div className="flex items-center text-rose-600 dark:text-rose-400 text-sm">
-                                                                <ThumbsDown size={14} className="mr-1.5" />
-                                                                <span className="font-medium text-body-sm">{fb.negative}</span>
-                                                            </div>
-                                                        </div>
-                                                    </td>
-                                                    <td className="hidden sm:table-cell px-6 py-4 whitespace-nowrap text-body-sm text-[#605A57] dark:text-[#A8A29E]">
-                                                        {format(chatbot.createdAt, "MMM d, yyyy")}
-                                                    </td>
-                                                    <td className="hidden md:table-cell px-6 py-4 whitespace-nowrap text-body-sm text-[#605A57] dark:text-[#A8A29E]">
-                                                        {format(chatbot.lastUpdated, "MMM d, yyyy")}
-                                                    </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-right text-body-sm font-medium">
-                                                        <div className="flex items-center justify-end space-x-3">
-                                                            <button
-                                                                onClick={() => navigate(`/configure/${chatbot.id}`)}
-                                                                className="text-[#605A57] dark:text-[#A8A29E] hover:text-[#37322F] dark:hover:text-[#F5F5F4] transition-colors"
-                                                                title="Edit"
-                                                            >
-                                                                <Edit2 size={16} />
-                                                            </button>
-                                                            <button
-                                                                onClick={() => openEmbedModal(chatbot.id)}
-                                                                className="text-[#605A57] dark:text-[#A8A29E] hover:text-[#37322F] dark:hover:text-[#F5F5F4] transition-colors"
-                                                                title="Embed"
-                                                            >
-                                                                <Code size={16} />
-                                                            </button>
-                                                            <button
-                                                                onClick={() => openDeleteModal(chatbot.id)}
-                                                                className="text-[#605A57] dark:text-[#A8A29E] hover:text-red-600 dark:hover:text-red-400 transition-colors"
-                                                                title="Delete"
-                                                            >
-                                                                <Trash2 size={16} />
-                                                            </button>
-                                                        </div>
-                                                    </td>
-                                                </tr>
+                                                <ChatbotCard
+                                                    key={chatbot.id}
+                                                    chatbot={chatbot}
+                                                    feedback={fb}
+                                                    viewMode="list"
+                                                    onEdit={() => navigate(`/configure/${chatbot.id}`)}
+                                                    onEmbed={() => openEmbedModal(chatbot.id)}
+                                                    onDelete={() => openDeleteModal(chatbot.id)}
+                                                    onToggleActive={() => toggleChatbotStatus(chatbot.id, chatbot.isActive ?? true)}
+                                                    index={index}
+                                                />
                                             );
                                         })}
                                     </tbody>
@@ -999,6 +981,7 @@ const Dashboard: React.FC<DashboardProps> = ({ toggleSidebar, testMode }) => {
                             onEdit={(id) => navigate(`/configure/${id}`)}
                             onEmbed={openEmbedModal}
                             onDelete={openDeleteModal}
+                            onToggleActive={() => toggleChatbotStatus(chatbot.id, chatbot.isActive ?? true)}
                             index={index}
                             />
                         ))}
