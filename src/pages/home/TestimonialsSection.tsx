@@ -3,7 +3,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useInView } from "react-intersection-observer";
 import { motion } from "framer-motion";
 
-const AVATAR_COLORS = ["#49423D", "#818CF8", "#10B981"];
+const AVATARS = ["/female 1.png", "/male 1.png", "/male 2.png"];
 
 const testimonials = [
   { name: "Sarah L.", role: "Boutique Owner", quote: "I was honestly not sure if a chatbot would work for my small shop. But Askio surprised me. It took maybe ten minutes to set up and now it answers customer questions about shipping and returns all day long, even when I'm not around." },
@@ -63,12 +63,11 @@ export default function TestimonialsSection() {
             style={{ filter: isTransitioning ? "blur(4px)" : "blur(0px)" }}
           >
             {/* Avatar */}
-            <div
-              className="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-semibold font-sans shrink-0"
-              style={{ backgroundColor: AVATAR_COLORS[activeTestimonial] }}
-            >
-              {testimonials[activeTestimonial].name.charAt(0)}
-            </div>
+            <img
+              src={AVATARS[activeTestimonial]}
+              alt={testimonials[activeTestimonial].name}
+              className="w-10 h-10 rounded-full object-cover shrink-0 border border-[#E0DEDB] dark:border-[#44403C]"
+            />
             <div className="flex flex-col">
               <div className="text-[rgba(73,66,61,0.90)] dark:text-[#D6D3D1] text-lg font-medium font-sans">
                 {testimonials[activeTestimonial].name}
