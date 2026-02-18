@@ -230,28 +230,48 @@ export default function ChatbotLanding() {
             {/* Glow Effect */}
             <div className="absolute top-[0%] left-1/2 -translate-x-1/2 w-[70%] h-[40%] bg-gradient-to-tr from-[#F59E0B] via-[#FBBF24] to-[#F59E0B] opacity-20 blur-[60px] rounded-full -z-10 dark:opacity-10 pointer-events-none" />
 
-            <div className="relative z-10 rounded-xl bg-[rgba(55,50,47,0.05)] dark:bg-[rgba(255,255,255,0.05)] p-2 sm:p-3 border border-[rgba(55,50,47,0.08)] dark:border-[rgba(255,255,255,0.08)]">
+            <div className="relative z-10 rounded-xl bg-[rgba(55,50,47,0.05)] dark:bg-[rgba(255,255,255,0.05)] p-2 sm:p-3 border border-[rgba(55,50,47,0.05)] dark:border-[rgba(255,255,255,0.08)]">
               <img 
                 src="/screenshot askio.png" 
                 alt="Askio Dashboard" 
-                className="w-full h-auto rounded-lg shadow-2xl border border-[rgba(55,50,47,0.08)] dark:border-[#44403C]"
+                className="w-full h-auto rounded-lg shadow-2xl"
               />
             </div>
           </motion.div>
 
           {/* Stats Row */}
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.5 }} className="flex flex-wrap justify-center gap-8 mt-12 mb-4">
-            <div className="flex items-baseline gap-2">
-              <span className="text-h2 font-serif text-[#37322F] dark:text-[#F5F5F4]">1.2K+</span>
-              <span className="text-body-sm text-[#605A57] dark:text-[#A8A29E]">Chatbots Created</span>
-            </div>
-            <div className="flex items-center gap-1">
-              {[...Array(5)].map((_, i) => <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />)}
-              <span className="text-body-sm text-[#605A57] dark:text-[#A8A29E] ml-1">500+ users</span>
-            </div>
-            <div className="flex items-baseline gap-2">
-              <span className="text-h2 font-serif text-[#37322F] dark:text-[#F5F5F4]">4.8/5</span>
-              <span className="text-body-sm text-[#605A57] dark:text-[#A8A29E]">Rating</span>
+          {/* Stats Capsule */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }} 
+            animate={{ opacity: 1, y: 0 }} 
+            transition={{ duration: 0.5, delay: 0.5 }} 
+            className="flex justify-center mt-12 mb-4"
+          >
+            <div className="inline-flex items-center justify-center gap-6 px-8 py-3 bg-white/60 dark:bg-[#1C1917]/60 backdrop-blur-sm border border-[rgba(55,50,47,0.08)] dark:border-[#44403C] rounded-full shadow-[0px_2px_8px_rgba(0,0,0,0.04)]">
+              {/* Stat 1 */}
+              <div className="flex flex-col items-center">
+                <span className="text-2xl font-serif text-[#37322F] dark:text-[#F5F5F4]">1.2K+</span>
+                <span className="text-[10px] uppercase tracking-wider font-medium text-[#605A57] dark:text-[#A8A29E]">Chatbots</span>
+              </div>
+              
+              <div className="w-px h-8 bg-[rgba(55,50,47,0.12)] dark:bg-[#44403C]" />
+              
+              {/* Stat 2 */}
+              <div className="flex flex-col items-center">
+                 <span className="text-2xl font-serif text-[#37322F] dark:text-[#F5F5F4]">500+</span>
+                 <span className="text-[10px] uppercase tracking-wider font-medium text-[#605A57] dark:text-[#A8A29E]">Users</span>
+              </div>
+
+              <div className="w-px h-8 bg-[rgba(55,50,47,0.12)] dark:bg-[#44403C]" />
+
+              {/* Stat 3 */}
+              <div className="flex flex-col items-center">
+                <div className="flex items-center gap-1">
+                  <span className="text-2xl font-serif text-[#37322F] dark:text-[#F5F5F4]">4.8</span>
+                  <Star className="w-4 h-4 fill-yellow-400 text-yellow-400 mb-1" />
+                </div>
+                <span className="text-[10px] uppercase tracking-wider font-medium text-[#605A57] dark:text-[#A8A29E]">Rating</span>
+              </div>
             </div>
           </motion.div>
         </section>

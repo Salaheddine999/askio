@@ -9,7 +9,7 @@ module.exports = {
       },
       fontSize: {
         // Display & Hero
-        hero: ['72px', { lineHeight: '1.1', fontWeight: '500', letterSpacing: '-0.02em' }],
+        hero: ['clamp(3rem, 5vw + 1rem, 4.5rem)', { lineHeight: '1.1', fontWeight: '500', letterSpacing: '-0.02em' }],
         display: ['48px', { lineHeight: '1.1', fontWeight: '500', letterSpacing: '-0.02em' }],
         // Headings
         h1: ['36px', { lineHeight: '1.2', fontWeight: '500' }],
