@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { db, auth } from "../utils/firebase";
 import {
@@ -20,9 +20,16 @@ import {
   EyeOff,
   ChevronDown,
   ChevronUp,
-  Code,
   AlertCircle,
   Edit2,
+  Settings,
+  Palette,
+  HelpCircle,
+  Code2,
+  Check,
+  Copy,
+  MessageSquare,
+  RotateCcw,
 } from "lucide-react";
 import ConfirmationModal from "./ConfirmationModal";
 import { toast } from "react-hot-toast";
@@ -67,12 +74,22 @@ const EditChatbot: React.FC = () => {
   const [gradientEnd, setGradientEnd] = useState("#6366F1");
   const [useGradient, setUseGradient] = useState(false);
   const [gradientAngle, setGradientAngle] = useState(90);
+  const [hasChanges, setHasChanges] = useState(false);
+  const [embedCopied, setEmbedCopied] = useState(false);
+  const initialConfigRef = useRef<string>("");
 
   const positionClasses = {
     "bottom-right": "bottom-0 right-0",
     "bottom-left": "bottom-0 left-0",
     "top-right": "top-0 right-0",
     "top-left": "top-0 left-0",
+  };
+
+  const positionLabels: Record<string, string> = {
+    "bottom-right": "Bottom Right",
+    "bottom-left": "Bottom Left",
+    "top-right": "Top Right",
+    "top-left": "Top Left",
   };
 
   useEffect(() => {
@@ -85,6 +102,14 @@ const EditChatbot: React.FC = () => {
     setFaqList(config.faqData.map((faq) => ({ ...faq, isOpen: false })));
   }, [config.faqData]);
 
+  // Track unsaved changes
+  useEffect(() => {
+    const currentJson = JSON.stringify(config);
+    if (initialConfigRef.current && currentJson !== initialConfigRef.current) {
+      setHasChanges(true);
+    }
+  }, [config]);
+
   const fetchChatbotConfig = async () => {
     if (!id) return;
     try {
@@ -92,7 +117,9 @@ const EditChatbot: React.FC = () => {
       const docSnap = await getDoc(docRef);
 
       if (docSnap.exists()) {
-        setConfig({ id, ...docSnap.data() } as EditChatbotProps);
+        const data = { id, ...docSnap.data() } as EditChatbotProps;
+        setConfig(data);
+        initialConfigRef.current = JSON.stringify(data);
       } else {
         throw new Error("No such document!");
       }
@@ -218,6 +245,8 @@ const EditChatbot: React.FC = () => {
         });
       }
 
+      setHasChanges(false);
+      initialConfigRef.current = JSON.stringify(config);
       toast.success("Configuration saved successfully!");
       navigate(`/configure/${docRef.id}`);
     } catch (error) {
@@ -227,6 +256,13 @@ const EditChatbot: React.FC = () => {
       } else {
         toast.error("An unknown error occurred while saving the configuration");
       }
+    }
+  };
+
+  const discardChanges = () => {
+    if (initialConfigRef.current) {
+      setConfig(JSON.parse(initialConfigRef.current));
+      setHasChanges(false);
     }
   };
 
@@ -242,91 +278,23 @@ const EditChatbot: React.FC = () => {
 </script>`;
   };
 
-  const EmbedTab = () => {
-    if (!id) {
-      return (
-        <div className="space-y-6">
-          <div
-            className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 rounded"
-            role="alert"
-          >
-            <div className="flex">
-              <div className="flex-shrink-0">
-                <AlertCircle className="h-5 w-5 text-yellow-500" />
-              </div>
-              <div className="ml-3">
-                <p className="text-body-sm">
-                  Please save the chatbot configuration first to get the embed
-                  code.
-                </p>
-              </div>
-            </div>
-          </div>
-          <button
-            className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md transition-colors duration-200 flex items-center"
-            onClick={saveConfig}
-          >
-            <Save size={20} className="mr-2" />
-            Save Configuration
-          </button>
-        </div>
-      );
-    }
-
-    return (
-      <div className="space-y-6">
-        <h2 className="text-h3 font-semibold mb-4 dark:text-gray-100 font-sans">
-          Embed Instructions
-        </h2>
-        <p className="text-gray-700 dark:text-gray-100">
-          To add this chatbot to your website, follow these steps:
-        </p>
-        <ol className="list-decimal list-inside space-y-2 text-gray-700 dark:text-gray-100">
-          <li>Copy the embed code below.</li>
-          <li>
-            Paste the code into your website's HTML, just before the closing
-            &lt;/body&gt; tag.
-          </li>
-          <li>
-            The chatbot will appear in the specified position on your website.
-          </li>
-        </ol>
-        <div className="mt-6">
-          <h3 className="text-body-lg font-semibold mb-2 dark:text-gray-100 font-sans">
-            Embed Code
-          </h3>
-          <div className="bg-gray-100 p-4 rounded-md">
-            <code>{generateEmbedCode()}</code>
-          </div>
-          <button
-            className="mt-2 bg-[#37322F] hover:bg-[#2a2522] text-white px-4 py-2 rounded transition-colors duration-200 flex items-center dark:bg-[#F5F5F4] dark:text-[#1C1917] dark:hover:bg-[#E7E5E4]"
-            onClick={() => {
-              navigator.clipboard.writeText(generateEmbedCode());
-              toast.success("Embed code copied to clipboard!");
-            }}
-          >
-            <Code size={20} className="mr-2" />
-            Copy to Clipboard
-          </button>
-        </div>
-        <p className="mt-4 text-yellow-600">
-          Note: Make sure to replace any placeholder values in the embed code
-          with your actual chatbot configuration.
-        </p>
-      </div>
-    );
+  const handleCopyEmbed = () => {
+    navigator.clipboard.writeText(generateEmbedCode());
+    setEmbedCopied(true);
+    toast.success("Embed code copied to clipboard!");
+    setTimeout(() => setEmbedCopied(false), 2000);
   };
 
   const predefinedColors: string[] = [
-    "#818CF8", // indigo-400
-    "#EF4444", // red-500
-    "#10B981", // green-500
-    "#F59E0B", // yellow-500
-    "#3B82F6", // blue-500
-    "#8B5CF6", // purple-500
-    "#EC4899", // pink-500
-    "#0891B2", // teal-500
-    "#000000", // black
+    "#818CF8",
+    "#EF4444",
+    "#10B981",
+    "#F59E0B",
+    "#3B82F6",
+    "#8B5CF6",
+    "#EC4899",
+    "#0891B2",
+    "#000000",
   ];
 
   const EmbedPreviewModal = () => (
@@ -358,7 +326,52 @@ const EditChatbot: React.FC = () => {
     </div>
   );
 
-  const tabs = ["general", "appearance", "faq", "embed"];
+  const tabs = [
+    { key: "general", label: "General", icon: Settings, desc: "Basic settings" },
+    { key: "appearance", label: "Appearance", icon: Palette, desc: "Colors & style" },
+    { key: "faq", label: "FAQ", icon: HelpCircle, desc: "Questions & answers" },
+    { key: "embed", label: "Embed", icon: Code2, desc: "Install on your site" },
+  ];
+
+  // --- Section Header ---
+  const SectionHeader = ({ title, description }: { title: string; description: string }) => (
+    <div className="mb-6">
+      <h2 className="text-lg font-semibold text-[#37322F] dark:text-[#F5F5F4] font-sans">{title}</h2>
+      <p className="text-body-sm text-[#78716C] dark:text-[#A8A29E] mt-1">{description}</p>
+    </div>
+  );
+
+  // --- Toggle Switch ---
+  const ToggleSwitch = ({ checked, onChange, label }: { checked: boolean; onChange: (v: boolean) => void; label: string }) => (
+    <label className="inline-flex items-center cursor-pointer group">
+      <div className="relative">
+        <input
+          type="checkbox"
+          className="sr-only"
+          checked={checked}
+          onChange={(e) => onChange(e.target.checked)}
+        />
+        <div className={`w-10 h-[22px] rounded-full transition-colors duration-200 ${checked ? "bg-[#37322F] dark:bg-[#F5F5F4]" : "bg-[#D6D3D1] dark:bg-[#57534E]"}`} />
+        <div className={`absolute top-[3px] left-[3px] w-4 h-4 rounded-full bg-white dark:bg-[#1C1917] shadow transition-transform duration-200 ${checked ? "translate-x-[18px]" : "translate-x-0"}`} />
+      </div>
+      <span className="ml-3 text-body-sm font-medium text-[#37322F] dark:text-[#F5F5F4] group-hover:text-[#1C1917] dark:group-hover:text-white transition-colors">{label}</span>
+    </label>
+  );
+
+  // --- Input Field with helper text ---
+  const FormField = ({ label, helperText, children }: { label: string; helperText?: string; children: React.ReactNode }) => (
+    <div>
+      <label className="block mb-1.5 text-[#37322F] dark:text-[#F5F5F4] font-medium text-body-sm">
+        {label}
+      </label>
+      {children}
+      {helperText && (
+        <p className="mt-1.5 text-xs text-[#A8A29E] dark:text-[#78716C]">{helperText}</p>
+      )}
+    </div>
+  );
+
+  const inputClasses = "w-full p-2.5 bg-white dark:bg-[#44403C] border border-[#E0DEDB] dark:border-[#57534E] text-[#37322F] dark:text-[#F5F5F4] placeholder-[#9CA3AF] dark:placeholder-[#78716C] focus:ring-2 focus:ring-[#37322F]/20 dark:focus:ring-[#F5F5F4]/20 focus:border-[#37322F] dark:focus:border-[#F5F5F4] rounded-[9px] shadow-sm text-body-sm transition-all duration-200 outline-none";
 
   return (
     <div className="min-h-screen bg-[#F7F5F3] dark:bg-[#1C1917] font-sans text-[#37322F] dark:text-[#F5F5F4]">
@@ -376,400 +389,559 @@ const EditChatbot: React.FC = () => {
         />
       </Helmet>
       <div className="w-full 2xl:w-[80%] px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-10">
-          <h1 className="text-h1 font-normal font-serif text-[#37322F] dark:text-[#F5F5F4] mb-4 sm:mb-0 tracking-tight">
-            {id ? `Edit Chatbot: ${config.name}` : "Create New Chatbot"}
-          </h1>
-          <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-10 gap-4">
+          <div className="flex items-center gap-3">
+            <h1 className="text-h1 font-normal font-serif text-[#37322F] dark:text-[#F5F5F4] tracking-tight">
+              {id ? `Edit Chatbot` : "Create New Chatbot"}
+            </h1>
+            {id && config.name && (
+              <span className="text-body-sm text-[#78716C] dark:text-[#A8A29E] bg-[#F5F5F4] dark:bg-[#292524] px-3 py-1 rounded-full border border-[#E0DEDB] dark:border-[#44403C]">
+                {config.name}
+              </span>
+            )}
+            {hasChanges && (
+              <span className="flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 px-2.5 py-1 rounded-full border border-amber-200 dark:border-amber-800">
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+                Unsaved
+              </span>
+            )}
+          </div>
+          <div className="flex flex-wrap gap-2">
             <Button
               onClick={() => setShowChatbot(!showChatbot)}
               className="bg-[#37322F] dark:bg-[#F5F5F4] hover:bg-[#2a2522] dark:hover:bg-[#E7E5E4] text-white dark:text-[#1C1917] shadow-md text-button font-medium px-4 py-2 rounded-[9px]"
               icon={showChatbot ? EyeOff : Eye}
             >
-              {showChatbot ? "Hide Chatbot" : "Show Chatbot"}
+              {showChatbot ? "Hide Preview" : "Live Preview"}
             </Button>
             <Button
               onClick={() => navigate("/")}
               className="bg-white dark:bg-[#292524] border border-[#E0DEDB] dark:border-[#44403C] text-[#605A57] dark:text-[#A8A29E] hover:bg-[#FAFAF9] dark:hover:bg-[#1C1917] hover:text-[#37322F] dark:hover:text-[#F5F5F4] shadow-sm text-button font-medium px-4 py-2 rounded-[9px]"
               icon={ArrowLeft}
             >
-              Back to Chatbot List
+              Back
             </Button>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <Card className="lg:col-span-2 p-6 bg-white dark:bg-[#292524] shadow-[0px_0px_0px_0.9px_rgba(0,0,0,0.08),0px_2px_4px_rgba(0,0,0,0.04)] dark:shadow-none rounded-[9px] border-none dark:border dark:border-[#44403C]">
-            <div className="flex flex-wrap gap-6 mb-8 border-b border-[#E0DEDB] dark:border-[#44403C] pb-2">
-              {tabs.map((tab) => (
-                <button
-                  key={tab}
-                  onClick={() => setActiveTab(tab)}
-                  className={`pb-2 px-1 text-body-sm font-medium transition-colors duration-200 ${
-                    activeTab === tab
-                      ? "border-b-2 border-[#37322F] dark:border-[#F5F5F4] text-[#37322F] dark:text-[#F5F5F4]"
-                      : "text-[#605A57] dark:text-[#A8A29E] hover:text-[#37322F] dark:hover:text-[#F5F5F4] border-transparent"
-                  }`}
-                >
-                  {tab.charAt(0).toUpperCase() + tab.slice(1)}
-                </button>
-              ))}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
+          {/* Main Config Panel */}
+          <Card className="lg:col-span-2 bg-white dark:bg-[#292524] shadow-[0px_0px_0px_0.9px_rgba(0,0,0,0.08),0px_2px_4px_rgba(0,0,0,0.04)] dark:shadow-none rounded-[9px] border-none dark:border dark:border-[#44403C] overflow-visible">
+            {/* Tab Navigation */}
+            <div className="flex border-b border-[#E0DEDB] dark:border-[#44403C] px-3 sm:px-6 pt-3 sm:pt-4 gap-0.5 sm:gap-1 overflow-x-auto scrollbar-hide">
+              {tabs.map((tab) => {
+                const Icon = tab.icon;
+                const isActive = activeTab === tab.key;
+                return (
+                  <button
+                    key={tab.key}
+                    onClick={() => setActiveTab(tab.key)}
+                    className={`relative flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-4 py-2.5 sm:py-3 text-xs sm:text-body-sm font-medium transition-all duration-200 rounded-t-lg whitespace-nowrap ${
+                      isActive
+                        ? "text-[#37322F] dark:text-[#F5F5F4] bg-[#FAFAF9] dark:bg-[#1C1917]"
+                        : "text-[#78716C] dark:text-[#78716C] hover:text-[#37322F] dark:hover:text-[#D6D3D1] hover:bg-[#FAFAF9]/50 dark:hover:bg-[#1C1917]/30"
+                    }`}
+                  >
+                    <Icon size={16} className={isActive ? "text-[#37322F] dark:text-[#F5F5F4]" : ""} />
+                    <span>{tab.label}</span>
+                    {isActive && (
+                      <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#37322F] dark:bg-[#F5F5F4] rounded-full" />
+                    )}
+                  </button>
+                );
+              })}
             </div>
 
-            {activeTab === "general" && (
-              <div className="space-y-6 ">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-                  <div>
-                    <label className="block mb-2 text-[#37322F] dark:text-gray-100 font-medium text-body-sm">
-                      Chatbot Name
-                    </label>
-                    <Input
-                      placeholder="Chatbot Name"
-                      value={config.name}
-                      onChange={(e) =>
-                        handleConfigChange("name", e.target.value)
-                      }
-                      className="w-full bg-white dark:bg-[#44403C] border border-[#E0DEDB] dark:border-[#57534E] text-[#37322F] dark:text-[#F5F5F4] placeholder-[#9CA3AF] dark:placeholder-[#78716C] focus:ring-[#37322F] dark:focus:ring-[#F5F5F4] focus:border-[#37322F] dark:focus:border-[#F5F5F4] rounded-[9px] shadow-sm py-2 px-3 text-body-sm"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block mb-2 text-[#37322F] dark:text-gray-100 font-medium text-body-sm">
-                      Chatbot Title
-                    </label>
-                    <Input
-                      placeholder="Chatbot Title"
-                      value={config.title}
-                      onChange={(e) =>
-                        handleConfigChange("title", e.target.value)
-                      }
-                      className="w-full bg-white dark:bg-[#44403C] border border-[#E0DEDB] dark:border-[#57534E] text-[#37322F] dark:text-[#F5F5F4] placeholder-[#9CA3AF] dark:placeholder-[#78716C] focus:ring-[#37322F] dark:focus:ring-[#F5F5F4] focus:border-[#37322F] dark:focus:border-[#F5F5F4] rounded-[9px] shadow-sm py-2 px-3 text-body-sm"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block mb-2 text-[#37322F] dark:text-gray-100 font-medium text-body-sm">
-                      Position
-                    </label>
-                    <select
-                      className="w-full p-2 bg-white border border-[#E0DEDB] text-[#37322F] focus:ring-[#37322F] focus:border-[#37322F] rounded-[9px] shadow-sm dark:bg-[#44403C] dark:border-[#57534E] dark:text-[#F5F5F4] dark:focus:ring-[#F5F5F4] dark:focus:border-[#F5F5F4] text-body-sm"
-                      value={config.position}
-                      onChange={(e) =>
-                        handleConfigChange("position", e.target.value)
-                      }
-                    >
-                      <option value="bottom-right">Bottom Right</option>
-                      <option value="bottom-left">Bottom Left</option>
-                      <option value="top-right">Top Right</option>
-                      <option value="top-left">Top Left</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block mb-2 text-[#37322F] dark:text-gray-100 font-medium text-body-sm">
-                      Initial Message
-                    </label>
-                    <input
-                      className="w-full p-2 bg-white dark:bg-[#44403C] border border-[#E0DEDB] dark:border-[#57534E] text-[#37322F] dark:text-[#F5F5F4] placeholder-[#9CA3AF] dark:placeholder-[#78716C] focus:ring-[#37322F] dark:focus:ring-[#F5F5F4] focus:border-[#37322F] dark:focus:border-[#F5F5F4] rounded-[9px] shadow-sm text-body-sm"
-                      placeholder="Initial Message"
-                      value={config.initialMessage}
-                      onChange={(e) =>
-                        handleConfigChange("initialMessage", e.target.value)
-                      }
-                    />
-                  </div>
-                </div>
+            <div className="p-4 sm:p-6">
+              {/* ========== GENERAL TAB ========== */}
+              {activeTab === "general" && (
                 <div>
-                  <label className="block mb-2 text-[#37322F] dark:text-gray-100 font-medium text-body-sm">
-                    Input Placeholder
-                  </label>
-                  <input
-                    className="w-full p-2 bg-white border border-[#E0DEDB] text-[#37322F] placeholder-[#9CA3AF] focus:ring-[#37322F] focus:border-[#37322F] rounded-[9px] shadow-sm dark:bg-[#44403C] dark:border-[#57534E] dark:text-[#F5F5F4] dark:placeholder-[#78716C] dark:focus:ring-[#F5F5F4] dark:focus:border-[#F5F5F4] text-body-sm"
-                    placeholder="Input Placeholder"
-                    value={config.placeholder}
-                    onChange={(e) =>
-                      handleConfigChange("placeholder", e.target.value)
-                    }
+                  <SectionHeader
+                    title="Basic Settings"
+                    description="Configure your chatbot's name, title, and default messages."
                   />
-                </div>
-              </div>
-            )}
-
-            {activeTab === "appearance" && (
-              <div className="space-y-6">
-                <div className="flex items-center mb-4">
-                  <input
-                    type="checkbox"
-                    id="useGradient"
-                    checked={useGradient}
-                    onChange={(e) => setUseGradient(e.target.checked)}
-                    className="mr-2 text-[#37322F] focus:ring-[#37322F] border-gray-300 rounded"
-                  />
-                  <label
-                    htmlFor="useGradient"
-                    className="text-[#37322F] font-medium text-body-sm dark:text-[#F5F5F4]"
-                  >
-                    Use Gradient for Colors
-                  </label>
-                </div>
-                {useGradient ? (
-                  <div className="space-y-6">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-                      <div>
-                        <label className="block mb-2 text-[#37322F] dark:text-[#F5F5F4] font-medium text-body-sm">
-                          Gradient Start
-                        </label>
-                        <div className="flex flex-col space-y-2 dark:text-gray-100">
-                          <HexColorPicker
-                            color={gradientStart}
-                            onChange={setGradientStart}
-                          />
-                          <HexColorInput
-                            color={gradientStart}
-                            onChange={setGradientStart}
-                            className="w-full p-2 bg-white dark:bg-[#44403C] border border-[#E0DEDB] dark:border-[#57534E] text-[#37322F] dark:text-[#F5F5F4] rounded-[9px] shadow-sm"
-                          />
-                        </div>
-                      </div>
-                      <div>
-                        <label className="block mb-2 text-[#37322F] dark:text-gray-100 font-medium text-body-sm">
-                          Gradient End
-                        </label>
-                        <div className="flex flex-col space-y-2 dark:text-gray-100">
-                          <HexColorPicker
-                            color={gradientEnd}
-                            onChange={setGradientEnd}
-                          />
-                          <HexColorInput
-                            color={gradientEnd}
-                            onChange={setGradientEnd}
-                            className="w-full p-2 bg-white dark:bg-[#44403C] border border-[#E0DEDB] dark:border-[#57534E] text-[#37322F] dark:text-[#F5F5F4] rounded-[9px] shadow-sm"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                    <div>
-                      <label className="block mb-2 text-[#37322F] dark:text-gray-100 font-medium text-body-sm">
-                        Gradient Angle
-                      </label>
-                      <div className="flex items-center space-x-4">
-                        <input
-                          type="range"
-                          min="0"
-                          max="360"
-                          value={gradientAngle}
-                          onChange={(e) =>
-                            setGradientAngle(parseInt(e.target.value))
-                          }
-                          className="w-full h-2 bg-[#E0DEDB] rounded-lg appearance-none cursor-pointer accent-[#37322F] dark:bg-gray-700 dark:text-gray-100"
+                  <div className="space-y-5">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                      <FormField label="Chatbot Name" helperText="Internal name for your reference">
+                        <Input
+                          placeholder="e.g. Support Bot"
+                          value={config.name}
+                          onChange={(e) => handleConfigChange("name", e.target.value)}
+                          className={inputClasses}
                         />
-                        <span className="text-[#37322F] dark:text-[#F5F5F4]">
-                          {gradientAngle}°
-                        </span>
+                      </FormField>
+                      <FormField label="Chatbot Title" helperText="Displayed in the chat window header">
+                        <Input
+                          placeholder="e.g. Customer Support"
+                          value={config.title}
+                          onChange={(e) => handleConfigChange("title", e.target.value)}
+                          className={inputClasses}
+                        />
+                      </FormField>
+                    </div>
+
+                    <div className="h-px bg-[#E0DEDB] dark:bg-[#44403C]" />
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                      <FormField label="Widget Position" helperText="Where the chat widget appears on your site">
+                        <select
+                          className={inputClasses}
+                          value={config.position}
+                          onChange={(e) => handleConfigChange("position", e.target.value)}
+                        >
+                          <option value="bottom-right">Bottom Right</option>
+                          <option value="bottom-left">Bottom Left</option>
+                          <option value="top-right">Top Right</option>
+                          <option value="top-left">Top Left</option>
+                        </select>
+                      </FormField>
+                      <FormField label="Initial Message" helperText="First message users see when opening the chat">
+                        <input
+                          className={inputClasses}
+                          placeholder="Hello! How can I help you today?"
+                          value={config.initialMessage}
+                          onChange={(e) => handleConfigChange("initialMessage", e.target.value)}
+                        />
+                      </FormField>
+                    </div>
+
+                    <FormField label="Input Placeholder" helperText="Placeholder text in the message input field">
+                      <input
+                        className={inputClasses}
+                        placeholder="Type your message..."
+                        value={config.placeholder}
+                        onChange={(e) => handleConfigChange("placeholder", e.target.value)}
+                      />
+                    </FormField>
+                  </div>
+                </div>
+              )}
+
+              {/* ========== APPEARANCE TAB ========== */}
+              {activeTab === "appearance" && (
+                <div>
+                  <SectionHeader
+                    title="Colors & Style"
+                    description="Customize how your chatbot looks with colors and gradients."
+                  />
+
+                  <div className="space-y-6">
+                    {/* Gradient Toggle */}
+                    <ToggleSwitch
+                      checked={useGradient}
+                      onChange={setUseGradient}
+                      label="Use Gradient Colors"
+                    />
+
+                    {useGradient ? (
+                      <div className="space-y-6">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                          <FormField label="Gradient Start">
+                            <div className="flex flex-col space-y-3">
+                              <div className="max-w-[200px]">
+                                <HexColorPicker color={gradientStart} onChange={setGradientStart} />
+                              </div>
+                              <HexColorInput
+                                color={gradientStart}
+                                onChange={setGradientStart}
+                                className={`${inputClasses} max-w-[200px] font-mono`}
+                              />
+                            </div>
+                          </FormField>
+                          <FormField label="Gradient End">
+                            <div className="flex flex-col space-y-3">
+                              <div className="max-w-[200px]">
+                                <HexColorPicker color={gradientEnd} onChange={setGradientEnd} />
+                              </div>
+                              <HexColorInput
+                                color={gradientEnd}
+                                onChange={setGradientEnd}
+                                className={`${inputClasses} max-w-[200px] font-mono`}
+                              />
+                            </div>
+                          </FormField>
+                        </div>
+
+                        <FormField label="Gradient Angle">
+                          <div className="flex items-center gap-4">
+                            <input
+                              type="range"
+                              min="0"
+                              max="360"
+                              value={gradientAngle}
+                              onChange={(e) => setGradientAngle(parseInt(e.target.value))}
+                              className="flex-1 h-2 bg-[#E0DEDB] dark:bg-[#57534E] rounded-lg appearance-none cursor-pointer accent-[#37322F] dark:accent-[#F5F5F4]"
+                            />
+                            <span className="text-body-sm font-mono text-[#37322F] dark:text-[#F5F5F4] bg-[#F5F5F4] dark:bg-[#44403C] px-2.5 py-1 rounded-md min-w-[52px] text-center">
+                              {gradientAngle}°
+                            </span>
+                          </div>
+                        </FormField>
+
+                        {/* Gradient Preview */}
+                        <div className="space-y-2">
+                          <p className="text-body-sm font-medium text-[#37322F] dark:text-[#F5F5F4]">Preview</p>
+                          <div
+                            className="h-16 rounded-[9px] border border-[#E0DEDB] dark:border-[#44403C] shadow-inner"
+                            style={{ background: config.primaryColor }}
+                          />
+                          <p className="text-xs text-[#A8A29E] dark:text-[#78716C]">
+                            This gradient will be applied to both primary and secondary colors.
+                          </p>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        <FormField label="Primary Color">
+                          <div className="flex flex-col space-y-3">
+                            <div className="max-w-[200px]">
+                              <HexColorPicker
+                                color={config.primaryColor}
+                                onChange={(color) => handleConfigChange("primaryColor", color)}
+                              />
+                            </div>
+                            <HexColorInput
+                              color={config.primaryColor}
+                              onChange={(color) => handleConfigChange("primaryColor", color)}
+                              className={`${inputClasses} max-w-[200px] font-mono`}
+                            />
+                          </div>
+                        </FormField>
+                        <FormField label="Secondary Color">
+                          <div className="flex flex-col space-y-3">
+                            <div className="max-w-[200px]">
+                              <HexColorPicker
+                                color={config.secondaryColor}
+                                onChange={(color) => handleConfigChange("secondaryColor", color)}
+                              />
+                            </div>
+                            <HexColorInput
+                              color={config.secondaryColor}
+                              onChange={(color) => handleConfigChange("secondaryColor", color)}
+                              className={`${inputClasses} max-w-[200px] font-mono`}
+                            />
+                          </div>
+                        </FormField>
+                      </div>
+                    )}
+
+                    {/* Quick Colors */}
+                    <div>
+                      <p className="text-body-sm font-medium text-[#37322F] dark:text-[#F5F5F4] mb-3">Quick Colors</p>
+                      <div className="flex flex-wrap gap-2">
+                        {predefinedColors.map((color) => {
+                          const isActive = !useGradient && config.primaryColor === color;
+                          return (
+                            <button
+                              key={color}
+                              className={`w-9 h-9 rounded-full border-2 transition-all duration-200 hover:scale-110 ${
+                                isActive
+                                  ? "border-[#37322F] dark:border-[#F5F5F4] ring-2 ring-[#37322F]/20 dark:ring-[#F5F5F4]/20 scale-110"
+                                  : "border-[#E0DEDB] dark:border-[#44403C] hover:border-[#A8A29E]"
+                              }`}
+                              style={{ backgroundColor: color }}
+                              onClick={() => {
+                                setUseGradient(false);
+                                handleConfigChange("primaryColor", color);
+                                handleConfigChange("secondaryColor", color);
+                              }}
+                            >
+                              {isActive && (
+                                <Check size={14} className="text-white mx-auto" strokeWidth={3} />
+                              )}
+                            </button>
+                          );
+                        })}
                       </div>
                     </div>
-                    <div className="space-y-2">
-                      <div
-                        className="h-20 rounded-[9px] border border-[#E0DEDB]"
-                        style={{ background: config.primaryColor }}
-                      ></div>
-                      <p className="text-caption text-[#605A57] dark:text-[#A8A29E]">
-                        This gradient will be applied to both primary and
-                        secondary colors.
+                  </div>
+                </div>
+              )}
+
+              {/* ========== FAQ TAB ========== */}
+              {activeTab === "faq" && (
+                <div>
+                  <SectionHeader
+                    title="Frequently Asked Questions"
+                    description="Add common questions and answers to help users get quick responses."
+                  />
+
+                  {/* FAQ Form */}
+                  <div className="bg-[#FAFAF9] dark:bg-[#1C1917] rounded-[9px] border border-[#E0DEDB] dark:border-[#44403C] p-5 mb-6">
+                    <h3 className="text-body-sm font-semibold text-[#37322F] dark:text-[#F5F5F4] mb-3">
+                      {editingFaqIndex !== null ? "Edit FAQ" : "Add New FAQ"}
+                    </h3>
+                    <div className="space-y-3">
+                      <div>
+                        <input
+                          className={inputClasses}
+                          placeholder="Enter a question..."
+                          value={faqInput.question}
+                          onChange={(e) =>
+                            setFaqInput((prev) => ({ ...prev, question: e.target.value }))
+                          }
+                        />
+                        <p className="text-xs text-[#A8A29E] dark:text-[#78716C] mt-1 text-right">
+                          {faqInput.question.length} characters
+                        </p>
+                      </div>
+                      <div>
+                        <textarea
+                          className={`${inputClasses} min-h-[80px] resize-y`}
+                          placeholder="Enter the answer..."
+                          value={faqInput.answer}
+                          onChange={(e) =>
+                            setFaqInput((prev) => ({ ...prev, answer: e.target.value }))
+                          }
+                        />
+                        <p className="text-xs text-[#A8A29E] dark:text-[#78716C] mt-1 text-right">
+                          {faqInput.answer.length} characters
+                        </p>
+                      </div>
+                      {editingFaqIndex !== null ? (
+                        <div className="flex gap-2">
+                          <Button
+                            onClick={handleUpdateFaq}
+                            className="bg-[#37322F] dark:bg-[#F5F5F4] hover:bg-[#2a2522] dark:hover:bg-[#E7E5E4] text-white dark:text-[#1C1917] shadow-md rounded-[9px] text-body-sm"
+                            icon={Save}
+                          >
+                            Update
+                          </Button>
+                          <Button
+                            onClick={handleCancelEdit}
+                            className="bg-white dark:bg-[#292524] border border-[#E0DEDB] dark:border-[#44403C] text-[#605A57] dark:text-[#A8A29E] hover:bg-[#FAFAF9] dark:hover:bg-[#1C1917] hover:text-[#37322F] dark:hover:text-[#F5F5F4] shadow-sm rounded-[9px] text-body-sm"
+                          >
+                            Cancel
+                          </Button>
+                        </div>
+                      ) : (
+                        <Button
+                          onClick={handleAddFaq}
+                          className="bg-[#37322F] dark:bg-[#F5F5F4] hover:bg-[#2a2522] dark:hover:bg-[#E7E5E4] text-white dark:text-[#1C1917] shadow-md rounded-[9px] text-body-sm"
+                          icon={Plus}
+                        >
+                          Add FAQ
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* FAQ List */}
+                  {faqList.length === 0 ? (
+                    <div className="text-center py-12">
+                      <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-[#F5F5F4] dark:bg-[#292524] flex items-center justify-center">
+                        <MessageSquare size={28} className="text-[#A8A29E] dark:text-[#78716C]" />
+                      </div>
+                      <h3 className="text-body-sm font-semibold text-[#37322F] dark:text-[#F5F5F4] mb-1">
+                        No FAQs yet
+                      </h3>
+                      <p className="text-xs text-[#A8A29E] dark:text-[#78716C] max-w-[260px] mx-auto">
+                        Add your first question above to help users get quick answers from your chatbot.
                       </p>
                     </div>
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                    <div>
-                      <label className="block mb-2 text-[#37322F] dark:text-gray-100 font-medium text-sm">
-                        Primary Color
-                      </label>
-                      <div className="flex flex-col space-y-2 dark:text-gray-100">
-                        <HexColorPicker
-                          color={config.primaryColor}
-                          onChange={(color) =>
-                            handleConfigChange("primaryColor", color)
-                          }
-                        />
-                        <HexColorInput
-                          color={config.primaryColor}
-                          onChange={(color) =>
-                            handleConfigChange("primaryColor", color)
-                          }
-                          className="w-full p-2 bg-white dark:bg-[#44403C] border border-[#E0DEDB] dark:border-[#57534E] text-[#37322F] dark:text-[#F5F5F4] rounded-[9px] shadow-sm"
-                        />
-                      </div>
+                  ) : (
+                    <div className="space-y-2 max-h-96 overflow-y-auto pr-1">
+                      {faqList.map((faq, index) => (
+                        <div
+                          key={index}
+                          className="border border-[#E0DEDB] dark:border-[#44403C] rounded-[9px] overflow-hidden transition-shadow duration-200 hover:shadow-sm"
+                        >
+                          <div
+                            className="bg-white dark:bg-[#292524] p-4 flex justify-between items-center cursor-pointer hover:bg-[#FAFAF9] dark:hover:bg-[#1C1917] transition-colors duration-200"
+                            onClick={() => toggleFAQ(index)}
+                          >
+                            <div className="flex items-center gap-3">
+                              <span className="flex-shrink-0 w-6 h-6 rounded-full bg-[#F5F5F4] dark:bg-[#44403C] flex items-center justify-center text-xs font-semibold text-[#605A57] dark:text-[#A8A29E]">
+                                {index + 1}
+                              </span>
+                              <span className="font-medium text-body-sm text-[#37322F] dark:text-[#F5F5F4]">
+                                {faq.question}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-1 flex-shrink-0 ml-2">
+                              <button
+                                className="text-[#A8A29E] dark:text-[#78716C] hover:text-[#37322F] dark:hover:text-[#F5F5F4] p-1.5 rounded-md hover:bg-[#F5F5F4] dark:hover:bg-[#44403C] transition-colors"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleEditFaq(index);
+                                }}
+                              >
+                                <Edit2 size={14} />
+                              </button>
+                              <button
+                                className="text-[#A8A29E] dark:text-[#78716C] hover:text-red-500 p-1.5 rounded-md hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  openDeleteFaqModal(index);
+                                }}
+                              >
+                                <Trash2 size={14} />
+                              </button>
+                              {faq.isOpen ? (
+                                <ChevronUp size={16} className="text-[#A8A29E] ml-1" />
+                              ) : (
+                                <ChevronDown size={16} className="text-[#A8A29E] ml-1" />
+                              )}
+                            </div>
+                          </div>
+                          {faq.isOpen && (
+                            <div className="px-4 pb-4 pt-2 bg-[#FAFAF9] dark:bg-[#1C1917] border-t border-[#E0DEDB] dark:border-[#44403C]">
+                              <p className="text-body-sm text-[#605A57] dark:text-[#A8A29E] pl-9">
+                                {faq.answer}
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      ))}
                     </div>
-                    <div>
-                      <label className="block mb-2 text-[#37322F] dark:text-gray-100 font-medium text-sm">
-                        Secondary Color
-                      </label>
-                      <div className="flex flex-col space-y-2 dark:text-gray-100">
-                        <HexColorPicker
-                          color={config.secondaryColor}
-                          onChange={(color) =>
-                            handleConfigChange("secondaryColor", color)
-                          }
-                        />
-                        <HexColorInput
-                          color={config.secondaryColor}
-                          onChange={(color) =>
-                            handleConfigChange("secondaryColor", color)
-                          }
-                          className="w-full p-2 bg-white dark:bg-[#44403C] border border-[#E0DEDB] dark:border-[#57534E] text-[#37322F] dark:text-[#F5F5F4] rounded-[9px] shadow-sm"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                )}
-                <div className="flex flex-wrap mt-4">
-                  {predefinedColors.map((color) => (
-                    <button
-                      key={color}
-                      className="w-8 h-8 m-1 rounded-full border border-[#E0DEDB] dark:border-[#44403C] hover:scale-110 transition-transform duration-200"
-                      style={{ backgroundColor: color }}
-                      onClick={() => {
-                        setUseGradient(false);
-                        handleConfigChange("primaryColor", color);
-                        handleConfigChange("secondaryColor", color);
-                      }}
-                    ></button>
-                  ))}
+                  )}
                 </div>
-              </div>
-            )}
+              )}
 
-            {activeTab === "faq" && (
-              <>
-                <div className="space-y-4 mb-8">
-                  <input
-                    className="w-full p-2 bg-white dark:bg-[#44403C] border border-[#E0DEDB] dark:border-[#57534E] text-[#37322F] dark:text-[#F5F5F4] placeholder-[#9CA3AF] dark:placeholder-[#78716C] focus:ring-[#37322F] dark:focus:ring-[#F5F5F4] focus:border-[#37322F] dark:focus:border-[#F5F5F4] rounded-[9px] shadow-sm"
-                    placeholder="Question"
-                    value={faqInput.question}
-                    onChange={(e) =>
-                      setFaqInput((prev) => ({
-                        ...prev,
-                        question: e.target.value,
-                      }))
-                    }
-                  />
-                  <textarea
-                    className="w-full p-2 bg-white dark:bg-[#44403C] border border-[#E0DEDB] dark:border-[#57534E] text-[#37322F] dark:text-[#F5F5F4] placeholder-[#9CA3AF] dark:placeholder-[#78716C] focus:ring-[#37322F] dark:focus:ring-[#F5F5F4] focus:border-[#37322F] dark:focus:border-[#F5F5F4] rounded-[9px] shadow-sm"
-                    placeholder="Answer"
-                    value={faqInput.answer}
-                    onChange={(e) =>
-                      setFaqInput((prev) => ({
-                        ...prev,
-                        answer: e.target.value,
-                      }))
-                    }
-                  />
-                  {editingFaqIndex !== null ? (
-                    <div className="flex space-x-2">
+              {/* ========== EMBED TAB ========== */}
+              {activeTab === "embed" && (
+                <div>
+                  {!id ? (
+                    <div className="space-y-6">
+                      <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-[9px] p-4 flex items-start gap-3">
+                        <AlertCircle className="h-5 w-5 text-amber-500 flex-shrink-0 mt-0.5" />
+                        <div>
+                          <p className="text-body-sm font-medium text-amber-800 dark:text-amber-300">
+                            Save Required
+                          </p>
+                          <p className="text-xs text-amber-700 dark:text-amber-400 mt-0.5">
+                            Please save the chatbot configuration first to get the embed code.
+                          </p>
+                        </div>
+                      </div>
                       <Button
-                        onClick={handleUpdateFaq}
-                        className="bg-green-600 hover:bg-green-700 text-white shadow-md rounded-[9px]"
+                        onClick={saveConfig}
+                        className="bg-[#37322F] dark:bg-[#F5F5F4] hover:bg-[#2a2522] dark:hover:bg-[#E7E5E4] text-white dark:text-[#1C1917] shadow-md rounded-[9px]"
                         icon={Save}
                       >
-                        Update FAQ
-                      </Button>
-                      <Button
-                        onClick={handleCancelEdit}
-                        className="bg-white dark:bg-[#292524] border border-[#E0DEDB] dark:border-[#44403C] text-[#605A57] dark:text-[#A8A29E] hover:bg-[#FAFAF9] dark:hover:bg-[#1C1917] hover:text-[#37322F] dark:hover:text-[#F5F5F4] shadow-sm rounded-[9px]"
-                      >
-                        Cancel
+                        Save Configuration
                       </Button>
                     </div>
                   ) : (
-                    <Button
-                      onClick={handleAddFaq}
-                      className="bg-[#37322F] hover:bg-[#2a2522] text-white shadow-md rounded-[9px]"
-                      icon={Plus}
-                    >
-                      Add FAQ
-                    </Button>
+                    <div>
+                      <SectionHeader
+                        title="Install on Your Website"
+                        description="Copy the embed code and paste it into your website's HTML."
+                      />
+
+                      {/* How it works steps */}
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+                        {[
+                          { step: "1", title: "Copy Code", desc: "Click the copy button below" },
+                          { step: "2", title: "Paste in HTML", desc: "Before the closing </body> tag" },
+                          { step: "3", title: "Go Live", desc: "Your chatbot will appear on site" },
+                        ].map((item) => (
+                          <div
+                            key={item.step}
+                            className="flex items-start gap-3 p-3 rounded-[9px] bg-[#FAFAF9] dark:bg-[#1C1917] border border-[#E0DEDB] dark:border-[#44403C]"
+                          >
+                            <span className="flex-shrink-0 w-7 h-7 rounded-full bg-[#37322F] dark:bg-[#F5F5F4] text-white dark:text-[#1C1917] flex items-center justify-center text-xs font-bold">
+                              {item.step}
+                            </span>
+                            <div>
+                              <p className="text-body-sm font-semibold text-[#37322F] dark:text-[#F5F5F4]">{item.title}</p>
+                              <p className="text-xs text-[#A8A29E] dark:text-[#78716C]">{item.desc}</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Embed Code Block */}
+                      <div className="rounded-[9px] border border-[#E0DEDB] dark:border-[#44403C] overflow-hidden">
+                        <div className="flex items-center justify-between px-4 py-2.5 bg-[#FAFAF9] dark:bg-[#1C1917] border-b border-[#E0DEDB] dark:border-[#44403C]">
+                          <span className="text-xs font-medium text-[#78716C] dark:text-[#A8A29E] uppercase tracking-wider">HTML</span>
+                          <button
+                            onClick={handleCopyEmbed}
+                            className="flex items-center gap-1.5 text-xs font-medium text-[#605A57] dark:text-[#A8A29E] hover:text-[#37322F] dark:hover:text-[#F5F5F4] bg-white dark:bg-[#292524] border border-[#E0DEDB] dark:border-[#44403C] px-3 py-1.5 rounded-md transition-all duration-200 hover:shadow-sm"
+                          >
+                            {embedCopied ? (
+                              <>
+                                <Check size={13} className="text-green-500" />
+                                Copied!
+                              </>
+                            ) : (
+                              <>
+                                <Copy size={13} />
+                                Copy
+                              </>
+                            )}
+                          </button>
+                        </div>
+                        <pre className="p-4 bg-[#1C1917] dark:bg-[#0C0A09] text-[#E7E5E4] text-xs font-mono overflow-x-auto leading-relaxed">
+                          <code>{generateEmbedCode()}</code>
+                        </pre>
+                      </div>
+
+                      <p className="mt-4 text-xs text-[#A8A29E] dark:text-[#78716C] flex items-center gap-1.5">
+                        <AlertCircle size={13} />
+                        Make sure to replace any placeholder values in the embed code with your actual chatbot configuration.
+                      </p>
+                    </div>
                   )}
                 </div>
-                <div className="mt-4 space-y-3 max-h-96 overflow-y-auto pr-2">
-                  {faqList.map((faq, index) => (
-                    <div
-                      key={index}
-                      className="border border-[#E0DEDB] dark:border-[#44403C] rounded-[9px] overflow-hidden shadow-sm"
-                    >
-                      <div
-                        className="bg-[#FAFAF9] dark:bg-[#1C1917] p-4 flex justify-between items-center cursor-pointer hover:bg-[#F7F5F3] dark:hover:bg-[#292524] transition-colors duration-200"
-                        onClick={() => toggleFAQ(index)}
-                      >
-                        <span className="font-medium text-[#37322F] dark:text-[#F5F5F4]">{faq.question}</span>
-                        <div className="flex items-center space-x-2">
-                          <button
-                            className="text-[#605A57] dark:text-[#A8A29E] hover:text-[#37322F] dark:hover:text-[#F5F5F4] p-1"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleEditFaq(index);
-                            }}
-                          >
-                            <Edit2 size={16} />
-                          </button>
-                          <button
-                            className="text-red-500 hover:text-red-700 p-1"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              openDeleteFaqModal(index);
-                            }}
-                          >
-                            <Trash2 size={16} />
-                          </button>
-                          {faq.isOpen ? (
-                            <ChevronUp size={20} className="text-[#605A57]" />
-                          ) : (
-                            <ChevronDown size={20} className="text-[#605A57]" />
-                          )}
-                        </div>
-                      </div>
-                      {faq.isOpen && (
-                        <div className="p-4 bg-white dark:bg-[#292524] border-t border-[#E0DEDB] dark:border-[#44403C]">
-                          <p className="text-[#605A57] dark:text-[#A8A29E]">
-                            {faq.answer}
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </>
-            )}
+              )}
+            </div>
 
-            {activeTab === "embed" && <EmbedTab />}
-          </Card>
-
-          <Card className="lg:col-span-1 border-none shadow-none bg-[#f7f5f3] dark:bg-[#1c1917]">
-            <h2 className="text-h3 font-semibold mb-4 text-[#37322F] dark:text-[#F5F5F4] font-sans">
-              Preview
-            </h2>
-            <div
-              className="border border-[#E0DEDB] dark:border-[#44403C] rounded-[9px] bg-white dark:bg-[#292524] relative overflow-hidden w-full max-w-[370px] mx-auto"
-              style={{ height: "520px" }}
-            >
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="w-full h-full">
-                  <Chatbot {...config} isEmbedded={false} />
-                </div>
+            {/* Floating Save Bar */}
+            <div className="sticky bottom-0 bg-white/80 dark:bg-[#292524]/80 backdrop-blur-md border-t border-[#E0DEDB] dark:border-[#44403C] px-4 sm:px-6 py-3 sm:py-4 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-0 rounded-b-[9px]">
+              <p className="text-xs text-[#A8A29E] dark:text-[#78716C] text-center sm:text-left">
+                {hasChanges ? "You have unsaved changes" : "All changes saved"}
+              </p>
+              <div className="flex gap-2 justify-center sm:justify-end">
+                {hasChanges && id && (
+                  <Button
+                    onClick={discardChanges}
+                    className="bg-white dark:bg-[#1C1917] border border-[#E0DEDB] dark:border-[#44403C] text-[#605A57] dark:text-[#A8A29E] hover:bg-[#FAFAF9] dark:hover:bg-[#292524] hover:text-[#37322F] dark:hover:text-[#F5F5F4] shadow-sm text-body-sm font-medium px-4 py-2 rounded-[9px]"
+                    icon={RotateCcw}
+                  >
+                    Discard
+                  </Button>
+                )}
+                <Button
+                  onClick={saveConfig}
+                  className="bg-[#37322F] dark:bg-[#F5F5F4] hover:bg-[#2a2522] dark:hover:bg-[#E7E5E4] text-white dark:text-[#1C1917] shadow-md text-body-sm font-medium px-5 py-2 rounded-[9px]"
+                  icon={Save}
+                >
+                  {id ? "Save" : "Create Chatbot"}
+                </Button>
               </div>
             </div>
           </Card>
-        </div>
 
-        <div className="mt-8">
-          <Button
-            onClick={saveConfig}
-            className="bg-[#37322F] dark:bg-[#F5F5F4] hover:bg-[#2a2522] dark:hover:bg-[#E7E5E4] text-white dark:text-[#1C1917] shadow-lg py-3 rounded-[9px] text-button font-medium"
-            icon={Save}
-          >
-            {id ? "Save Configuration" : "Create Chatbot"}
-          </Button>
+          {/* Preview Panel — hidden on mobile, visible on lg+ */}
+          <div className="hidden lg:block lg:col-span-1">
+            <div className="sticky top-8">
+              <Card className="border-none shadow-none bg-transparent dark:bg-transparent">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-lg font-semibold text-[#37322F] dark:text-[#F5F5F4] font-sans">
+                    Preview
+                  </h2>
+                  <span className="text-xs text-[#A8A29E] dark:text-[#78716C] bg-[#F5F5F4] dark:bg-[#292524] px-2.5 py-1 rounded-full border border-[#E0DEDB] dark:border-[#44403C]">
+                    {positionLabels[config.position] || config.position}
+                  </span>
+                </div>
+
+                <div className="border border-[#E0DEDB] dark:border-[#44403C] rounded-[9px] overflow-hidden bg-white dark:bg-[#292524]">
+                  <div
+                    className="relative overflow-hidden w-full"
+                    style={{ height: "500px" }}
+                  >
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="w-full h-full">
+                        <Chatbot {...config} isEmbedded={false} />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </Card>
+            </div>
+          </div>
         </div>
 
         {showEmbedPreview && <EmbedPreviewModal />}
