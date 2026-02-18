@@ -38,6 +38,10 @@ module.exports = {
             animationTimingFunction: "cubic-bezier(0, 0, 0.2, 1)",
           },
         },
+        shimmer: {
+          "0%": { transform: "translateX(-100%)" },
+          "100%": { transform: "translateX(100%)" },
+        },
       },
     },
   },
