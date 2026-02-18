@@ -158,7 +158,7 @@ export default function ChatbotLanding() {
             <div className="flex items-center">
               <Link to="/" className="flex items-center gap-1.5">
                 <img src="./icon.svg" alt="Askio" className="w-6 h-6" />
-                <span className="text-[#2F3037] dark:text-[#F5F5F4] text-body-lg font-medium">Askio</span>
+                <span className="text-[#2F3037] dark:text-[#F5F5F4] text-body font-medium">Askio</span>
               </Link>
               <div className="hidden sm:flex pl-5 gap-4">
                 {["Features", "How it Works", "Testimonials", "FAQ"].map((item) => (

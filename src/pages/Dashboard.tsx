@@ -197,7 +197,6 @@ const Dashboard: React.FC<DashboardProps> = ({ toggleSidebar, testMode }) => {
       // 1. Chatbots Trend
       const previousChatbotsCount = chatbots.filter(c => isBefore(c.createdAt, thirtyDaysAgo)).length;
       const currentChatbotsCount = chatbots.length;
-      const chatbotsDiff = currentChatbotsCount - previousChatbotsCount;
       // For "Total", typical trend is growth rate: (Current - Prev) / Prev
       // If Prev is 0, we can't divide. If Current > 0, it's 100% growth (effectively).
       let chatbotsTrendValue = 0;

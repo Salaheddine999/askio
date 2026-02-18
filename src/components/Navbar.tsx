@@ -112,7 +112,7 @@ const Navbar: React.FC<NavbarProps> = ({
             }`}
           >
             <img src="/icon.svg" alt="Askio Chatbot" className="w-8 h-8 flex-shrink-0" />
-            <span className={`font-sans text-h3 font-bold tracking-tight text-[#37322F] dark:text-[#F5F5F4] ${!sidebarOpen && "lg:hidden"}`}>
+            <span className={`font-sans text-body-lg font-bold tracking-tight text-[#37322F] dark:text-[#F5F5F4] ${!sidebarOpen && "lg:hidden"}`}>
               Askio
             </span>
           </Link>
