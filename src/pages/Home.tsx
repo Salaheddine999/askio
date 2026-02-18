@@ -162,14 +162,14 @@ export default function ChatbotLanding() {
               </Link>
               <div className="hidden sm:flex pl-5 gap-4">
                 {["Features", "How it Works", "Testimonials", "FAQ"].map((item) => (
-                  <a key={item} href={`#${item.toLowerCase().replace(" ", "-")}`} className="text-[rgba(49,45,43,0.80)] dark:text-[#A8A29E] text-body-sm font-medium hover:text-[#37322F] dark:hover:text-[#F5F5F4] transition-colors">
+                  <a key={item} href={`#${item.toLowerCase().replace(" ", "-")}`} className="relative text-[rgba(49,45,43,0.80)] dark:text-[#A8A29E] text-body-sm font-medium hover:text-[#37322F] dark:hover:text-[#F5F5F4] transition-colors after:absolute after:bottom-0 after:left-0 after:w-0 after:h-[1.5px] after:bg-[#37322F] dark:after:bg-[#F5F5F4] after:transition-all after:duration-300 hover:after:w-full">
                     {item}
                   </a>
                 ))}
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <Link to="/auth" className="px-3.5 py-1.5 bg-white dark:bg-[#292524] shadow-[0px_1px_2px_rgba(55,50,47,0.12)] dark:shadow-none rounded-full text-[#37322F] dark:text-[#F5F5F4] text-button font-medium hover:shadow-md transition-shadow border border-transparent dark:border-[#44403C]">
+              <Link to="/auth" className="px-3.5 py-1.5 bg-white dark:bg-[#292524] shadow-[0px_1px_2px_rgba(55,50,47,0.12)] dark:shadow-none rounded-full text-[#37322F] dark:text-[#F5F5F4] text-button font-medium hover:shadow-md hover:scale-105 transition-all duration-200 border border-transparent dark:border-[#44403C]">
                 Log in
               </Link>
               <button className="sm:hidden text-[#37322F] dark:text-[#F5F5F4]" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
@@ -194,7 +194,7 @@ export default function ChatbotLanding() {
         </AnimatePresence>
 
         {/* ═══ HERO SECTION ═══ */}
-        <section className={`pt-16 sm:pt-20 lg:pt-32 pb-12 lg:pb-20 flex flex-col items-center text-center ${sectionBorder}`}>
+        <section className={`py-20 lg:py-28 flex flex-col items-center text-center ${sectionBorder}`}>
           <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="max-w-[750px] px-4">
             <h1 className="text-hero font-serif text-[#37322F] dark:text-[#F5F5F4] mb-6">
               Custom Chatbots,{" "}
@@ -207,7 +207,7 @@ export default function ChatbotLanding() {
           </motion.div>
 
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.2 }} className="flex flex-col sm:flex-row items-center gap-4 mb-12">
-            <Link to="/auth" className="h-11 px-10 bg-[#37322F] dark:bg-[#F5F5F4] shadow-[0px_0px_0px_2.5px_rgba(255,255,255,0.08)_inset] rounded-full flex items-center text-white dark:text-[#1C1917] text-button font-medium hover:bg-[#2a2522] dark:hover:bg-[#E7E5E4] transition-colors">
+            <Link to="/auth" className="h-11 px-10 bg-[#37322F] dark:bg-[#F5F5F4] shadow-[0px_0px_0px_2.5px_rgba(255,255,255,0.08)_inset] rounded-full flex items-center text-white dark:text-[#1C1917] text-button font-medium hover:bg-[#2a2522] dark:hover:bg-[#E7E5E4] hover:scale-[1.03] transition-all duration-300">
               Start for free
               <ArrowRight className="ml-2 h-4 w-4" />
             </Link>
@@ -278,7 +278,7 @@ export default function ChatbotLanding() {
 
         {/* ═══ FEATURES SECTION ═══ */}
         <motion.section ref={featuresRef} initial={{ opacity: 0, y: 40 }} animate={featuresInView ? { opacity: 1, y: 0 } : {}} transition={{ duration: 0.5 }} id="features" className={sectionBorder}>
-          <div className="py-16 flex flex-col items-center text-center px-4">
+          <div className="py-20 flex flex-col items-center text-center px-4">
             <Badge text="Features" />
             <h2 className="mt-5 text-display font-serif tracking-tight text-[#49423D] dark:text-[#F5F5F4]">Powerful features for your chatbots</h2>
             <p className="mt-3 text-[#605A57] dark:text-[#A8A29E] text-body max-w-md">Everything you need to create, customize, and deploy chatbots that engage your visitors.</p>
@@ -288,7 +288,7 @@ export default function ChatbotLanding() {
             <HatchStrip />
             <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-0 border-l border-r border-[rgba(55,50,47,0.12)] dark:border-[#44403C]">
               {/* Feature 1: Easy Customization */}
-              <div className="p-6 sm:p-8 lg:p-10 flex flex-col gap-4 border-b border-r-0 md:border-r border-[rgba(55,50,47,0.12)] dark:border-[#44403C]">
+              <div className="p-6 sm:p-8 lg:p-10 flex flex-col gap-4 border-b border-r-0 md:border-r border-[rgba(55,50,47,0.12)] dark:border-[#44403C] hover:-translate-y-1 hover:shadow-lg transition-all duration-300 cursor-default">
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-lg bg-[rgba(55,50,47,0.06)] dark:bg-[#44403C] flex items-center justify-center"><Paintbrush className="w-4 h-4 text-[#49423D] dark:text-[#F5F5F4]" /></div>
                   <h3 className="text-[#37322F] dark:text-[#F5F5F4] text-h3 font-sans">Easy Customization</h3>
@@ -321,7 +321,7 @@ export default function ChatbotLanding() {
               </div>
 
               {/* Feature 2: Seamless Integration */}
-              <div className="p-6 sm:p-8 lg:p-10 flex flex-col gap-4 border-b border-[rgba(55,50,47,0.12)] dark:border-[#44403C]">
+              <div className="p-6 sm:p-8 lg:p-10 flex flex-col gap-4 border-b border-[rgba(55,50,47,0.12)] dark:border-[#44403C] hover:-translate-y-1 hover:shadow-lg transition-all duration-300 cursor-default">
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-lg bg-[rgba(55,50,47,0.06)] dark:bg-[#44403C] flex items-center justify-center"><Code className="w-4 h-4 text-[#49423D] dark:text-[#F5F5F4]" /></div>
                   <h3 className="text-[#37322F] dark:text-[#F5F5F4] text-h3 font-sans">Seamless Integration</h3>
@@ -347,7 +347,7 @@ export default function ChatbotLanding() {
               </div>
 
               {/* Feature 3: Real-Time Engagement */}
-              <div className="p-6 sm:p-8 lg:p-10 flex flex-col gap-4 border-r-0 md:border-r border-[rgba(55,50,47,0.12)] dark:border-[#44403C]">
+              <div className="p-6 sm:p-8 lg:p-10 flex flex-col gap-4 border-r-0 md:border-r border-[rgba(55,50,47,0.12)] dark:border-[#44403C] hover:-translate-y-1 hover:shadow-lg transition-all duration-300 cursor-default">
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-lg bg-[rgba(55,50,47,0.06)] dark:bg-[#44403C] flex items-center justify-center"><MessageCircle className="w-4 h-4 text-[#49423D] dark:text-[#F5F5F4]" /></div>
                   <h3 className="text-[#37322F] dark:text-[#F5F5F4] text-h3 font-sans">Real-Time Engagement</h3>
@@ -384,7 +384,7 @@ export default function ChatbotLanding() {
               </div>
 
               {/* Feature 4: Easy Configuration */}
-              <div className="p-6 sm:p-8 lg:p-10 flex flex-col gap-4 border-[rgba(55,50,47,0.12)]">
+              <div className="p-6 sm:p-8 lg:p-10 flex flex-col gap-4 border-[rgba(55,50,47,0.12)] hover:-translate-y-1 hover:shadow-lg transition-all duration-300 cursor-default">
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-lg bg-[rgba(55,50,47,0.06)] dark:bg-[#44403C] flex items-center justify-center"><Settings className="w-4 h-4 text-[#49423D] dark:text-[#F5F5F4]" /></div>
                   <h3 className="text-[#37322F] dark:text-[#F5F5F4] text-h3 font-sans">Easy Configuration</h3>
@@ -423,7 +423,7 @@ export default function ChatbotLanding() {
 
         {/* ═══ HOW IT WORKS ═══ */}
         <section id="how-it-works" className={sectionBorder}>
-          <div className="py-16 lg:py-20 flex flex-col items-center text-center px-4">
+          <div className="py-20 flex flex-col items-center text-center px-4">
             <Badge text="How it Works" />
             <motion.div ref={howItWorksRef} initial={{ opacity: 0, y: 30 }} animate={howItWorksInView ? { opacity: 1, y: 0 } : {}} transition={{ duration: 0.5 }}>
               <h2 className="mt-5 text-display font-serif tracking-tight text-[#49423D] dark:text-[#F5F5F4]">Three simple steps to go live</h2>
@@ -450,22 +450,23 @@ export default function ChatbotLanding() {
                       onClick={() => handleStepClick(index)}
                       className={`w-full overflow-hidden flex flex-col justify-start items-start transition-all duration-300 cursor-pointer ${
                         isActive
-                          ? "bg-white dark:bg-[#292524] shadow-[0px_0px_0px_0.75px_#E0DEDB_inset] dark:shadow-[0px_0px_0px_0.75px_#44403C_inset]"
-                          : "border border-[rgba(2,6,23,0.08)] dark:border-[#44403C]"
+                          ? "bg-white dark:bg-[#2A2522] shadow-[0px_0px_0px_0.75px_#E0DEDB_inset] dark:shadow-[0px_0px_0px_0.75px_#44403C_inset]"
+                          : "border border-[rgba(2,6,23,0.08)] dark:border-[#44403C] hover:border-[rgba(2,6,23,0.15)] dark:hover:border-[#57534E]"
                       }`}
                     >
                       {/* Progress bar */}
-                      <div className={`w-full h-0.5 bg-[rgba(50,45,43,0.08)] dark:bg-[rgba(255,255,255,0.08)] overflow-hidden ${isActive ? "opacity-100" : "opacity-0"}`}>
+                      <div className={`w-full h-1 bg-[rgba(50,45,43,0.08)] dark:bg-[rgba(255,255,255,0.08)] overflow-hidden ${isActive ? "opacity-100" : "opacity-0"}`}>
                         <div
-                          className="h-0.5 bg-[#322D2B] dark:bg-[#F5F5F4] transition-all duration-100 ease-linear"
+                          className="h-1 bg-[#37322F] dark:bg-[#F5F5F4] transition-all duration-100 ease-linear"
                           style={{ width: `${isActive ? stepProgress : 0}%` }}
                         />
                       </div>
                       <div className="px-6 py-5 w-full flex flex-col gap-2">
-                        <div className="self-stretch flex justify-center flex-col text-[#49423D] dark:text-[#F5F5F4] text-body-sm font-semibold leading-6 font-sans">
+                        <div className="self-stretch flex items-center gap-3 text-[#49423D] dark:text-[#F5F5F4] text-body-sm font-semibold leading-6 font-sans">
+                          <span className="text-[#605A57] dark:text-[#A8A29E] text-xs font-mono font-bold tracking-wider">{String(index + 1).padStart(2, '0')}</span>
                           {step.title}
                         </div>
-                        <div className="self-stretch text-[#605A57] dark:text-[#A8A29E] text-body-sm font-normal leading-[22px] font-sans">
+                        <div className="self-stretch text-[#605A57] dark:text-[#A8A29E] text-body-sm font-normal leading-[22px] font-sans pl-8">
                           {step.desc}
                         </div>
                       </div>
@@ -476,7 +477,7 @@ export default function ChatbotLanding() {
 
               {/* Right Column - Preview Panel */}
               <div className="w-full md:w-auto rounded-lg flex flex-col justify-center items-center gap-2 order-1 md:order-2">
-                <div className="w-full md:w-[580px] h-[300px] md:h-[420px] bg-white dark:bg-[#292524] shadow-[0px_0px_0px_0.9px_rgba(0,0,0,0.08)] dark:shadow-[0px_0px_0px_0.9px_rgba(255,255,255,0.08)] overflow-hidden rounded-[9px] flex flex-col justify-start items-start">
+                <div className="w-full md:w-[580px] h-[300px] md:h-[420px] bg-white dark:bg-[#2A2522] shadow-[0px_0px_0px_0.9px_rgba(0,0,0,0.08)] dark:shadow-[0px_0px_0px_0.9px_rgba(255,255,255,0.08)] overflow-hidden rounded-[9px] flex flex-col justify-start items-start hover:scale-[1.01] transition-transform duration-500">
                   <div className="w-full h-full relative overflow-hidden">
                     {/* Step 1: Configuration panel */}
                     <div className={`absolute inset-0 transition-all duration-500 ease-in-out flex flex-col ${activeStep === 0 ? "opacity-100 scale-100 blur-0" : "opacity-0 scale-95 blur-sm"}`}>
@@ -590,11 +591,16 @@ export default function ChatbotLanding() {
         </section>
 
         {/* ═══ TESTIMONIALS (Brillance-style carousel) ═══ */}
-        <motion.section ref={testimonialsRef} initial={{ opacity: 0, y: 40 }} animate={testimonialsInView ? { opacity: 1, y: 0 } : {}} transition={{ duration: 0.5 }} id="testimonials" className={`${sectionBorder} bg-white dark:bg-[#292524]`}>
-          <div className="py-16 md:py-20 flex flex-col md:flex-row justify-center items-end gap-6 px-4 sm:px-6 md:px-12">
+        <motion.section ref={testimonialsRef} initial={{ opacity: 0, y: 40 }} animate={testimonialsInView ? { opacity: 1, y: 0 } : {}} transition={{ duration: 0.5 }} id="testimonials" className={`${sectionBorder} bg-white dark:bg-[#262220]`}>
+          <div className="py-20 flex flex-col md:flex-row justify-center items-end gap-6 px-4 sm:px-6 md:px-12 relative">
+
+            {/* Decorative Quote Mark */}
+            <div className="absolute top-8 left-4 sm:left-8 md:left-12 text-[180px] md:text-[240px] font-serif leading-none text-[rgba(55,50,47,0.04)] dark:text-[rgba(255,255,255,0.03)] select-none pointer-events-none" aria-hidden="true">
+              &ldquo;
+            </div>
 
             {/* Quote + Name */}
-            <div className="flex-1 flex flex-col gap-6">
+            <div className="flex-1 flex flex-col gap-6 relative z-10">
               <div
                 className="text-[#49423D] dark:text-[#F5F5F4] text-h2 md:text-[32px] font-medium leading-10 md:leading-[42px] font-sans tracking-tight min-h-[120px] md:min-h-[160px] transition-all duration-700 ease-in-out"
                 style={{ filter: isTransitioning ? "blur(4px)" : "blur(0px)" }}
@@ -615,19 +621,36 @@ export default function ChatbotLanding() {
             </div>
 
             {/* Navigation Arrows */}
-            <div className="flex gap-3 shrink-0">
-              <button
-                onClick={() => handleTestimonialNav((activeTestimonial - 1 + testimonials.length) % testimonials.length)}
-                className="w-9 h-9 shadow-[0px_1px_2px_rgba(0,0,0,0.08)] rounded-full border border-[rgba(0,0,0,0.15)] dark:border-[#57534E] flex items-center justify-center hover:bg-[rgba(55,50,47,0.04)] dark:hover:bg-[#44403C] transition-colors"
-              >
-                <ChevronLeft className="w-5 h-5 text-[#46413E] dark:text-[#F5F5F4]" />
-              </button>
-              <button
-                onClick={() => handleTestimonialNav((activeTestimonial + 1) % testimonials.length)}
-                className="w-9 h-9 shadow-[0px_1px_2px_rgba(0,0,0,0.08)] rounded-full border border-[rgba(0,0,0,0.15)] dark:border-[#57534E] flex items-center justify-center hover:bg-[rgba(55,50,47,0.04)] dark:hover:bg-[#44403C] transition-colors"
-              >
-                <ChevronRight className="w-5 h-5 text-[#46413E] dark:text-[#F5F5F4]" />
-              </button>
+            <div className="flex flex-col items-end gap-4 shrink-0">
+              <div className="flex gap-3">
+                <button
+                  onClick={() => handleTestimonialNav((activeTestimonial - 1 + testimonials.length) % testimonials.length)}
+                  className="w-9 h-9 shadow-[0px_1px_2px_rgba(0,0,0,0.08)] rounded-full border border-[rgba(0,0,0,0.15)] dark:border-[#57534E] flex items-center justify-center hover:bg-[rgba(55,50,47,0.04)] dark:hover:bg-[#44403C] hover:scale-110 transition-all duration-200"
+                >
+                  <ChevronLeft className="w-5 h-5 text-[#46413E] dark:text-[#F5F5F4]" />
+                </button>
+                <button
+                  onClick={() => handleTestimonialNav((activeTestimonial + 1) % testimonials.length)}
+                  className="w-9 h-9 shadow-[0px_1px_2px_rgba(0,0,0,0.08)] rounded-full border border-[rgba(0,0,0,0.15)] dark:border-[#57534E] flex items-center justify-center hover:bg-[rgba(55,50,47,0.04)] dark:hover:bg-[#44403C] hover:scale-110 transition-all duration-200"
+                >
+                  <ChevronRight className="w-5 h-5 text-[#46413E] dark:text-[#F5F5F4]" />
+                </button>
+              </div>
+              {/* Pagination Dots */}
+              <div className="flex gap-2">
+                {testimonials.map((_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => handleTestimonialNav(i)}
+                    className={`h-1.5 rounded-full transition-all duration-300 ${
+                      i === activeTestimonial
+                        ? "w-6 bg-[#37322F] dark:bg-[#F5F5F4]"
+                        : "w-1.5 bg-[rgba(55,50,47,0.2)] dark:bg-[rgba(255,255,255,0.15)] hover:bg-[rgba(55,50,47,0.4)] dark:hover:bg-[rgba(255,255,255,0.3)]"
+                    }`}
+                    aria-label={`Go to testimonial ${i + 1}`}
+                  />
+                ))}
+              </div>
             </div>
           </div>
         </motion.section>
@@ -635,7 +658,7 @@ export default function ChatbotLanding() {
         {/* ═══ FAQ SECTION ═══ */}
         <motion.section ref={faqRef} initial={{ opacity: 0, y: 40 }} animate={faqInView ? { opacity: 1, y: 0 } : {}} transition={{ duration: 0.5 }} id="faq" className={sectionBorder}>
             <div className="flex-1">
-              <div className="px-4 md:px-12 py-16 md:py-20 flex flex-col lg:flex-row justify-start items-start gap-6 lg:gap-12">
+              <div className="px-4 md:px-12 py-20 flex flex-col lg:flex-row justify-start items-start gap-6 lg:gap-12">
 
                 {/* Left Column — Header */}
                 <div className="w-full lg:w-[340px] shrink-0 flex flex-col justify-center items-start gap-4 lg:py-5">
@@ -689,7 +712,7 @@ export default function ChatbotLanding() {
         </motion.section>
 
         {/* ═══ CTA SECTION ═══ */}
-        <motion.section ref={ctaRef} initial={{ opacity: 0, y: 40 }} animate={ctaInView ? { opacity: 1, y: 0 } : {}} transition={{ duration: 0.5 }} className={sectionBorder}>
+        <motion.section ref={ctaRef} initial={{ opacity: 0, y: 40 }} animate={ctaInView ? { opacity: 1, y: 0 } : {}} transition={{ duration: 0.5 }} className={`${sectionBorder} bg-gradient-to-b from-[#F7F5F3] to-[#EDE9E3] dark:from-[#1C1917] dark:to-[#262220]`}>
           <div className="flex">
             <HatchStrip />
           <div className="flex-1 py-20 sm:py-28 flex flex-col items-center text-center px-4 border-l border-r border-[rgba(55,50,47,0.12)] dark:border-[#44403C]">
@@ -700,14 +723,14 @@ export default function ChatbotLanding() {
               Join thousands of websites using Askio to provide instant support and enhance user experience.
             </p>
             <div className="flex flex-col sm:flex-row items-center gap-4">
-              <Link to="/auth" className="h-12 px-12 bg-[#37322F] dark:bg-[#F5F5F4] shadow-[0px_0px_0px_2.5px_rgba(255,255,255,0.08)_inset] rounded-full flex items-center text-white dark:text-[#1C1917] text-[15px] font-medium hover:bg-[#2a2522] dark:hover:bg-[#E7E5E4] transition-colors">
+              <Link to="/auth" className="h-12 px-12 bg-[#37322F] dark:bg-[#F5F5F4] shadow-[0px_0px_0px_2.5px_rgba(255,255,255,0.08)_inset] rounded-full flex items-center text-white dark:text-[#1C1917] text-[15px] font-medium hover:bg-[#2a2522] dark:hover:bg-[#E7E5E4] hover:scale-[1.03] transition-all duration-300">
                 Get Started Free
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
               <div className="flex items-center gap-2 text-[#605A57] text-sm">
                 <div className="flex -space-x-2">
                   {[1, 2, 3].map((i) => (
-                    <div key={i} className="w-8 h-8 rounded-full bg-[#E0DEDB] dark:bg-[#44403C] border-2 border-[#F7F5F3] dark:border-[#1C1917] flex items-center justify-center text-[#605A57] dark:text-[#A8A29E] text-xs font-medium">✓</div>
+                    <div key={i} className="w-8 h-8 rounded-full bg-[#E0DEDB] dark:bg-[#44403C] border-2 border-[#EDE9E3] dark:border-[#262220] flex items-center justify-center text-[#605A57] dark:text-[#A8A29E] text-xs font-medium">✓</div>
                   ))}
                 </div>
                 <span><strong className="text-[#37322F] dark:text-[#F5F5F4]">500+</strong> users already started</span>
@@ -715,7 +738,7 @@ export default function ChatbotLanding() {
             </div>
             <div className="flex flex-wrap justify-center gap-3 mt-10">
               {["No Credit Card", "Easy Setup", "Full Customization"].map((t) => (
-                <span key={t} className="px-4 py-1.5 bg-white dark:bg-[#292524] border border-[#E0DEDB] dark:border-[#44403C] rounded-full text-xs font-medium text-[#605A57] dark:text-[#A8A29E]">{t}</span>
+                <span key={t} className="px-4 py-1.5 bg-white/80 dark:bg-[#2A2522] border border-[#E0DEDB] dark:border-[#44403C] rounded-full text-xs font-medium text-[#605A57] dark:text-[#A8A29E] backdrop-blur-sm">{t}</span>
               ))}
             </div>
           </div>
