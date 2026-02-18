@@ -9,7 +9,7 @@ import { auth } from "./utils/firebase";
 import { onAuthStateChanged, User } from "firebase/auth";
 import Dashboard from "./pages/Dashboard";
 import EditChatbot from "./components/EditChatbot";
-import Home from "./pages/Home";
+import Home from "./pages/home";
 import Auth from "./components/Auth";
 import ChatbotEmbed from "./pages/ChatbotEmbed";
 import Documentation from "./pages/Documentation";

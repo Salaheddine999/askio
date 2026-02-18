@@ -87,7 +87,7 @@ const Auth: React.FC = () => {
       >
         {/* Brand */}
         <Link to="/" className="flex items-center justify-center gap-2 mb-8">
-          <img src="./icon.svg" alt="Askio" className="w-7 h-7" />
+          <img src="./logo.svg" alt="Askio" className="w-7 h-7" />
           <span className="text-lg font-medium font-sans text-[#37322F] dark:text-[#F5F5F4] tracking-tight">
             Askio
           </span>

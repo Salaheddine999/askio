@@ -5,6 +5,7 @@
 @layer base {
   html {
     font-family: 'Inter', system-ui, sans-serif;
+    scroll-behavior: smooth;
     @apply text-body text-[#37322F] dark:text-[#F5F5F4] antialiased;
   }
   

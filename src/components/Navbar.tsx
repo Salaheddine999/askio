@@ -107,12 +107,12 @@ const Navbar: React.FC<NavbarProps> = ({
         <div className="flex h-[60px] items-center px-4 border-b border-[rgba(55,50,47,0.08)] dark:border-[#44403C]">
           <Link
             to="/"
-            className={`flex items-center gap-3 ${
+            className={`flex items-center gap-1 ${
               !sidebarOpen && "lg:justify-center lg:w-full"
             }`}
           >
-            <img src="/icon.svg" alt="Askio Chatbot" className="w-8 h-8 flex-shrink-0" />
-            <span className={`font-sans text-body-lg font-bold tracking-tight text-[#37322F] dark:text-[#F5F5F4] ${!sidebarOpen && "lg:hidden"}`}>
+            <img src="/logo.svg" alt="Askio" className="w-8 h-8 flex-shrink-0" />
+            <span className={`font-sans text-body-lg font-bold tracking-tight text-[#37322F] dark:text-[#F5F5F4] leading-none ${!sidebarOpen && "lg:hidden"}`}>
               Askio
             </span>
           </Link>
