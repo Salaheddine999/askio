@@ -24,6 +24,9 @@ import {
   LoaderCircle,
   Download,
   RefreshCw,
+  Check,
+  ArrowUp,
+  ArrowDown,
 } from "lucide-react";
 import { format, subDays, isBefore } from "date-fns";
 import ConfirmationModal from "../components/ConfirmationModal";
@@ -108,6 +111,11 @@ const Dashboard: React.FC<DashboardProps> = ({ toggleSidebar, testMode }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [chatbotsPerPage] = useState(6);
   const [recentActivities, setRecentActivities] = useState<ActivityItem[]>([]);
+
+  // Reset pagination when search or sort changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, sortBy, sortOrder]);
 
   useEffect(() => {
     if (testMode) {
@@ -378,19 +386,35 @@ const Dashboard: React.FC<DashboardProps> = ({ toggleSidebar, testMode }) => {
     setViewMode(viewMode === "grid" ? "list" : "grid");
   };
 
-  const sortedChatbots = useMemo(() => {
-    return [...chatbots].sort((a, b) => {
-      if (sortBy === "title") {
-        return sortOrder === "asc"
-          ? a.title.localeCompare(b.title)
-          : b.title.localeCompare(a.title);
-      } else {
-        const dateA = new Date(a[sortBy]).getTime();
-        const dateB = new Date(b[sortBy]).getTime();
-        return sortOrder === "asc" ? dateA - dateB : dateB - dateA;
+  // Remove useMemo to ensure fresh calculation every render
+  const sortedChatbots = [...chatbots].sort((a, b) => {
+    if (sortBy === "title") {
+      return sortOrder === "asc"
+        ? a.title.localeCompare(b.title)
+        : b.title.localeCompare(a.title);
+    } else {
+      // Safely handle dates, ensuring we don't return NaN which breaks sort
+      const valA = a[sortBy];
+      const valB = b[sortBy];
+      
+      const dateA = valA instanceof Date ? valA.getTime() : new Date(valA).getTime();
+      const dateB = valB instanceof Date ? valB.getTime() : new Date(valB).getTime();
+
+      // Handle invalid dates (NaN) by pushing them to the end
+      if (isNaN(dateA) && isNaN(dateB)) return 0;
+      if (isNaN(dateA)) return 1;
+      if (isNaN(dateB)) return -1;
+
+      const diff = sortOrder === "asc" ? dateA - dateB : dateB - dateA;
+      
+      // Tie-breaker: If dates are identical (common in bulk imports), sort by Title
+      if (diff === 0) {
+         return a.title.localeCompare(b.title);
       }
-    });
-  }, [chatbots, sortBy, sortOrder]);
+      
+      return diff;
+    }
+  });
 
   const filteredChatbots = useMemo(() => {
     return sortedChatbots.filter((chatbot) =>
@@ -426,12 +450,23 @@ const Dashboard: React.FC<DashboardProps> = ({ toggleSidebar, testMode }) => {
   }, [chatbots, feedbackCounts]);
 
   const handleSort = (newSortBy: "title" | "createdAt" | "lastUpdated") => {
+    let newOrder: "asc" | "desc" = "asc";
+    
     if (sortBy === newSortBy) {
-      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+      // Toggle logic
+      newOrder = sortOrder === "asc" ? "desc" : "asc";
     } else {
+      // Smart default logic:
+      // Title -> Asc (A-Z)
+      // Dates -> Desc (Newest First)
+      if (newSortBy === "title") {
+          newOrder = "asc";
+      } else {
+          newOrder = "desc";
+      }
       setSortBy(newSortBy);
-      setSortOrder("asc");
     }
+    setSortOrder(newOrder);
   };
 
   const refreshDashboard = () => {
@@ -616,36 +651,54 @@ const Dashboard: React.FC<DashboardProps> = ({ toggleSidebar, testMode }) => {
                                     className="bg-white border border-[#E0DEDB] text-[#605A57] hover:bg-[#FAFAF9] hover:text-[#37322F] shadow-sm dark:bg-[#292524] dark:text-[#A8A29E] dark:border-[#44403C] dark:hover:bg-[#44403C] dark:hover:text-[#F5F5F4]"
                                     icon={Filter}
                                 >
-                                    Sort
+                                    Sort: {sortBy === "title" ? "Name" : sortBy === "createdAt" ? "Created" : "Updated"}
                                 </Button>
                                 {isSortDropdownOpen && (
-                                    <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-[#292524] rounded-md shadow-lg py-1 z-10 border border-[#E0DEDB] dark:border-[#44403C]">
+                                    <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-[#292524] rounded-md shadow-lg py-1 z-50 border border-[#E0DEDB] dark:border-[#44403C]">
                                     <button
                                         onClick={() => {
                                         handleSort("title");
                                         setIsSortDropdownOpen(false);
                                         }}
-                                        className="block px-4 py-2 text-sm text-[#605A57] hover:bg-[#FAFAF9] hover:text-[#37322F] dark:text-[#A8A29E] dark:hover:bg-[#44403C] dark:hover:text-[#F5F5F4] w-full text-left"
+                                        className="flex items-center justify-between px-4 py-2 text-sm text-[#605A57] hover:bg-[#FAFAF9] hover:text-[#37322F] dark:text-[#A8A29E] dark:hover:bg-[#44403C] dark:hover:text-[#F5F5F4] w-full text-left cursor-pointer"
                                     >
-                                        Sort by Title
+                                        <span>Sort by Title</span>
+                                        {sortBy === "title" && (
+                                            <div className="flex items-center">
+                                                {sortOrder === "asc" ? <ArrowUp size={14} className="mr-1"/> : <ArrowDown size={14} className="mr-1"/>}
+                                                <Check size={14} />
+                                            </div>
+                                        )}
                                     </button>
                                     <button
                                         onClick={() => {
                                         handleSort("createdAt");
                                         setIsSortDropdownOpen(false);
                                         }}
-                                        className="block px-4 py-2 text-sm text-[#605A57] hover:bg-[#FAFAF9] hover:text-[#37322F] dark:text-[#A8A29E] dark:hover:bg-[#44403C] dark:hover:text-[#F5F5F4] w-full text-left"
+                                        className="flex items-center justify-between px-4 py-2 text-sm text-[#605A57] hover:bg-[#FAFAF9] hover:text-[#37322F] dark:text-[#A8A29E] dark:hover:bg-[#44403C] dark:hover:text-[#F5F5F4] w-full text-left cursor-pointer"
                                     >
-                                        Sort by Creation Date
+                                        <span>Sort by Creation Date</span>
+                                        {sortBy === "createdAt" && (
+                                            <div className="flex items-center">
+                                                {sortOrder === "asc" ? <ArrowUp size={14} className="mr-1"/> : <ArrowDown size={14} className="mr-1"/>}
+                                                <Check size={14} />
+                                            </div>
+                                        )}
                                     </button>
                                     <button
                                         onClick={() => {
                                         handleSort("lastUpdated");
                                         setIsSortDropdownOpen(false);
                                         }}
-                                        className="block px-4 py-2 text-sm text-[#605A57] hover:bg-[#FAFAF9] hover:text-[#37322F] dark:text-[#A8A29E] dark:hover:bg-[#44403C] dark:hover:text-[#F5F5F4] w-full text-left"
+                                        className="flex items-center justify-between px-4 py-2 text-sm text-[#605A57] hover:bg-[#FAFAF9] hover:text-[#37322F] dark:text-[#A8A29E] dark:hover:bg-[#44403C] dark:hover:text-[#F5F5F4] w-full text-left cursor-pointer"
                                     >
-                                        Sort by Last Updated
+                                        <span>Sort by Last Updated</span>
+                                        {sortBy === "lastUpdated" && (
+                                            <div className="flex items-center">
+                                                {sortOrder === "asc" ? <ArrowUp size={14} className="mr-1"/> : <ArrowDown size={14} className="mr-1"/>}
+                                                <Check size={14} />
+                                            </div>
+                                        )}
                                     </button>
                                     </div>
                                 )}
@@ -703,17 +756,50 @@ const Dashboard: React.FC<DashboardProps> = ({ toggleSidebar, testMode }) => {
                                 <table className="min-w-full divide-y divide-[#E0DEDB] dark:divide-[#44403C]">
                                     <thead className="bg-[#FAFAF9] dark:bg-[#292524]">
                                         <tr>
-                                            <th scope="col" className="px-6 py-3 text-left text-caption font-medium text-[#605A57] dark:text-[#A8A29E] uppercase tracking-wider font-sans">
-                                                Name
+                                            <th 
+                                                scope="col" 
+                                                className="px-6 py-3 text-left text-caption font-medium text-[#605A57] dark:text-[#A8A29E] uppercase tracking-wider font-sans cursor-pointer hover:text-[#37322F] dark:hover:text-[#F5F5F4] transition-colors group"
+                                                onClick={() => handleSort("title")}
+                                            >
+                                                <div className="flex items-center">
+                                                    Name
+                                                    {sortBy === "title" && (
+                                                        <span className="ml-1">
+                                                            {sortOrder === "asc" ? <ArrowUp size={12} /> : <ArrowDown size={12} />}
+                                                        </span>
+                                                    )}
+                                                </div>
                                             </th>
                                             <th scope="col" className="px-6 py-3 text-left text-caption font-medium text-[#605A57] dark:text-[#A8A29E] uppercase tracking-wider font-sans">
                                                 Feedback
                                             </th>
-                                            <th scope="col" className="hidden sm:table-cell px-6 py-3 text-left text-caption font-medium text-[#605A57] dark:text-[#A8A29E] uppercase tracking-wider font-sans">
-                                                Created
+                                            <th 
+                                                scope="col" 
+                                                className="hidden sm:table-cell px-6 py-3 text-left text-caption font-medium text-[#605A57] dark:text-[#A8A29E] uppercase tracking-wider font-sans cursor-pointer hover:text-[#37322F] dark:hover:text-[#F5F5F4] transition-colors group"
+                                                onClick={() => handleSort("createdAt")}
+                                            >
+                                                <div className="flex items-center">
+                                                    Created
+                                                    {sortBy === "createdAt" && (
+                                                        <span className="ml-1">
+                                                            {sortOrder === "asc" ? <ArrowUp size={12} /> : <ArrowDown size={12} />}
+                                                        </span>
+                                                    )}
+                                                </div>
                                             </th>
-                                            <th scope="col" className="hidden md:table-cell px-6 py-3 text-left text-caption font-medium text-[#605A57] dark:text-[#A8A29E] uppercase tracking-wider font-sans">
-                                                Last Updated
+                                            <th 
+                                                scope="col" 
+                                                className="hidden md:table-cell px-6 py-3 text-left text-caption font-medium text-[#605A57] dark:text-[#A8A29E] uppercase tracking-wider font-sans cursor-pointer hover:text-[#37322F] dark:hover:text-[#F5F5F4] transition-colors group"
+                                                onClick={() => handleSort("lastUpdated")}
+                                            >
+                                                <div className="flex items-center">
+                                                    Last Updated
+                                                    {sortBy === "lastUpdated" && (
+                                                        <span className="ml-1">
+                                                            {sortOrder === "asc" ? <ArrowUp size={12} /> : <ArrowDown size={12} />}
+                                                        </span>
+                                                    )}
+                                                </div>
                                             </th>
                                             <th scope="col" className="relative px-6 py-3">
                                                 <span className="sr-only">Actions</span>
@@ -867,36 +953,54 @@ const Dashboard: React.FC<DashboardProps> = ({ toggleSidebar, testMode }) => {
                             className="bg-white border border-[#E0DEDB] text-[#605A57] hover:bg-[#FAFAF9] hover:text-[#37322F] shadow-sm dark:bg-[#292524] dark:text-[#A8A29E] dark:border-[#44403C] dark:hover:bg-[#44403C] dark:hover:text-[#F5F5F4]"
                             icon={Filter}
                         >
-                            Sort
+                            Sort: {sortBy === "title" ? "Name" : sortBy === "createdAt" ? "Created" : "Updated"}
                         </Button>
                         {isSortDropdownOpen && (
-                            <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-[#292524] rounded-md shadow-lg py-1 z-10 border border-[#E0DEDB] dark:border-[#44403C]">
+                            <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-[#292524] rounded-md shadow-lg py-1 z-50 border border-[#E0DEDB] dark:border-[#44403C]">
                             <button
                                 onClick={() => {
                                 handleSort("title");
                                 setIsSortDropdownOpen(false);
                                 }}
-                                className="block px-4 py-2 text-sm text-[#605A57] hover:bg-[#FAFAF9] hover:text-[#37322F] dark:text-[#A8A29E] dark:hover:bg-[#44403C] dark:hover:text-[#F5F5F4] w-full text-left"
+                                className="flex items-center justify-between px-4 py-2 text-sm text-[#605A57] hover:bg-[#FAFAF9] hover:text-[#37322F] dark:text-[#A8A29E] dark:hover:bg-[#44403C] dark:hover:text-[#F5F5F4] w-full text-left cursor-pointer"
                             >
-                                Sort by Title
+                                <span>Sort by Title</span>
+                                {sortBy === "title" && (
+                                    <div className="flex items-center">
+                                        {sortOrder === "asc" ? <ArrowUp size={14} className="mr-1"/> : <ArrowDown size={14} className="mr-1"/>}
+                                        <Check size={14} />
+                                    </div>
+                                )}
                             </button>
                             <button
                                 onClick={() => {
                                 handleSort("createdAt");
                                 setIsSortDropdownOpen(false);
                                 }}
-                                className="block px-4 py-2 text-sm text-[#605A57] hover:bg-[#FAFAF9] hover:text-[#37322F] dark:text-[#A8A29E] dark:hover:bg-[#44403C] dark:hover:text-[#F5F5F4] w-full text-left"
+                                className="flex items-center justify-between px-4 py-2 text-sm text-[#605A57] hover:bg-[#FAFAF9] hover:text-[#37322F] dark:text-[#A8A29E] dark:hover:bg-[#44403C] dark:hover:text-[#F5F5F4] w-full text-left cursor-pointer"
                             >
-                                Sort by Creation Date
+                                <span>Sort by Creation Date</span>
+                                {sortBy === "createdAt" && (
+                                    <div className="flex items-center">
+                                        {sortOrder === "asc" ? <ArrowUp size={14} className="mr-1"/> : <ArrowDown size={14} className="mr-1"/>}
+                                        <Check size={14} />
+                                    </div>
+                                )}
                             </button>
                             <button
                                 onClick={() => {
                                 handleSort("lastUpdated");
                                 setIsSortDropdownOpen(false);
                                 }}
-                                className="block px-4 py-2 text-sm text-[#605A57] hover:bg-[#FAFAF9] hover:text-[#37322F] dark:text-[#A8A29E] dark:hover:bg-[#44403C] dark:hover:text-[#F5F5F4] w-full text-left"
+                                className="flex items-center justify-between px-4 py-2 text-sm text-[#605A57] hover:bg-[#FAFAF9] hover:text-[#37322F] dark:text-[#A8A29E] dark:hover:bg-[#44403C] dark:hover:text-[#F5F5F4] w-full text-left cursor-pointer"
                             >
-                                Sort by Last Updated
+                                <span>Sort by Last Updated</span>
+                                {sortBy === "lastUpdated" && (
+                                    <div className="flex items-center">
+                                        {sortOrder === "asc" ? <ArrowUp size={14} className="mr-1"/> : <ArrowDown size={14} className="mr-1"/>}
+                                        <Check size={14} />
+                                    </div>
+                                )}
                             </button>
                             </div>
                         )}
@@ -956,36 +1060,138 @@ const Dashboard: React.FC<DashboardProps> = ({ toggleSidebar, testMode }) => {
                     )}
                     <AnimatePresence>
                     {!loading && !error && (
-                        <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 0.5 }}
-                        className={`${
-                            viewMode === "grid"
-                            ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6"
-                            : "space-y-4 sm:space-y-6"
-                        }`}
-                        >
-                        {currentChatbots.map((chatbot, index) => (
-                            <ChatbotCard
-                            key={chatbot.id}
-                            chatbot={chatbot}
-                            feedback={
-                                feedbackCounts[chatbot.id] || {
-                                positive: 0,
-                                negative: 0,
+                        <>
+                        {viewMode === "grid" ? (
+                            <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ duration: 0.5 }}
+                            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6"
+                            >
+                            {currentChatbots.map((chatbot, index) => (
+                                <ChatbotCard
+                                key={chatbot.id}
+                                chatbot={chatbot}
+                                feedback={
+                                    feedbackCounts[chatbot.id] || {
+                                    positive: 0,
+                                    negative: 0,
+                                    }
                                 }
-                            }
-                            viewMode={viewMode}
-                            onEdit={(id) => navigate(`/configure/${id}`)}
-                            onEmbed={openEmbedModal}
-                            onDelete={openDeleteModal}
-                            onToggleActive={() => toggleChatbotStatus(chatbot.id, chatbot.isActive ?? true)}
-                            index={index}
-                            />
-                        ))}
-                        </motion.div>
+                                viewMode="grid"
+                                onEdit={(id) => navigate(`/configure/${id}`)}
+                                onEmbed={openEmbedModal}
+                                onDelete={openDeleteModal}
+                                onToggleActive={() => toggleChatbotStatus(chatbot.id, chatbot.isActive ?? true)}
+                                index={index}
+                                />
+                            ))}
+                            </motion.div>
+                        ) : (
+                            <>
+                                {/* Mobile List View (rendered as cards) */}
+                                <div className="block md:hidden space-y-4">
+                                    {currentChatbots.map((chatbot, index) => (
+                                        <ChatbotCard
+                                        key={chatbot.id}
+                                        chatbot={chatbot}
+                                        feedback={
+                                            feedbackCounts[chatbot.id] || {
+                                            positive: 0,
+                                            negative: 0,
+                                            }
+                                        }
+                                        viewMode="grid" // Re-use grid card for mobile list
+                                        onEdit={(id) => navigate(`/configure/${id}`)}
+                                        onEmbed={openEmbedModal}
+                                        onDelete={openDeleteModal}
+                                        onToggleActive={() => toggleChatbotStatus(chatbot.id, chatbot.isActive ?? true)}
+                                        index={index}
+                                        />
+                                    ))}
+                                </div>
+
+                                {/* Desktop List View (Table) */}
+                                <div className="hidden md:block bg-white dark:bg-[#1C1917] rounded-lg border border-[#E0DEDB] dark:border-[#44403C] overflow-hidden shadow-sm overflow-x-auto">
+                                    <table className="min-w-full divide-y divide-[#E0DEDB] dark:divide-[#44403C]">
+                                        <thead className="bg-[#FAFAF9] dark:bg-[#292524]">
+                                            <tr>
+                                                <th 
+                                                    scope="col" 
+                                                    className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-[#605A57] dark:text-[#A8A29E] uppercase tracking-wider font-sans cursor-pointer hover:text-[#37322F] dark:hover:text-[#F5F5F4] transition-colors group"
+                                                    onClick={() => handleSort("title")}
+                                                >
+                                                    <div className="flex items-center">
+                                                        Name
+                                                        {sortBy === "title" && (
+                                                            <span className="ml-1">
+                                                                {sortOrder === "asc" ? <ArrowUp size={12} /> : <ArrowDown size={12} />}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                </th>
+                                                <th scope="col" className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-[#605A57] dark:text-[#A8A29E] uppercase tracking-wider font-sans">
+                                                    Feedback
+                                                </th>
+                                                <th 
+                                                    scope="col" 
+                                                    className="hidden lg:table-cell px-6 py-3 text-left text-xs font-medium text-[#605A57] dark:text-[#A8A29E] uppercase tracking-wider font-sans cursor-pointer hover:text-[#37322F] dark:hover:text-[#F5F5F4] transition-colors group"
+                                                    onClick={() => handleSort("createdAt")}
+                                                >
+                                                    <div className="flex items-center">
+                                                        Created
+                                                        {sortBy === "createdAt" && (
+                                                            <span className="ml-1">
+                                                                {sortOrder === "asc" ? <ArrowUp size={12} /> : <ArrowDown size={12} />}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                </th>
+                                                <th 
+                                                    scope="col" 
+                                                    className="hidden xl:table-cell px-6 py-3 text-left text-xs font-medium text-[#605A57] dark:text-[#A8A29E] uppercase tracking-wider font-sans cursor-pointer hover:text-[#37322F] dark:hover:text-[#F5F5F4] transition-colors group"
+                                                    onClick={() => handleSort("lastUpdated")}
+                                                >
+                                                    <div className="flex items-center">
+                                                        Last Updated
+                                                        {sortBy === "lastUpdated" && (
+                                                            <span className="ml-1">
+                                                                {sortOrder === "asc" ? <ArrowUp size={12} /> : <ArrowDown size={12} />}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                </th>
+                                                <th scope="col" className="relative px-4 sm:px-6 py-3">
+                                                    <span className="sr-only">Actions</span>
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="bg-white dark:bg-[#1C1917] divide-y divide-[#E0DEDB] dark:divide-[#44403C]">
+                                            {currentChatbots.map((chatbot, index) => (
+                                                <ChatbotCard
+                                                    key={chatbot.id}
+                                                    chatbot={chatbot}
+                                                    feedback={
+                                                        feedbackCounts[chatbot.id] || {
+                                                        positive: 0,
+                                                        negative: 0,
+                                                        }
+                                                    }
+                                                    viewMode="list"
+                                                    onEdit={(id) => navigate(`/configure/${id}`)}
+                                                    onEmbed={openEmbedModal}
+                                                    onDelete={openDeleteModal}
+                                                    onToggleActive={() => toggleChatbotStatus(chatbot.id, chatbot.isActive ?? true)}
+                                                    index={index}
+                                                />
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </>
+                        )}
+                        </>
                     )}
                     </AnimatePresence>
                     {!loading && !error && filteredChatbots.length === 0 && (
