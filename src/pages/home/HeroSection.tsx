@@ -36,7 +36,7 @@ export default function HeroSection() {
   const sectionBorder = "border-b border-[rgba(55,50,47,0.12)] dark:border-[#44403C]";
 
   return (
-    <section className={`py-20 lg:py-28 flex flex-col items-center text-center ${sectionBorder}`}>
+    <section className={`pt-20 lg:pt-28 pb-10 lg:pb-14 flex flex-col items-center text-center ${sectionBorder}`}>
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}

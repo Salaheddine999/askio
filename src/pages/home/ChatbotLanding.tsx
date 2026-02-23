@@ -9,6 +9,7 @@ import FAQSection from "./FAQSection";
 import CTASection from "./CTASection";
 import Footer from "./Footer";
 import ScrollToTop from "./ScrollToTop";
+import MarqueeStrip from "./MarqueeStrip";
 
 export default function ChatbotLanding() {
   useEffect(() => {
@@ -45,6 +46,7 @@ export default function ChatbotLanding() {
 
         <LandingNav />
         <HeroSection />
+        <MarqueeStrip />
         <FeaturesSection />
         <HowItWorks />
         <TestimonialsSection />
