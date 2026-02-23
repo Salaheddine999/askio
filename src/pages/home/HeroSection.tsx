@@ -1,38 +1,9 @@
-import { useState, useEffect, useRef } from "react";
-import { ArrowRight, Star } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { FaGithub } from "react-icons/fa";
 import { motion } from "framer-motion";
-import { useInView } from "react-intersection-observer";
-
-/* ─── Animated counter hook ─── */
-function useCountUp(target: number, duration = 1800, inView: boolean) {
-  const [count, setCount] = useState(0);
-  const started = useRef(false);
-
-  useEffect(() => {
-    if (!inView || started.current) return;
-    started.current = true;
-    const start = performance.now();
-    const step = (now: number) => {
-      const progress = Math.min((now - start) / duration, 1);
-      // ease-out quad
-      const eased = 1 - (1 - progress) * (1 - progress);
-      setCount(Math.round(eased * target));
-      if (progress < 1) requestAnimationFrame(step);
-    };
-    requestAnimationFrame(step);
-  }, [inView, target, duration]);
-
-  return count;
-}
 
 export default function HeroSection() {
-  const [statsRef, statsInView] = useInView({ triggerOnce: true, threshold: 0.5 });
-  const chatbots = useCountUp(1200, 1800, statsInView);
-  const users = useCountUp(500, 1600, statsInView);
-  const rating = useCountUp(48, 1400, statsInView); // 4.8 × 10
-
   const sectionBorder = "border-b border-[rgba(55,50,47,0.12)] dark:border-[#44403C]";
 
   return (
@@ -94,49 +65,6 @@ export default function HeroSection() {
             className="w-full h-auto rounded-lg shadow-2xl"
             loading="lazy"
           />
-        </div>
-      </motion.div>
-
-      {/* Stats Capsule */}
-      <motion.div
-        ref={statsRef}
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.5 }}
-        className="flex justify-center mt-12 mb-4"
-      >
-        <div className="inline-flex items-center justify-center gap-6 px-8 py-3 bg-white/60 dark:bg-[#1C1917]/60 backdrop-blur-sm border border-[rgba(55,50,47,0.08)] dark:border-[#44403C] rounded-full shadow-[0px_2px_8px_rgba(0,0,0,0.04)]">
-          <div className="flex flex-col items-center" aria-label="Over 1200 chatbots created">
-            <span className="text-2xl font-serif text-[#37322F] dark:text-[#F5F5F4]">
-              {chatbots >= 1000 ? `${(chatbots / 1000).toFixed(1)}K` : chatbots}+
-            </span>
-            <span className="text-[10px] uppercase tracking-wider font-medium text-[#57524F] dark:text-[#A8A29E]">
-              Chatbots
-            </span>
-          </div>
-
-          <div className="w-px h-8 bg-[rgba(55,50,47,0.12)] dark:bg-[#44403C]" />
-
-          <div className="flex flex-col items-center" aria-label="Over 500 users">
-            <span className="text-2xl font-serif text-[#37322F] dark:text-[#F5F5F4]">{users}+</span>
-            <span className="text-[10px] uppercase tracking-wider font-medium text-[#57524F] dark:text-[#A8A29E]">
-              Users
-            </span>
-          </div>
-
-          <div className="w-px h-8 bg-[rgba(55,50,47,0.12)] dark:bg-[#44403C]" />
-
-          <div className="flex flex-col items-center" aria-label="4.8 out of 5 star rating">
-            <div className="flex items-center gap-1">
-              <span className="text-2xl font-serif text-[#37322F] dark:text-[#F5F5F4]">
-                {(rating / 10).toFixed(1)}
-              </span>
-              <Star className="w-4 h-4 fill-yellow-400 text-yellow-400 mb-1" />
-            </div>
-            <span className="text-[10px] uppercase tracking-wider font-medium text-[#57524F] dark:text-[#A8A29E]">
-              Rating
-            </span>
-          </div>
         </div>
       </motion.div>
     </section>
