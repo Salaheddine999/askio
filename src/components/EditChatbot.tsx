@@ -40,9 +40,9 @@ import { Helmet } from "react-helmet-async";
 
 // Dynamic import: AI feature is optional (not included in open-source builds)
 const aiModules = import.meta.glob('./AiFaqGenerator.tsx');
-const AiFaqGenerator = Object.keys(aiModules).length > 0
-  // @ts-ignore - Module may not exist in open-source builds (gitignored)
-  ? lazy(() => import('./AiFaqGenerator'))
+const aiModuleLoader = Object.values(aiModules)[0];
+const AiFaqGenerator = aiModuleLoader
+  ? lazy(() => aiModuleLoader() as Promise<{ default: React.ComponentType<any> }>)
   : null;
 
 interface EditChatbotProps extends ChatbotProps {
