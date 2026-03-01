@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Bot, Send, X, ThumbsUp, ThumbsDown } from "lucide-react";
+import { Send, X, ThumbsUp, ThumbsDown } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Fuse from "fuse.js";
 import { db } from "../utils/firebase";
@@ -38,7 +38,6 @@ const Chatbot: React.FC<ChatbotProps> = ({
   placeholder,
   faqData,
   isEmbedded,
-  isPreview,
   customPositionClass,
 }) => {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -327,164 +326,182 @@ const Chatbot: React.FC<ChatbotProps> = ({
       transition={{ duration: 0.3 }}
       className={`${
         isEmbedded ? `fixed ${combinedPositionClass} z-50` : "w-full h-full"
-      } bg-white dark:bg-[#1C1917] flex flex-col shadow-lg rounded-lg ${
-        !isEmbedded && isPreview ? "" : ""
-      } ${isEmbedded ? "w-[350px] h-[520px]" : ""}`}
+      } bg-white dark:bg-[#1C1917] flex flex-col rounded-2xl overflow-hidden ${
+        isEmbedded ? "w-[370px] h-[540px] shadow-2xl shadow-black/10 dark:shadow-black/30 border border-[#E0DEDB]/50 dark:border-[#44403C]/50" : "shadow-lg"
+      }`}
     >
+      {/* Header */}
       <div
-        className="text-white p-4 flex items-center justify-between rounded-t-lg"
+        className="text-white px-5 py-5 flex items-center justify-between relative overflow-hidden"
         style={headerStyle}
       >
-        <div className="flex items-center">
-          <div className="relative mr-2">
-            <Bot className="w-8 h-8" />
-            <div className="absolute bottom-0 right-0 w-2 h-2 bg-green-400 rounded-full"></div>
+        {/* Subtle gradient overlay for depth */}
+        <div className="absolute inset-0 bg-gradient-to-b from-white/[0.08] to-transparent pointer-events-none" />
+        <div className="absolute bottom-0 left-0 right-0 h-px bg-black/10" />
+        
+        <div className="flex items-center gap-3.5 relative z-10">
+          <div className="relative">
+            <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center shadow-sm shadow-black/10">
+              <img src="/logo.svg" alt="Askio" className="w-6 h-6 brightness-0 invert" />
+            </div>
+            <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-400 rounded-full border-2 border-white shadow-sm">
+              <div className="absolute inset-0 rounded-full bg-emerald-400 animate-ping opacity-40" />
+            </div>
           </div>
-
-          <div className="flex flex-col">
-            <h2 className="font-semibold text-lg">{title}</h2>
-            <p className="text-sm text-white opacity-90">Ask me a question</p>
+          <div>
+            <h2 className="font-bold text-base leading-tight tracking-[-0.01em]">{title || "Askio Assistant"}</h2>
+            <div className="flex items-center gap-1.5 mt-0.5">
+              <span className="text-[11px] text-white/60 font-medium">Online</span>
+              <span className="text-white/30">·</span>
+              <span className="text-[11px] text-white/50">Ready to chat</span>
+            </div>
           </div>
         </div>
 
         {isEmbedded && (
           <button
             onClick={toggleChatbot}
-            className="text-white hover:text-gray-200 transition-colors duration-200"
+            className="relative z-10 w-8 h-8 rounded-xl bg-white/10 hover:bg-white/20 border border-white/10 flex items-center justify-center transition-all duration-200 hover:scale-105"
           >
-            <X size={20} />
+            <X size={15} strokeWidth={2.5} />
           </button>
         )}
       </div>
-      <div className="flex-grow overflow-y-auto p-4 space-y-4">
+
+      {/* Messages Area */}
+      <div className="flex-grow overflow-y-auto px-4 py-4 space-y-3">
         <AnimatePresence>
           {messages.map((message, index) => (
             <motion.div
               key={index}
-              initial={{ opacity: 0, y: 10 }}
+              initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.3 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.25 }}
               className={`flex ${
                 message.sender === "user" ? "justify-end" : "justify-start"
               }`}
             >
-              <span
-                className={`inline-block p-2 rounded-lg max-w-[80%] ${
+              <div
+                className={`inline-block px-3.5 py-2.5 max-w-[80%] text-[13px] leading-relaxed ${
                   message.sender === "user"
-                    ? "text-white"
-                    : "bg-[#F5F5F4] dark:bg-[#292524] text-[#37322F] dark:text-[#F5F5F4]"
+                    ? "text-white rounded-2xl rounded-br-md"
+                    : "bg-[#F5F5F4] dark:bg-[#292524] text-[#37322F] dark:text-[#F5F5F4] rounded-2xl rounded-bl-md"
                 }`}
                 style={message.sender === "user" ? userMessageStyle : {}}
               >
                 {message.text}
-              </span>
+              </div>
             </motion.div>
           ))}
+
+          {/* Suggestion Chips */}
           {showSuggestions &&
             messages.length > 0 &&
             messages[messages.length - 1]?.sender === "bot" && (
               <motion.div
-                initial={{ opacity: 0, y: 10 }}
+                initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.3 }}
-                className="mt-4"
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.25 }}
+                className="pt-1"
               >
-                <div className="flex flex-col space-y-2">
+                <div className="flex flex-wrap gap-1.5">
                   {suggestions.map((question, idx) => (
-                    <button
+                    <motion.button
                       key={idx}
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
                       onClick={(e) => handleSuggestionClick(e, question)}
-                      className="text-sm bg-[#FAFAF9] dark:bg-[#292524] w-fit hover:bg-[#F5F5F4] dark:hover:bg-[#44403C] text-[#37322F] dark:text-[#F5F5F4] py-2 px-3 rounded-lg transition-colors duration-200 border border-[#E0DEDB] dark:border-[#44403C] text-left"
+                      className="text-[12px] bg-white dark:bg-[#292524] hover:bg-[#F5F5F4] dark:hover:bg-[#44403C] text-[#37322F] dark:text-[#F5F5F4] py-1.5 px-3 rounded-full transition-colors duration-150 border border-[#E0DEDB] dark:border-[#44403C] text-left shadow-sm hover:shadow"
                     >
                       {question}
-                    </button>
+                    </motion.button>
                   ))}
                 </div>
               </motion.div>
             )}
         </AnimatePresence>
+
+        {/* Typing indicator */}
         {isTyping && (
           <motion.div
-            initial={{ opacity: 0, y: 10 }}
+            initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
             className="flex justify-start"
           >
-            <span className="inline-block p-2 rounded-lg bg-[#F5F5F4] dark:bg-[#292524] text-[#37322F] dark:text-[#F5F5F4]">
-              <div className="flex items-center h-5">
-                <span className="h-1.5 w-1.5 bg-[#605A57] dark:bg-[#A8A29E] rounded-full mr-1 animate-bounce"></span>
-                <span
-                  className="h-1.5 w-1.5 bg-[#605A57] dark:bg-[#A8A29E] rounded-full mr-1 animate-bounce"
-                  style={{ animationDelay: "-0.3s" }}
-                ></span>
-                <span
-                  className="h-1.5 w-1.5 bg-[#605A57] dark:bg-[#A8A29E] rounded-full animate-bounce"
-                  style={{ animationDelay: "-0.15s" }}
-                ></span>
-              </div>
-            </span>
+            <div className="inline-flex items-center gap-1 px-3.5 py-3 rounded-2xl rounded-bl-md bg-[#F5F5F4] dark:bg-[#292524]">
+              <span className="h-1.5 w-1.5 bg-[#A8A29E] dark:bg-[#78716C] rounded-full animate-bounce" style={{ animationDelay: "0s" }}></span>
+              <span className="h-1.5 w-1.5 bg-[#A8A29E] dark:bg-[#78716C] rounded-full animate-bounce" style={{ animationDelay: "0.15s" }}></span>
+              <span className="h-1.5 w-1.5 bg-[#A8A29E] dark:bg-[#78716C] rounded-full animate-bounce" style={{ animationDelay: "0.3s" }}></span>
+            </div>
           </motion.div>
         )}
         <div ref={messagesEndRef} />
       </div>
-      <div className="p-4 border-t border-[#E0DEDB] dark:border-[#44403C]">
-        <form onSubmit={handleSend} className="flex">
+
+      {/* Input Area */}
+      <div className="px-4 py-3 border-t border-[#E0DEDB]/60 dark:border-[#44403C]/60 bg-[#FAFAF9] dark:bg-[#1C1917]">
+        <form onSubmit={handleSend} className="flex items-center gap-2">
           <input
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            className="flex-grow p-2 border border-[#E0DEDB] dark:border-[#44403C] rounded-l-lg focus:outline-none bg-white dark:bg-[#292524] text-[#37322F] dark:text-[#F5F5F4] placeholder-[#A8A29E] dark:placeholder-[#605A57]"
+            className="flex-grow px-3.5 py-2 rounded-full bg-white dark:bg-[#292524] border border-[#E0DEDB] dark:border-[#44403C] text-[13px] text-[#37322F] dark:text-[#F5F5F4] placeholder-[#A8A29E] dark:placeholder-[#78716C] focus:outline-none focus:border-[#37322F]/30 dark:focus:border-[#A8A29E]/30 transition-colors"
             placeholder={placeholder}
           />
           <motion.button
             type="submit"
-            className="text-white p-2 rounded-r-lg hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200"
+            className="w-9 h-9 rounded-full text-white flex items-center justify-center flex-shrink-0 transition-opacity hover:opacity-90"
             style={buttonStyle}
             whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+            whileTap={{ scale: 0.9 }}
             onClick={(e) => e.stopPropagation()}
           >
-            <Send size={20} />
+            <Send size={15} className="-translate-x-[1px]" />
           </motion.button>
         </form>
       </div>
+
+      {/* Feedback prompt */}
       {!hasFeedback && !showFeedback && messages.length > 1 && (
-        <div className="p-2 border-t border-[#E0DEDB] dark:border-[#44403C] text-center">
+        <div className="px-4 py-2 border-t border-[#E0DEDB]/60 dark:border-[#44403C]/60 text-center">
           <button
             onClick={handleFeedbackClick}
-            className="text-sm text-[#605A57] dark:text-[#A8A29E] hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors duration-200"
+            className="text-[11px] text-[#A8A29E] dark:text-[#78716C] hover:text-[#37322F] dark:hover:text-[#F5F5F4] transition-colors duration-200"
           >
-            Was this conversation helpful? Provide feedback
+            Was this helpful? Give feedback
           </button>
         </div>
       )}
       {showFeedback && !hasFeedback && (
-        <div className="p-4 border-t border-[#E0DEDB] dark:border-[#44403C] flex justify-center items-center space-x-4">
+        <div className="px-4 py-2.5 border-t border-[#E0DEDB]/60 dark:border-[#44403C]/60 flex justify-center items-center gap-4">
           <button
             onClick={(e) => handleFeedback(true, e)}
-            className="flex items-center text-green-500 hover:text-green-700 transition-colors duration-200"
+            className="flex items-center gap-1 text-[12px] text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300 transition-colors duration-200"
           >
-            <ThumbsUp size={20} className="mr-1" />
+            <ThumbsUp size={14} />
             <span>Helpful</span>
           </button>
+          <div className="w-px h-4 bg-[#E0DEDB] dark:bg-[#44403C]"></div>
           <button
             onClick={(e) => handleFeedback(false, e)}
-            className="flex items-center text-red-500 hover:text-red-700 transition-colors duration-200"
+            className="flex items-center gap-1 text-[12px] text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300 transition-colors duration-200"
           >
-            <ThumbsDown size={20} className="mr-1" />
-            <span>Not Helpful</span>
+            <ThumbsDown size={14} />
+            <span>Not helpful</span>
           </button>
         </div>
       )}
-      <div className="p-2 border-t border-[#E0DEDB] dark:border-[#44403C] text-center text-xs font-semibold text-[#A8A29E] bg-[#FAFAF9] dark:bg-[#1C1917]">
+
+      {/* Footer */}
+      <div className="py-2 border-t border-[#E0DEDB]/60 dark:border-[#44403C]/60 text-center text-[10px] text-[#A8A29E] dark:text-[#78716C] bg-[#FAFAF9] dark:bg-[#1C1917] rounded-b-2xl">
         Powered by{" "}
         <a
           href="https://askio.vercel.app/"
           target="_blank"
           rel="noopener noreferrer"
-          className="hover:text-indigo-500 text-[#605A57] dark:text-[#A8A29E]"
+          className="font-semibold text-[#605A57] dark:text-[#A8A29E] hover:text-[#37322F] dark:hover:text-[#F5F5F4] transition-colors"
         >
           Askio
         </a>

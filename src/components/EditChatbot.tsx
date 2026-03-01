@@ -1,5 +1,4 @@
-﻿import React, { useState, useEffect, useRef, lazy, Suspense } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import React, { useState, useEffect, useRef, lazy, Suspense } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { db, auth } from "../utils/firebase";
 import {
@@ -31,7 +30,6 @@ import {
   Copy,
   MessageSquare,
   RotateCcw,
-  X,
 } from "lucide-react";
 import ConfirmationModal from "./ConfirmationModal";
 import { toast } from "react-hot-toast";
@@ -55,6 +53,44 @@ interface FAQItem {
   answer: string;
   isOpen: boolean;
 }
+
+// --- Section Header ---
+const SectionHeader = ({ title, description }: { title: string; description: string }) => (
+  <div className="mb-6">
+    <h2 className="text-lg font-semibold text-[#37322F] dark:text-[#F5F5F4] font-sans">{title}</h2>
+    <p className="text-body-sm text-[#78716C] dark:text-[#A8A29E] mt-1">{description}</p>
+  </div>
+);
+
+// --- Toggle Switch ---
+const ToggleSwitch = ({ checked, onChange, label }: { checked: boolean; onChange: (v: boolean) => void; label: string }) => (
+  <label className="inline-flex items-center cursor-pointer group">
+    <div className="relative">
+      <input
+        type="checkbox"
+        className="sr-only"
+        checked={checked}
+        onChange={(e) => onChange(e.target.checked)}
+      />
+      <div className={`w-10 h-[22px] rounded-full transition-colors duration-200 ${checked ? "bg-[#37322F] dark:bg-[#F5F5F4]" : "bg-[#D6D3D1] dark:bg-[#57534E]"}`} />
+      <div className={`absolute top-[3px] left-[3px] w-4 h-4 rounded-full bg-white dark:bg-[#1C1917] shadow transition-transform duration-200 ${checked ? "translate-x-[18px]" : "translate-x-0"}`} />
+    </div>
+    <span className="ml-3 text-body-sm font-medium text-[#37322F] dark:text-[#F5F5F4] group-hover:text-[#1C1917] dark:group-hover:text-white transition-colors">{label}</span>
+  </label>
+);
+
+// --- Input Field with helper text ---
+const FormField = ({ label, helperText, children }: { label: string; helperText?: string; children: React.ReactNode }) => (
+  <div>
+    <label className="block mb-1.5 text-[#37322F] dark:text-[#F5F5F4] font-medium text-body-sm">
+      {label}
+    </label>
+    {children}
+    {helperText && (
+      <p className="mt-1.5 text-xs text-[#A8A29E] dark:text-[#78716C]">{helperText}</p>
+    )}
+  </div>
+);
 
 const EditChatbot: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -343,43 +379,7 @@ const EditChatbot: React.FC = () => {
     { key: "embed", label: "Embed", icon: Code2, desc: "Install on your site" },
   ];
 
-  // --- Section Header ---
-  const SectionHeader = ({ title, description }: { title: string; description: string }) => (
-    <div className="mb-6">
-      <h2 className="text-lg font-semibold text-[#37322F] dark:text-[#F5F5F4] font-sans">{title}</h2>
-      <p className="text-body-sm text-[#78716C] dark:text-[#A8A29E] mt-1">{description}</p>
-    </div>
-  );
 
-  // --- Toggle Switch ---
-  const ToggleSwitch = ({ checked, onChange, label }: { checked: boolean; onChange: (v: boolean) => void; label: string }) => (
-    <label className="inline-flex items-center cursor-pointer group">
-      <div className="relative">
-        <input
-          type="checkbox"
-          className="sr-only"
-          checked={checked}
-          onChange={(e) => onChange(e.target.checked)}
-        />
-        <div className={`w-10 h-[22px] rounded-full transition-colors duration-200 ${checked ? "bg-[#37322F] dark:bg-[#F5F5F4]" : "bg-[#D6D3D1] dark:bg-[#57534E]"}`} />
-        <div className={`absolute top-[3px] left-[3px] w-4 h-4 rounded-full bg-white dark:bg-[#1C1917] shadow transition-transform duration-200 ${checked ? "translate-x-[18px]" : "translate-x-0"}`} />
-      </div>
-      <span className="ml-3 text-body-sm font-medium text-[#37322F] dark:text-[#F5F5F4] group-hover:text-[#1C1917] dark:group-hover:text-white transition-colors">{label}</span>
-    </label>
-  );
-
-  // --- Input Field with helper text ---
-  const FormField = ({ label, helperText, children }: { label: string; helperText?: string; children: React.ReactNode }) => (
-    <div>
-      <label className="block mb-1.5 text-[#37322F] dark:text-[#F5F5F4] font-medium text-body-sm">
-        {label}
-      </label>
-      {children}
-      {helperText && (
-        <p className="mt-1.5 text-xs text-[#A8A29E] dark:text-[#78716C]">{helperText}</p>
-      )}
-    </div>
-  );
 
   const inputClasses = "w-full p-2.5 bg-white dark:bg-[#44403C] border border-[#E0DEDB] dark:border-[#57534E] text-[#37322F] dark:text-[#F5F5F4] placeholder-[#9CA3AF] dark:placeholder-[#78716C] focus:ring-2 focus:ring-[#37322F]/20 dark:focus:ring-[#F5F5F4]/20 focus:border-[#37322F] dark:focus:border-[#F5F5F4] rounded-[9px] shadow-sm text-body-sm transition-all duration-200 outline-none";
 
@@ -944,7 +944,7 @@ const EditChatbot: React.FC = () => {
           {/* Preview Panel — hidden on mobile, visible on lg+ */}
           <div className="hidden lg:block lg:col-span-1">
             <div className="sticky top-8">
-              <Card className="border-none shadow-none bg-transparent dark:bg-transparent">
+              <div>
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-lg font-semibold text-[#37322F] dark:text-[#F5F5F4] font-sans">
                     Preview
@@ -966,7 +966,7 @@ const EditChatbot: React.FC = () => {
                     </div>
                   </div>
                 </div>
-              </Card>
+              </div>
             </div>
           </div>
         </div>
