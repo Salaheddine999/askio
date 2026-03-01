@@ -975,12 +975,14 @@ const EditChatbot: React.FC = () => {
         {showEmbedPreview && <EmbedPreviewModal />}
 
         {showChatbot && (
-          <div className="fixed z-50">
-            <Chatbot
-              {...config}
-              isEmbedded={true}
-              customPositionClass={`${positionClasses[config.position]} m-4`}
-            />
+          <div className="fixed inset-0 z-50 pointer-events-none">
+            <div className="pointer-events-auto">
+              <Chatbot
+                {...config}
+                isEmbedded={true}
+                customPositionClass={`${positionClasses[config.position]} m-4`}
+              />
+            </div>
           </div>
         )}
 

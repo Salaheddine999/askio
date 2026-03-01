@@ -17,11 +17,11 @@ export default function ChatbotLanding() {
     chatbotContainer.id = "chatbot-container";
     document.body.appendChild(chatbotContainer);
     const script = document.createElement("script");
-    script.src = "https://askio.vercel.app/chatbot-embed.js";
+    script.src = `${window.location.origin}/chatbot-embed.js`;
     script.async = true;
     script.onload = () => {
       const initScript = document.createElement("script");
-      initScript.text = `ChatbotEmbed.init("eh0qWjVhkPeBwzGxYLv6", "https://askio.vercel.app");`;
+      initScript.text = `ChatbotEmbed.init("eh0qWjVhkPeBwzGxYLv6", "${window.location.origin}");`;
       document.body.appendChild(initScript);
     };
     document.body.appendChild(script);

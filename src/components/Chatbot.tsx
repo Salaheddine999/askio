@@ -326,8 +326,8 @@ const Chatbot: React.FC<ChatbotProps> = ({
       transition={{ duration: 0.3 }}
       className={`${
         isEmbedded ? `fixed ${combinedPositionClass} z-50` : "w-full h-full"
-      } bg-white dark:bg-[#1C1917] flex flex-col rounded-2xl overflow-hidden ${
-        isEmbedded ? "w-[370px] h-[540px] shadow-2xl shadow-black/10 dark:shadow-black/30 border border-[#E0DEDB]/50 dark:border-[#44403C]/50" : "shadow-lg"
+      } bg-white dark:bg-[#1C1917] flex flex-col rounded-xl overflow-hidden ${
+        isEmbedded ? "w-[350px] h-[520px] shadow-2xl shadow-black/10 dark:shadow-black/30" : "shadow-lg"
       }`}
     >
       {/* Header */}
@@ -495,7 +495,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
       )}
 
       {/* Footer */}
-      <div className="py-2 border-t border-[#E0DEDB]/60 dark:border-[#44403C]/60 text-center text-[10px] text-[#A8A29E] dark:text-[#78716C] bg-[#FAFAF9] dark:bg-[#1C1917] rounded-b-2xl">
+      <div className="py-2 border-t border-[#E0DEDB]/60 dark:border-[#44403C]/60 text-center text-[10px] text-[#A8A29E] dark:text-[#78716C] bg-[#FAFAF9] dark:bg-[#1C1917] rounded-b-xl">
         Powered by{" "}
         <a
           href="https://askio.vercel.app/"
