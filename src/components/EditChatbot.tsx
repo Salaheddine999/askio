@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useRef } from "react";
+﻿import React, { useState, useEffect, useRef, lazy, Suspense } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useParams, useNavigate } from "react-router-dom";
 import { db, auth } from "../utils/firebase";
 import {
@@ -30,6 +31,7 @@ import {
   Copy,
   MessageSquare,
   RotateCcw,
+  X,
 } from "lucide-react";
 import ConfirmationModal from "./ConfirmationModal";
 import { toast } from "react-hot-toast";
@@ -37,6 +39,12 @@ import Button from "./Button";
 import Input from "./Input";
 import Card from "./Card";
 import { Helmet } from "react-helmet-async";
+
+// Dynamic import: AI feature is optional (not included in open-source builds)
+const aiModules = import.meta.glob('./AiFaqGenerator.tsx');
+const AiFaqGenerator = Object.keys(aiModules).length > 0
+  ? lazy(() => import('./AiFaqGenerator'))
+  : null;
 
 interface EditChatbotProps extends ChatbotProps {
   name: string;
@@ -76,6 +84,7 @@ const EditChatbot: React.FC = () => {
   const [gradientAngle, setGradientAngle] = useState(90);
   const [hasChanges, setHasChanges] = useState(false);
   const [embedCopied, setEmbedCopied] = useState(false);
+  
   const initialConfigRef = useRef<string>("");
 
   const positionClasses = {
@@ -214,6 +223,7 @@ const EditChatbot: React.FC = () => {
       )
     );
   };
+
 
   const saveConfig = async () => {
     const user = auth.currentUser;
@@ -716,13 +726,30 @@ const EditChatbot: React.FC = () => {
                           </Button>
                         </div>
                       ) : (
-                        <Button
-                          onClick={handleAddFaq}
-                          className="bg-[#37322F] dark:bg-[#F5F5F4] hover:bg-[#2a2522] dark:hover:bg-[#E7E5E4] text-white dark:text-[#1C1917] shadow-md rounded-[9px] text-body-sm"
-                          icon={Plus}
-                        >
-                          Add FAQ
-                        </Button>
+                        <div className="flex flex-col sm:flex-row gap-3">
+                          <Button
+                            onClick={handleAddFaq}
+                            className="bg-[#37322F] dark:bg-[#F5F5F4] hover:bg-[#2a2522] dark:hover:bg-[#E7E5E4] text-white dark:text-[#1C1917] shadow-md rounded-[9px] text-body-sm flex-1 sm:flex-none"
+                            icon={Plus}
+                          >
+                            Add FAQ
+                          </Button>
+                          {AiFaqGenerator && (
+                            <>
+                              <div className="hidden sm:block w-px bg-[#E0DEDB] dark:bg-[#44403C] mx-1"></div>
+                              <Suspense fallback={null}>
+                                <AiFaqGenerator
+                                  onFaqsApproved={(faqs) => {
+                                    const faqsWithState = faqs.map(f => ({ ...f, isOpen: false }));
+                                    setConfig(prev => ({ ...prev, faqData: [...prev.faqData, ...faqs] }));
+                                    setFaqList(prev => [...prev, ...faqsWithState]);
+                                    setHasChanges(true);
+                                  }}
+                                />
+                              </Suspense>
+                            </>
+                          )}
+                        </div>
                       )}
                     </div>
                   </div>
@@ -975,3 +1002,4 @@ const EditChatbot: React.FC = () => {
 };
 
 export default EditChatbot;
+

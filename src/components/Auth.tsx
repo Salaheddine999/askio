@@ -38,6 +38,8 @@ const Auth: React.FC = () => {
           email: userCredential.user.email,
           name: "",
           createdAt: new Date(),
+          aiScansCount: 0,
+          isPro: true,
         });
         toast.success("Registration successful!");
         navigate("/dashboard");
@@ -69,6 +71,8 @@ const Auth: React.FC = () => {
           email: userCredential.user.email,
           name: userCredential.user.displayName || "",
           createdAt: new Date(),
+          aiScansCount: 0,
+          isPro: true,
         });
       }
       navigate("/dashboard");

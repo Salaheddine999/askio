@@ -24,3 +24,8 @@ dist-ssr
 *.sw?
 
 .env
+
+# Premium AI features (not open-source)
+src/utils/ai.ts
+src/components/UpgradeModal.tsx
+src/components/AiFaqGenerator.tsx
