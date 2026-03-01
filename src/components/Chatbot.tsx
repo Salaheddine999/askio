@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Send, X, ThumbsUp, ThumbsDown } from "lucide-react";
+import { Send, X, ThumbsUp, ThumbsDown, MessageSquare } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Fuse from "fuse.js";
 import { db } from "../utils/firebase";
@@ -10,6 +10,7 @@ import bot1 from "../assets/chat1.svg";
 type Message = {
   text: string;
   sender: "user" | "bot";
+  isFallback?: boolean;
 };
 
 export interface ChatbotProps {
@@ -26,6 +27,7 @@ export interface ChatbotProps {
   isActive?: boolean;
   customPositionClass?: string;
   gradientStart?: string;
+  liveChatLink?: string;
 }
 
 const Chatbot: React.FC<ChatbotProps> = ({
@@ -39,6 +41,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
   faqData,
   isEmbedded,
   customPositionClass,
+  liveChatLink,
 }) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
@@ -171,6 +174,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
           {
             text: "I'm sorry, I don't have an answer for that. Here are some related questions:",
             sender: "bot",
+            isFallback: true,
           },
         ]);
         setIsTyping(false);
@@ -391,6 +395,19 @@ const Chatbot: React.FC<ChatbotProps> = ({
                 style={message.sender === "user" ? userMessageStyle : {}}
               >
                 {message.text}
+                {message.isFallback && liveChatLink && (
+                  <div className="mt-2.5 flex justify-start">
+                    <a
+                      href={liveChatLink.startsWith('http') ? liveChatLink : `https://${liveChatLink}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center justify-center bg-white dark:bg-[#44403C] hover:bg-[#FAFAF9] dark:hover:bg-[#57534E] text-[#37322F] dark:text-[#F5F5F4] text-[12px] font-medium py-1.5 px-3 rounded-md shadow-sm border border-[#E0DEDB] dark:border-[#57534E] transition-colors gap-1.5"
+                    >
+                      <MessageSquare size={14} className="text-emerald-500" />
+                      Chat with a human
+                    </a>
+                  </div>
+                )}
               </div>
             </motion.div>
           ))}

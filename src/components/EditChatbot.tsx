@@ -106,6 +106,7 @@ const EditChatbot: React.FC = () => {
     initialMessage: "Hello! How can I help you today?",
     placeholder: "Type your message...",
     faqData: [],
+    liveChatLink: "",
   });
   const [faqInput, setFaqInput] = useState({ question: "", answer: "" });
   const [faqList, setFaqList] = useState<FAQItem[]>([]);
@@ -517,14 +518,25 @@ const EditChatbot: React.FC = () => {
                       </FormField>
                     </div>
 
-                    <FormField label="Input Placeholder" helperText="Placeholder text in the message input field">
-                      <input
-                        className={inputClasses}
-                        placeholder="Type your message..."
-                        value={config.placeholder}
-                        onChange={(e) => handleConfigChange("placeholder", e.target.value)}
-                      />
-                    </FormField>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                      <FormField label="Input Placeholder" helperText="Placeholder text in the message input field">
+                        <input
+                          className={inputClasses}
+                          placeholder="Type your message..."
+                          value={config.placeholder}
+                          onChange={(e) => handleConfigChange("placeholder", e.target.value)}
+                        />
+                      </FormField>
+
+                      <FormField label="Live Chat Link" helperText="Where users are directed if the bot cannot answer (e.g., https://wa.me/123, or mailto:support@example.com)">
+                        <input
+                          className={inputClasses}
+                          placeholder="e.g. https://wa.me/123456789"
+                          value={config.liveChatLink || ""}
+                          onChange={(e) => handleConfigChange("liveChatLink", e.target.value)}
+                        />
+                      </FormField>
+                    </div>
                   </div>
                 </div>
               )}
