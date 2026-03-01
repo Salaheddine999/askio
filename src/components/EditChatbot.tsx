@@ -41,6 +41,7 @@ import { Helmet } from "react-helmet-async";
 // Dynamic import: AI feature is optional (not included in open-source builds)
 const aiModules = import.meta.glob('./AiFaqGenerator.tsx');
 const AiFaqGenerator = Object.keys(aiModules).length > 0
+  // @ts-ignore - Module may not exist in open-source builds (gitignored)
   ? lazy(() => import('./AiFaqGenerator'))
   : null;
 
@@ -739,8 +740,8 @@ const EditChatbot: React.FC = () => {
                               <div className="hidden sm:block w-px bg-[#E0DEDB] dark:bg-[#44403C] mx-1"></div>
                               <Suspense fallback={null}>
                                 <AiFaqGenerator
-                                  onFaqsApproved={(faqs) => {
-                                    const faqsWithState = faqs.map(f => ({ ...f, isOpen: false }));
+                                  onFaqsApproved={(faqs: { question: string; answer: string }[]) => {
+                                    const faqsWithState = faqs.map((f: { question: string; answer: string }) => ({ ...f, isOpen: false }));
                                     setConfig(prev => ({ ...prev, faqData: [...prev.faqData, ...faqs] }));
                                     setFaqList(prev => [...prev, ...faqsWithState]);
                                     setHasChanges(true);
