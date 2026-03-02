@@ -117,7 +117,7 @@ export default function Analytics() {
   if (loading) {
     return (
       <div className="flex justify-center items-center h-[calc(100vh-100px)]">
-        <LoaderCircle className="animate-spin text-indigo-500" size={48} />
+        <LoaderCircle className="animate-spin text-[#37322F] dark:text-[#F5F5F4]" size={48} />
       </div>
     );
   }

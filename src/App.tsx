@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { LoaderCircle } from "lucide-react";
 import {
   BrowserRouter as Router,
   Route,
@@ -22,6 +23,7 @@ import { HelmetProvider } from "react-helmet-async";
 
 const App: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
+  const [authLoading, setAuthLoading] = useState(true);
   const [darkMode, setDarkMode] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [testMode, setTestMode] = useState(false);
@@ -29,6 +31,7 @@ const App: React.FC = () => {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
+      setAuthLoading(false);
     });
 
     const isDarkMode = localStorage.getItem("darkMode") === "true";
@@ -57,6 +60,14 @@ const App: React.FC = () => {
   const toggleTestMode = () => {
     setTestMode((prev) => !prev);
   };
+
+  if (authLoading) {
+    return (
+      <div className={`min-h-screen ${darkMode ? "dark" : ""} flex justify-center items-center bg-[#F7F5F3] dark:bg-[#1C1917]`}>
+        <LoaderCircle className="animate-spin text-[#37322F] dark:text-[#F5F5F4]" size={48} />
+      </div>
+    );
+  }
 
   return (
     <HelmetProvider>

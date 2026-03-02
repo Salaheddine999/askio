@@ -142,10 +142,18 @@ const Chatbot: React.FC<ChatbotProps> = ({
 
   const handleLeadSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    e.stopPropagation();
+    
     if (!leadEmail || !leadEmail.includes("@")) {
-      toast.error("Please enter a valid email address.");
+      setMessages((prev) => [
+        ...prev,
+        { text: "Please enter a valid email address.", sender: "bot" }
+      ]);
       return;
     }
+
+    setHasSubmittedLead(true);
+    setIsTyping(true);
 
     try {
       if (id) {
@@ -153,18 +161,22 @@ const Chatbot: React.FC<ChatbotProps> = ({
           chatbotId: id,
           email: leadEmail,
           timestamp: serverTimestamp(),
-          anonymousToken: anonymousToken,
+          anonymousToken: anonymousToken || "anonymous",
         });
       }
-      setHasSubmittedLead(true);
-      toast.success("Thank you! Our team will be in touch soon.");
+      setIsTyping(false);
       setMessages((prev) => [
         ...prev,
         { text: "Thank you! Our team will be in touch soon.", sender: "bot" }
       ]);
     } catch (error) {
       console.error("Error submitting lead:", error);
-      toast.error("Failed to submit email. Please try again later.");
+      setIsTyping(false);
+      setHasSubmittedLead(false);
+      setMessages((prev) => [
+        ...prev,
+        { text: "I'm sorry, there was a problem saving your email. Please try again later.", sender: "bot" }
+      ]);
     }
   };
 
@@ -504,7 +516,14 @@ const Chatbot: React.FC<ChatbotProps> = ({
                 {/* Lead Capture Form */}
                 {message.isLeadCapture && !hasSubmittedLead && (
                   <div className="mt-3">
-                    <form onSubmit={handleLeadSubmit} className="flex flex-col gap-2">
+                    <form 
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        handleLeadSubmit(e);
+                      }} 
+                      className="flex flex-col gap-2"
+                    >
                       <input
                         type="email"
                         value={leadEmail}
@@ -512,17 +531,19 @@ const Chatbot: React.FC<ChatbotProps> = ({
                         placeholder="your@email.com"
                         className="w-full px-3 py-2 rounded-md bg-white dark:bg-[#292524] border border-[#E0DEDB] dark:border-[#57534E] text-[13px] text-[#37322F] dark:text-[#F5F5F4] placeholder-[#A8A29E] focus:outline-none focus:border-emerald-500 transition-colors"
                         required
+                        onClick={(e) => e.stopPropagation()}
                       />
                       <button
                         type="submit"
                         className="w-full bg-emerald-500 hover:bg-emerald-600 text-white text-[12px] font-medium py-2 rounded-md transition-colors"
+                        onClick={(e) => e.stopPropagation()}
                       >
                         Send Email
                       </button>
                     </form>
                     {liveChatLink && (
                        <div className="mt-2 text-center text-[11px] text-[#A8A29E]">
-                         Or <a href={liveChatLink.startsWith('http') ? liveChatLink : `https://${liveChatLink}`} target="_blank" rel="noopener noreferrer" className="underline hover:text-[#37322F] dark:hover:text-[#F5F5F4]">chat with us</a> directly.
+                         Or <a href={liveChatLink.startsWith('http') ? liveChatLink : `https://${liveChatLink}`} target="_blank" rel="noopener noreferrer" className="underline hover:text-[#37322F] dark:hover:text-[#F5F5F4]" onClick={(e) => e.stopPropagation()}>chat with us</a> directly.
                        </div>
                     )}
                   </div>
