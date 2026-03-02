@@ -439,7 +439,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
     >
       {/* Header */}
       <div
-        className="text-white px-5 py-5 flex items-center justify-between relative overflow-hidden"
+        className="text-white px-5 py-5 flex items-center justify-between relative overflow-hidden flex-shrink-0"
         style={headerStyle}
       >
         {/* Subtle gradient overlay for depth */}
