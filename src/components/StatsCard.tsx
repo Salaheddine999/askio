@@ -5,6 +5,7 @@ interface StatsCardProps {
   value: string | number;
   trend?: string;
   trendDirection?: "up" | "down" | "neutral";
+  icon?: React.ReactNode;
 }
 
 const StatsCard: React.FC<StatsCardProps> = ({
@@ -12,11 +13,13 @@ const StatsCard: React.FC<StatsCardProps> = ({
   value,
   trend,
   trendDirection = "neutral",
+  icon,
 }) => {
   return (
     <div className="rounded-xl border border-[#E0DEDB] dark:border-[#44403C] bg-white dark:bg-[#121212] text-[#37322F] dark:text-[#F5F5F4] shadow-sm p-6 flex flex-col justify-between h-full">
       <div className="flex flex-row items-center justify-between space-y-0 pb-4">
-        <h3 className="tracking-tight text-body-sm font-medium text-[#605A57] dark:text-[#A8A29E] font-sans">
+        <h3 className="tracking-tight text-body-sm font-medium text-[#605A57] dark:text-[#A8A29E] font-sans flex items-center gap-2">
+          {icon && <span className="flex-shrink-0">{icon}</span>}
           {title}
         </h3>
         {trend && (
