@@ -27,6 +27,9 @@ import {
   Check,
   ArrowUp,
   ArrowDown,
+  FileText,
+  FileSpreadsheet,
+  AlertTriangle
 } from "lucide-react";
 import { format, subDays, isBefore } from "date-fns";
 import ConfirmationModal from "../components/ConfirmationModal";
@@ -111,6 +114,9 @@ const Dashboard: React.FC<DashboardProps> = ({ toggleSidebar, testMode }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [chatbotsPerPage] = useState(6);
   const [recentActivities, setRecentActivities] = useState<ActivityItem[]>([]);
+
+  const [isGeneratingLeadReport, setIsGeneratingLeadReport] = useState(false);
+  const [isGeneratingQueryReport, setIsGeneratingQueryReport] = useState(false);
 
   // Reset pagination when search or sort changes
   useEffect(() => {
@@ -506,6 +512,128 @@ const Dashboard: React.FC<DashboardProps> = ({ toggleSidebar, testMode }) => {
     } catch (error) {
       console.error("Error downloading report:", error);
       toast.error("Failed to download report");
+    }
+  };
+
+  const downloadLeadsReport = async () => {
+    setIsGeneratingLeadReport(true);
+    try {
+      const user = auth.currentUser;
+      if (!user) throw new Error("User not authenticated");
+
+      const chatbotIds = chatbots.map(c => c.id);
+      if (chatbotIds.length === 0) {
+        toast.error("No chatbots found to evaluate leads from.");
+        setIsGeneratingLeadReport(false);
+        return;
+      }
+
+      // Fetch leads
+      // Firebase 'in' queries support max 10 values, batch if > 10
+      let allLeads: any[] = [];
+      const batchSize = 10;
+      for (let i = 0; i < chatbotIds.length; i += batchSize) {
+        const batchIds = chatbotIds.slice(i, i + batchSize);
+        const leadsQuery = query(collection(db, "leads"), where("chatbotId", "in", batchIds));
+        const leadsSnap = await getDocs(leadsQuery);
+        allLeads = [...allLeads, ...leadsSnap.docs.map(doc => ({
+           id: doc.id,
+           ...doc.data(),
+           timestamp: doc.data().timestamp?.toDate() || new Date()
+        }))];
+      }
+
+      const headers = ["Email", "Chatbot Name", "Timestamp"];
+      const csvContent = [
+        headers.join(","),
+        ...allLeads.map(lead => {
+          const chatbotName = chatbots.find(c => c.id === lead.chatbotId)?.title || "Unknown Bot";
+          return [
+            `"${lead.email.replace(/"/g, '""')}"`,
+            `"${chatbotName.replace(/"/g, '""')}"`,
+             `"${lead.timestamp.toISOString()}"`
+          ].join(",");
+        })
+      ].join("\n");
+
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+      const link = document.createElement("a");
+      if (link.download !== undefined) {
+        const url = URL.createObjectURL(blob);
+        link.setAttribute("href", url);
+        link.setAttribute("download", `askio_leads_report_${format(new Date(), "yyyy-MM-dd")}.csv`);
+        link.style.visibility = "hidden";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        toast.success("Lead report downloaded successfully");
+      }
+    } catch (error) {
+      console.error("Error downloading leads report:", error);
+      toast.error("Failed to download leads report");
+    } finally {
+      setIsGeneratingLeadReport(false);
+    }
+  };
+
+  const downloadUnansweredQueriesReport = async () => {
+    setIsGeneratingQueryReport(true);
+    try {
+      const user = auth.currentUser;
+      if (!user) throw new Error("User not authenticated");
+
+      const chatbotIds = chatbots.map(c => c.id);
+      if (chatbotIds.length === 0) {
+        toast.error("No chatbots found to evaluate queries from.");
+        setIsGeneratingQueryReport(false);
+        return;
+      }
+
+      // Fetch queries
+      // Firebase 'in' queries support max 10 values, batch if > 10
+      let allQueries: any[] = [];
+      const batchSize = 10;
+      for (let i = 0; i < chatbotIds.length; i += batchSize) {
+        const batchIds = chatbotIds.slice(i, i + batchSize);
+        const queryQuery = query(collection(db, "unanswered_queries"), where("chatbotId", "in", batchIds));
+        const queriesSnap = await getDocs(queryQuery);
+        allQueries = [...allQueries, ...queriesSnap.docs.map(doc => ({
+           id: doc.id,
+           ...doc.data(),
+           timestamp: doc.data().timestamp?.toDate() || new Date()
+        }))];
+      }
+
+      const headers = ["Query", "Chatbot Name", "Timestamp"];
+      const csvContent = [
+        headers.join(","),
+        ...allQueries.map(q => {
+          const chatbotName = chatbots.find(c => c.id === q.chatbotId)?.title || "Unknown Bot";
+          return [
+            `"${(q.query || "").replace(/"/g, '""')}"`,
+            `"${chatbotName.replace(/"/g, '""')}"`,
+             `"${q.timestamp.toISOString()}"`
+          ].join(",");
+        })
+      ].join("\n");
+
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+      const link = document.createElement("a");
+      if (link.download !== undefined) {
+        const url = URL.createObjectURL(blob);
+        link.setAttribute("href", url);
+        link.setAttribute("download", `askio_unanswered_queries_report_${format(new Date(), "yyyy-MM-dd")}.csv`);
+        link.style.visibility = "hidden";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        toast.success("Unanswered queries report downloaded successfully");
+      }
+    } catch (error) {
+       console.error("Error downloading queries report:", error);
+       toast.error("Failed to download queries report");
+    } finally {
+       setIsGeneratingQueryReport(false);
     }
   };
 
@@ -1270,8 +1398,85 @@ const Dashboard: React.FC<DashboardProps> = ({ toggleSidebar, testMode }) => {
           )}
 
           {activeTab === "reports" && (
-             <div className="flex items-center justify-center p-12 text-[#605A57] dark:text-[#A8A29E]">
-                <p>Reports module coming soon.</p>
+             <div className="space-y-6">
+                <div>
+                  <h2 className="text-h2 font-bold text-[#37322F] dark:text-[#F5F5F4]">
+                    Data Reports
+                  </h2>
+                  <p className="text-[#605A57] dark:text-[#A8A29E] mt-1">
+                    Download actionable insights and raw data across all your chatbots.
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {/* Performance Report */}
+                  <div className="bg-white dark:bg-[#1C1917] flex flex-col justify-between p-6 rounded-xl border border-[#E0DEDB] dark:border-[#44403C] shadow-sm hover:shadow-md transition-shadow">
+                    <div>
+                      <div className="w-12 h-12 bg-indigo-50 dark:bg-indigo-900/30 rounded-lg flex items-center justify-center mb-4 border border-indigo-100 dark:border-indigo-800">
+                        <FileSpreadsheet className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
+                      </div>
+                      <h3 className="text-lg font-semibold text-[#37322F] dark:text-[#F5F5F4] mb-2">
+                        Chatbot Performance
+                      </h3>
+                      <p className="text-sm text-[#605A57] dark:text-[#A8A29E] mb-6 line-clamp-3">
+                        A comprehensive overview of all your chatbots, including positive and negative feedback counts, creation dates, and last updated timestamps.
+                      </p>
+                    </div>
+                    <Button
+                      onClick={downloadReport}
+                      className="w-full justify-center bg-white border border-[#E0DEDB] text-[#37322F] hover:bg-[#FAFAF9] dark:bg-[#292524] dark:border-[#44403C] dark:text-[#F5F5F4] dark:hover:bg-[#44403C]"
+                      icon={Download}
+                    >
+                      Download CSV
+                    </Button>
+                  </div>
+
+                  {/* Leads Report */}
+                  <div className="bg-white dark:bg-[#1C1917] flex flex-col justify-between p-6 rounded-xl border border-[#E0DEDB] dark:border-[#44403C] shadow-sm hover:shadow-md transition-shadow">
+                    <div>
+                      <div className="w-12 h-12 bg-emerald-50 dark:bg-emerald-900/30 rounded-lg flex items-center justify-center mb-4 border border-emerald-100 dark:border-emerald-800">
+                        <FileText className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
+                      </div>
+                      <h3 className="text-lg font-semibold text-[#37322F] dark:text-[#F5F5F4] mb-2">
+                        Lead Export
+                      </h3>
+                      <p className="text-sm text-[#605A57] dark:text-[#A8A29E] mb-6 line-clamp-3">
+                        Download all captured email leads from visitors who interacted with your chatbots. Includes which bot they used and when they provided their email.
+                      </p>
+                    </div>
+                    <Button
+                      onClick={downloadLeadsReport}
+                      disabled={isGeneratingLeadReport}
+                      className="w-full justify-center bg-white border border-[#E0DEDB] text-[#37322F] hover:bg-[#FAFAF9] dark:bg-[#292524] dark:border-[#44403C] dark:text-[#F5F5F4] dark:hover:bg-[#44403C]"
+                      icon={isGeneratingLeadReport ? LoaderCircle : Download}
+                    >
+                      {isGeneratingLeadReport ? "Generating..." : "Download CSV"}
+                    </Button>
+                  </div>
+
+                  {/* Unanswered Queries Report */}
+                  <div className="bg-white dark:bg-[#1C1917] flex flex-col justify-between p-6 rounded-xl border border-[#E0DEDB] dark:border-[#44403C] shadow-sm hover:shadow-md transition-shadow">
+                    <div>
+                      <div className="w-12 h-12 bg-rose-50 dark:bg-rose-900/30 rounded-lg flex items-center justify-center mb-4 border border-rose-100 dark:border-rose-800">
+                        <AlertTriangle className="w-6 h-6 text-rose-600 dark:text-rose-400" />
+                      </div>
+                      <h3 className="text-lg font-semibold text-[#37322F] dark:text-[#F5F5F4] mb-2">
+                        Unanswered Queries
+                      </h3>
+                      <p className="text-sm text-[#605A57] dark:text-[#A8A29E] mb-6 line-clamp-3">
+                        Identify holes in your chatbot's knowledge base. Download a list of questions that your bots failed to answer, perfect for training and adding new FAQs.
+                      </p>
+                    </div>
+                    <Button
+                      onClick={downloadUnansweredQueriesReport}
+                      disabled={isGeneratingQueryReport}
+                      className="w-full justify-center bg-white border border-[#E0DEDB] text-[#37322F] hover:bg-[#FAFAF9] dark:bg-[#292524] dark:border-[#44403C] dark:text-[#F5F5F4] dark:hover:bg-[#44403C]"
+                      icon={isGeneratingQueryReport ? LoaderCircle : Download}
+                    >
+                      {isGeneratingQueryReport ? "Generating..." : "Download CSV"}
+                    </Button>
+                  </div>
+                </div>
              </div>
           )}
 
