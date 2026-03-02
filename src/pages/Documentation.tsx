@@ -1,128 +1,31 @@
-import React, { useState } from "react";
+import React, { useRef } from "react";
 import {
-  ChevronRight,
-  ChevronDown,
   Book,
   Code,
   Palette,
   Cog,
   Layers,
   Upload,
+  Lightbulb,
+  ChevronRight,
 } from "lucide-react";
-import Card from "../components/Card";
 import { Helmet } from "react-helmet-async";
 
-const Documentation: React.FC<{ toggleSidebar: () => void }> = () => {
-  const [openSection, setOpenSection] = useState<string | null>(null);
+// --- Data ---
 
-  const toggleSection = (title: string) => {
-    setOpenSection(openSection === title ? null : title);
-  };
-
-  return (
-    <div className="min-h-screen py-12 bg-[#F7F5F3] dark:bg-[#1C1917] font-sans text-[#37322F]">
-      <Helmet>
-        <title>Documentation | Askio Chatbot</title>
-        <meta
-          name="description"
-          content="Comprehensive guide for creating, customizing, and integrating Askio Chatbot into your website."
-        />
-      </Helmet>
-      <main className="w-full lg:w-[80%] px-4 sm:px-6 lg:px-8 mx-auto">
-        <h1 className="text-h1 font-normal font-serif text-[#37322F] mb-8 dark:text-white tracking-tight">
-          Askio Chatbot Documentation
-        </h1>
-        <p className="text-body-lg text-[#605A57] mb-12 dark:text-gray-300">
-          Welcome to the comprehensive guide for creating, customizing, and
-          integrating Askio Chatbot into your website.
-        </p>
-
-        {sections.map((section) => (
-          <Section
-            key={section.title}
-            title={section.title}
-            content={section.content}
-            icon={section.icon}
-            isOpen={openSection === section.title}
-            toggleSection={() => toggleSection(section.title)}
-          />
-        ))}
-
-        <Card className="mt-12 bg-white dark:bg-[#292524] border-none p-6 shadow-[0px_0px_0px_0.9px_rgba(0,0,0,0.08),0px_2px_4px_rgba(0,0,0,0.04)] rounded-[9px]">
-          <h3 className="text-h3 font-semibold text-[#37322F] mb-4 dark:text-[#F5F5F4] font-sans">
-            Best Practices
-          </h3>
-          <ul className="list-disc list-inside space-y-2 text-[#605A57] dark:text-gray-300 text-body">
-            <li>
-              Regularly update your FAQs based on user interactions and
-              feedback.
-            </li>
-            <li>
-              Use clear, concise language in your chatbot responses to enhance
-              user experience.
-            </li>
-            <li>
-              Conduct thorough testing of your chatbot before embedding it on
-              your live website.
-            </li>
-            <li>
-              Continuously monitor chatbot performance and user satisfaction to
-              drive improvements.
-            </li>
-            <li>
-              Ensure your chatbot's tone and style align with your brand's voice
-              and values.
-            </li>
-          </ul>
-        </Card>
-      </main>
-    </div>
-  );
-};
-
-const Section: React.FC<{
+interface DocSection {
+  id: string;
   title: string;
-  content: string[];
   icon: React.ElementType;
-  isOpen: boolean;
-  toggleSection: () => void;
-}> = ({ title, content, icon: Icon, isOpen, toggleSection }) => (
-  <Card className="mb-6 bg-white dark:bg-[#292524] rounded-[9px] shadow-[0px_0px_0px_0.9px_rgba(0,0,0,0.08),0px_2px_4px_rgba(0,0,0,0.04)] overflow-hidden border-none">
-    <button
-      className="w-full text-left p-6 focus:outline-none hover:bg-[#FAFAF9] dark:hover:bg-[#44403C] transition-colors duration-200"
-      onClick={toggleSection}
-    >
-      <div className="flex justify-between items-center">
-        <div className="flex items-center">
-          <div className="bg-[#FAFAF9] dark:bg-[#44403C] border border-[#E0DEDB] dark:border-[#57534E] p-2 rounded-lg mr-4">
-            <Icon size={24} className="text-[#37322F] dark:text-[#F5F5F4]" />
-          </div>
-          <h2 className="text-h3 font-semibold text-[#37322F] dark:text-white font-sans">
-            {title}
-          </h2>
-        </div>
-        {isOpen ? <ChevronDown size={24} className="text-[#605A57] dark:text-[#A8A29E]" /> : <ChevronRight size={24} className="text-[#605A57] dark:text-[#A8A29E]" />}
-      </div>
-    </button>
-    {isOpen && (
-      <div className="px-6 pb-6 pt-2 border-t border-[#E0DEDB] dark:border-[#57534E]">
-        <ol className="list-decimal list-inside space-y-4">
-          {content.map((step, index) => (
-            <li key={index} className="text-[#605A57] dark:text-gray-300 text-body">
-              {step}
-            </li>
-          ))}
-        </ol>
-      </div>
-    )}
-  </Card>
-);
+  steps: string[];
+}
 
-const sections = [
+const sections: DocSection[] = [
   {
+    id: "getting-started",
     title: "Getting Started",
     icon: Book,
-    content: [
+    steps: [
       "Sign in to your Askio Chatbot account and navigate to the Dashboard.",
       "Click the 'Create New Chatbot' button located at the top of the page.",
       "Provide a name for your chatbot and click 'Create'.",
@@ -130,9 +33,10 @@ const sections = [
     ],
   },
   {
+    id: "customizing-appearance",
     title: "Customizing Appearance",
     icon: Palette,
-    content: [
+    steps: [
       "In the chatbot configuration page, navigate to the 'Appearance' tab.",
       "Select primary and secondary colors for your chatbot using the color pickers or predefined color options.",
       "Choose the position where your chatbot will appear on your website (e.g., bottom-right, bottom-left).",
@@ -140,9 +44,10 @@ const sections = [
     ],
   },
   {
+    id: "configuring-faqs",
     title: "Configuring FAQs",
     icon: Layers,
-    content: [
+    steps: [
       "Go to the 'FAQ' tab in the chatbot configuration.",
       "Click 'Add FAQ' to create a new question-answer pair.",
       "Input the question in the 'Question' field and the corresponding answer in the 'Answer' field.",
@@ -153,9 +58,10 @@ const sections = [
     ],
   },
   {
+    id: "general-settings",
     title: "General Settings",
     icon: Cog,
-    content: [
+    steps: [
       "Access the 'General' tab in the chatbot configuration.",
       "Set the chatbot's title, which will be displayed in the chat header.",
       "Craft an initial message that users will see when they first open the chat.",
@@ -164,18 +70,20 @@ const sections = [
     ],
   },
   {
+    id: "generating-embed-code",
     title: "Generating Embed Code",
     icon: Code,
-    content: [
+    steps: [
       "Once you've completed configuring your chatbot, go to the 'Embed' tab.",
       "You'll find a code snippet that needs to be added to your website.",
       "Use the 'Copy to Clipboard' button to copy the embed code.",
     ],
   },
   {
+    id: "website-integration",
     title: "Website Integration",
     icon: Upload,
-    content: [
+    steps: [
       "Open your website's HTML file or template in your preferred code editor.",
       "Paste the copied embed code just before the closing </body> tag.",
       "Save the changes to your HTML file.",
@@ -184,5 +92,180 @@ const sections = [
     ],
   },
 ];
+
+const bestPractices = [
+  "Regularly update your FAQs based on user interactions and feedback.",
+  "Use clear, concise language in your chatbot responses to enhance user experience.",
+  "Conduct thorough testing of your chatbot before embedding it on your live website.",
+  "Continuously monitor chatbot performance and user satisfaction to drive improvements.",
+  "Ensure your chatbot's tone and style align with your brand's voice and values.",
+];
+
+// --- Component ---
+
+const Documentation: React.FC<{ toggleSidebar: () => void }> = () => {
+  const sectionRefs = useRef<{ [key: string]: HTMLElement | null }>({});
+
+  const scrollTo = (id: string) => {
+    const el = sectionRefs.current[id];
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-[#F7F5F3] dark:bg-[#1C1917] font-sans text-[#37322F]">
+      <Helmet>
+        <title>Documentation | Askio Chatbot</title>
+        <meta
+          name="description"
+          content="Comprehensive guide for creating, customizing, and integrating Askio Chatbot into your website."
+        />
+      </Helmet>
+
+      <main className="w-full px-4 sm:px-6 lg:px-10 xl:px-16 py-8 lg:py-12 max-w-[1400px]">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl lg:text-4xl font-bold font-sans text-[#37322F] dark:text-[#F5F5F4] tracking-tight mb-3">
+            Documentation
+          </h1>
+          <p className="text-base lg:text-lg text-[#605A57] dark:text-[#A8A29E] max-w-3xl leading-relaxed">
+            Everything you need to create, customize, and embed your Askio
+            chatbot. Follow the steps below to get up and running.
+          </p>
+        </div>
+
+        {/* Quick Jump Navigation */}
+        <div className="mb-10 lg:mb-12 p-4 rounded-xl bg-white dark:bg-[#292524] border border-[#E0DEDB] dark:border-[#44403C] shadow-sm">
+          <p className="text-xs font-semibold uppercase tracking-wider text-[#A8A29E] dark:text-[#78716C] mb-3">
+            Jump to
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {sections.map((section) => (
+              <button
+                key={section.id}
+                onClick={() => scrollTo(section.id)}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm text-[#605A57] dark:text-[#A8A29E] hover:text-[#37322F] dark:hover:text-[#F5F5F4] hover:bg-[#F7F5F3] dark:hover:bg-[#1C1917] border border-[#E0DEDB] dark:border-[#44403C] transition-colors"
+              >
+                <section.icon size={14} className="opacity-60" />
+                {section.title}
+              </button>
+            ))}
+            <button
+              onClick={() => scrollTo("best-practices")}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm text-[#605A57] dark:text-[#A8A29E] hover:text-[#37322F] dark:hover:text-[#F5F5F4] hover:bg-[#F7F5F3] dark:hover:bg-[#1C1917] border border-[#E0DEDB] dark:border-[#44403C] transition-colors"
+            >
+              <Lightbulb size={14} className="opacity-60" />
+              Best Practices
+            </button>
+          </div>
+        </div>
+
+        {/* Sections */}
+        <div className="space-y-10 lg:space-y-14">
+          {sections.map((section) => (
+            <section
+              key={section.id}
+              id={section.id}
+              ref={(el) => { sectionRefs.current[section.id] = el; }}
+              className="scroll-mt-8"
+            >
+              {/* Section Header */}
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 rounded-xl bg-[#37322F]/[0.05] dark:bg-white/[0.06] border border-[#E0DEDB] dark:border-[#44403C] flex items-center justify-center shrink-0">
+                  <section.icon
+                    size={20}
+                    className="text-[#37322F] dark:text-[#F5F5F4]"
+                  />
+                </div>
+                <h2 className="text-xl lg:text-2xl font-semibold text-[#37322F] dark:text-[#F5F5F4] font-sans tracking-tight">
+                  {section.title}
+                </h2>
+              </div>
+
+              {/* Steps */}
+              <div className="space-y-4 lg:space-y-5 max-w-3xl">
+                {section.steps.map((step, index) => (
+                  <div key={index} className="flex items-start gap-4">
+                    <span className="flex items-center justify-center w-7 h-7 rounded-full bg-[#37322F] dark:bg-[#F5F5F4] text-white dark:text-[#1C1917] text-xs font-bold shrink-0 mt-0.5 shadow-sm">
+                      {index + 1}
+                    </span>
+                    <p className="text-[15px] text-[#605A57] dark:text-[#D6D3D1] leading-relaxed pt-0.5">
+                      {step}
+                    </p>
+                  </div>
+                ))}
+              </div>
+
+              {/* Embed Code Block */}
+              {section.id === "generating-embed-code" && (
+                <div className="mt-6 rounded-xl bg-[#1C1917] dark:bg-[#0C0A09] border border-[#44403C] overflow-hidden max-w-3xl">
+                  <div className="flex items-center justify-between px-4 py-2.5 border-b border-[#44403C]">
+                    <span className="text-xs font-medium text-[#A8A29E]">
+                      HTML
+                    </span>
+                    <span className="text-[10px] text-[#78716C] uppercase tracking-wider">
+                      Example
+                    </span>
+                  </div>
+                  <pre className="p-4 overflow-x-auto">
+                    <code className="text-sm text-emerald-400 font-mono leading-relaxed">
+{`<script
+  src="https://askio.vercel.app/embed/YOUR_CHATBOT_ID"
+  defer>
+</script>`}
+                    </code>
+                  </pre>
+                </div>
+              )}
+
+              {/* Divider */}
+              <div className="mt-8 lg:mt-12 border-t border-[#E0DEDB] dark:border-[#44403C]/60" />
+            </section>
+          ))}
+
+          {/* Best Practices */}
+          <section
+            id="best-practices"
+            ref={(el) => { sectionRefs.current["best-practices"] = el; }}
+            className="scroll-mt-8"
+          >
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800/40 flex items-center justify-center shrink-0">
+                <Lightbulb
+                  size={20}
+                  className="text-amber-600 dark:text-amber-400"
+                />
+              </div>
+              <h2 className="text-xl lg:text-2xl font-semibold text-[#37322F] dark:text-[#F5F5F4] font-sans tracking-tight">
+                Best Practices
+              </h2>
+            </div>
+
+            <div className="rounded-xl bg-amber-50/50 dark:bg-amber-950/20 border border-amber-100 dark:border-amber-900/30 p-5 lg:p-6 max-w-3xl">
+              <ul className="space-y-3.5">
+                {bestPractices.map((tip, index) => (
+                  <li
+                    key={index}
+                    className="flex items-start gap-3 text-[15px] text-[#605A57] dark:text-[#D6D3D1] leading-relaxed"
+                  >
+                    <ChevronRight
+                      size={16}
+                      className="text-amber-500 dark:text-amber-400 shrink-0 mt-1"
+                    />
+                    <span>{tip}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </section>
+        </div>
+
+        {/* Footer spacer */}
+        <div className="h-16" />
+      </main>
+    </div>
+  );
+};
 
 export default Documentation;
