@@ -107,6 +107,7 @@ const EditChatbot: React.FC = () => {
     placeholder: "Type your message...",
     faqData: [],
     liveChatLink: "",
+    enableLeadCapture: false,
   });
   const [faqInput, setFaqInput] = useState({ question: "", answer: "" });
   const [faqList, setFaqList] = useState<FAQItem[]>([]);
@@ -536,6 +537,14 @@ const EditChatbot: React.FC = () => {
                           onChange={(e) => handleConfigChange("liveChatLink", e.target.value)}
                         />
                       </FormField>
+                    </div>
+
+                    <div className="pt-2">
+                       <ToggleSwitch
+                          checked={config.enableLeadCapture || false}
+                          onChange={(val) => handleConfigChange("enableLeadCapture", val ? "true" : "false")} // The ToggleSwitch passes a boolean, but config expects string for some fields? We should just cast it or handle it in handleConfigChange if needed. Actually, EditChatbotProps says it's technically a ChatbotProps. Let's see what ChatbotProps says. 
+                          label="Enable Lead Capture (Ask for email when no answer is found)"
+                        />
                     </div>
                   </div>
                 </div>

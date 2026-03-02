@@ -3,7 +3,7 @@ import { Send, X, ThumbsUp, ThumbsDown, MessageSquare } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Fuse from "fuse.js";
 import { db } from "../utils/firebase";
-import { doc, setDoc, getDoc, serverTimestamp } from "firebase/firestore";
+import { doc, setDoc, getDoc, collection, addDoc, serverTimestamp } from "firebase/firestore";
 import toast from "react-hot-toast";
 import bot1 from "../assets/chat1.svg";
 
@@ -11,6 +11,7 @@ type Message = {
   text: string;
   sender: "user" | "bot";
   isFallback?: boolean;
+  isLeadCapture?: boolean;
 };
 
 export interface ChatbotProps {
@@ -28,6 +29,7 @@ export interface ChatbotProps {
   customPositionClass?: string;
   gradientStart?: string;
   liveChatLink?: string;
+  enableLeadCapture?: boolean;
 }
 
 const Chatbot: React.FC<ChatbotProps> = ({
@@ -42,6 +44,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
   isEmbedded,
   customPositionClass,
   liveChatLink,
+  enableLeadCapture,
 }) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
@@ -57,6 +60,8 @@ const Chatbot: React.FC<ChatbotProps> = ({
   const [showFeedback, setShowFeedback] = useState(false);
   const [hasFeedback, setHasFeedback] = useState(false);
   const [anonymousToken, setAnonymousToken] = useState<string | null>(null);
+  const [leadEmail, setLeadEmail] = useState("");
+  const [hasSubmittedLead, setHasSubmittedLead] = useState(false);
 
   const isGradient = primaryColor.startsWith("linear-gradient");
 
@@ -135,6 +140,34 @@ const Chatbot: React.FC<ChatbotProps> = ({
     checkPreviousFeedback();
   }, [id, anonymousToken]);
 
+  const handleLeadSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!leadEmail || !leadEmail.includes("@")) {
+      toast.error("Please enter a valid email address.");
+      return;
+    }
+
+    try {
+      if (id) {
+        await addDoc(collection(db, "leads"), {
+          chatbotId: id,
+          email: leadEmail,
+          timestamp: serverTimestamp(),
+          anonymousToken: anonymousToken,
+        });
+      }
+      setHasSubmittedLead(true);
+      toast.success("Thank you! Our team will be in touch soon.");
+      setMessages((prev) => [
+        ...prev,
+        { text: "Thank you! Our team will be in touch soon.", sender: "bot" }
+      ]);
+    } catch (error) {
+      console.error("Error submitting lead:", error);
+      toast.error("Failed to submit email. Please try again later.");
+    }
+  };
+
   const handleSend = (e?: React.FormEvent) => {
     if (e) {
       e.preventDefault();
@@ -161,23 +194,65 @@ const Chatbot: React.FC<ChatbotProps> = ({
 
     setIsTyping(true);
 
-    setTimeout(() => {
+    setTimeout(async () => {
       if (matchedFaq) {
         setMessages((prev) => [
           ...prev,
           { text: matchedFaq.answer, sender: "bot" },
         ]);
         setIsTyping(false);
+        
+        // Track analytics
+        if (id) {
+          try {
+            await addDoc(collection(db, "analytics_events"), {
+              chatbotId: id,
+              type: "faq_matched",
+              question: matchedFaq.question,
+              userQuery: input,
+              timestamp: serverTimestamp(),
+              anonymousToken: anonymousToken,
+            });
+          } catch (error) {
+            console.error("Error tracking analytics event:", error);
+          }
+        }
       } else {
-        setMessages((prev) => [
-          ...prev,
-          {
-            text: "I'm sorry, I don't have an answer for that. Here are some related questions:",
-            sender: "bot",
-            isFallback: true,
-          },
-        ]);
+        if (enableLeadCapture) {
+          setMessages((prev) => [
+            ...prev,
+            {
+              text: "I'm sorry, I don't have an answer for that. Please leave your email below and our team will get back to you.",
+              sender: "bot",
+              isLeadCapture: true,
+            },
+          ]);
+        } else {
+          setMessages((prev) => [
+            ...prev,
+            {
+              text: "I'm sorry, I don't have an answer for that. Here are some related questions:",
+              sender: "bot",
+              isFallback: true,
+            },
+          ]);
+        }
         setIsTyping(false);
+
+        // Track unanswered query
+        if (id) {
+          try {
+            await addDoc(collection(db, "unanswered_queries"), {
+              chatbotId: id,
+              query: input,
+              timestamp: serverTimestamp(),
+              anonymousToken: anonymousToken,
+            });
+          } catch (error) {
+            console.error("Error tracking unanswered query:", error);
+          }
+        }
+
         setTimeout(() => {
           setShowSuggestions(true);
           updateSuggestions(input);
@@ -208,13 +283,28 @@ const Chatbot: React.FC<ChatbotProps> = ({
     const matchedFaq = faqData.find((faq) => faq.question === question);
     if (matchedFaq) {
       setIsTyping(true);
-      setTimeout(() => {
+      setTimeout(async () => {
         setMessages((prev) => [
           ...prev,
           { text: matchedFaq.answer, sender: "bot" },
         ]);
         setShowSuggestions(false);
         setIsTyping(false);
+
+        // Track suggestion click analytics
+        if (id) {
+          try {
+            await addDoc(collection(db, "analytics_events"), {
+              chatbotId: id,
+              type: "suggestion_clicked",
+              question: matchedFaq.question,
+              timestamp: serverTimestamp(),
+              anonymousToken: anonymousToken,
+            });
+          } catch (error) {
+            console.error("Error tracking suggestion click:", error);
+          }
+        }
       }, 1500); // Simulate typing delay
     }
   };
@@ -395,6 +485,8 @@ const Chatbot: React.FC<ChatbotProps> = ({
                 style={message.sender === "user" ? userMessageStyle : {}}
               >
                 {message.text}
+                
+                {/* Fallback Live Chat Link */}
                 {message.isFallback && liveChatLink && (
                   <div className="mt-2.5 flex justify-start">
                     <a
@@ -406,6 +498,33 @@ const Chatbot: React.FC<ChatbotProps> = ({
                       <MessageSquare size={14} className="text-emerald-500" />
                       Chat with a human
                     </a>
+                  </div>
+                )}
+
+                {/* Lead Capture Form */}
+                {message.isLeadCapture && !hasSubmittedLead && (
+                  <div className="mt-3">
+                    <form onSubmit={handleLeadSubmit} className="flex flex-col gap-2">
+                      <input
+                        type="email"
+                        value={leadEmail}
+                        onChange={(e) => setLeadEmail(e.target.value)}
+                        placeholder="your@email.com"
+                        className="w-full px-3 py-2 rounded-md bg-white dark:bg-[#292524] border border-[#E0DEDB] dark:border-[#57534E] text-[13px] text-[#37322F] dark:text-[#F5F5F4] placeholder-[#A8A29E] focus:outline-none focus:border-emerald-500 transition-colors"
+                        required
+                      />
+                      <button
+                        type="submit"
+                        className="w-full bg-emerald-500 hover:bg-emerald-600 text-white text-[12px] font-medium py-2 rounded-md transition-colors"
+                      >
+                        Send Email
+                      </button>
+                    </form>
+                    {liveChatLink && (
+                       <div className="mt-2 text-center text-[11px] text-[#A8A29E]">
+                         Or <a href={liveChatLink.startsWith('http') ? liveChatLink : `https://${liveChatLink}`} target="_blank" rel="noopener noreferrer" className="underline hover:text-[#37322F] dark:hover:text-[#F5F5F4]">chat with us</a> directly.
+                       </div>
+                    )}
                   </div>
                 )}
               </div>
