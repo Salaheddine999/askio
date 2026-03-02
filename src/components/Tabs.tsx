@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 interface Tab {
   id: string;
   label: string;
+  showBadge?: boolean;
 }
 
 interface TabsProps {
@@ -36,7 +37,12 @@ const Tabs: React.FC<TabsProps> = ({ tabs, activeTab, onChange, className = "" }
                 transition={{ type: "spring", stiffness: 500, damping: 30 }}
               />
             )}
-            <span className="relative z-10">{tab.label}</span>
+            <span className="relative z-10 flex items-center gap-1.5">
+              {tab.label}
+              {tab.showBadge && (
+                <span className="inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+              )}
+            </span>
           </button>
         );
       })}

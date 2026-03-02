@@ -90,3 +90,102 @@ export const DUMMY_RECENT_ACTIVITY = [
     date: new Date(Date.now() - 1000 * 60 * 180), // 3 hours ago
   },
 ];
+
+export const DUMMY_NOTIFICATIONS = [
+  {
+    id: "notif-1",
+    type: "lead" as const,
+    title: "New Lead Captured",
+    description: "Email provided: sarah@company.com",
+    timestamp: new Date(Date.now() - 1000 * 60 * 3), // 3 mins ago
+    chatbotName: "Sales Assistant",
+  },
+  {
+    id: "notif-2",
+    type: "unanswered" as const,
+    title: "Unanswered Query",
+    description: 'Failed to answer: "Do you offer bulk pricing?"',
+    timestamp: new Date(Date.now() - 1000 * 60 * 12), // 12 mins ago
+    chatbotName: "Customer Support Bot",
+  },
+  {
+    id: "notif-3",
+    type: "positive_feedback" as const,
+    title: "Positive Feedback",
+    description: "Received a positive rating.",
+    timestamp: new Date(Date.now() - 1000 * 60 * 30), // 30 mins ago
+    chatbotName: "Product Recommender",
+  },
+  {
+    id: "notif-4",
+    type: "lead" as const,
+    title: "New Lead Captured",
+    description: "Email provided: john.doe@example.com",
+    timestamp: new Date(Date.now() - 1000 * 60 * 45), // 45 mins ago
+    chatbotName: "Lead Gen Bot",
+  },
+  {
+    id: "notif-5",
+    type: "negative_feedback" as const,
+    title: "Negative Feedback",
+    description: "Received a negative rating.",
+    timestamp: new Date(Date.now() - 1000 * 60 * 60), // 1 hour ago
+    chatbotName: "Onboarding Helper",
+  },
+  {
+    id: "notif-6",
+    type: "unanswered" as const,
+    title: "Unanswered Query",
+    description: 'Failed to answer: "How do I reset my password?"',
+    timestamp: new Date(Date.now() - 1000 * 60 * 90), // 1.5 hours ago
+    chatbotName: "Customer Support Bot",
+  },
+  {
+    id: "notif-7",
+    type: "lead" as const,
+    title: "New Lead Captured",
+    description: "Email provided: mike@startup.io",
+    timestamp: new Date(Date.now() - 1000 * 60 * 120), // 2 hours ago
+    chatbotName: "Sales Assistant",
+  },
+  {
+    id: "notif-8",
+    type: "positive_feedback" as const,
+    title: "Positive Feedback",
+    description: "Received a positive rating.",
+    timestamp: new Date(Date.now() - 1000 * 60 * 180), // 3 hours ago
+    chatbotName: "Customer Support Bot",
+  },
+  {
+    id: "notif-9",
+    type: "unanswered" as const,
+    title: "Unanswered Query",
+    description: 'Failed to answer: "What integrations do you support?"',
+    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 5), // 5 hours ago
+    chatbotName: "Sales Assistant",
+  },
+  {
+    id: "notif-10",
+    type: "lead" as const,
+    title: "New Lead Captured",
+    description: "Email provided: emma@design.co",
+    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 8), // 8 hours ago
+    chatbotName: "Feedback Collector",
+  },
+  {
+    id: "notif-11",
+    type: "unanswered" as const,
+    title: "Unanswered Query",
+    description: 'Failed to answer: "Can I export my data?"',
+    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24), // 1 day ago
+    chatbotName: "Product Recommender",
+  },
+  {
+    id: "notif-12",
+    type: "positive_feedback" as const,
+    title: "Positive Feedback",
+    description: "Received a positive rating.",
+    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 48), // 2 days ago
+    chatbotName: "Lead Gen Bot",
+  },
+];

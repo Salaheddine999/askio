@@ -29,7 +29,10 @@ import {
   ArrowDown,
   FileText,
   FileSpreadsheet,
-  AlertTriangle
+  AlertTriangle,
+  UserPlus,
+  HelpCircle,
+  Clock
 } from "lucide-react";
 import { format, subDays, isBefore } from "date-fns";
 import ConfirmationModal from "../components/ConfirmationModal";
@@ -45,7 +48,7 @@ import ChatbotCard from "../components/ChatbotCard";
 import OverviewChart from "../components/OverviewChart";
 import RecentActivity, { ActivityItem } from "../components/RecentActivity";
 import { useCollection } from "react-firebase-hooks/firestore";
-import { DUMMY_CHATBOTS, DUMMY_FEEDBACK_COUNTS, DUMMY_RECENT_ACTIVITY } from "../utils/dummyData";
+import { DUMMY_CHATBOTS, DUMMY_FEEDBACK_COUNTS, DUMMY_RECENT_ACTIVITY, DUMMY_NOTIFICATIONS } from "../utils/dummyData";
 import { Helmet } from "react-helmet-async";
 
 interface Chatbot {
@@ -65,6 +68,15 @@ interface FeedbackCounts {
 interface TrendData {
   value: string;
   direction: "up" | "down" | "neutral";
+}
+
+interface NotificationItem {
+  id: string;
+  type: "lead" | "unanswered" | "positive_feedback" | "negative_feedback";
+  title: string;
+  description: string;
+  timestamp: Date;
+  chatbotName: string;
 }
 
 interface DashboardProps {
@@ -118,6 +130,14 @@ const Dashboard: React.FC<DashboardProps> = ({ toggleSidebar, testMode }) => {
   const [isGeneratingLeadReport, setIsGeneratingLeadReport] = useState(false);
   const [isGeneratingQueryReport, setIsGeneratingQueryReport] = useState(false);
 
+  // Notifications State
+  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
+  const [loadingNotifications, setLoadingNotifications] = useState(false);
+  const [notificationsFetched, setNotificationsFetched] = useState(false);
+  const [notificationsCurrentPage, setNotificationsCurrentPage] = useState(1);
+  const [notificationsPerPage] = useState(10);
+  const [hasUnseenNotifications, setHasUnseenNotifications] = useState(false);
+
   // Reset pagination when search or sort changes
   useEffect(() => {
     setCurrentPage(1);
@@ -141,12 +161,117 @@ const Dashboard: React.FC<DashboardProps> = ({ toggleSidebar, testMode }) => {
         (totalPos + totalNeg) > 0 ? (totalPos / (totalPos + totalNeg)) * 100 : 0
       );
       setRecentActivities(DUMMY_RECENT_ACTIVITY);
+      setNotifications(DUMMY_NOTIFICATIONS);
+      setNotificationsFetched(true);
+      setHasUnseenNotifications(true);
       setLoading(false);
     } else {
       // Fetch real data
       fetchChatbots();
     }
   }, [testMode]);
+
+  // Fetch notifications when chatbots are loaded (eager, so badge works on all tabs)
+  useEffect(() => {
+    if (!notificationsFetched && chatbots.length > 0) {
+        fetchNotifications();
+    }
+  }, [chatbots, notificationsFetched]);
+
+  const fetchNotifications = async () => {
+     if (testMode || chatbots.length === 0) return;
+     setLoadingNotifications(true);
+     try {
+        const user = auth.currentUser;
+        if (!user) return;
+
+        const chatbotIds = chatbots.map(c => c.id);
+        const chatbotMap = new Map(chatbots.map(c => [c.id, c.title]));
+
+        let allNotifications: NotificationItem[] = [];
+        const batchSize = 10;
+        
+        // Fetch in batches to respect Firestore "in" limit
+        for (let i = 0; i < chatbotIds.length; i += batchSize) {
+           const batchIds = chatbotIds.slice(i, i + batchSize);
+           
+           // Fetch Leads
+           const leadsQuery = query(collection(db, "leads"), where("chatbotId", "in", batchIds));
+           const leadsSnap = await getDocs(leadsQuery);
+
+           const leads = leadsSnap.docs.map(d => {
+              const data = d.data();
+              return {
+                 id: d.id,
+                 type: "lead" as const,
+                 title: "New Lead Captured",
+                 description: `Email provided: ${data.email}`,
+                 timestamp: data.timestamp?.toDate?.() || data.createdAt?.toDate?.() || new Date(0),
+                 chatbotName: chatbotMap.get(data.chatbotId) || "Unknown Bot"
+              };
+           });
+
+           // Fetch Unanswered Queries
+           const queryQuery = query(collection(db, "unanswered_queries"), where("chatbotId", "in", batchIds));
+           const querySnap = await getDocs(queryQuery);
+
+           const queries = querySnap.docs.map(d => {
+              const data = d.data();
+              return {
+                 id: d.id,
+                 type: "unanswered" as const,
+                 title: "Unanswered Query",
+                 description: `Failed to answer: "${data.query}"`,
+                 timestamp: data.timestamp?.toDate?.() || data.createdAt?.toDate?.() || new Date(0),
+                 chatbotName: chatbotMap.get(data.chatbotId) || "Unknown Bot"
+              };
+           });
+
+           allNotifications = [...allNotifications, ...leads, ...queries];
+        }
+
+        // Add feedback activities if they exist in state
+        const feedbackNotifs = recentActivities.map(act => ({
+           id: act.id,
+           type: act.type === "positive" ? "positive_feedback" as const : "negative_feedback" as const,
+           title: act.type === "positive" ? "Positive Feedback" : "Negative Feedback",
+           description: `Received a ${act.type} rating.`,
+           timestamp: act.date,
+           chatbotName: act.chatbotName
+        }));
+
+        allNotifications = [...allNotifications, ...feedbackNotifs];
+
+        // Sort by newest first
+        allNotifications.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+
+        // Cap at 200 to prevent massive memory usage, but we'll paginate them
+        setNotifications(allNotifications.slice(0, 200));
+        setNotificationsFetched(true);
+        setNotificationsCurrentPage(1); // Reset to first page on fetch
+
+        // Check for unseen notifications
+        const lastSeenStr = localStorage.getItem('askio_notifications_last_seen');
+        const lastSeen = lastSeenStr ? new Date(lastSeenStr) : new Date(0);
+        const hasUnseen = allNotifications.some(n => n.timestamp.getTime() > lastSeen.getTime());
+        setHasUnseenNotifications(hasUnseen);
+     } catch (error) {
+        console.error("Error fetching notifications:", error);
+        toast.error("Failed to load notifications.");
+     } finally {
+        setLoadingNotifications(false);
+     }
+  };
+
+  // Calculate notifications pagination
+  const indexOfLastNotification = notificationsCurrentPage * notificationsPerPage;
+  const indexOfFirstNotification = indexOfLastNotification - notificationsPerPage;
+  const currentNotifications = notifications.slice(
+    indexOfFirstNotification,
+    indexOfLastNotification
+  );
+
+  const paginateNotifications = (pageNumber: number) => setNotificationsCurrentPage(pageNumber);
 
   useEffect(() => {
     if (testMode) return; // Skip real data processing in test mode
@@ -159,8 +284,8 @@ const Dashboard: React.FC<DashboardProps> = ({ toggleSidebar, testMode }) => {
 
       // Sort feedback by date descending
       const sortedDocs = [...feedbackSnapshot.docs].sort((a, b) => {
-          const dateA = a.data().createdAt?.toDate() || new Date(0);
-          const dateB = b.data().createdAt?.toDate() || new Date(0);
+          const dateA = a.data().timestamp?.toDate() || new Date(0);
+          const dateB = b.data().timestamp?.toDate() || new Date(0);
           return dateB.getTime() - dateA.getTime();
       });
 
@@ -187,7 +312,7 @@ const Dashboard: React.FC<DashboardProps> = ({ toggleSidebar, testMode }) => {
                   id: doc.id,
                   chatbotName: chatbot.title,
                   type: data.isPositive ? "positive" : "negative",
-                  date: data.createdAt?.toDate() || new Date(),
+                  date: data.timestamp?.toDate() || new Date(0),
               });
           }
         }
@@ -220,8 +345,8 @@ const Dashboard: React.FC<DashboardProps> = ({ toggleSidebar, testMode }) => {
       // 2. Feedback Trend
       // We need to filter feedback snapshot for previous period
       const previousPeriodFeedback = sortedDocs.filter(doc => {
-          const createdAt = doc.data().createdAt?.toDate();
-          return createdAt && isBefore(createdAt, thirtyDaysAgo);
+          const ts = doc.data().timestamp?.toDate();
+          return ts && isBefore(ts, thirtyDaysAgo);
       });
       const previousTotalFeedback = previousPeriodFeedback.length;
       const currentTotalFeedback = totalPositive + totalNegative;
@@ -477,6 +602,11 @@ const Dashboard: React.FC<DashboardProps> = ({ toggleSidebar, testMode }) => {
 
   const refreshDashboard = () => {
     fetchChatbots();
+    if (activeTab === "notifications") {
+       fetchNotifications();
+    } else {
+       setNotificationsFetched(false); // Force refetch next time tab is opened
+    }
     toast.success("Dashboard refreshed");
   };
 
@@ -688,10 +818,16 @@ const Dashboard: React.FC<DashboardProps> = ({ toggleSidebar, testMode }) => {
                 { id: "overview", label: "Overview" },
                 { id: "chatbots", label: "Chatbots" },
                 { id: "reports", label: "Reports" },
-                { id: "notifications", label: "Notifications" },
+                { id: "notifications", label: "Notifications", showBadge: hasUnseenNotifications },
                 ]}
                 activeTab={activeTab}
-                onChange={(id) => setActiveTab(id as any)}
+                onChange={(id) => {
+                  setActiveTab(id as any);
+                  if (id === 'notifications') {
+                    localStorage.setItem('askio_notifications_last_seen', new Date().toISOString());
+                    setHasUnseenNotifications(false);
+                  }
+                }}
                 className="w-fit"
             />
 
@@ -1481,8 +1617,120 @@ const Dashboard: React.FC<DashboardProps> = ({ toggleSidebar, testMode }) => {
           )}
 
           {activeTab === "notifications" && (
-             <div className="flex items-center justify-center p-12 text-[#605A57] dark:text-[#A8A29E]">
-                <p>No new notifications.</p>
+             <div className="space-y-6 max-w-4xl mx-auto">
+                <div>
+                  <h2 className="text-h2 font-bold text-[#37322F] dark:text-[#F5F5F4]">
+                    Notifications
+                  </h2>
+                  <p className="text-[#605A57] dark:text-[#A8A29E] mt-1">
+                    Stay updated on new leads, unanswered queries, and recent feedback across your chatbots.
+                  </p>
+                </div>
+
+                <div className="bg-white dark:bg-[#1C1917] rounded-xl border border-[#E0DEDB] dark:border-[#44403C] shadow-sm overflow-hidden">
+                   {loadingNotifications ? (
+                       <div className="flex justify-center items-center h-64">
+                          <LoaderCircle className="animate-spin text-[#37322F] dark:text-[#F5F5F4]" size={32} />
+                       </div>
+                   ) : notifications.length === 0 ? (
+                       <div className="flex flex-col items-center justify-center p-12 text-center">
+                          <div className="w-16 h-16 bg-[#FAFAF9] dark:bg-[#292524] rounded-full flex items-center justify-center mb-6 shadow-sm border border-[#E0DEDB] dark:border-[#44403C]">
+                              <Clock className="w-8 h-8 text-[#605A57] dark:text-[#A8A29E]" />
+                          </div>
+                          <h3 className="text-lg font-medium text-[#37322F] dark:text-[#F5F5F4] mb-2">No new notifications</h3>
+                          <p className="text-[#605A57] dark:text-[#A8A29E] max-w-sm">
+                             When your chatbots capture leads or face unanswered queries, they will appear here.
+                          </p>
+                       </div>
+                   ) : (
+                       <div className="flex flex-col">
+                           <ul className="divide-y divide-[#E0DEDB] dark:divide-[#44403C]">
+                              {currentNotifications.map((item) => (
+                                  <li key={item.id} className="p-4 hover:bg-[#FAFAF9] dark:hover:bg-[#292524] transition-colors flex items-start sm:items-center gap-4">
+                                      <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center border ${
+                                         item.type === "lead" ? "bg-emerald-50 border-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:border-emerald-800 dark:text-emerald-400" :
+                                         item.type === "unanswered" ? "bg-rose-50 border-rose-100 text-rose-600 dark:bg-rose-900/30 dark:border-rose-800 dark:text-rose-400" :
+                                         item.type === "positive_feedback" ? "bg-blue-50 border-blue-100 text-blue-600 dark:bg-blue-900/30 dark:border-blue-800 dark:text-blue-400" :
+                                         "bg-amber-50 border-amber-100 text-amber-600 dark:bg-amber-900/30 dark:border-amber-800 dark:text-amber-400"
+                                      }`}>
+                                         {item.type === "lead" && <UserPlus size={18} />}
+                                         {item.type === "unanswered" && <HelpCircle size={18} />}
+                                         {item.type === "positive_feedback" && <ArrowUp size={18} />}
+                                         {item.type === "negative_feedback" && <ArrowDown size={18} />}
+                                      </div>
+                                      <div className="flex-1 min-w-0 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-4">
+                                         <div>
+                                            <p className="text-sm font-medium text-[#37322F] dark:text-[#F5F5F4] truncate">
+                                                {item.title} <span className="font-normal text-[#605A57] dark:text-[#A8A29E] mx-1">•</span> <span className="text-xs font-normal text-[#605A57] dark:text-[#A8A29E]">{item.chatbotName}</span>
+                                            </p>
+                                            <p className="text-sm text-[#605A57] dark:text-[#A8A29E] truncate">
+                                                {item.description}
+                                            </p>
+                                         </div>
+                                         <div className="text-xs text-[#A8A29E] dark:text-[#78716C] whitespace-nowrap flex-shrink-0">
+                                             {item.timestamp.getTime() === 0 ? "No date" : format(item.timestamp, "MMM d, yyyy 'at' h:mm a")}
+                                         </div>
+                                      </div>
+                                  </li>
+                              ))}
+                           </ul>
+                           
+                           {/* Pagination Controls */}
+                           {notifications.length > notificationsPerPage && (
+                               <div className="p-4 border-t border-[#E0DEDB] dark:border-[#44403C] bg-[#FAFAF9] dark:bg-[#292524] flex justify-center">
+                                   <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                                       <button
+                                           onClick={() => paginateNotifications(notificationsCurrentPage - 1)}
+                                           disabled={notificationsCurrentPage === 1}
+                                           className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-[#E0DEDB] bg-white text-sm font-medium text-[#605A57] hover:bg-[#FAFAF9] disabled:opacity-50 disabled:cursor-not-allowed dark:bg-[#1C1917] dark:border-[#44403C] dark:text-[#A8A29E] dark:hover:bg-[#292524]"
+                                       >
+                                           <span className="sr-only">Previous</span>
+                                           <ChevronLeft className="h-5 w-5" aria-hidden="true" />
+                                       </button>
+                                       {Array.from({ length: Math.ceil(notifications.length / notificationsPerPage) }).map((_, index) => {
+                                           // Basic logic to not show too many page buttons
+                                           const totalPages = Math.ceil(notifications.length / notificationsPerPage);
+                                           const pageNum = index + 1;
+                                           if (
+                                               pageNum === 1 ||
+                                               pageNum === totalPages ||
+                                               (pageNum >= notificationsCurrentPage - 1 && pageNum <= notificationsCurrentPage + 1)
+                                           ) {
+                                               return (
+                                                   <button
+                                                       key={index}
+                                                       onClick={() => paginateNotifications(pageNum)}
+                                                       className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
+                                                       notificationsCurrentPage === pageNum
+                                                           ? "z-10 bg-[#37322F] border-[#37322F] text-white dark:bg-[#F5F5F4] dark:border-[#F5F5F4] dark:text-[#1C1917]"
+                                                           : "bg-white border-[#E0DEDB] text-[#605A57] hover:bg-[#FAFAF9] dark:bg-[#1C1917] dark:border-[#44403C] dark:text-[#A8A29E] dark:hover:bg-[#292524]"
+                                                       }`}
+                                                   >
+                                                       {pageNum}
+                                                   </button>
+                                               );
+                                           } else if (
+                                               (pageNum === notificationsCurrentPage - 2 && pageNum > 1) ||
+                                               (pageNum === notificationsCurrentPage + 2 && pageNum < totalPages)
+                                           ) {
+                                              return <span key={index} className="relative inline-flex items-center px-4 py-2 border border-[#E0DEDB] bg-white text-sm font-medium text-[#605A57] dark:bg-[#1C1917] dark:border-[#44403C] dark:text-[#A8A29E]">...</span>;
+                                           }
+                                           return null;
+                                       })}
+                                       <button
+                                           onClick={() => paginateNotifications(notificationsCurrentPage + 1)}
+                                           disabled={notificationsCurrentPage === Math.ceil(notifications.length / notificationsPerPage)}
+                                           className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-[#E0DEDB] bg-white text-sm font-medium text-[#605A57] hover:bg-[#FAFAF9] disabled:opacity-50 disabled:cursor-not-allowed dark:bg-[#1C1917] dark:border-[#44403C] dark:text-[#A8A29E] dark:hover:bg-[#292524]"
+                                       >
+                                           <span className="sr-only">Next</span>
+                                           <ChevronRight className="h-5 w-5" aria-hidden="true" />
+                                       </button>
+                                   </nav>
+                               </div>
+                           )}
+                       </div>
+                   )}
+                </div>
              </div>
           )}
       </div>
