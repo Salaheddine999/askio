@@ -230,7 +230,8 @@ const Chatbot: React.FC<ChatbotProps> = ({
           }
         }
       } else {
-        if (enableLeadCapture) {
+        const isLeadCaptureEnabled = enableLeadCapture === true || (enableLeadCapture as unknown as string) === "true";
+        if (isLeadCaptureEnabled) {
           setMessages((prev) => [
             ...prev,
             {
