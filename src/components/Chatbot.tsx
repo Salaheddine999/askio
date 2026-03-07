@@ -7,6 +7,10 @@ import { doc, setDoc, getDoc, collection, addDoc, serverTimestamp } from "fireba
 import toast from "react-hot-toast";
 import bot1 from "../assets/chat1.svg";
 
+// Dynamic import: AI module is optional (not included in open-source builds)
+const aiModules = import.meta.glob('../utils/ai.ts');
+const aiModuleLoader = Object.values(aiModules)[0];
+
 type Message = {
   text: string;
   sender: "user" | "bot";
@@ -30,6 +34,7 @@ export interface ChatbotProps {
   gradientStart?: string;
   liveChatLink?: string;
   enableLeadCapture?: boolean;
+  aiTone?: string;
 }
 
 const Chatbot: React.FC<ChatbotProps> = ({
@@ -45,6 +50,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
   customPositionClass,
   liveChatLink,
   enableLeadCapture,
+  aiTone,
 }) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
@@ -180,7 +186,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
     }
   };
 
-  const handleSend = (e?: React.FormEvent) => {
+  const handleSend = async (e?: React.FormEvent) => {
     if (e) {
       e.preventDefault();
       e.stopPropagation();
@@ -205,6 +211,113 @@ const Chatbot: React.FC<ChatbotProps> = ({
     }
 
     setIsTyping(true);
+
+    if (aiTone && aiTone.trim() !== "" && aiModuleLoader) {
+      try {
+        const aiModule: any = await aiModuleLoader();
+        const generateChatResponse = aiModule?.generateChatResponse;
+        const historyContext = messages.filter(m => !m.isFallback && !m.isLeadCapture);
+        const aiResponseText = generateChatResponse ? await generateChatResponse(input, historyContext, faqData, aiTone) : null;
+        
+        if (aiResponseText) {
+          // Check if the AI indicated it couldn't answer the question
+          const lowerResponse = aiResponseText.toLowerCase();
+          const cantAnswerPhrases = [
+            "don't know", "do not know", "don't have", "do not have",
+            "cannot answer", "can't answer", "not sure", "no information",
+            "human agent", "connect you with", "beyond my knowledge",
+            "outside my knowledge", "i'm unable to", "i am unable to",
+            "don't have information", "no answer", "can't help with that",
+            "unable to help", "not in my knowledge",
+          ];
+          const aiCouldNotAnswer = cantAnswerPhrases.some(phrase => lowerResponse.includes(phrase));
+
+          setMessages((prev) => [
+            ...prev,
+            { text: aiResponseText, sender: "bot", isFallback: aiCouldNotAnswer && !enableLeadCapture },
+          ]);
+
+          // If the AI couldn't answer, show lead capture or live chat fallback
+          if (aiCouldNotAnswer) {
+            const isLeadCaptureEnabled = enableLeadCapture === true || (enableLeadCapture as unknown as string) === "true";
+            if (isLeadCaptureEnabled) {
+              setMessages((prev) => [
+                ...prev,
+                {
+                  text: "Please leave your email below and our team will get back to you.",
+                  sender: "bot",
+                  isLeadCapture: true,
+                },
+              ]);
+            } else if (liveChatLink) {
+              // isFallback is already set on the AI response above to show the live chat link
+              setTimeout(() => {
+                setShowSuggestions(true);
+                updateSuggestions(input);
+              }, 100);
+            }
+
+            // Track as unanswered query
+            if (id) {
+              try {
+                await addDoc(collection(db, "unanswered_queries"), {
+                  chatbotId: id,
+                  query: input,
+                  timestamp: serverTimestamp(),
+                  anonymousToken: anonymousToken,
+                });
+              } catch (error) {
+                console.error("Error tracking unanswered query:", error);
+              }
+            }
+          }
+          
+          if (id && !aiCouldNotAnswer) {
+            try {
+              await addDoc(collection(db, "analytics_events"), {
+                chatbotId: id,
+                type: "ai_generated",
+                userQuery: input,
+                timestamp: serverTimestamp(),
+                anonymousToken: anonymousToken,
+              });
+            } catch (error) {
+              console.error("Error tracking analytics event:", error);
+            }
+          }
+        }
+      } catch (error) {
+        console.error("Error generating AI response:", error);
+        // Fallback to standard flow on error
+        const isLeadCaptureEnabled = enableLeadCapture === true || (enableLeadCapture as unknown as string) === "true";
+        if (isLeadCaptureEnabled) {
+          setMessages((prev) => [
+            ...prev,
+            {
+              text: "I'm sorry, I don't have an answer for that. Please leave your email below and our team will get back to you.",
+              sender: "bot",
+              isLeadCapture: true,
+            },
+          ]);
+        } else {
+          setMessages((prev) => [
+            ...prev,
+            {
+              text: "I'm sorry, I encountered an error. Here are some related questions:",
+              sender: "bot",
+              isFallback: true,
+            },
+          ]);
+          setTimeout(() => {
+            setShowSuggestions(true);
+            updateSuggestions(input);
+          }, 100);
+        }
+      } finally {
+        setIsTyping(false);
+      }
+      return; // Exit early since we used the AI
+    }
 
     setTimeout(async () => {
       if (matchedFaq) {

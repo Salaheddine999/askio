@@ -45,6 +45,12 @@ const AiFaqGenerator = aiModuleLoader
   ? lazy(() => aiModuleLoader() as Promise<{ default: React.ComponentType<any> }>)
   : null;
 
+const aiPersonaModules = import.meta.glob('./AiPersonaTab.tsx');
+const aiPersonaModuleLoader = Object.values(aiPersonaModules)[0];
+const AiPersonaTab = aiPersonaModuleLoader
+  ? lazy(() => aiPersonaModuleLoader() as Promise<{ default: React.ComponentType<any> }>)
+  : null;
+
 interface EditChatbotProps extends ChatbotProps {
   name: string;
 }
@@ -108,6 +114,7 @@ const EditChatbot: React.FC = () => {
     faqData: [],
     liveChatLink: "",
     enableLeadCapture: false,
+    aiTone: "",
   });
   const [faqInput, setFaqInput] = useState({ question: "", answer: "" });
   const [faqList, setFaqList] = useState<FAQItem[]>([]);
@@ -379,6 +386,7 @@ const EditChatbot: React.FC = () => {
     { key: "general", label: "General", icon: Settings, desc: "Basic settings" },
     { key: "appearance", label: "Appearance", icon: Palette, desc: "Colors & style" },
     { key: "faq", label: "FAQ", icon: HelpCircle, desc: "Questions & answers" },
+    ...(AiPersonaTab ? [{ key: "ai_tone", label: "AI Persona", icon: MessageSquare, desc: "Personality & tone" }] : []),
     { key: "embed", label: "Embed", icon: Code2, desc: "Install on your site" },
   ];
 
@@ -761,6 +769,7 @@ const EditChatbot: React.FC = () => {
                               <div className="hidden sm:block w-px bg-[#E0DEDB] dark:bg-[#44403C] mx-1"></div>
                               <Suspense fallback={null}>
                                 <AiFaqGenerator
+                                  aiTone={config.aiTone}
                                   onFaqsApproved={(faqs: { question: string; answer: string }[]) => {
                                     const faqsWithState = faqs.map((f: { question: string; answer: string }) => ({ ...f, isOpen: false }));
                                     setConfig(prev => ({ ...prev, faqData: [...prev.faqData, ...faqs] }));
@@ -846,6 +855,17 @@ const EditChatbot: React.FC = () => {
                     </div>
                   )}
                 </div>
+              )}
+
+              {/* ========== AI TONE TAB (Premium - loaded dynamically) ========== */}
+              {activeTab === "ai_tone" && AiPersonaTab && (
+                <Suspense fallback={null}>
+                  <AiPersonaTab
+                    aiTone={config.aiTone || ""}
+                    onChange={(value: string) => handleConfigChange("aiTone", value)}
+                    inputClasses={inputClasses}
+                  />
+                </Suspense>
               )}
 
               {/* ========== EMBED TAB ========== */}
