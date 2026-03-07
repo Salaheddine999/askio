@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Blocks, Copy, Check, Download, ChevronDown, ExternalLink, LoaderCircle, ShoppingBag } from "lucide-react";
 import { db, auth } from "../utils/firebase";
-import { collection, query, where, getDocs } from "firebase/firestore";
+import { collection, query, where, getDocs, setDoc, doc, deleteDoc } from "firebase/firestore";
 import { toast } from "react-hot-toast";
 
 type Platform = "wordpress" | "shopify" | "wix" | "html";
@@ -9,6 +9,14 @@ type Platform = "wordpress" | "shopify" | "wix" | "html";
 interface Chatbot {
   id: string;
   title: string;
+}
+
+interface ShopifyConnection {
+  id: string;
+  shop: string;
+  chatbotId: string;
+  chatbotTitle: string;
+  connectedAt: string;
 }
 
 export default function Integrations() {
@@ -21,12 +29,72 @@ export default function Integrations() {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [downloading, setDownloading] = useState(false);
   const [shopUrl, setShopUrl] = useState("");
+  const [shopifyConnections, setShopifyConnections] = useState<ShopifyConnection[]>([]);
 
   const origin = window.location.origin;
 
   useEffect(() => {
     fetchChatbots();
+    fetchShopifyConnections();
+    handleShopifyCallback();
   }, []);
+
+  const handleShopifyCallback = async () => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('shopify_connected') === 'true') {
+      const shop = params.get('shop');
+      const chatbotId = params.get('chatbotId');
+      const user = auth.currentUser;
+      if (shop && chatbotId && user) {
+        try {
+          const connectionId = shop.replace(/\./g, '_');
+          const chatbot = chatbots.length > 0
+            ? chatbots.find(b => b.id === chatbotId)
+            : null;
+          await setDoc(doc(db, 'shopify_connections', connectionId), {
+            shop,
+            chatbotId,
+            chatbotTitle: chatbot?.title || 'Chatbot',
+            userId: user.uid,
+            connectedAt: new Date().toISOString(),
+          });
+          toast.success(`Connected to ${shop}!`);
+          fetchShopifyConnections();
+        } catch (err) {
+          console.error('Error saving connection:', err);
+        }
+      }
+      window.history.replaceState({}, '', '/integrations');
+      setActivePlatform('shopify');
+    }
+  };
+
+  const fetchShopifyConnections = async () => {
+    try {
+      const user = auth.currentUser;
+      if (!user) return;
+      const q = query(
+        collection(db, 'shopify_connections'),
+        where('userId', '==', user.uid)
+      );
+      const snap = await getDocs(q);
+      setShopifyConnections(
+        snap.docs.map((d) => ({ id: d.id, ...d.data() } as ShopifyConnection))
+      );
+    } catch (err) {
+      console.error('Error fetching connections:', err);
+    }
+  };
+
+  const disconnectShopify = async (connectionId: string) => {
+    try {
+      await deleteDoc(doc(db, 'shopify_connections', connectionId));
+      toast.success('Store disconnected.');
+      fetchShopifyConnections();
+    } catch (err) {
+      console.error('Error disconnecting:', err);
+    }
+  };
 
   const fetchChatbots = async () => {
     try {
@@ -325,11 +393,49 @@ export default function Integrations() {
                   </div>
                 </div>
 
+                {/* Connected Stores */}
+                {shopifyConnections.length > 0 && (
+                  <div className="mb-8">
+                    <h3 className="text-sm font-semibold text-[#37322F] dark:text-[#F5F5F4] mb-3 flex items-center gap-2">
+                      <Check size={16} className="text-green-600" />
+                      Connected Stores
+                    </h3>
+                    <div className="space-y-3">
+                      {shopifyConnections.map((conn) => (
+                        <div
+                          key={conn.id}
+                          className="flex items-center justify-between p-4 rounded-xl bg-[#FAFAF9] dark:bg-[#1C1917] border border-[#E0DEDB] dark:border-[#44403C]"
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                              <ShoppingBag size={16} className="text-green-600" />
+                            </div>
+                            <div>
+                              <p className="text-sm font-medium text-[#37322F] dark:text-[#F5F5F4]">
+                                {conn.shop}
+                              </p>
+                              <p className="text-xs text-[#A8A29E] dark:text-[#78716C]">
+                                Chatbot: <span className="font-medium text-[#605A57] dark:text-[#D6D3D1]">{conn.chatbotTitle || chatbots.find(b => b.id === conn.chatbotId)?.title || conn.chatbotId}</span>
+                              </p>
+                            </div>
+                          </div>
+                          <button
+                            onClick={() => disconnectShopify(conn.id)}
+                            className="text-xs text-red-500 hover:text-red-600 font-medium transition-colors"
+                          >
+                            Disconnect
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 {/* Connect to Shopify */}
                 <div className="mb-8 p-5 rounded-xl bg-[#FAFAF9] dark:bg-[#1C1917] border border-[#E0DEDB] dark:border-[#44403C]">
                   <h3 className="text-sm font-semibold text-[#37322F] dark:text-[#F5F5F4] mb-3 flex items-center gap-2">
                     <ShoppingBag size={16} className="text-[#605A57] dark:text-[#A8A29E]" />
-                    Connect Your Shopify Store
+                    {shopifyConnections.length > 0 ? 'Connect Another Store' : 'Connect Your Shopify Store'}
                   </h3>
                   <p className="text-sm text-[#605A57] dark:text-[#A8A29E] mb-4">
                     Enter your Shopify store URL and click connect. We'll handle everything automatically.

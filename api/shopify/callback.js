@@ -112,8 +112,12 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: 'Failed to install chatbot script', shopifyError: errorText2 });
     }
 
-    // Success — redirect to Shopify admin
-    res.redirect(302, 'https://' + shop + '/admin/apps');
+    // Success — redirect to Askio with connection info
+    const successUrl = 'https://askio.vercel.app/integrations' +
+      '?shopify_connected=true' +
+      '&shop=' + encodeURIComponent(shop) +
+      '&chatbotId=' + encodeURIComponent(chatbotId);
+    res.redirect(302, successUrl);
   } catch (error) {
     console.error('Callback error:', error);
     return res.status(500).json({ error: 'Internal server error', details: error.message });
