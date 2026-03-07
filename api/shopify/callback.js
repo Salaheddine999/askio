@@ -68,7 +68,7 @@ export default async function handler(req, res) {
     const accessToken = tokenData.access_token;
 
     // Remove existing Askio script tags
-    const existingScriptsResponse = await fetch('https://' + shop + '/admin/api/2024-01/script_tags.json', {
+    const existingScriptsResponse = await fetch('https://' + shop + '/admin/api/2025-01/script_tags.json', {
       headers: {
         'X-Shopify-Access-Token': accessToken,
         'Content-Type': 'application/json',
@@ -80,7 +80,7 @@ export default async function handler(req, res) {
       for (let i = 0; i < existingScripts.script_tags.length; i++) {
         const script = existingScripts.script_tags[i];
         if (script.src && script.src.indexOf('askio.vercel.app') !== -1) {
-          await fetch('https://' + shop + '/admin/api/2024-01/script_tags/' + script.id + '.json', {
+          await fetch('https://' + shop + '/admin/api/2025-01/script_tags/' + script.id + '.json', {
             method: 'DELETE',
             headers: {
               'X-Shopify-Access-Token': accessToken,
@@ -92,7 +92,7 @@ export default async function handler(req, res) {
 
     // Create new ScriptTag
     const scriptTagSrc = 'https://askio.vercel.app/api/shopify/script.js?id=' + chatbotId;
-    const scriptTagResponse = await fetch('https://' + shop + '/admin/api/2024-01/script_tags.json', {
+    const scriptTagResponse = await fetch('https://' + shop + '/admin/api/2025-01/script_tags.json', {
       method: 'POST',
       headers: {
         'X-Shopify-Access-Token': accessToken,
@@ -109,7 +109,7 @@ export default async function handler(req, res) {
     if (!scriptTagResponse.ok) {
       const errorText2 = await scriptTagResponse.text();
       console.error('ScriptTag creation failed:', errorText2);
-      return res.status(500).json({ error: 'Failed to install chatbot script' });
+      return res.status(500).json({ error: 'Failed to install chatbot script', shopifyError: errorText2 });
     }
 
     // Success — redirect to Shopify admin
