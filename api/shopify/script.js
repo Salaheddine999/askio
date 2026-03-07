@@ -1,4 +1,4 @@
-module.exports = (req, res) => {
+export default function handler(req, res) {
   const chatbotId = req.query.id;
 
   if (!chatbotId) {
@@ -31,4 +31,4 @@ module.exports = (req, res) => {
   res.setHeader('Cache-Control', 'public, max-age=3600');
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.status(200).send(script);
-};
+}

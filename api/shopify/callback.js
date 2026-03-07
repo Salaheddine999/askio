@@ -1,57 +1,60 @@
-const crypto = require('crypto');
+import crypto from 'crypto';
 
-module.exports = async (req, res) => {
-  const { shop, code, state, hmac } = req.query;
-
-  if (!shop || !code || !state || !hmac) {
-    return res.status(400).json({ error: 'Missing required parameters' });
-  }
-
-  const apiKey = process.env.SHOPIFY_API_KEY;
-  const apiSecret = process.env.SHOPIFY_API_SECRET;
-
-  if (!apiKey || !apiSecret) {
-    return res.status(500).json({ error: 'Shopify credentials not configured' });
-  }
-
-  // Verify HMAC
-  const queryParams = { ...req.query };
-  delete queryParams.hmac;
-  const sortedParams = Object.keys(queryParams)
-    .sort()
-    .map((key) => `${key}=${queryParams[key]}`)
-    .join('&');
-  const generatedHmac = crypto
-    .createHmac('sha256', apiSecret)
-    .update(sortedParams)
-    .digest('hex');
-
-  if (generatedHmac !== hmac) {
-    return res.status(401).json({ error: 'HMAC validation failed' });
-  }
-
-  // Decode chatbotId from state
-  let chatbotId;
+export default async function handler(req, res) {
   try {
-    const stateData = JSON.parse(Buffer.from(state, 'base64url').toString());
-    chatbotId = stateData.chatbotId;
-  } catch (e) {
-    return res.status(400).json({ error: 'Invalid state parameter' });
-  }
+    const { shop, code, state, hmac } = req.query;
 
-  if (!chatbotId) {
-    return res.status(400).json({ error: 'No chatbot ID found in state' });
-  }
+    if (!shop || !code || !state || !hmac) {
+      return res.status(400).json({ error: 'Missing required parameters' });
+    }
 
-  try {
+    const apiKey = process.env.SHOPIFY_API_KEY;
+    const apiSecret = process.env.SHOPIFY_API_SECRET;
+
+    if (!apiKey || !apiSecret) {
+      return res.status(500).json({ error: 'Shopify credentials not configured' });
+    }
+
+    // Verify HMAC
+    const queryParams = Object.assign({}, req.query);
+    delete queryParams.hmac;
+    const sortedParams = Object.keys(queryParams)
+      .sort()
+      .map(function(key) { return key + '=' + queryParams[key]; })
+      .join('&');
+    const generatedHmac = crypto
+      .createHmac('sha256', apiSecret)
+      .update(sortedParams)
+      .digest('hex');
+
+    if (generatedHmac !== hmac) {
+      return res.status(401).json({ error: 'HMAC validation failed' });
+    }
+
+    // Decode chatbotId from state (URL-safe base64)
+    let chatbotId;
+    try {
+      let stateStr = state.replace(/-/g, '+').replace(/_/g, '/');
+      const padding = stateStr.length % 4;
+      if (padding) stateStr += '='.repeat(4 - padding);
+      const stateData = JSON.parse(Buffer.from(stateStr, 'base64').toString());
+      chatbotId = stateData.chatbotId;
+    } catch (e) {
+      return res.status(400).json({ error: 'Invalid state parameter' });
+    }
+
+    if (!chatbotId) {
+      return res.status(400).json({ error: 'No chatbot ID found in state' });
+    }
+
     // Exchange code for access token
-    const tokenResponse = await fetch(`https://${shop}/admin/oauth/access_token`, {
+    const tokenResponse = await fetch('https://' + shop + '/admin/oauth/access_token', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         client_id: apiKey,
         client_secret: apiSecret,
-        code,
+        code: code,
       }),
     });
 
@@ -64,8 +67,8 @@ module.exports = async (req, res) => {
     const tokenData = await tokenResponse.json();
     const accessToken = tokenData.access_token;
 
-    // First, check for existing Askio script tags and remove them
-    const existingScriptsResponse = await fetch(`https://${shop}/admin/api/2024-01/script_tags.json`, {
+    // Remove existing Askio script tags
+    const existingScriptsResponse = await fetch('https://' + shop + '/admin/api/2024-01/script_tags.json', {
       headers: {
         'X-Shopify-Access-Token': accessToken,
         'Content-Type': 'application/json',
@@ -74,9 +77,10 @@ module.exports = async (req, res) => {
 
     if (existingScriptsResponse.ok) {
       const existingScripts = await existingScriptsResponse.json();
-      for (const script of existingScripts.script_tags) {
-        if (script.src && script.src.includes('askio.vercel.app')) {
-          await fetch(`https://${shop}/admin/api/2024-01/script_tags/${script.id}.json`, {
+      for (let i = 0; i < existingScripts.script_tags.length; i++) {
+        const script = existingScripts.script_tags[i];
+        if (script.src && script.src.indexOf('askio.vercel.app') !== -1) {
+          await fetch('https://' + shop + '/admin/api/2024-01/script_tags/' + script.id + '.json', {
             method: 'DELETE',
             headers: {
               'X-Shopify-Access-Token': accessToken,
@@ -87,8 +91,8 @@ module.exports = async (req, res) => {
     }
 
     // Create new ScriptTag
-    const scriptTagSrc = `https://askio.vercel.app/api/shopify/script.js?id=${chatbotId}`;
-    const scriptTagResponse = await fetch(`https://${shop}/admin/api/2024-01/script_tags.json`, {
+    const scriptTagSrc = 'https://askio.vercel.app/api/shopify/script.js?id=' + chatbotId;
+    const scriptTagResponse = await fetch('https://' + shop + '/admin/api/2024-01/script_tags.json', {
       method: 'POST',
       headers: {
         'X-Shopify-Access-Token': accessToken,
@@ -103,15 +107,15 @@ module.exports = async (req, res) => {
     });
 
     if (!scriptTagResponse.ok) {
-      const errorText = await scriptTagResponse.text();
-      console.error('ScriptTag creation failed:', errorText);
+      const errorText2 = await scriptTagResponse.text();
+      console.error('ScriptTag creation failed:', errorText2);
       return res.status(500).json({ error: 'Failed to install chatbot script' });
     }
 
-    // Success — redirect to Shopify admin with success indicator
-    res.redirect(302, `https://${shop}/admin/apps?notification=askio-installed`);
+    // Success — redirect to Shopify admin
+    res.redirect(302, 'https://' + shop + '/admin/apps');
   } catch (error) {
     console.error('Callback error:', error);
-    return res.status(500).json({ error: 'Internal server error during installation' });
+    return res.status(500).json({ error: 'Internal server error', details: error.message });
   }
-};
+}
