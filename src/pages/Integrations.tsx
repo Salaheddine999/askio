@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Blocks, Copy, Check, Download, ChevronDown, ExternalLink, LoaderCircle } from "lucide-react";
+import { Blocks, Copy, Check, Download, ChevronDown, ExternalLink, LoaderCircle, ShoppingBag } from "lucide-react";
 import { db, auth } from "../utils/firebase";
 import { collection, query, where, getDocs } from "firebase/firestore";
 import { toast } from "react-hot-toast";
@@ -20,6 +20,7 @@ export default function Integrations() {
   const [loading, setLoading] = useState(true);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [downloading, setDownloading] = useState(false);
+  const [shopUrl, setShopUrl] = useState("");
 
   const origin = window.location.origin;
 
@@ -319,34 +320,72 @@ export default function Integrations() {
                       Shopify Integration
                     </h2>
                     <p className="text-sm text-[#605A57] dark:text-[#A8A29E]">
-                      Add the chatbot to your Shopify store in a few simple steps.
+                      Connect your Shopify store to automatically add the chatbot — no code required.
                     </p>
                   </div>
                 </div>
 
-                <div className="space-y-4 mb-8">
+                {/* Connect to Shopify */}
+                <div className="mb-8 p-5 rounded-xl bg-[#FAFAF9] dark:bg-[#1C1917] border border-[#E0DEDB] dark:border-[#44403C]">
+                  <h3 className="text-sm font-semibold text-[#37322F] dark:text-[#F5F5F4] mb-3 flex items-center gap-2">
+                    <ShoppingBag size={16} className="text-[#605A57] dark:text-[#A8A29E]" />
+                    Connect Your Shopify Store
+                  </h3>
+                  <p className="text-sm text-[#605A57] dark:text-[#A8A29E] mb-4">
+                    Enter your Shopify store URL and click connect. We'll handle everything automatically.
+                  </p>
+                  <div className="flex gap-3 items-end">
+                    <div className="flex-1 max-w-sm">
+                      <label className="block text-xs text-[#A8A29E] dark:text-[#78716C] mb-1.5 font-medium">
+                        Store URL
+                      </label>
+                      <input
+                        type="text"
+                        value={shopUrl}
+                        onChange={(e) => setShopUrl(e.target.value)}
+                        placeholder="yourstore.myshopify.com"
+                        className="w-full px-4 py-2.5 rounded-lg border border-[#E0DEDB] dark:border-[#44403C] bg-white dark:bg-[#292524] text-sm text-[#37322F] dark:text-[#F5F5F4] placeholder-[#A8A29E] dark:placeholder-[#78716C] focus:outline-none focus:border-[#37322F]/30 dark:focus:border-[#A8A29E]/30 transition-colors"
+                      />
+                    </div>
+                    <button
+                      onClick={() => {
+                        const shop = shopUrl.trim().replace(/^https?:\/\//, '').replace(/\/$/, '');
+                        if (!shop || !shop.includes('.myshopify.com')) {
+                          toast.error('Please enter a valid Shopify store URL (e.g. yourstore.myshopify.com)');
+                          return;
+                        }
+                        if (!selectedChatbot) {
+                          toast.error('Please select a chatbot first.');
+                          return;
+                        }
+                        window.location.href = `/api/shopify/auth?shop=${encodeURIComponent(shop)}&chatbotId=${encodeURIComponent(selectedChatbot)}`;
+                      }}
+                      className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[#37322F] dark:bg-[#F5F5F4] text-white dark:text-[#1C1917] text-sm font-medium hover:opacity-90 transition-opacity whitespace-nowrap"
+                    >
+                      <ShoppingBag size={16} />
+                      Connect to Shopify
+                    </button>
+                  </div>
+                </div>
+
+                {/* How it works */}
+                <div className="space-y-4">
                   <StepCard
                     number={1}
-                    title="Open Theme Editor"
-                    description='In your Shopify admin, go to Online Store → Themes. Click "Actions" → "Edit code" on your active theme.'
+                    title="Enter Your Store URL"
+                    description='Type your Shopify store URL above (e.g. yourstore.myshopify.com) and click "Connect to Shopify".'
                   />
                   <StepCard
                     number={2}
-                    title="Edit theme.liquid"
-                    description='In the Layout folder, open the file called "theme.liquid". Scroll to the bottom and find the closing </body> tag.'
+                    title="Authorize the App"
+                    description="You will be redirected to Shopify to authorize the Askio Chatbot app. Click the Install button to grant permission."
                   />
                   <StepCard
                     number={3}
-                    title="Paste the Embed Code"
-                    description='Paste the code below just before the </body> tag, then click "Save".'
+                    title="You're Done!"
+                    description="The chatbot will automatically appear on your Shopify store. Any changes you make in Askio are reflected instantly."
                   />
                 </div>
-
-                <EmbedCodeBlock
-                  code={embedCode}
-                  copied={copied}
-                  onCopy={() => copyToClipboard(embedCode, "embed")}
-                />
               </div>
             )}
 
