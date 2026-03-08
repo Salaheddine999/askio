@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
-import { Blocks, Copy, Check, Download, ChevronDown, ExternalLink, LoaderCircle, Globe, ShoppingBag } from "lucide-react";
+import { Blocks, Copy, Check, Download, ChevronDown, ExternalLink, LoaderCircle, Globe, ShoppingBag, AlertCircle } from "lucide-react";
 import { FaWordpress, FaShopify } from "react-icons/fa";
 import { SiWix } from "react-icons/si";
 import { db, auth } from "../utils/firebase";
-import { collection, query, where, getDocs } from "firebase/firestore";
+import { collection, query, where, getDocs, setDoc, doc, deleteDoc } from "firebase/firestore";
 import { toast } from "react-hot-toast";
 
 type Platform = "wordpress" | "shopify" | "wix" | "html";
@@ -11,6 +11,14 @@ type Platform = "wordpress" | "shopify" | "wix" | "html";
 interface Chatbot {
   id: string;
   title: string;
+}
+
+interface ShopifyConnection {
+  id: string;
+  shop: string;
+  chatbotId: string;
+  chatbotTitle: string;
+  connectedAt: string;
 }
 
 export default function Integrations() {
@@ -22,12 +30,71 @@ export default function Integrations() {
   const [loading, setLoading] = useState(true);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [downloading, setDownloading] = useState(false);
+  const [shopUrl, setShopUrl] = useState("");
+  const [shopifyConnections, setShopifyConnections] = useState<ShopifyConnection[]>([]);
 
   const origin = window.location.origin;
 
   useEffect(() => {
     fetchChatbots();
+    fetchShopifyConnections();
+    handleShopifyCallback();
   }, []);
+
+  const handleShopifyCallback = async () => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('shopify_connected') === 'true') {
+      const shop = params.get('shop');
+      const chatbotId = params.get('chatbotId');
+      const user = auth.currentUser;
+      if (shop && chatbotId && user) {
+        try {
+          const connectionId = shop.replace(/\./g, '_');
+          const chatbotTitle = params.get('chatbotTitle') || 'Chatbot';
+          await setDoc(doc(db, 'shopify_connections', connectionId), {
+            shop,
+            chatbotId,
+            chatbotTitle,
+            userId: user.uid,
+            connectedAt: new Date().toISOString(),
+          });
+          toast.success(`Connected to ${shop}!`);
+          fetchShopifyConnections();
+        } catch (err) {
+          console.error('Error saving connection:', err);
+        }
+      }
+      window.history.replaceState({}, '', '/integrations');
+      setActivePlatform('shopify');
+    }
+  };
+
+  const fetchShopifyConnections = async () => {
+    try {
+      const user = auth.currentUser;
+      if (!user) return;
+      const q = query(
+        collection(db, 'shopify_connections'),
+        where('userId', '==', user.uid)
+      );
+      const snap = await getDocs(q);
+      setShopifyConnections(
+        snap.docs.map((d) => ({ id: d.id, ...d.data() } as ShopifyConnection))
+      );
+    } catch (err) {
+      console.error('Error fetching connections:', err);
+    }
+  };
+
+  const disconnectShopify = async (connectionId: string) => {
+    try {
+      await deleteDoc(doc(db, 'shopify_connections', connectionId));
+      toast.success('Store disconnected.');
+      fetchShopifyConnections();
+    } catch (err) {
+      console.error('Error disconnecting:', err);
+    }
+  };
 
 
   const fetchChatbots = async () => {
@@ -328,44 +395,122 @@ export default function Integrations() {
                   </div>
                 </div>
 
-                {/* Coming soon banner */}
-                <div className="mb-8 p-4 rounded-xl bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800/30">
-                  <div className="flex items-center gap-3">
-                    <ShoppingBag size={18} className="text-green-600 dark:text-green-400 flex-shrink-0" />
-                    <div>
-                      <p className="text-sm font-medium text-green-800 dark:text-green-300">
-                        Shopify App coming soon!
-                      </p>
-                      <p className="text-xs text-green-600 dark:text-green-400 mt-0.5">
-                        A one-click install app is on the way. For now, follow the steps below to add the chatbot manually.
-                      </p>
+                {/* Connected Stores */}
+                {shopifyConnections.length > 0 && (
+                  <div className="mb-8">
+                    <h3 className="text-sm font-semibold text-[#37322F] dark:text-[#F5F5F4] mb-3 flex items-center gap-2">
+                      <Check size={16} className="text-green-600" />
+                      Connected Stores
+                    </h3>
+                    <div className="space-y-3">
+                      {shopifyConnections.map((conn) => (
+                        <div
+                          key={conn.id}
+                          className="flex items-center justify-between p-4 rounded-xl bg-[#FAFAF9] dark:bg-[#1C1917] border border-[#E0DEDB] dark:border-[#44403C]"
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                              <ShoppingBag size={16} className="text-green-600" />
+                            </div>
+                            <div>
+                              <p className="text-sm font-medium text-[#37322F] dark:text-[#F5F5F4]">
+                                {conn.shop}
+                              </p>
+                              <p className="text-xs text-[#A8A29E] dark:text-[#78716C]">
+                                Chatbot: <span className="font-medium text-[#605A57] dark:text-[#D6D3D1]">{conn.chatbotTitle || chatbots.find(b => b.id === conn.chatbotId)?.title || conn.chatbotId}</span>
+                              </p>
+                            </div>
+                          </div>
+                          <button
+                            onClick={() => disconnectShopify(conn.id)}
+                            className="text-xs text-red-500 hover:text-red-600 font-medium transition-colors"
+                          >
+                            Disconnect
+                          </button>
+                        </div>
+                      ))}
                     </div>
+                  </div>
+                )}
+
+                {/* Connect to Shopify */}
+                <div className="mb-8 p-5 rounded-xl bg-[#FAFAF9] dark:bg-[#1C1917] border border-[#E0DEDB] dark:border-[#44403C]">
+                  <h3 className="text-sm font-semibold text-[#37322F] dark:text-[#F5F5F4] mb-3 flex items-center gap-2">
+                    <ShoppingBag size={16} className="text-[#605A57] dark:text-[#A8A29E]" />
+                    {shopifyConnections.length > 0 ? 'Connect Another Store' : 'Connect Your Shopify Store'}
+                  </h3>
+                  <p className="text-sm text-[#605A57] dark:text-[#A8A29E] mb-6">
+                    Enter your Shopify store URL and click connect. We'll automatically add the chatbot to your storefront.
+                  </p>
+
+                  <div className="mb-6 p-4 rounded-xl bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800/30">
+                    <div className="flex items-start gap-3">
+                      <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
+                      <div>
+                        <p className="text-sm font-medium text-amber-800 dark:text-amber-300">
+                          Pre-release installation notice
+                        </p>
+                        <p className="text-sm text-amber-800/80 dark:text-amber-300/80 mt-1">
+                          Since our app is pending public store review, Shopify will show an <strong className="font-semibold text-amber-900 dark:text-amber-200">"App isn't approved"</strong> warning during installation. 
+                          You can safely bypass this by clicking the <strong className="font-semibold text-amber-900 dark:text-amber-200">"Install unlisted app"</strong> link at the bottom of the page to proceed.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-3 items-end">
+                    <div className="flex-1 max-w-sm">
+                      <label className="block text-xs text-[#A8A29E] dark:text-[#78716C] mb-1.5 font-medium">
+                        Store URL
+                      </label>
+                      <input
+                        type="text"
+                        value={shopUrl}
+                        onChange={(e) => setShopUrl(e.target.value)}
+                        placeholder="yourstore.myshopify.com"
+                        className="w-full px-4 py-2.5 rounded-lg border border-[#E0DEDB] dark:border-[#44403C] bg-white dark:bg-[#292524] text-sm text-[#37322F] dark:text-[#F5F5F4] placeholder-[#A8A29E] dark:placeholder-[#78716C] focus:outline-none focus:border-[#37322F]/30 dark:focus:border-[#A8A29E]/30 transition-colors"
+                      />
+                    </div>
+                    <button
+                      onClick={() => {
+                        const shop = shopUrl.trim().replace(/^https?:\/\//, '').replace(/\/$/, '');
+                        if (!shop || !shop.includes('.myshopify.com')) {
+                          toast.error('Please enter a valid Shopify store URL (e.g. yourstore.myshopify.com)');
+                          return;
+                        }
+                        if (!selectedChatbot) {
+                          toast.error('Please select a chatbot first.');
+                          return;
+                        }
+                        const chatbotTitle = chatbots.find(b => b.id === selectedChatbot)?.title || 'Chatbot';
+                        window.location.href = `/api/shopify/auth?shop=${encodeURIComponent(shop)}&chatbotId=${encodeURIComponent(selectedChatbot)}&chatbotTitle=${encodeURIComponent(chatbotTitle)}`;
+                      }}
+                      className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[#37322F] dark:bg-[#F5F5F4] text-white dark:text-[#1C1917] text-sm font-medium hover:opacity-90 transition-opacity whitespace-nowrap"
+                    >
+                      <ShoppingBag size={16} />
+                      Connect to Shopify
+                    </button>
                   </div>
                 </div>
 
-                <div className="space-y-4 mb-8">
+                {/* How it works */}
+                <div className="space-y-4">
                   <StepCard
                     number={1}
-                    title="Open Theme Editor"
-                    description='In your Shopify admin, go to Online Store → Themes. Click "Actions" → "Edit code" on your active theme.'
+                    title="Enter Your Store URL"
+                    description='Type your Shopify store URL above (e.g. yourstore.myshopify.com) and click "Connect to Shopify".'
                   />
                   <StepCard
                     number={2}
-                    title="Edit theme.liquid"
-                    description='In the Layout folder, open the file called "theme.liquid". Scroll to the bottom and find the closing </body> tag.'
+                    title="Authorize the App"
+                    description="You will be redirected to Shopify to authorize the Askio Chatbot app. Follow the unlisted app link at the bottom of the warning page to grant permission."
                   />
                   <StepCard
                     number={3}
-                    title="Paste the Embed Code"
-                    description='Paste the code below just before the </body> tag, then click "Save".'
+                    title="You're Done!"
+                    description="The chatbot will automatically appear on your Shopify store. Any changes you make in Askio are reflected instantly."
                   />
                 </div>
-
-                <EmbedCodeBlock
-                  code={embedCode}
-                  copied={copied}
-                  onCopy={() => copyToClipboard(embedCode, "embed")}
-                />
               </div>
             )}
 
