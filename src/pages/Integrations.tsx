@@ -48,13 +48,11 @@ export default function Integrations() {
       if (shop && chatbotId && user) {
         try {
           const connectionId = shop.replace(/\./g, '_');
-          const chatbot = chatbots.length > 0
-            ? chatbots.find(b => b.id === chatbotId)
-            : null;
+          const chatbotTitle = params.get('chatbotTitle') || 'Chatbot';
           await setDoc(doc(db, 'shopify_connections', connectionId), {
             shop,
             chatbotId,
-            chatbotTitle: chatbot?.title || 'Chatbot',
+            chatbotTitle,
             userId: user.uid,
             connectedAt: new Date().toISOString(),
           });
@@ -464,7 +462,8 @@ export default function Integrations() {
                           toast.error('Please select a chatbot first.');
                           return;
                         }
-                        window.location.href = `/api/shopify/auth?shop=${encodeURIComponent(shop)}&chatbotId=${encodeURIComponent(selectedChatbot)}`;
+                        const chatbotTitle = chatbots.find(b => b.id === selectedChatbot)?.title || 'Chatbot';
+                        window.location.href = `/api/shopify/auth?shop=${encodeURIComponent(shop)}&chatbotId=${encodeURIComponent(selectedChatbot)}&chatbotTitle=${encodeURIComponent(chatbotTitle)}`;
                       }}
                       className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[#37322F] dark:bg-[#F5F5F4] text-white dark:text-[#1C1917] text-sm font-medium hover:opacity-90 transition-opacity whitespace-nowrap"
                     >

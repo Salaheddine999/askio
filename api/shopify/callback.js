@@ -39,6 +39,7 @@ export default async function handler(req, res) {
       if (padding) stateStr += '='.repeat(4 - padding);
       const stateData = JSON.parse(Buffer.from(stateStr, 'base64').toString());
       chatbotId = stateData.chatbotId;
+      var chatbotTitle = stateData.chatbotTitle || 'Chatbot';
     } catch (e) {
       return res.status(400).json({ error: 'Invalid state parameter' });
     }
@@ -116,7 +117,8 @@ export default async function handler(req, res) {
     const successUrl = 'https://askio.vercel.app/integrations' +
       '?shopify_connected=true' +
       '&shop=' + encodeURIComponent(shop) +
-      '&chatbotId=' + encodeURIComponent(chatbotId);
+      '&chatbotId=' + encodeURIComponent(chatbotId) +
+      '&chatbotTitle=' + encodeURIComponent(chatbotTitle);
     res.redirect(302, successUrl);
   } catch (error) {
     console.error('Callback error:', error);

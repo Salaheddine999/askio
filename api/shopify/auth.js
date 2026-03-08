@@ -44,8 +44,10 @@ export default function handler(req, res) {
     const scopes = 'write_script_tags,read_script_tags';
     const redirectUri = 'https://askio.vercel.app/api/shopify/callback';
 
+    const chatbotTitle = req.query.chatbotTitle || 'Chatbot';
+
     const nonce = crypto.randomBytes(16).toString('hex');
-    const stateObj = JSON.stringify({ nonce, chatbotId });
+    const stateObj = JSON.stringify({ nonce, chatbotId, chatbotTitle });
     const state = Buffer.from(stateObj).toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
 
     const installUrl = 'https://' + shop + '/admin/oauth/authorize' +
