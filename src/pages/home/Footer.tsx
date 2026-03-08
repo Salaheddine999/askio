@@ -32,6 +32,7 @@ export default function Footer() {
               <span className="text-[rgba(73,66,61,0.50)] dark:text-[#78716C] text-sm font-medium font-sans">Resources</span>
               <Link to="/auth" className="text-[#49423D] dark:text-[#D6D3D1] text-sm font-normal font-sans hover:text-[#37322F] dark:hover:text-[#F5F5F4] transition-colors">Get Started</Link>
               <a href="https://github.com/Salaheddine999/askio" className="text-[#49423D] dark:text-[#D6D3D1] text-sm font-normal font-sans hover:text-[#37322F] dark:hover:text-[#F5F5F4] transition-colors">GitHub</a>
+              <Link to="/privacy" className="text-[#49423D] dark:text-[#D6D3D1] text-sm font-normal font-sans hover:text-[#37322F] dark:hover:text-[#F5F5F4] transition-colors">Privacy Policy</Link>
             </div>
           </div>
         </div>

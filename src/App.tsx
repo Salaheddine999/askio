@@ -19,6 +19,7 @@ import { Toaster } from "react-hot-toast";
 import Settings from "./pages/Settings";
 import Analytics from "./pages/Analytics";
 import Integrations from "./pages/Integrations";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
 import { HelmetProvider } from "react-helmet-async";
 
 const App: React.FC = () => {
@@ -144,6 +145,7 @@ const App: React.FC = () => {
                 path="/integrations"
                 element={user ? <Integrations /> : <Navigate to="/auth" />}
               />
+              <Route path="/privacy" element={<PrivacyPolicy />} />
             </Routes>
             <Toaster position="top-center" />
           </div>
