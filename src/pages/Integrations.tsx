@@ -188,7 +188,7 @@ export default function Integrations() {
 
   return (
     <div className="min-h-screen bg-[#F7F5F3] dark:bg-[#1C1917] font-sans text-[#37322F]">
-      <div className="w-full px-4 sm:px-6 lg:px-8 py-8 space-y-8 max-w-5xl mx-auto">
+      <div className="w-full px-4 sm:px-6 lg:px-8 py-8 space-y-8">
       {/* Header */}
       <div className="flex items-center gap-3 mb-8">
         <div className="w-10 h-10 rounded-full bg-[#FAFAF9] dark:bg-[#292524] flex items-center justify-center border border-[#E0DEDB] dark:border-[#44403C]">
@@ -204,10 +204,8 @@ export default function Integrations() {
         </div>
       </div>
 
-      {/* No chatbots state */}
       {chatbots.length === 0 ? (
-        <div className="rounded-xl border border-[rgba(55,50,47,0.12)] dark:border-[#44403C] bg-white dark:bg-[#292524] p-12 text-center">
-          <div className="text-4xl mb-4">🤖</div>
+        <div className="rounded-xl border border-[rgba(55,50,47,0.12)] dark:border-[#44403C] bg-white dark:bg-[#292524] p-12 text-center shadow-sm">
           <h2 className="text-lg font-semibold text-[#37322F] dark:text-[#F5F5F4] mb-2">
             No chatbots yet
           </h2>

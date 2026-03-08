@@ -140,11 +140,17 @@ export default function Analytics() {
       </div>
 
       {chatbots.length === 0 ? (
-        <Card className="p-12 text-center border-dashed">
-          <h2 className="text-h3 font-semibold text-[#37322F] dark:text-[#F5F5F4] mb-2">No Chatbots Found</h2>
-          <p className="text-body text-[#605A57] dark:text-[#A8A29E]">
-            Create a chatbot to start collecting analytics and leads.
+        <Card className="p-12 text-center shadow-sm">
+          <h2 className="text-lg font-semibold text-[#37322F] dark:text-[#F5F5F4] mb-2">No chatbots yet</h2>
+          <p className="text-sm text-[#605A57] dark:text-[#A8A29E] mb-4">
+            Create a chatbot first, then come back here to view analytics and leads.
           </p>
+          <a
+            href="/dashboard"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#37322F] dark:bg-[#F5F5F4] text-white dark:text-[#1C1917] text-sm font-medium hover:opacity-90 transition-opacity"
+          >
+            Go to Dashboard
+          </a>
         </Card>
       ) : (
         <div className="space-y-8">
