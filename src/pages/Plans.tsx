@@ -1,0 +1,219 @@
+import React from "react";
+import { Link } from "react-router-dom";
+import { ArrowRight, Check } from "lucide-react";
+import { Helmet } from "react-helmet-async";
+import { redirectToProCheckout } from "../utils/billing";
+
+type PlanCardProps = {
+  title: string;
+  description: string;
+  price: string;
+  subtext: string;
+  ctaLabel: string;
+  ctaHref: string;
+  ctaAction?: (() => void) | null;
+  features: string[];
+  featured?: boolean;
+  external?: boolean;
+};
+
+function PlanCard({
+  title,
+  description,
+  price,
+  subtext,
+  ctaLabel,
+  ctaHref,
+  ctaAction,
+  features,
+  featured = false,
+  external = false,
+}: PlanCardProps) {
+  const cardClass = featured
+    ? "bg-[#3B3531] text-white dark:bg-[#312C28] dark:text-[#F5F5F4]"
+    : "bg-[#F7F5F3] text-[#37322F] dark:bg-[#1C1917] dark:text-[#F5F5F4]";
+
+  const mutedClass = featured
+    ? "text-[rgba(255,255,255,0.72)] dark:text-[#D6D3D1]"
+    : "text-[#6D6662] dark:text-[#A8A29E]";
+
+  const buttonClass = featured
+    ? "bg-white text-[#37322F] hover:bg-[#F1EEEA]"
+    : "bg-[#3B3531] text-white hover:bg-[#2F2A27] dark:bg-[#F5F5F4] dark:text-[#1C1917] dark:hover:bg-[#E7E5E4]";
+
+  const featureClass = featured
+    ? "text-[rgba(255,255,255,0.86)] dark:text-[#E7E5E4]"
+    : "text-[#5C5551] dark:text-[#D6D3D1]";
+
+  const checkClass = featured
+    ? "text-[#F59E0B] dark:text-[#FBBF24]"
+    : "text-[#98A2B3] dark:text-[#A8A29E]";
+
+  const buttonContent = (
+    <>
+      {ctaLabel}
+      <ArrowRight className="ml-2 h-4 w-4" />
+    </>
+  );
+
+  return (
+    <div
+      className={`min-h-full p-6 sm:p-7 lg:p-8 border-b lg:border-b-0 lg:border-r last:border-r-0 border-[rgba(55,50,47,0.12)] dark:border-[#44403C] ${cardClass}`}
+    >
+      <div className="max-w-[290px] mx-auto lg:mx-0">
+        <h3 className="text-[30px] leading-none font-serif">{title}</h3>
+        <p className={`mt-4 text-[15px] leading-8 ${mutedClass}`}>{description}</p>
+
+        <div className="mt-12">
+          <div className="flex items-end gap-1">
+            <span className="text-[58px] leading-none font-serif tracking-tight">{price}</span>
+          </div>
+          <p className={`mt-3 text-[15px] ${mutedClass}`}>{subtext}</p>
+        </div>
+
+        {ctaAction ? (
+          <button
+            onClick={ctaAction}
+            className={`mt-10 inline-flex h-10 w-full items-center justify-center rounded-full text-[15px] font-medium transition-all duration-200 ${buttonClass}`}
+          >
+            {buttonContent}
+          </button>
+        ) : external ? (
+          <a
+            href={ctaHref}
+            className={`mt-10 inline-flex h-10 w-full items-center justify-center rounded-full text-[15px] font-medium transition-all duration-200 ${buttonClass}`}
+          >
+            {buttonContent}
+          </a>
+        ) : (
+          <Link
+            to={ctaHref}
+            className={`mt-10 inline-flex h-10 w-full items-center justify-center rounded-full text-[15px] font-medium transition-all duration-200 ${buttonClass}`}
+          >
+            {buttonContent}
+          </Link>
+        )}
+
+        <div className="mt-12 space-y-3.5">
+          {features.map((feature) => (
+            <div
+              key={feature}
+              className={`flex items-start gap-3 text-[15px] leading-7 ${featureClass}`}
+            >
+              <Check
+                className={`h-4 w-4 mt-[7px] shrink-0 ${checkClass}`}
+                strokeWidth={2.5}
+              />
+              <span>{feature}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const Plans: React.FC = () => {
+  return (
+    <div className="min-h-screen bg-[#F7F5F3] dark:bg-[#1C1917] text-[#37322F] dark:text-[#F5F5F4]">
+      <Helmet>
+        <title>Plans | Askio</title>
+        <meta
+          name="description"
+          content="Compare Askio plans and choose the right setup for your chatbots."
+        />
+      </Helmet>
+
+      <div className="max-w-[1060px] mx-auto px-4 sm:px-6 lg:px-0 py-12 sm:py-16">
+        <div className="text-center max-w-2xl mx-auto px-4">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-white dark:bg-[#292524] shadow-[0px_0px_0px_4px_rgba(55,50,47,0.05)] rounded-full border border-[rgba(2,6,23,0.08)] dark:border-[#44403C]">
+            <div className="w-2 h-2 rounded-full bg-[#37322F] dark:bg-[#F5F5F4]" />
+            <span className="text-[#37322F] dark:text-[#F5F5F4] text-caption font-medium">
+              Plans
+            </span>
+          </div>
+
+          <h1 className="mt-5 text-4xl sm:text-5xl lg:text-[56px] font-serif tracking-tight text-[#49423D] dark:text-[#F5F5F4]">
+            Pick the right Askio setup
+          </h1>
+          <p className="mt-4 text-[#57524F] dark:text-[#A8A29E] text-base sm:text-lg leading-relaxed">
+            Unlimited manual chatbots for everyone, with AI reserved for teams
+            that need smarter automation.
+          </p>
+        </div>
+
+        <div className="mt-12 border-t border-b border-[rgba(55,50,47,0.12)] dark:border-[#44403C]">
+          <div className="border-t border-l border-r border-[rgba(55,50,47,0.12)] dark:border-[#44403C]">
+            <div className="grid grid-cols-1 lg:grid-cols-3">
+              <PlanCard
+                title="Starter"
+                description="Unlimited manual chatbots for getting started."
+                price="$0"
+                subtext="Unlimited standard chatbots."
+                ctaLabel="Start for free"
+                ctaHref="/auth"
+                features={[
+                  "Unlimited standard chatbots",
+                  "Manual FAQ setup",
+                  "Lead capture flows",
+                  "Basic chatbot analytics",
+                  "No AI-generated replies",
+                ]}
+              />
+
+              <PlanCard
+                title="Professional"
+                description="AI tools for teams that need faster setup."
+                price="$19"
+                subtext="Up to 10 AI-enabled chatbots."
+                ctaLabel="Get started"
+                ctaHref="/plans"
+                ctaAction={() => {
+                  void redirectToProCheckout();
+                }}
+                featured
+                features={[
+                  "Everything in Starter",
+                  "AI FAQ generation",
+                  "AI persona customization",
+                  "Deep Crawl for richer FAQs",
+                  "Up to 10 AI-enabled chatbots",
+                  "Premium chatbot setup workflow",
+                ]}
+              />
+
+              <PlanCard
+                title="Entreprise"
+                description="Custom setup for larger organizations."
+                price="Custom"
+                subtext="Custom limits and onboarding."
+                ctaLabel="Contact sales"
+                ctaHref="mailto:hello@askio.ai?subject=Askio%20Enterprise%20Plan"
+                external
+                features={[
+                  "Everything in Professional",
+                  "More than 10 AI chatbots",
+                  "Custom onboarding support",
+                  "Priority coordination",
+                  "Tailored rollout for larger teams",
+                  "Custom agreements on request",
+                ]}
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-10 text-center">
+          <Link
+            to="/"
+            className="inline-flex items-center text-sm font-medium text-[#605A57] dark:text-[#A8A29E] hover:text-[#37322F] dark:hover:text-[#F5F5F4]"
+          >
+            Back to home
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Plans;

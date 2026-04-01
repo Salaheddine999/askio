@@ -21,6 +21,7 @@ import Analytics from "./pages/Analytics";
 import Integrations from "./pages/Integrations";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import { HelmetProvider } from "react-helmet-async";
+import Plans from "./pages/Plans";
 
 const App: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -144,6 +145,10 @@ const App: React.FC = () => {
               <Route
                 path="/integrations"
                 element={user ? <Integrations /> : <Navigate to="/auth" />}
+              />
+              <Route
+                path="/plans"
+                element={<Plans />}
               />
               <Route path="/privacy" element={<PrivacyPolicy />} />
             </Routes>

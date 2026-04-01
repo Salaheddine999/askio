@@ -3,6 +3,7 @@ import { Helmet } from "react-helmet-async";
 import LandingNav from "./LandingNav";
 import HeroSection from "./HeroSection";
 import FeaturesSection from "./FeaturesSection";
+import PlansSection from "./PlansSection";
 import HowItWorks from "./HowItWorks";
 import TestimonialsSection from "./TestimonialsSection";
 import FAQSection from "./FAQSection";
@@ -48,6 +49,7 @@ export default function ChatbotLanding() {
         <HeroSection />
         <MarqueeStrip />
         <FeaturesSection />
+        <PlansSection />
         <HowItWorks />
         <TestimonialsSection />
         <FAQSection />

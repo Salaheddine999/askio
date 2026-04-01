@@ -39,7 +39,10 @@ const Auth: React.FC = () => {
           name: "",
           createdAt: new Date(),
           aiScansCount: 0,
-          isPro: true,
+          isPro: false,
+          plan: "free",
+          subscriptionStatus: "inactive",
+          aiChatbotLimit: 0,
         });
         toast.success("Registration successful!");
         navigate("/dashboard");
@@ -72,7 +75,10 @@ const Auth: React.FC = () => {
           name: userCredential.user.displayName || "",
           createdAt: new Date(),
           aiScansCount: 0,
-          isPro: true,
+          isPro: false,
+          plan: "free",
+          subscriptionStatus: "inactive",
+          aiChatbotLimit: 0,
         });
       }
       navigate("/dashboard");

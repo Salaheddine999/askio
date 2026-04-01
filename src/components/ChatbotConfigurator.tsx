@@ -36,6 +36,7 @@ const ChatbotConfigurator: React.FC = () => {
         const docRef = await addDoc(collection(db, "chatbot_configs"), {
           name: newChatbotName,
           user_id: user.uid,
+          aiEnabled: false,
         });
         setNewChatbotName("");
         fetchChatbots();

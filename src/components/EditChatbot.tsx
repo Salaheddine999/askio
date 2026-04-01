@@ -1,13 +1,9 @@
 import React, { useState, useEffect, useRef, lazy, Suspense } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import { db, auth } from "../utils/firebase";
 import {
   doc,
   getDoc,
-  setDoc,
-  updateDoc,
-  collection,
-  serverTimestamp,
 } from "firebase/firestore";
 import Chatbot, { ChatbotProps } from "./Chatbot";
 import { HexColorPicker, HexColorInput } from "react-colorful";
@@ -37,6 +33,7 @@ import Button from "./Button";
 import Input from "./Input";
 import Card from "./Card";
 import { Helmet } from "react-helmet-async";
+import { apiRequest } from "../utils/api";
 
 // Dynamic import: AI feature is optional (not included in open-source builds)
 const aiModules = import.meta.glob('./AiFaqGenerator.tsx');
@@ -114,6 +111,7 @@ const EditChatbot: React.FC = () => {
     faqData: [],
     liveChatLink: "",
     enableLeadCapture: false,
+    aiEnabled: false,
     aiTone: "",
   });
   const [faqInput, setFaqInput] = useState({ question: "", answer: "" });
@@ -130,6 +128,8 @@ const EditChatbot: React.FC = () => {
   const [gradientAngle, setGradientAngle] = useState(90);
   const [hasChanges, setHasChanges] = useState(false);
   const [embedCopied, setEmbedCopied] = useState(false);
+  const [canUseAi, setCanUseAi] = useState(false);
+  const [userPlan, setUserPlan] = useState<"free" | "pro" | "enterprise">("free");
   
   const initialConfigRef = useRef<string>("");
 
@@ -151,6 +151,7 @@ const EditChatbot: React.FC = () => {
     if (id) {
       fetchChatbotConfig();
     }
+    fetchUserPlan();
   }, [id]);
 
   useEffect(() => {
@@ -183,6 +184,32 @@ const EditChatbot: React.FC = () => {
       toast.error(
         `Failed to load chatbot configuration: ${(error as Error).message}`
       );
+    }
+  };
+
+  const fetchUserPlan = async () => {
+    const currentUser = auth.currentUser;
+    if (!currentUser) return;
+
+    try {
+      const userSnap = await getDoc(doc(db, "users", currentUser.uid));
+      const userData = userSnap.data();
+      const plan = (userData?.plan || (userData?.isPro ? "pro" : "free")) as
+        | "free"
+        | "pro"
+        | "enterprise";
+      const subscriptionStatus =
+        userData?.subscriptionStatus || (plan === "free" ? "inactive" : "active");
+      const allowed =
+        plan === "enterprise" ||
+        (plan === "pro" && ["active", "trialing"].includes(subscriptionStatus));
+
+      setUserPlan(plan);
+      setCanUseAi(allowed);
+    } catch (error) {
+      console.error("Error loading user plan:", error);
+      setUserPlan("free");
+      setCanUseAi(false);
     }
   };
 
@@ -283,28 +310,24 @@ const EditChatbot: React.FC = () => {
     }
     try {
       const { id, ...chatbotConfig } = config;
-      const dataToSave = {
-        ...chatbotConfig,
-        user_id: user.uid,
-        lastUpdated: serverTimestamp(),
-      };
+      const result = await apiRequest<{ chatbotId: string; aiEnabled: boolean }>(
+        "/api/chatbots/save",
+        {
+          authRequired: true,
+          body: {
+            chatbotId: id,
+            config: chatbotConfig,
+          },
+        }
+      );
 
-      let docRef;
-      if (id) {
-        docRef = doc(db, "chatbot_configs", id);
-        await updateDoc(docRef, dataToSave);
-      } else {
-        docRef = doc(collection(db, "chatbot_configs"));
-        await setDoc(docRef, {
-          ...dataToSave,
-          createdAt: serverTimestamp(),
-        });
-      }
+      const nextConfig = { ...config, id: result.chatbotId, aiEnabled: result.aiEnabled };
+      setConfig(nextConfig);
 
       setHasChanges(false);
-      initialConfigRef.current = JSON.stringify(config);
+      initialConfigRef.current = JSON.stringify(nextConfig);
       toast.success("Configuration saved successfully!");
-      navigate(`/configure/${docRef.id}`);
+      navigate(`/configure/${result.chatbotId}`);
     } catch (error) {
       console.error("Error saving config:", error);
       if (error instanceof Error) {
@@ -554,6 +577,38 @@ const EditChatbot: React.FC = () => {
                           label="Enable Lead Capture (Ask for email when no answer is found)"
                         />
                     </div>
+
+                    <div className="pt-2">
+                      {canUseAi ? (
+                        <>
+                          <ToggleSwitch
+                            checked={config.aiEnabled === true}
+                            onChange={(val) => handleConfigChange("aiEnabled", val)}
+                            label="Enable AI features for this chatbot"
+                          />
+                          <p className="mt-2 text-xs text-[#A8A29E] dark:text-[#78716C]">
+                            {userPlan === "enterprise"
+                              ? "Enterprise can enable AI across custom chatbot limits."
+                              : "Pro includes up to 10 AI-enabled chatbots."}
+                          </p>
+                        </>
+                      ) : (
+                        <div className="rounded-[9px] border border-[#E0DEDB] dark:border-[#44403C] bg-[#FAFAF9] dark:bg-[#1C1917] p-4">
+                          <p className="text-body-sm font-medium text-[#37322F] dark:text-[#F5F5F4]">
+                            AI features are part of Pro
+                          </p>
+                          <p className="mt-1 text-xs text-[#A8A29E] dark:text-[#78716C]">
+                            Free plans can create unlimited manual chatbots. Upgrade to enable AI on up to 10 chatbots.
+                          </p>
+                          <Link
+                            to="/plans"
+                            className="mt-3 inline-flex items-center justify-center rounded-lg bg-[#37322F] dark:bg-[#F5F5F4] px-4 py-2 text-sm font-medium text-white dark:text-[#1C1917] hover:bg-[#2a2522] dark:hover:bg-[#E7E5E4] transition-colors"
+                          >
+                            Upgrade
+                          </Link>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               )}
@@ -769,6 +824,9 @@ const EditChatbot: React.FC = () => {
                               <div className="hidden sm:block w-px bg-[#E0DEDB] dark:bg-[#44403C] mx-1"></div>
                               <Suspense fallback={null}>
                                 <AiFaqGenerator
+                                  chatbotId={id}
+                                  aiEnabled={config.aiEnabled === true}
+                                  canUseAi={canUseAi}
                                   aiTone={config.aiTone}
                                   onFaqsApproved={(faqs: { question: string; answer: string }[]) => {
                                     const faqsWithState = faqs.map((f: { question: string; answer: string }) => ({ ...f, isOpen: false }));
@@ -859,13 +917,39 @@ const EditChatbot: React.FC = () => {
 
               {/* ========== AI TONE TAB (Premium - loaded dynamically) ========== */}
               {activeTab === "ai_tone" && AiPersonaTab && (
-                <Suspense fallback={null}>
-                  <AiPersonaTab
-                    aiTone={config.aiTone || ""}
-                    onChange={(value: string) => handleConfigChange("aiTone", value)}
-                    inputClasses={inputClasses}
-                  />
-                </Suspense>
+                canUseAi && config.aiEnabled ? (
+                  <Suspense fallback={null}>
+                    <AiPersonaTab
+                      aiTone={config.aiTone || ""}
+                      onChange={(value: string) => handleConfigChange("aiTone", value)}
+                      inputClasses={inputClasses}
+                    />
+                  </Suspense>
+                ) : (
+                  <div className="rounded-[9px] border border-[#E0DEDB] dark:border-[#44403C] bg-[#FAFAF9] dark:bg-[#1C1917] p-5">
+                    <SectionHeader
+                      title="AI Persona"
+                      description={
+                        canUseAi
+                          ? "Turn on AI features for this chatbot to customize how the assistant writes and responds."
+                          : "Upgrade to Pro to unlock AI personas and AI-powered replies."
+                      }
+                    />
+                    <p className="text-body-sm text-[#605A57] dark:text-[#A8A29E]">
+                      {canUseAi
+                        ? "This chatbot is currently using manual FAQ matching only."
+                        : "Free plans include unlimited manual chatbots. Upgrade when you want AI responses and custom AI behavior."}
+                    </p>
+                    {!canUseAi && (
+                      <Link
+                        to="/plans"
+                        className="mt-4 inline-flex items-center justify-center rounded-lg bg-[#37322F] dark:bg-[#F5F5F4] px-4 py-2 text-sm font-medium text-white dark:text-[#1C1917] hover:bg-[#2a2522] dark:hover:bg-[#E7E5E4] transition-colors"
+                      >
+                        Upgrade to Pro
+                      </Link>
+                    )}
+                  </div>
+                )
               )}
 
               {/* ========== EMBED TAB ========== */}

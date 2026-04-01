@@ -39,4 +39,10 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## License
 
-This project is licensed under the MIT License.
+This repository is source-available for viewing and reference only.
+
+All rights to Askio, including the brand, product concept, design, and source code, are reserved unless explicitly granted in writing by the author.
+
+Publishing the code publicly does not grant permission to copy, rebrand, resell, or create derivative commercial products based on Askio.
+
+If you would like to use, license, or collaborate on this project, please contact the author first.

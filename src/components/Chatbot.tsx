@@ -6,10 +6,7 @@ import { db } from "../utils/firebase";
 import { doc, setDoc, getDoc, collection, addDoc, serverTimestamp } from "firebase/firestore";
 import toast from "react-hot-toast";
 import bot1 from "../assets/chat1.svg";
-
-// Dynamic import: AI module is optional (not included in open-source builds)
-const aiModules = import.meta.glob('../utils/ai.ts');
-const aiModuleLoader = Object.values(aiModules)[0];
+import { apiRequest } from "../utils/api";
 
 type Message = {
   text: string;
@@ -35,6 +32,7 @@ export interface ChatbotProps {
   liveChatLink?: string;
   enableLeadCapture?: boolean;
   aiTone?: string;
+  aiEnabled?: boolean;
 }
 
 const Chatbot: React.FC<ChatbotProps> = ({
@@ -50,7 +48,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
   customPositionClass,
   liveChatLink,
   enableLeadCapture,
-  aiTone,
+  aiEnabled,
 }) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
@@ -212,12 +210,19 @@ const Chatbot: React.FC<ChatbotProps> = ({
 
     setIsTyping(true);
 
-    if (aiTone && aiTone.trim() !== "" && aiModuleLoader) {
+    if (aiEnabled && id) {
       try {
-        const aiModule: any = await aiModuleLoader();
-        const generateChatResponse = aiModule?.generateChatResponse;
         const historyContext = messages.filter(m => !m.isFallback && !m.isLeadCapture);
-        const aiResponseText = generateChatResponse ? await generateChatResponse(input, historyContext, faqData, aiTone) : null;
+        const { reply: aiResponseText } = await apiRequest<{ reply: string }>(
+          "/api/ai/chat-response",
+          {
+            body: {
+              chatbotId: id,
+              query: input,
+              history: historyContext,
+            },
+          }
+        );
         
         if (aiResponseText) {
           // Check if the AI indicated it couldn't answer the question
