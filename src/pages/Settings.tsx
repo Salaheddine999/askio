@@ -23,6 +23,8 @@ import {
   X,
   Shield,
   Paintbrush,
+  CreditCard,
+  ExternalLink,
 } from "lucide-react";
 import ConfirmationModal from "../components/ConfirmationModal";
 import { useModal } from "../hooks/useModal";
@@ -31,6 +33,7 @@ import Button from "../components/Button";
 import { toast } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
+import { redirectToBillingPortal, redirectToProCheckout } from "../utils/billing";
 
 const Settings: React.FC<{ toggleSidebar: () => void }> = ({}) => {
   const [user, setUser] = useState<User | null>(null);
@@ -47,6 +50,11 @@ const Settings: React.FC<{ toggleSidebar: () => void }> = ({}) => {
   const [darkMode, setDarkMode] = useState(false);
   const navigate = useNavigate();
   const [isGoogleAccount, setIsGoogleAccount] = useState(false);
+  const [userPlan, setUserPlan] = useState<"free" | "pro" | "enterprise">("free");
+  const [subscriptionStatus, setSubscriptionStatus] = useState("inactive");
+  const [currentPeriodEnd, setCurrentPeriodEnd] = useState<string | null>(null);
+  const [hasSubscription, setHasSubscription] = useState(false);
+  const [billingActionLoading, setBillingActionLoading] = useState(false);
 
   useEffect(() => {
     fetchUser();
@@ -63,8 +71,20 @@ const Settings: React.FC<{ toggleSidebar: () => void }> = ({}) => {
       );
       const userDoc = await getDoc(doc(db, "users", currentUser.uid));
       if (userDoc.exists()) {
-        setName(userDoc.data().name || "");
+        const userData = userDoc.data();
+        const plan = (userData.plan || (userData.isPro ? "pro" : "free")) as
+          | "free"
+          | "pro"
+          | "enterprise";
+        setName(userData.name || "");
         setEmail(currentUser.email || "");
+        setUserPlan(plan);
+        setSubscriptionStatus(
+          userData.subscriptionStatus ||
+            (plan === "free" ? "inactive" : "active")
+        );
+        setCurrentPeriodEnd(userData.currentPeriodEnd || null);
+        setHasSubscription(Boolean(userData.lemonSqueezySubscriptionId));
       }
     }
     setLoading(false);
@@ -153,6 +173,66 @@ const Settings: React.FC<{ toggleSidebar: () => void }> = ({}) => {
     if (name) return name.charAt(0).toUpperCase();
     if (email) return email.charAt(0).toUpperCase();
     return "?";
+  };
+
+  const formatPlanLabel = (plan: string) => {
+    if (plan === "pro") return "Pro";
+    if (plan === "enterprise") return "Enterprise";
+    return "Free";
+  };
+
+  const formatStatusLabel = (status: string) =>
+    String(status || "inactive")
+      .replace(/_/g, " ")
+      .replace(/\b\w/g, (char) => char.toUpperCase());
+
+  const formatPeriodEndLabel = (value: string | null) => {
+    if (!value) return null;
+
+    const parsed = new Date(value);
+    if (Number.isNaN(parsed.getTime())) return null;
+
+    return parsed.toLocaleDateString(undefined, {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  };
+
+  const getStatusBadgeClasses = (status: string) => {
+    if (["active", "trialing", "on_trial"].includes(status)) {
+      return "bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-900/40";
+    }
+
+    if (["paused", "past_due", "unpaid"].includes(status)) {
+      return "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-900/40";
+    }
+
+    return "bg-stone-100 text-stone-700 border-stone-200 dark:bg-[#44403C] dark:text-[#D6D3D1] dark:border-[#57534E]";
+  };
+
+  const handleManageBilling = async () => {
+    try {
+      setBillingActionLoading(true);
+      await redirectToBillingPortal();
+    } catch (error) {
+      console.error("Error opening billing portal:", error);
+      toast.error("Unable to open billing management right now.");
+    } finally {
+      setBillingActionLoading(false);
+    }
+  };
+
+  const handleUpgradeToPro = async () => {
+    try {
+      setBillingActionLoading(true);
+      await redirectToProCheckout();
+    } catch (error) {
+      console.error("Error starting checkout:", error);
+      toast.error("Unable to open checkout right now.");
+    } finally {
+      setBillingActionLoading(false);
+    }
   };
 
   if (loading) {
@@ -311,6 +391,78 @@ const Settings: React.FC<{ toggleSidebar: () => void }> = ({}) => {
           {/* ────────────────────────────────────────── */}
           {/* SECURITY SECTION                           */}
           {/* ────────────────────────────────────────── */}
+          <div className="bg-white dark:bg-[#292524] rounded-xl border border-[#E0DEDB] dark:border-[#44403C] shadow-sm overflow-hidden">
+            <div className="px-6 py-4 border-b border-[#E0DEDB] dark:border-[#44403C] flex items-center gap-2.5">
+              <CreditCard size={18} className="text-[#605A57] dark:text-[#A8A29E]" />
+              <h2 className="text-base font-semibold text-[#37322F] dark:text-[#F5F5F4]">
+                Billing
+              </h2>
+            </div>
+
+            <div className="p-6 space-y-5">
+              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+                <div>
+                  <p className="text-sm font-medium text-[#37322F] dark:text-[#F5F5F4]">
+                    Current Plan
+                  </p>
+                  <div className="mt-2 flex flex-wrap items-center gap-2">
+                    <span className="inline-flex items-center rounded-full border border-[#E0DEDB] px-2.5 py-1 text-xs font-medium text-[#37322F] dark:border-[#57534E] dark:text-[#F5F5F4]">
+                      {formatPlanLabel(userPlan)}
+                    </span>
+                    <span
+                      className={`inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-medium ${getStatusBadgeClasses(subscriptionStatus)}`}
+                    >
+                      {formatStatusLabel(subscriptionStatus)}
+                    </span>
+                  </div>
+                </div>
+
+                {userPlan === "free" ? (
+                  <Button
+                    onClick={handleUpgradeToPro}
+                    disabled={billingActionLoading}
+                    className="bg-[#37322F] hover:bg-[#2a2522] text-white text-sm font-medium py-2 px-4 rounded-lg shadow-sm dark:bg-[#F5F5F4] dark:text-[#1C1917] dark:hover:bg-[#E7E5E4]"
+                    icon={CreditCard}
+                  >
+                    {billingActionLoading ? "Opening..." : "Upgrade to Pro"}
+                  </Button>
+                ) : (
+                  <Button
+                    onClick={handleManageBilling}
+                    disabled={billingActionLoading}
+                    className="bg-white border border-[#E0DEDB] text-[#605A57] hover:bg-[#FAFAF9] hover:text-[#37322F] text-sm font-medium py-2 px-4 rounded-lg shadow-sm dark:bg-[#44403C] dark:text-[#A8A29E] dark:border-[#57534E] dark:hover:bg-[#57534E] dark:hover:text-[#F5F5F4]"
+                    icon={ExternalLink}
+                  >
+                    {billingActionLoading ? "Opening..." : "Manage Subscription"}
+                  </Button>
+                )}
+              </div>
+
+              <div className="rounded-lg border border-[#E0DEDB] bg-[#FAFAF9] p-4 dark:border-[#44403C] dark:bg-[#1C1917]">
+                <p className="text-sm text-[#605A57] dark:text-[#A8A29E]">
+                  {userPlan === "free"
+                    ? "You are currently on the free plan. Upgrade to unlock AI features and subscription billing."
+                    : "You can review billing details, update payment information, or cancel your subscription from the billing portal."}
+                </p>
+                {formatPeriodEndLabel(currentPeriodEnd) && (
+                  <p className="mt-2 text-sm text-[#37322F] dark:text-[#F5F5F4]">
+                    {["cancelled", "expired"].includes(subscriptionStatus)
+                      ? `Access ends on ${formatPeriodEndLabel(currentPeriodEnd)}.`
+                      : `Next billing date: ${formatPeriodEndLabel(currentPeriodEnd)}.`}
+                  </p>
+                )}
+                {userPlan !== "free" && (
+                  <p className="mt-2 text-xs text-[#A8A29E] dark:text-[#78716C]">
+                    Cancellation is handled securely through our billing portal.
+                    {hasSubscription
+                      ? " Your subscription can be canceled there at any time."
+                      : " If your portal link is unavailable, contact support and we’ll help."}
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+
           <div className="bg-white dark:bg-[#292524] rounded-xl border border-[#E0DEDB] dark:border-[#44403C] shadow-sm overflow-hidden">
             <div className="px-6 py-4 border-b border-[#E0DEDB] dark:border-[#44403C] flex items-center gap-2.5">
               <Shield size={18} className="text-[#605A57] dark:text-[#A8A29E]" />
