@@ -8,6 +8,26 @@ function sendError(res, error) {
   return res.status(statusCode).json({ error: error.message || "Request failed." });
 }
 
+function normalizeUrl(value) {
+  const trimmed = String(value || "").trim();
+  if (!trimmed) return null;
+
+  const withProtocol = /^https?:\/\//i.test(trimmed)
+    ? trimmed
+    : `https://${trimmed}`;
+
+  try {
+    const normalized = new URL(withProtocol);
+    if (!["http:", "https:"].includes(normalized.protocol)) {
+      return null;
+    }
+
+    return normalized.toString();
+  } catch {
+    return null;
+  }
+}
+
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     res.setHeader("Allow", "POST");
@@ -18,8 +38,14 @@ export default async function handler(req, res) {
     const decodedToken = await requireUser(req);
     const { chatbotId, url, isDeepCrawl = false, aiTone = "" } = req.body || {};
 
-    if (!chatbotId || !url) {
-      return res.status(400).json({ error: "Chatbot ID and URL are required." });
+    const normalizedUrl = normalizeUrl(url);
+
+    if (!chatbotId) {
+      return res.status(400).json({ error: "Chatbot ID is required." });
+    }
+
+    if (!normalizedUrl) {
+      return res.status(400).json({ error: "Please provide a valid website URL." });
     }
 
     const { chatbotRef, chatbotData } = await getOwnedChatbot(decodedToken.uid, chatbotId);
@@ -31,7 +57,7 @@ export default async function handler(req, res) {
       });
     }
 
-    const faqs = await generateFaqsFromUrl(url, Boolean(isDeepCrawl), aiTone);
+    const faqs = await generateFaqsFromUrl(normalizedUrl, Boolean(isDeepCrawl), aiTone);
 
     await adminDb.collection("users").doc(decodedToken.uid).set(
       {

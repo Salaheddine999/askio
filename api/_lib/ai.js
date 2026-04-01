@@ -10,130 +10,206 @@ function getAiClient() {
   return new GoogleGenAI({ apiKey });
 }
 
-export async function generateFaqsFromUrl(url, isDeepCrawl = false, aiTone = "") {
-  const ai = getAiClient();
+async function fetchWithTimeout(url, options = {}, timeoutMs = 12000) {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
-  const jinaUrl = `https://r.jina.ai/${url}`;
-  const response = await fetch(jinaUrl);
-
-  if (!response.ok) {
-    throw new Error(`Failed to fetch URL: ${response.statusText}`);
+  try {
+    return await fetch(url, {
+      ...options,
+      signal: controller.signal,
+    });
+  } finally {
+    clearTimeout(timeoutId);
   }
+}
 
-  let textContent = await response.text();
-  let isSpaFallback = false;
+function stripHtml(html) {
+  return html
+    .replace(/<script[\s\S]*?<\/script>/gi, " ")
+    .replace(/<style[\s\S]*?<\/style>/gi, " ")
+    .replace(/<noscript[\s\S]*?<\/noscript>/gi, " ")
+    .replace(/<svg[\s\S]*?<\/svg>/gi, " ")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&nbsp;/gi, " ")
+    .replace(/&amp;/gi, "&")
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;/gi, "'")
+    .replace(/&lt;/gi, "<")
+    .replace(/&gt;/gi, ">")
+    .replace(/\s+/g, " ")
+    .trim();
+}
 
-  if (!textContent || textContent.trim().length < 100) {
-    isSpaFallback = true;
+function extractLinksFromHtml(rawHtml, baseUrl) {
+  const links = new Set();
+  const base = new URL(baseUrl);
+  const matches = rawHtml.matchAll(/<a[^>]*href=["']([^"'#]+)["'][^>]*>([\s\S]*?)<\/a>/gi);
+
+  for (const match of matches) {
+    const href = match[1]?.trim();
+    const text = stripHtml(match[2] || "").toLowerCase();
+
+    if (!href) continue;
 
     try {
-      const rawResponse = await fetch(url, {
-        headers: {
-          "User-Agent":
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-        },
-      });
+      const resolved = new URL(href, baseUrl);
+      if (resolved.hostname !== base.hostname) continue;
 
-      if (rawResponse.ok) {
-        const rawHtml = await rawResponse.text();
-        const metaData = [`URL: ${url}`];
-
-        const titleMatch = rawHtml.match(/<title[^>]*>([^<]+)<\/title>/i);
-        if (titleMatch) metaData.push(`Page Title: ${titleMatch[1].trim()}`);
-
-        const descMatch =
-          rawHtml.match(
-            /<meta[^>]*name=["']description["'][^>]*content=["']([^"']+)["']/i
-          ) ||
-          rawHtml.match(
-            /<meta[^>]*content=["']([^"']+)["'][^>]*name=["']description["']/i
-          );
-        if (descMatch) metaData.push(`Meta Description: ${descMatch[1].trim()}`);
-
-        const ogTags = rawHtml.matchAll(
-          /<meta[^>]*property=["']og:([^"']+)["'][^>]*content=["']([^"']+)["']/gi
-        );
-        for (const og of ogTags) {
-          metaData.push(`OG ${og[1]}: ${og[2].trim()}`);
-        }
-
-        const ogTagsRev = rawHtml.matchAll(
-          /<meta[^>]*content=["']([^"']+)["'][^>]*property=["']og:([^"']+)["']/gi
-        );
-        for (const og of ogTagsRev) {
-          metaData.push(`OG ${og[2]}: ${og[1].trim()}`);
-        }
-
-        const jsonLdMatches = rawHtml.matchAll(
-          /<script[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi
-        );
-        for (const jld of jsonLdMatches) {
-          metaData.push(`Structured Data (JSON-LD): ${jld[1].trim()}`);
-        }
-
-        const nextDataMatch = rawHtml.match(
-          /<script[^>]*id=["']__NEXT_DATA__["'][^>]*>([\s\S]*?)<\/script>/i
-        );
-        if (nextDataMatch) {
-          metaData.push(`Next.js Page Data: ${nextDataMatch[1].trim()}`);
-        }
-
-        const textStrings = rawHtml.match(/["']([^"']{50,})["']/g) || [];
-        const contentStrings = textStrings
-          .map((s) => s.slice(1, -1))
-          .filter(
-            (s) =>
-              !s.includes("{") &&
-              !s.includes("<") &&
-              !s.includes("http") &&
-              !s.includes("function") &&
-              !s.includes("webpack")
-          )
-          .slice(0, 10);
-
-        if (contentStrings.length > 0) {
-          metaData.push(`Extracted Text Content:\n${contentStrings.join("\n")}`);
-        }
-
-        textContent = metaData.join("\n");
+      if (
+        /about|service|feature|pricing|faq|contact/i.test(text) ||
+        /about|service|feature|pricing|faq|contact/i.test(resolved.pathname)
+      ) {
+        links.add(resolved.href);
       }
-    } catch (fallbackError) {
-      console.error("Fallback HTML fetch failed:", fallbackError);
-    }
-
-    if (!textContent || textContent.trim().length < 10) {
-      textContent = `URL: ${url}\n(This is a JavaScript-heavy SPA website. No text content could be extracted.)`;
+    } catch {
+      continue;
     }
   }
 
-  if (isDeepCrawl) {
-    const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
-    const links = new Set();
-    let match;
+  return Array.from(links);
+}
 
-    while ((match = linkRegex.exec(textContent)) !== null) {
-      const linkText = match[1].toLowerCase();
-      const linkPath = match[2];
+function extractLinksFromMarkdown(markdown, baseUrl) {
+  const links = new Set();
+  const base = new URL(baseUrl);
+  const matches = markdown.matchAll(/\[([^\]]+)\]\(([^)]+)\)/g);
 
-      if (linkPath.startsWith("http") && !linkPath.includes(new URL(url).hostname)) {
-        continue;
-      }
+  for (const match of matches) {
+    const linkText = (match[1] || "").toLowerCase();
+    const href = (match[2] || "").trim();
+    if (!href) continue;
+
+    try {
+      const resolved = new URL(href, baseUrl);
+      if (resolved.hostname !== base.hostname) continue;
 
       if (
         /about|service|feature|pricing|faq|contact/i.test(linkText) ||
-        /about|service|feature|pricing|faq|contact/i.test(linkPath)
+        /about|service|feature|pricing|faq|contact/i.test(resolved.pathname)
       ) {
-        const fullLink = linkPath.startsWith("http")
-          ? linkPath
-          : new URL(linkPath, url).href;
-        links.add(fullLink);
+        links.add(resolved.href);
       }
+    } catch {
+      continue;
     }
+  }
 
-    const topLinks = Array.from(links).slice(0, 3);
+  return Array.from(links);
+}
+
+function extractPageContent(rawHtml, url) {
+  const metaData = [`URL: ${url}`];
+
+  const titleMatch = rawHtml.match(/<title[^>]*>([^<]+)<\/title>/i);
+  if (titleMatch) metaData.push(`Page Title: ${titleMatch[1].trim()}`);
+
+  const descMatch =
+    rawHtml.match(/<meta[^>]*name=["']description["'][^>]*content=["']([^"']+)["']/i) ||
+    rawHtml.match(/<meta[^>]*content=["']([^"']+)["'][^>]*name=["']description["']/i);
+  if (descMatch) metaData.push(`Meta Description: ${descMatch[1].trim()}`);
+
+  const bodyText = stripHtml(rawHtml).slice(0, 12000);
+  if (bodyText) {
+    metaData.push(`Visible Page Text:\n${bodyText}`);
+  }
+
+  return metaData.join("\n");
+}
+
+function hasUsefulContent(text) {
+  return typeof text === "string" && text.trim().length >= 500;
+}
+
+function mergeLinks(...groups) {
+  return Array.from(new Set(groups.flat().filter(Boolean)));
+}
+
+function safeParseFaqs(resultText) {
+  const cleaned = resultText
+    .trim()
+    .replace(/^```json\s*/i, "")
+    .replace(/^```\s*/i, "")
+    .replace(/\s*```$/, "");
+
+  const parsedFaqs = JSON.parse(cleaned);
+  if (!Array.isArray(parsedFaqs)) {
+    throw new Error("AI did not return a FAQ list.");
+  }
+
+  return parsedFaqs;
+}
+
+export async function generateFaqsFromUrl(url, isDeepCrawl = false, aiTone = "") {
+  const ai = getAiClient();
+  const requestHeaders = {
+    "User-Agent":
+      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+  };
+  let rawHtml = "";
+  let textContent = "";
+  let isSpaFallback = false;
+
+  try {
+    const jinaResponse = await fetchWithTimeout(`https://r.jina.ai/${url}`, {}, 10000);
+    if (jinaResponse.ok) {
+      textContent = await jinaResponse.text();
+    }
+  } catch (error) {
+    console.error("Primary Jina fetch failed:", error);
+  }
+
+  if (!hasUsefulContent(textContent)) {
+    isSpaFallback = true;
+
+    try {
+      const rawResponse = await fetchWithTimeout(
+        url,
+        { headers: requestHeaders },
+        10000
+      );
+
+      if (rawResponse.ok) {
+        rawHtml = await rawResponse.text();
+        textContent = extractPageContent(rawHtml, url);
+      }
+    } catch (error) {
+      console.error("Raw HTML fallback fetch failed:", error);
+    }
+  }
+
+  if (!textContent || textContent.trim().length < 10) {
+    textContent = `URL: ${url}\nWe could not extract enough content from this page to generate FAQs.`;
+  }
+
+  if (isDeepCrawl) {
+    const topLinks = mergeLinks(
+      extractLinksFromMarkdown(textContent, url),
+      rawHtml ? extractLinksFromHtml(rawHtml, url) : []
+    ).slice(0, 2);
+
     if (topLinks.length > 0) {
       const deepResponses = await Promise.allSettled(
-        topLinks.map((link) => fetch(`https://r.jina.ai/${link}`).then((res) => res.text()))
+        topLinks.map(async (link) => {
+          try {
+            const jinaRes = await fetchWithTimeout(`https://r.jina.ai/${link}`, {}, 8000);
+            if (jinaRes.ok) {
+              const jinaText = await jinaRes.text();
+              if (hasUsefulContent(jinaText)) {
+                return jinaText;
+              }
+            }
+          } catch (error) {
+            console.error(`Deep crawl Jina fetch failed for ${link}:`, error);
+          }
+
+          const res = await fetchWithTimeout(link, { headers: requestHeaders }, 8000);
+          if (!res.ok) {
+            throw new Error(`Failed to fetch ${link}`);
+          }
+
+          return extractPageContent(await res.text(), link);
+        })
       );
 
       deepResponses.forEach((res, index) => {
@@ -144,7 +220,11 @@ export async function generateFaqsFromUrl(url, isDeepCrawl = false, aiTone = "")
     }
   }
 
-  textContent = textContent.slice(0, 80000);
+  textContent = textContent
+    .replace(/\r/g, "")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim()
+    .slice(0, 18000);
 
   const toneInstruction =
     aiTone && aiTone.trim() !== ""
@@ -161,7 +241,7 @@ export async function generateFaqsFromUrl(url, isDeepCrawl = false, aiTone = "")
       ${textContent}
 
       Based on this metadata, determine what this business or website is about.
-      Then generate between 3 to 7 high-quality Frequently Asked Questions and their answers relevant for customers visiting this website.
+      Then generate between 3 to 5 high-quality Frequently Asked Questions and their answers relevant for customers visiting this website.
       The FAQs must be about the business, its services, or its products.
       If the metadata suggests it's a French website, write the FAQs in French.${toneInstruction}
       Assume the persona of the company answering a customer's question. Use "we" and "our" where appropriate.
@@ -173,7 +253,7 @@ export async function generateFaqsFromUrl(url, isDeepCrawl = false, aiTone = "")
     : `
       You are an expert customer support agent and business analyst.
       First, analyze the following website content to figure out exactly what the company does and what services or products they provide.
-      Then, acting as a knowledgeable representative of that company, generate between 3 to 7 high-quality, common Frequently Asked Questions and answers.
+      Then, acting as a knowledgeable representative of that company, generate between 3 to 5 high-quality, common Frequently Asked Questions and answers.
       The questions and answers must be highly specific to their actual business, products, or services based strictly on the provided text.
       Assume the persona of the company answering a customer's question. Use "we" and "our" where appropriate.${toneInstruction}
       Ignore irrelevant navigational text, privacy policies, cookie notices, or generic placeholder text.
@@ -200,12 +280,7 @@ export async function generateFaqsFromUrl(url, isDeepCrawl = false, aiTone = "")
     throw new Error("AI returned empty response.");
   }
 
-  const parsedFaqs = JSON.parse(resultText);
-  if (!Array.isArray(parsedFaqs)) {
-    throw new Error("AI did not return a FAQ list.");
-  }
-
-  return parsedFaqs;
+  return safeParseFaqs(resultText);
 }
 
 export async function generateChatResponse(query, history, faqData, aiTone) {

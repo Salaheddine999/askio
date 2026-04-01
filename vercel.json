@@ -1,4 +1,9 @@
 {
+  "functions": {
+    "api/ai/generate-faq.js": {
+      "maxDuration": 60
+    }
+  },
   "headers": [
     {
       "source": "/api/(.*)",

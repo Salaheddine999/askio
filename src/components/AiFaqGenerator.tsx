@@ -45,6 +45,39 @@ const AiFaqGenerator: React.FC<AiFaqGeneratorProps> = ({
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [isDeepCrawl, setIsDeepCrawl] = useState(false);
 
+  const openGeneratedFaqs = (newFaqs: { question: string; answer: string }[]) => {
+    const faqsWithState = newFaqs.map((faq) => ({
+      ...faq,
+      isOpen: false,
+    }));
+
+    setPendingFaqs(faqsWithState);
+    setShowReviewModal(true);
+    toast.success(`Generated ${newFaqs.length} FAQs! Please review them.`);
+    setShowUrlModal(false);
+    setScrapeUrl("");
+  };
+
+  const normalizeUrl = (value: string) => {
+    const trimmed = value.trim();
+    if (!trimmed) return null;
+
+    const withProtocol = /^https?:\/\//i.test(trimmed)
+      ? trimmed
+      : `https://${trimmed}`;
+
+    try {
+      const normalized = new URL(withProtocol);
+      if (!["http:", "https:"].includes(normalized.protocol)) {
+        return null;
+      }
+
+      return normalized.toString();
+    } catch {
+      return null;
+    }
+  };
+
   const handleAiScrape = async () => {
     const user = auth.currentUser;
     if (!user) {
@@ -57,7 +90,9 @@ const AiFaqGenerator: React.FC<AiFaqGeneratorProps> = ({
       return;
     }
 
-    if (!scrapeUrl.trim()) {
+    const normalizedUrl = normalizeUrl(scrapeUrl);
+
+    if (!normalizedUrl) {
       toast.error("Please enter a valid URL");
       return;
     }
@@ -77,26 +112,37 @@ const AiFaqGenerator: React.FC<AiFaqGeneratorProps> = ({
           authRequired: true,
           body: {
             chatbotId: resolvedChatbotId,
-            url: scrapeUrl,
+            url: normalizedUrl,
             isDeepCrawl,
             aiTone,
           },
         }
       );
-
-      const faqsWithState = newFaqs.map((faq: { question: string; answer: string }) => ({
-        ...faq,
-        isOpen: false,
-      }));
-      setPendingFaqs(faqsWithState);
-      setShowReviewModal(true);
-
-      toast.success(`Generated ${newFaqs.length} FAQs! Please review them.`);
-      setShowUrlModal(false);
-      setScrapeUrl("");
+      openGeneratedFaqs(newFaqs);
     } catch (error: unknown) {
       console.error("Scraping error:", error);
+
       if (
+        import.meta.env.DEV &&
+        error instanceof Error &&
+        /timed too long|gateway timeout|504/i.test(error.message)
+      ) {
+        try {
+          const { generateFaqsFromUrl } = await import("../utils/ai");
+          const fallbackFaqs = await generateFaqsFromUrl(
+            normalizedUrl,
+            isDeepCrawl,
+            aiTone
+          );
+          openGeneratedFaqs(fallbackFaqs);
+          return;
+        } catch (fallbackError) {
+          console.error("Client-side FAQ fallback failed:", fallbackError);
+        }
+      }
+
+      if (
+        !canUseAi &&
         error instanceof Error &&
         /pro|enterprise|limit|enable ai|subscription/i.test(error.message)
       ) {
@@ -132,10 +178,12 @@ const AiFaqGenerator: React.FC<AiFaqGeneratorProps> = ({
       )}
 
       {/* Upgrade Modal */}
-      <UpgradeModal
-        isOpen={showUpgradeModal}
-        onClose={() => setShowUpgradeModal(false)}
-      />
+      {!canUseAi && (
+        <UpgradeModal
+          isOpen={showUpgradeModal}
+          onClose={() => setShowUpgradeModal(false)}
+        />
+      )}
 
       {/* URL Input Modal */}
       <AnimatePresence>

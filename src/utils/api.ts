@@ -31,7 +31,14 @@ export async function apiRequest<T>(
   const payload = await response.json().catch(() => ({}));
 
   if (!response.ok) {
-    throw new Error(payload.error || "Request failed.");
+    if (response.status === 504) {
+      throw new Error(
+        payload.error ||
+          "The request took too long to complete. Try again with Deep Crawl turned off or use a smaller page."
+      );
+    }
+
+    throw new Error(payload.error || `Request failed (${response.status}).`);
   }
 
   return payload as T;
