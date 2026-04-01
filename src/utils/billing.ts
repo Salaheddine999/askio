@@ -4,6 +4,34 @@ import { apiRequest } from "./api";
 const publicCheckoutUrl = import.meta.env.VITE_LEMONSQUEEZY_PRO_CHECKOUT_URL || "";
 const publicBillingUrl = import.meta.env.VITE_LEMONSQUEEZY_BILLING_URL || "";
 
+function buildClientCheckoutUrl({
+  baseUrl,
+  uid,
+  email,
+  name,
+}: {
+  baseUrl: string;
+  uid?: string;
+  email?: string;
+  name?: string;
+}) {
+  const url = new URL(baseUrl);
+
+  if (email) {
+    url.searchParams.set("checkout[email]", email);
+  }
+
+  if (name) {
+    url.searchParams.set("checkout[name]", name);
+  }
+
+  if (uid) {
+    url.searchParams.set("checkout[custom][uid]", uid);
+  }
+
+  return url.toString();
+}
+
 export async function redirectToProCheckout() {
   const user = auth.currentUser;
 
@@ -27,8 +55,13 @@ export async function redirectToProCheckout() {
 
     window.location.href = url;
   } catch (error) {
-    console.warn("Falling back to public Lemon Squeezy checkout URL:", error);
-    window.location.href = publicCheckoutUrl;
+    console.warn("Falling back to client-built Lemon Squeezy checkout URL:", error);
+    window.location.href = buildClientCheckoutUrl({
+      baseUrl: publicCheckoutUrl,
+      uid: user.uid,
+      email: user.email || "",
+      name: user.displayName || "",
+    });
   }
 }
 
