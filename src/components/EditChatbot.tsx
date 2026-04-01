@@ -298,15 +298,21 @@ const EditChatbot: React.FC = () => {
   };
 
 
-  const saveConfig = async () => {
+  const persistConfig = async ({
+    showSuccessToast = true,
+    navigateAfterSave = true,
+  }: {
+    showSuccessToast?: boolean;
+    navigateAfterSave?: boolean;
+  } = {}) => {
     const user = auth.currentUser;
     if (!user) {
       toast.error("You must be logged in to save the configuration.");
-      return;
+      return null;
     }
     if (!config.name.trim() || !config.title.trim()) {
       toast.error("Chatbot name and title are required.");
-      return;
+      return null;
     }
     try {
       const { id, ...chatbotConfig } = config;
@@ -326,8 +332,13 @@ const EditChatbot: React.FC = () => {
 
       setHasChanges(false);
       initialConfigRef.current = JSON.stringify(nextConfig);
-      toast.success("Configuration saved successfully!");
-      navigate(`/configure/${result.chatbotId}`);
+      if (showSuccessToast) {
+        toast.success("Configuration saved successfully!");
+      }
+      if (navigateAfterSave) {
+        navigate(`/configure/${result.chatbotId}`);
+      }
+      return result;
     } catch (error) {
       console.error("Error saving config:", error);
       if (error instanceof Error) {
@@ -335,7 +346,12 @@ const EditChatbot: React.FC = () => {
       } else {
         toast.error("An unknown error occurred while saving the configuration");
       }
+      return null;
     }
+  };
+
+  const saveConfig = async () => {
+    await persistConfig();
   };
 
   const discardChanges = () => {
@@ -824,10 +840,18 @@ const EditChatbot: React.FC = () => {
                               <div className="hidden sm:block w-px bg-[#E0DEDB] dark:bg-[#44403C] mx-1"></div>
                               <Suspense fallback={null}>
                                 <AiFaqGenerator
-                                  chatbotId={id}
+                                  chatbotId={config.id || id}
                                   aiEnabled={config.aiEnabled === true}
                                   canUseAi={canUseAi}
                                   aiTone={config.aiTone}
+                                  ensureChatbotSaved={async () => {
+                                    const result = await persistConfig({
+                                      showSuccessToast: false,
+                                      navigateAfterSave: false,
+                                    });
+
+                                    return result?.chatbotId || config.id || id || null;
+                                  }}
                                   onFaqsApproved={(faqs: { question: string; answer: string }[]) => {
                                     const faqsWithState = faqs.map((f: { question: string; answer: string }) => ({ ...f, isOpen: false }));
                                     setConfig(prev => ({ ...prev, faqData: [...prev.faqData, ...faqs] }));

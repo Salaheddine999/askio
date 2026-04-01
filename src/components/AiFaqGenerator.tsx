@@ -25,6 +25,7 @@ interface AiFaqGeneratorProps {
   chatbotId?: string;
   aiEnabled?: boolean;
   canUseAi?: boolean;
+  ensureChatbotSaved?: () => Promise<string | null>;
 }
 
 const AiFaqGenerator: React.FC<AiFaqGeneratorProps> = ({
@@ -33,6 +34,7 @@ const AiFaqGenerator: React.FC<AiFaqGeneratorProps> = ({
   chatbotId,
   aiEnabled = false,
   canUseAi = false,
+  ensureChatbotSaved,
 }) => {
   const navigate = useNavigate();
   const [showUrlModal, setShowUrlModal] = useState(false);
@@ -50,11 +52,6 @@ const AiFaqGenerator: React.FC<AiFaqGeneratorProps> = ({
       return;
     }
 
-    if (!chatbotId) {
-      toast.error("Save this chatbot first, then enable AI to generate FAQs.");
-      return;
-    }
-
     if (!aiEnabled) {
       toast.error("Enable AI for this chatbot before using AI FAQ generation.");
       return;
@@ -67,13 +64,19 @@ const AiFaqGenerator: React.FC<AiFaqGeneratorProps> = ({
 
     try {
       setIsScraping(true);
+      const resolvedChatbotId = chatbotId || (await ensureChatbotSaved?.());
+
+      if (!resolvedChatbotId) {
+        toast.error("Please complete the required chatbot details before generating FAQs.");
+        return;
+      }
 
       const { faqs: newFaqs } = await apiRequest<{ faqs: { question: string; answer: string }[] }>(
         "/api/ai/generate-faq",
         {
           authRequired: true,
           body: {
-            chatbotId,
+            chatbotId: resolvedChatbotId,
             url: scrapeUrl,
             isDeepCrawl,
             aiTone,
@@ -113,7 +116,6 @@ const AiFaqGenerator: React.FC<AiFaqGeneratorProps> = ({
       {canUseAi ? (
         <Button
           onClick={() => setShowUrlModal(true)}
-          disabled={!chatbotId}
           className="bg-white dark:bg-[#292524] border border-[#E0DEDB] dark:border-[#44403C] text-[#37322F] dark:text-[#F5F5F4] hover:bg-[#FAFAF9] dark:hover:bg-[#1C1917] hover:border-[#37322F] dark:hover:border-[#A8A29E] shadow-sm rounded-[9px] text-body-sm flex-1 sm:flex-none"
           icon={Sparkles}
         >
