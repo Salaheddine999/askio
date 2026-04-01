@@ -1,7 +1,7 @@
 import { FieldValue } from "firebase-admin/firestore";
 import { requireUser } from "../_lib/auth.js";
 import { adminDb } from "../_lib/firebaseAdmin.js";
-import { assertCanEnableAiChatbot, getOwnedChatbot } from "../_lib/plan.js";
+import { getUserAccessProfile } from "../_lib/plan.js";
 
 function sendError(res, error) {
   const statusCode = error.statusCode || 500;
@@ -41,6 +41,76 @@ function normalizeChatbotPayload(payload, uid) {
   };
 }
 
+async function saveChatbotConfigTransactional({ uid, chatbotId, normalized }) {
+  const profile = await getUserAccessProfile(uid);
+  const targetRef = chatbotId
+    ? adminDb.collection("chatbot_configs").doc(chatbotId)
+    : adminDb.collection("chatbot_configs").doc();
+
+  await adminDb.runTransaction(async (transaction) => {
+    const existingSnap = await transaction.get(targetRef);
+
+    if (chatbotId) {
+      if (!existingSnap.exists) {
+        const error = new Error("Chatbot not found.");
+        error.statusCode = 404;
+        throw error;
+      }
+
+      if (existingSnap.data()?.user_id !== uid) {
+        const error = new Error("You do not have access to this chatbot.");
+        error.statusCode = 403;
+        throw error;
+      }
+    }
+
+    if (normalized.aiEnabled) {
+      if (profile.access.plan === "free") {
+        const error = new Error("AI features are available on Pro and Enterprise plans only.");
+        error.statusCode = 403;
+        throw error;
+      }
+
+      if (!profile.access.isSubscriptionActive) {
+        const error = new Error("Your subscription is not active. Please update billing to use AI features.");
+        error.statusCode = 403;
+        throw error;
+      }
+
+      if (profile.access.plan !== "enterprise") {
+        const aiEnabledQuery = adminDb
+          .collection("chatbot_configs")
+          .where("user_id", "==", uid)
+          .where("aiEnabled", "==", true);
+
+        const aiEnabledSnap = await transaction.get(aiEnabledQuery);
+        const currentCount = aiEnabledSnap.docs.filter((doc) => doc.id !== targetRef.id).length;
+
+        if (currentCount >= profile.access.aiChatbotLimit) {
+          const error = new Error(
+            `Your plan supports up to ${profile.access.aiChatbotLimit} AI chatbots. Contact us to enable more.`
+          );
+          error.statusCode = 403;
+          throw error;
+        }
+      }
+    }
+
+    transaction.set(
+      targetRef,
+      {
+        ...normalized,
+        createdAt: existingSnap.exists
+          ? existingSnap.data().createdAt || FieldValue.serverTimestamp()
+          : FieldValue.serverTimestamp(),
+      },
+      { merge: true }
+    );
+  });
+
+  return targetRef.id;
+}
+
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     res.setHeader("Allow", "POST");
@@ -57,30 +127,14 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: "Chatbot name and title are required." });
     }
 
-    const targetRef = chatbotId
-      ? adminDb.collection("chatbot_configs").doc(chatbotId)
-      : adminDb.collection("chatbot_configs").doc();
-
-    if (chatbotId) {
-      await getOwnedChatbot(decodedToken.uid, chatbotId);
-    }
-
-    if (normalized.aiEnabled) {
-      await assertCanEnableAiChatbot(decodedToken.uid, chatbotId || targetRef.id);
-    }
-
-    const existingSnap = chatbotId ? await targetRef.get() : null;
-    const payload = {
-      ...normalized,
-      createdAt: existingSnap?.exists
-        ? existingSnap.data().createdAt || FieldValue.serverTimestamp()
-        : FieldValue.serverTimestamp(),
-    };
-
-    await targetRef.set(payload, { merge: true });
+    const savedChatbotId = await saveChatbotConfigTransactional({
+      uid: decodedToken.uid,
+      chatbotId,
+      normalized,
+    });
 
     return res.status(200).json({
-      chatbotId: targetRef.id,
+      chatbotId: savedChatbotId,
       aiEnabled: normalized.aiEnabled,
     });
   } catch (error) {

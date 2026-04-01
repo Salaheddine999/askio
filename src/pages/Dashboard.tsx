@@ -56,6 +56,7 @@ interface Chatbot {
   title: string;
   position: string;
   isActive?: boolean;
+  aiEnabled?: boolean;
   createdAt: Date;
   lastUpdated: Date;
 }
