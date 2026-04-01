@@ -188,7 +188,7 @@ const Plans: React.FC = () => {
                 price="Custom"
                 subtext="Custom limits and onboarding."
                 ctaLabel="Contact sales"
-                ctaHref="mailto:hello@askio.ai?subject=Askio%20Enterprise%20Plan"
+                ctaHref="mailto:abw.salaheddine@gmail.com?subject=Askio%20Enterprise%20Plan"
                 external
                 features={[
                   "Everything in Professional",

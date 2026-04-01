@@ -6,7 +6,7 @@ export default function PrivacyPolicy() {
           Privacy Policy
         </h1>
         <p className="text-sm text-[#A8A29E] dark:text-[#78716C] mb-10">
-          Last updated: {new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
+          Last updated: April 1, 2026
         </p>
 
         <div className="space-y-8 text-[#605A57] dark:text-[#D6D3D1] text-sm leading-relaxed">
@@ -15,10 +15,11 @@ export default function PrivacyPolicy() {
               1. Introduction
             </h2>
             <p>
-              Askio ("we", "our", "us") provides an AI-powered chatbot platform that allows
-              businesses to create and deploy chatbots on their websites and online stores.
-              This Privacy Policy explains how we collect, use, and protect your information
-              when you use our services, including our Shopify app integration.
+              Askio (&quot;we&quot;, &quot;our&quot;, &quot;us&quot;) provides an AI-powered chatbot
+              platform that allows businesses to create and deploy chatbots on their websites
+              and online stores. This Privacy Policy explains how we collect, use, and protect
+              your information when you use our services, including our Shopify app
+              integration.
             </p>
           </section>
 
@@ -34,18 +35,19 @@ export default function PrivacyPolicy() {
               </li>
               <li>
                 <strong>Chatbot Configuration:</strong> We store the chatbot settings you
-                create, including titles, instructions, FAQs, appearance preferences, and
-                AI persona settings.
+                create, including titles, instructions, FAQs, appearance preferences, and AI
+                persona settings.
               </li>
               <li>
                 <strong>Shopify Store Data:</strong> When you install our Shopify app, we
                 receive your Shopify store URL and an access token to install the chatbot
-                script on your store. We do not access or store your customers' personal
+                script on your store. We do not access or store your customers&apos; personal
                 data, order information, or payment details.
               </li>
               <li>
-                <strong>Usage Analytics:</strong> We may collect anonymized usage data to
-                improve our services, such as chatbot interaction counts.
+                <strong>Usage Analytics:</strong> We use Vercel Web Analytics, which is a
+                cookieless analytics service that provides aggregated usage information such as
+                page views, referrers, device details, and general location data.
               </li>
             </ul>
           </section>
@@ -65,7 +67,7 @@ export default function PrivacyPolicy() {
 
           <section>
             <h2 className="text-lg font-semibold text-[#37322F] dark:text-[#F5F5F4] mb-3">
-              4. Data Storage & Security
+              4. Data Storage &amp; Security
             </h2>
             <p>
               Your data is stored securely using Google Firebase infrastructure. We implement
@@ -81,7 +83,7 @@ export default function PrivacyPolicy() {
             <p>We use the following third-party services:</p>
             <ul className="list-disc pl-6 space-y-2 mt-3">
               <li><strong>Firebase (Google):</strong> Authentication and database storage</li>
-              <li><strong>Vercel:</strong> Application hosting</li>
+              <li><strong>Vercel:</strong> Application hosting and cookieless web analytics</li>
               <li><strong>Google Gemini:</strong> AI-powered chatbot responses</li>
               <li><strong>Shopify:</strong> Store integration (when using the Shopify app)</li>
             </ul>
@@ -93,8 +95,16 @@ export default function PrivacyPolicy() {
             </h2>
             <p>
               Our Shopify app only accesses the permissions necessary to install and manage
-              the chatbot script on your store (<code className="px-1.5 py-0.5 bg-[#E7E5E4] dark:bg-[#292524] rounded text-xs">write_script_tags</code> and <code className="px-1.5 py-0.5 bg-[#E7E5E4] dark:bg-[#292524] rounded text-xs">read_script_tags</code>).
-              We do not access, collect, or store any data about your Shopify store customers.
+              the chatbot script on your store (
+              <code className="px-1.5 py-0.5 bg-[#E7E5E4] dark:bg-[#292524] rounded text-xs">
+                write_script_tags
+              </code>{" "}
+              and{" "}
+              <code className="px-1.5 py-0.5 bg-[#E7E5E4] dark:bg-[#292524] rounded text-xs">
+                read_script_tags
+              </code>
+              ). We do not access, collect, or store any data about your Shopify store
+              customers.
             </p>
           </section>
 
@@ -127,13 +137,13 @@ export default function PrivacyPolicy() {
               9. Contact Us
             </h2>
             <p>
-              If you have any questions about this Privacy Policy or your data, please
-              contact us at{" "}
+              If you have any questions about this Privacy Policy or your data, please contact
+              us at{" "}
               <a
-                href="mailto:support@askio.vercel.app"
+                href="mailto:abw.salaheddine@gmail.com"
                 className="text-[#37322F] dark:text-[#F5F5F4] underline hover:opacity-70"
               >
-                support@askio.vercel.app
+                abw.salaheddine@gmail.com
               </a>
               .
             </p>
@@ -145,7 +155,7 @@ export default function PrivacyPolicy() {
             href="/"
             className="text-sm text-[#605A57] dark:text-[#A8A29E] hover:text-[#37322F] dark:hover:text-[#F5F5F4] transition-colors"
           >
-            ← Back to Askio
+            Back to Askio
           </a>
         </div>
       </div>

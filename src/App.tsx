@@ -20,6 +20,7 @@ import Settings from "./pages/Settings";
 import Analytics from "./pages/Analytics";
 import Integrations from "./pages/Integrations";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
+import TermsOfService from "./pages/TermsOfService";
 import { HelmetProvider } from "react-helmet-async";
 import Plans from "./pages/Plans";
 
@@ -151,6 +152,7 @@ const App: React.FC = () => {
                 element={<Plans />}
               />
               <Route path="/privacy" element={<PrivacyPolicy />} />
+              <Route path="/terms" element={<TermsOfService />} />
             </Routes>
             <Toaster position="top-center" />
           </div>
