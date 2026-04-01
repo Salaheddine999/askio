@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { ArrowRight, Check } from "lucide-react";
 import { Helmet } from "react-helmet-async";
 import { redirectToProCheckout } from "../utils/billing";
+import { auth } from "../utils/firebase";
 
 type PlanCardProps = {
   title: string;
@@ -114,6 +115,8 @@ function PlanCard({
 }
 
 const Plans: React.FC = () => {
+  const isAuthenticated = Boolean(auth.currentUser);
+
   return (
     <div className="min-h-screen bg-[#F7F5F3] dark:bg-[#1C1917] text-[#37322F] dark:text-[#F5F5F4]">
       <Helmet>
@@ -167,10 +170,14 @@ const Plans: React.FC = () => {
                 price="$19"
                 subtext="Up to 10 AI-enabled chatbots."
                 ctaLabel="Get started"
-                ctaHref="/plans"
-                ctaAction={() => {
-                  void redirectToProCheckout();
-                }}
+                ctaHref="/auth?next=pro-checkout"
+                ctaAction={
+                  isAuthenticated
+                    ? () => {
+                        void redirectToProCheckout();
+                      }
+                    : null
+                }
                 featured
                 features={[
                   "Everything in Starter",

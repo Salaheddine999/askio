@@ -1,4 +1,5 @@
-import { auth } from "./firebase";
+import { doc, getDoc } from "firebase/firestore";
+import { auth, db } from "./firebase";
 import { apiRequest } from "./api";
 
 const publicCheckoutUrl = import.meta.env.VITE_LEMONSQUEEZY_PRO_CHECKOUT_URL || "";
@@ -32,6 +33,23 @@ function buildClientCheckoutUrl({
   return url.toString();
 }
 
+async function userHasActivePaidPlan(uid: string) {
+  const userDoc = await getDoc(doc(db, "users", uid));
+
+  if (!userDoc.exists()) {
+    return false;
+  }
+
+  const userData = userDoc.data();
+  const plan = userData.plan || (userData.isPro ? "pro" : "free");
+  const subscriptionStatus =
+    userData.subscriptionStatus || (plan === "free" ? "inactive" : "active");
+
+  return (
+    plan !== "free" && ["active", "trialing", "on_trial"].includes(subscriptionStatus)
+  );
+}
+
 export async function redirectToProCheckout() {
   const user = auth.currentUser;
 
@@ -42,6 +60,17 @@ export async function redirectToProCheckout() {
   if (!user) {
     window.location.href = publicCheckoutUrl;
     return;
+  }
+
+  try {
+    const alreadyPaid = await userHasActivePaidPlan(user.uid);
+
+    if (alreadyPaid) {
+      window.location.href = "/dashboard";
+      return;
+    }
+  } catch (error) {
+    console.warn("Unable to verify current plan before checkout:", error);
   }
 
   try {

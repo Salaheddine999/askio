@@ -8,8 +8,9 @@ import {
 } from "firebase/auth";
 import { doc, setDoc, getDoc } from "firebase/firestore";
 import { toast } from "react-hot-toast";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
+import { redirectToProCheckout } from "../utils/billing";
 
 const Auth: React.FC = () => {
   const [email, setEmail] = useState("");
@@ -18,6 +19,19 @@ const Auth: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [mode, setMode] = useState<"login" | "register">("login");
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const handlePostAuthRedirect = async () => {
+    const params = new URLSearchParams(location.search);
+    const next = params.get("next");
+
+    if (next === "pro-checkout") {
+      await redirectToProCheckout();
+      return;
+    }
+
+    navigate("/dashboard");
+  };
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,7 +41,7 @@ const Auth: React.FC = () => {
     try {
       if (mode === "login") {
         await signInWithEmailAndPassword(auth, email, password);
-        navigate("/dashboard");
+        await handlePostAuthRedirect();
       } else {
         const userCredential = await createUserWithEmailAndPassword(
           auth,
@@ -45,7 +59,7 @@ const Auth: React.FC = () => {
           aiChatbotLimit: 0,
         });
         toast.success("Registration successful!");
-        navigate("/dashboard");
+        await handlePostAuthRedirect();
       }
     } catch (err: unknown) {
       const code = (err as { code?: string }).code || "";
@@ -81,7 +95,7 @@ const Auth: React.FC = () => {
           aiChatbotLimit: 0,
         });
       }
-      navigate("/dashboard");
+      await handlePostAuthRedirect();
     } catch (error) {
       setError((error as Error).message);
     }

@@ -4,7 +4,6 @@ import { motion } from "framer-motion";
 import { useInView } from "react-intersection-observer";
 import Badge from "./Badge";
 import HatchStrip from "./HatchStrip";
-import { redirectToProCheckout } from "../../utils/billing";
 
 type PlanCardProps = {
   title: string;
@@ -161,10 +160,7 @@ export default function PlansSection() {
               price="$19"
               subtext="Up to 10 AI-enabled chatbots."
               ctaLabel="Get started"
-              ctaHref="/plans"
-              ctaAction={() => {
-                void redirectToProCheckout();
-              }}
+              ctaHref="/auth?next=pro-checkout"
               featured
               features={[
                 "Everything in Starter",
