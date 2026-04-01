@@ -1,5 +1,5 @@
 import { FieldValue } from "firebase-admin/firestore";
-import { adminDb } from "../_lib/firebaseAdmin.js";
+import { adminAuth, adminDb } from "../_lib/firebaseAdmin.js";
 import {
   getLemonSqueezyConfig,
   verifyWebhookSignature,
@@ -56,17 +56,34 @@ async function findUserRef(payload) {
     return null;
   }
 
+  const normalizedEmail = String(email).trim().toLowerCase();
+
   const querySnap = await adminDb
     .collection("users")
-    .where("email", "==", email)
+    .where("email", "==", normalizedEmail)
     .limit(1)
     .get();
 
-  if (querySnap.empty) {
-    return null;
+  if (!querySnap.empty) {
+    return querySnap.docs[0].ref;
   }
 
-  return querySnap.docs[0].ref;
+  const caseInsensitiveScan = await adminDb.collection("users").limit(50).get();
+  const matchingDoc = caseInsensitiveScan.docs.find((doc) => {
+    const docEmail = String(doc.data()?.email || "").trim().toLowerCase();
+    return docEmail === normalizedEmail;
+  });
+
+  if (matchingDoc) {
+    return matchingDoc.ref;
+  }
+
+  try {
+    const authUser = await adminAuth.getUserByEmail(normalizedEmail);
+    return adminDb.collection("users").doc(authUser.uid);
+  } catch {
+    return null;
+  }
 }
 
 async function handleSubscriptionEvent(payload) {

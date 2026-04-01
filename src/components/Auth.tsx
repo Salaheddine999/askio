@@ -35,7 +35,7 @@ const Auth: React.FC = () => {
           password
         );
         await setDoc(doc(db, "users", userCredential.user.uid), {
-          email: userCredential.user.email,
+          email: userCredential.user.email?.toLowerCase() || "",
           name: "",
           createdAt: new Date(),
           aiScansCount: 0,
@@ -71,7 +71,7 @@ const Auth: React.FC = () => {
       const userDoc = await getDoc(doc(db, "users", userCredential.user.uid));
       if (!userDoc.exists()) {
         await setDoc(doc(db, "users", userCredential.user.uid), {
-          email: userCredential.user.email,
+          email: userCredential.user.email?.toLowerCase() || "",
           name: userCredential.user.displayName || "",
           createdAt: new Date(),
           aiScansCount: 0,
