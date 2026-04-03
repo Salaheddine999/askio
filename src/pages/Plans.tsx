@@ -74,7 +74,7 @@ function PlanCard({
             </p>
           ) : null}
         </div>
-        <p className={`mt-4 text-[15px] leading-8 ${mutedClass}`}>{description}</p>
+        <p className={`mt-4 text-[15px] leading-6 ${mutedClass}`}>{description}</p>
 
         <div className="mt-12">
           <div className="flex items-end gap-1">
