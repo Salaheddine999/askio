@@ -9,12 +9,14 @@ type PlanCardProps = {
   title: string;
   description: string;
   price: string;
+  priceSuffix?: string;
   subtext: string;
   ctaLabel: string;
   ctaHref: string;
   ctaAction?: (() => void) | null;
   features: string[];
   featured?: boolean;
+  featuredLabel?: string;
   external?: boolean;
 };
 
@@ -22,12 +24,14 @@ function PlanCard({
   title,
   description,
   price,
+  priceSuffix,
   subtext,
   ctaLabel,
   ctaHref,
   ctaAction,
   features,
   featured = false,
+  featuredLabel,
   external = false,
 }: PlanCardProps) {
   const cardClass = featured
@@ -62,14 +66,24 @@ function PlanCard({
       className={`min-h-full p-6 sm:p-7 lg:p-8 border-b lg:border-b-0 lg:border-r last:border-r-0 border-[rgba(55,50,47,0.12)] dark:border-[#44403C] ${cardClass}`}
     >
       <div className="max-w-[290px] mx-auto lg:mx-0">
-        <h3 className="text-[30px] leading-none font-serif">{title}</h3>
+        <div className="flex items-end justify-between gap-3">
+          <h3 className="text-[30px] leading-none font-serif">{title}</h3>
+          {featured && featuredLabel ? (
+            <p className="shrink-0 rounded-full border border-[#C9A66B]/30 bg-[#C9A66B]/12 px-2.5 py-1 text-[10px] font-medium tracking-[0.02em] text-[#E7C27D] dark:border-[#E7C27D]/20 dark:bg-[#E7C27D]/10 dark:text-[#F3D9A3]">
+              {featuredLabel}
+            </p>
+          ) : null}
+        </div>
         <p className={`mt-4 text-[15px] leading-8 ${mutedClass}`}>{description}</p>
 
         <div className="mt-12">
           <div className="flex items-end gap-1">
             <span className="text-[58px] leading-none font-serif tracking-tight">{price}</span>
+            {priceSuffix ? (
+              <span className={`mb-2 text-[16px] font-medium ${mutedClass}`}>{priceSuffix}</span>
+            ) : null}
           </div>
-          <p className={`mt-3 text-[15px] ${mutedClass}`}>{subtext}</p>
+          <p className={`mt-3 text-[15px] font-medium ${mutedClass}`}>{subtext}</p>
         </div>
 
         {ctaAction ? (
@@ -152,12 +166,13 @@ const Plans: React.FC = () => {
                 title="Starter"
                 description="Unlimited manual chatbots for getting started."
                 price="$0"
-                subtext="Unlimited standard chatbots."
-                ctaLabel="Start for free"
+                priceSuffix="/month"
+                subtext="Best for simple, manual chatbot setups."
+                ctaLabel="Start free"
                 ctaHref="/auth"
                 features={[
                   "Unlimited standard chatbots",
-                  "Manual FAQ setup",
+                  "Manual FAQ builder",
                   "Lead capture flows",
                   "Basic chatbot analytics",
                   "No AI-generated replies",
@@ -168,8 +183,9 @@ const Plans: React.FC = () => {
                 title="Professional"
                 description="AI tools for teams that need faster setup."
                 price="$19"
-                subtext="Up to 10 AI-enabled chatbots."
-                ctaLabel="Get started"
+                priceSuffix="/month"
+                subtext="Best for AI-powered chatbot creation and growth."
+                ctaLabel="Upgrade to Pro"
                 ctaHref="/auth?next=pro-checkout"
                 ctaAction={
                   isAuthenticated
@@ -179,22 +195,23 @@ const Plans: React.FC = () => {
                     : null
                 }
                 featured
+                featuredLabel="Most Popular"
                 features={[
                   "Everything in Starter",
                   "AI FAQ generation",
                   "AI persona customization",
-                  "Deep Crawl for richer FAQs",
+                  "Deep site crawl for richer FAQs",
                   "Up to 10 AI-enabled chatbots",
-                  "Premium chatbot setup workflow",
+                  "Faster premium setup workflow",
                 ]}
               />
 
               <PlanCard
-                title="Entreprise"
+                title="Enterprise"
                 description="Custom setup for larger organizations."
                 price="Custom"
-                subtext="Custom limits and onboarding."
-                ctaLabel="Contact sales"
+                subtext="Best for teams that need custom rollout and support."
+                ctaLabel="Talk to sales"
                 ctaHref="mailto:abw.salaheddine@gmail.com?subject=Askio%20Enterprise%20Plan"
                 external
                 features={[

@@ -235,7 +235,7 @@ function AnalyticsLeadsPreview() {
               <motion.div
                 key={index}
                 style={{ height: `${height}px`, transformOrigin: "bottom" }}
-                animate={{ scaleY: [0.96, 1, 0.96] }}
+                animate={{ scaleY: [0.88, 1.08, 0.88] }}
                 transition={{
                   duration: 3.8,
                   repeat: Number.POSITIVE_INFINITY,
@@ -303,6 +303,9 @@ function IntegrationBeamPreview() {
         containerRef={containerRef}
         fromRef={wordpressRef}
         toRef={askioRef}
+        duration={4.8}
+        pathWidth={2.4}
+        pathOpacity={0.28}
         curvature={-75}
         endYOffset={-10}
       />
@@ -310,11 +313,17 @@ function IntegrationBeamPreview() {
         containerRef={containerRef}
         fromRef={shopifyRef}
         toRef={askioRef}
+        duration={4.8}
+        pathWidth={2.4}
+        pathOpacity={0.28}
       />
       <AnimatedBeam
         containerRef={containerRef}
         fromRef={wixRef}
         toRef={askioRef}
+        duration={4.8}
+        pathWidth={2.4}
+        pathOpacity={0.28}
         curvature={75}
         endYOffset={10}
       />
@@ -322,6 +331,9 @@ function IntegrationBeamPreview() {
         containerRef={containerRef}
         fromRef={reactRef}
         toRef={askioRef}
+        duration={4.8}
+        pathWidth={2.4}
+        pathOpacity={0.28}
         curvature={-75}
         endYOffset={-10}
         reverse
@@ -330,12 +342,18 @@ function IntegrationBeamPreview() {
         containerRef={containerRef}
         fromRef={angularRef}
         toRef={askioRef}
+        duration={4.8}
+        pathWidth={2.4}
+        pathOpacity={0.28}
         reverse
       />
       <AnimatedBeam
         containerRef={containerRef}
         fromRef={vueRef}
         toRef={askioRef}
+        duration={4.8}
+        pathWidth={2.4}
+        pathOpacity={0.28}
         curvature={75}
         endYOffset={10}
         reverse
@@ -354,7 +372,7 @@ export default function FeaturesSection() {
       animate={featuresInView ? { opacity: 1, y: 0 } : {}}
       transition={{ duration: 0.5 }}
       id="features"
-      className="border-b border-[rgba(55,50,47,0.12)] dark:border-[#44403C]"
+      className=""
     >
       <div className="py-20 flex flex-col items-center text-center px-4">
         <Badge text="Features" />
@@ -407,7 +425,7 @@ export default function FeaturesSection() {
                 <motion.div
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: [0, 0, 1, 1, 0, 0], y: [8, 8, 0, 0, 0, 8] }}
-                  transition={{ duration: 6.6, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut", times: [0, 0.07, 0.16, 0.78, 0.87, 1] }}
+                  transition={{ duration: 6.1, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut", times: [0, 0.07, 0.16, 0.78, 0.87, 1] }}
                   className="flex items-end gap-2"
                 >
                   <div className="w-5 h-5 rounded-full bg-white dark:bg-[#2A2421] shrink-0 flex items-center justify-center shadow-sm ring-1 ring-black/5">
@@ -420,7 +438,7 @@ export default function FeaturesSection() {
                 <motion.div
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: [0, 0, 1, 1, 0, 0], y: [8, 8, 0, 0, 0, 8] }}
-                  transition={{ duration: 6.6, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut", times: [0, 0.18, 0.27, 0.78, 0.87, 1] }}
+                  transition={{ duration: 6.1, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut", times: [0, 0.18, 0.27, 0.78, 0.87, 1] }}
                   className="flex justify-end"
                 >
                   <div className="bg-[#37322F] dark:bg-[#F5F5F4] rounded-2xl rounded-br-md px-3 py-2 max-w-[78%] shadow-[0_8px_20px_rgba(55,50,47,0.16)]">
@@ -430,7 +448,7 @@ export default function FeaturesSection() {
                 <motion.div
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: [0, 0, 1, 1, 0, 0], y: [8, 8, 0, 0, 0, 8] }}
-                  transition={{ duration: 6.6, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut", times: [0, 0.34, 0.43, 0.78, 0.87, 1] }}
+                  transition={{ duration: 6.1, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut", times: [0, 0.34, 0.43, 0.78, 0.87, 1] }}
                   className="flex items-end gap-2"
                 >
                   <div className="w-5 h-5 rounded-full bg-white dark:bg-[#2A2421] shrink-0 flex items-center justify-center shadow-sm ring-1 ring-black/5">
@@ -443,7 +461,7 @@ export default function FeaturesSection() {
                 <motion.div
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: [0, 0, 1, 1, 0, 0], y: [8, 8, 0, 0, 0, 8] }}
-                  transition={{ duration: 6.6, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut", times: [0, 0.5, 0.59, 0.78, 0.87, 1] }}
+                  transition={{ duration: 6.1, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut", times: [0, 0.5, 0.59, 0.78, 0.87, 1] }}
                   className="flex items-end gap-2"
                 >
                   <div className="w-5 h-5 shrink-0 opacity-0" />
