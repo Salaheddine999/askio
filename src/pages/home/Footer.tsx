@@ -13,8 +13,8 @@ export default function Footer() {
                 Askio
               </span>
             </Link>
-            <p className="text-[rgba(73,66,61,0.90)] dark:text-[#A8A29E] text-sm font-medium leading-[18px] font-sans">
-              Your chatbot, your way.
+            <p className="max-w-[320px] text-[rgba(73,66,61,0.90)] dark:text-[#A8A29E] text-sm font-medium leading-[18px] font-sans">
+              Your chatbot, your way, tailored to your brand and customer experience.
             </p>
             <div className="flex gap-4">
               <a

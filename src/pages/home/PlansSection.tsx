@@ -66,10 +66,10 @@ function PlanCard({
       className={`min-h-full p-6 sm:p-7 lg:p-8 border-b lg:border-b-0 lg:border-r last:border-r-0 border-[rgba(55,50,47,0.12)] dark:border-[#44403C] ${cardClass}`}
     >
       <div className="max-w-[290px] mx-auto lg:mx-0">
-        <div className="flex items-end justify-between gap-3">
+        <div className="flex items-center justify-between gap-3">
           <h3 className="text-[30px] leading-none font-serif">{title}</h3>
           {featured && featuredLabel ? (
-            <p className="shrink-0 rounded-full border border-[#C9A66B]/30 bg-[#C9A66B]/12 px-2.5 py-1 text-[10px] font-medium tracking-[0.02em] text-[#E7C27D] dark:border-[#E7C27D]/20 dark:bg-[#E7C27D]/10 dark:text-[#F3D9A3]">
+            <p className="shrink-0 -translate-y-0.5 rounded-full border border-[#C9A66B]/30 bg-[#C9A66B]/12 px-3 py-1.5 text-[10px] font-medium leading-none tracking-[0.02em] text-[#E7C27D] dark:border-[#E7C27D]/20 dark:bg-[#E7C27D]/10 dark:text-[#F3D9A3]">
               {featuredLabel}
             </p>
           ) : null}
