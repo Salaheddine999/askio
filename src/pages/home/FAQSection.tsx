@@ -6,7 +6,7 @@ import Badge from "./Badge";
 
 const faqs = [
   { q: "What is Askio?", a: "Askio is a versatile, easy-to-use chatbot that can be added to any website to improve user engagement and provide instant responses to visitor queries." },
-  { q: "Is Askio really free to use?", a: "Yes, Askio is completely free to use. We believe in making technology accessible to everyone, so you can enjoy all of Askio's features without any cost." },
+  { q: "Does Askio have a free plan?", a: "Yes. Askio includes a free Starter plan with unlimited standard chatbots, a manual FAQ builder, lead capture flows, and basic analytics. If you need AI features, the Professional plan starts at $19/month, and Enterprise pricing is available for larger teams." },
   { q: "Do I have control over where the chatbot appears?", a: "Absolutely. You can choose where you want the chatbot to appear on your website, giving you full control over its placement and visibility." },
   { q: "Do I need coding skills?", a: "No coding skills are required. The chatbot is designed to be easy to implement with a simple embed code, making it accessible for users of all technical levels." },
   { q: "Can I create multiple chatbots?", a: "Yes, you can create multiple chatbots, allowing you to have different chatbots for your various websites or web pages, each tailored to specific needs." },

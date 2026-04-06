@@ -25,7 +25,7 @@ export default function LandingNav() {
     <header className="relative z-50 flex justify-center pt-3 pb-4">
       <div className="absolute left-0 right-0 top-[34px] h-0 border-t border-[rgba(55,50,47,0.12)] dark:border-[#44403C] hidden lg:block" />
       <nav
-        className={`relative z-30 w-full max-w-[700px] h-11 px-4 backdrop-blur-sm rounded-full grid grid-cols-[1fr_auto_1fr] items-center border transition-all duration-300 ${
+        className={`relative z-30 flex w-full max-w-[700px] items-center justify-between h-11 px-4 backdrop-blur-sm rounded-full border transition-all duration-300 sm:grid sm:grid-cols-[1fr_auto_1fr] ${
           scrolled
             ? "bg-[#F7F5F3]/95 dark:bg-[#1C1917]/95 shadow-md border-[rgba(55,50,47,0.12)] dark:border-[#44403C]"
             : "bg-[#F7F5F3]/90 dark:bg-[#1C1917]/90 shadow-[0px_0px_0px_2px_white] dark:shadow-[0px_0px_0px_2px_#292524] border-transparent dark:border-[#44403C]"
@@ -48,7 +48,7 @@ export default function LandingNav() {
             </a>
           ))}
         </div>
-        <div className="flex items-center gap-2 justify-self-end">
+        <div className="ml-auto flex items-center gap-2 sm:ml-0 sm:justify-self-end">
           <Link
             to="/auth"
             className="px-3.5 py-1.5 bg-white dark:bg-[#292524] shadow-[0px_1px_2px_rgba(55,50,47,0.12)] dark:shadow-none rounded-full text-[#37322F] dark:text-[#F5F5F4] text-button font-medium hover:shadow-md hover:scale-105 transition-all duration-200 border border-transparent dark:border-[#44403C]"
