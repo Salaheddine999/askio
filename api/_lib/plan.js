@@ -1,10 +1,33 @@
 import { adminDb } from "./firebaseAdmin.js";
 
+function hasPaidAccessUntilPeriodEnd(subscriptionStatus, currentPeriodEnd) {
+  if (!["cancelled", "canceled"].includes(String(subscriptionStatus || "").toLowerCase())) {
+    return false;
+  }
+
+  if (!currentPeriodEnd) {
+    return false;
+  }
+
+  const endDate = new Date(currentPeriodEnd);
+  return !Number.isNaN(endDate.getTime()) && endDate.getTime() > Date.now();
+}
+
 function buildAccessProfile(userData = {}) {
   const legacyPlan = userData.isPro ? "pro" : "free";
-  const plan = userData.plan || legacyPlan;
+  const storedPlan = userData.plan || legacyPlan;
   const subscriptionStatus =
-    userData.subscriptionStatus || (plan === "free" ? "inactive" : "active");
+    userData.subscriptionStatus || (storedPlan === "free" ? "inactive" : "active");
+  const paidThroughPeriodEnd = hasPaidAccessUntilPeriodEnd(
+    subscriptionStatus,
+    userData.currentPeriodEnd
+  );
+  const plan =
+    storedPlan === "enterprise"
+      ? "enterprise"
+      : storedPlan === "pro" || paidThroughPeriodEnd
+        ? "pro"
+        : "free";
 
   const defaultLimit =
     plan === "enterprise" ? Number.MAX_SAFE_INTEGER : plan === "pro" ? 10 : 0;
@@ -14,7 +37,9 @@ function buildAccessProfile(userData = {}) {
     subscriptionStatus,
     aiChatbotLimit: userData.aiChatbotLimit ?? defaultLimit,
     isSubscriptionActive:
-      plan === "free" || ["active", "trialing", "on_trial"].includes(subscriptionStatus),
+      plan === "free" ||
+      ["active", "trialing", "on_trial"].includes(subscriptionStatus) ||
+      (plan === "pro" && paidThroughPeriodEnd),
   };
 }
 

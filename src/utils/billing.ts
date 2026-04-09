@@ -5,6 +5,19 @@ import { apiRequest } from "./api";
 const publicCheckoutUrl = import.meta.env.VITE_LEMONSQUEEZY_PRO_CHECKOUT_URL || "";
 const publicBillingUrl = import.meta.env.VITE_LEMONSQUEEZY_BILLING_URL || "";
 
+function hasPaidAccessUntilPeriodEnd(subscriptionStatus: string, currentPeriodEnd?: string | null) {
+  if (!["cancelled", "canceled"].includes(String(subscriptionStatus || "").toLowerCase())) {
+    return false;
+  }
+
+  if (!currentPeriodEnd) {
+    return false;
+  }
+
+  const endDate = new Date(currentPeriodEnd);
+  return !Number.isNaN(endDate.getTime()) && endDate.getTime() > Date.now();
+}
+
 function buildClientCheckoutUrl({
   baseUrl,
   uid,
@@ -41,12 +54,24 @@ async function userHasActivePaidPlan(uid: string) {
   }
 
   const userData = userDoc.data();
-  const plan = userData.plan || (userData.isPro ? "pro" : "free");
+  const storedPlan = userData.plan || (userData.isPro ? "pro" : "free");
   const subscriptionStatus =
-    userData.subscriptionStatus || (plan === "free" ? "inactive" : "active");
+    userData.subscriptionStatus || (storedPlan === "free" ? "inactive" : "active");
+  const paidThroughPeriodEnd = hasPaidAccessUntilPeriodEnd(
+    subscriptionStatus,
+    userData.currentPeriodEnd
+  );
+  const plan =
+    storedPlan === "enterprise"
+      ? "enterprise"
+      : storedPlan === "pro" || paidThroughPeriodEnd
+        ? "pro"
+        : "free";
 
   return (
-    plan !== "free" && ["active", "trialing", "on_trial"].includes(subscriptionStatus)
+    plan !== "free" &&
+    (["active", "trialing", "on_trial"].includes(subscriptionStatus) ||
+      paidThroughPeriodEnd)
   );
 }
 

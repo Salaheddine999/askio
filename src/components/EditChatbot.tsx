@@ -48,6 +48,19 @@ const AiPersonaTab = aiPersonaModuleLoader
   ? lazy(() => aiPersonaModuleLoader() as Promise<{ default: React.ComponentType<any> }>)
   : null;
 
+function hasPaidAccessUntilPeriodEnd(subscriptionStatus: string, currentPeriodEnd?: string | null) {
+  if (!["cancelled", "canceled"].includes(String(subscriptionStatus || "").toLowerCase())) {
+    return false;
+  }
+
+  if (!currentPeriodEnd) {
+    return false;
+  }
+
+  const endDate = new Date(currentPeriodEnd);
+  return !Number.isNaN(endDate.getTime()) && endDate.getTime() > Date.now();
+}
+
 interface EditChatbotProps extends ChatbotProps {
   name: string;
 }
@@ -194,15 +207,26 @@ const EditChatbot: React.FC = () => {
     try {
       const userSnap = await getDoc(doc(db, "users", currentUser.uid));
       const userData = userSnap.data();
-      const plan = (userData?.plan || (userData?.isPro ? "pro" : "free")) as
+      const storedPlan = (userData?.plan || (userData?.isPro ? "pro" : "free")) as
         | "free"
         | "pro"
         | "enterprise";
       const subscriptionStatus =
-        userData?.subscriptionStatus || (plan === "free" ? "inactive" : "active");
+        userData?.subscriptionStatus || (storedPlan === "free" ? "inactive" : "active");
+      const paidThroughPeriodEnd = hasPaidAccessUntilPeriodEnd(
+        subscriptionStatus,
+        userData?.currentPeriodEnd
+      );
+      const plan = (storedPlan === "enterprise"
+        ? "enterprise"
+        : storedPlan === "pro" || paidThroughPeriodEnd
+          ? "pro"
+          : "free") as "free" | "pro" | "enterprise";
       const allowed =
         plan === "enterprise" ||
-        (plan === "pro" && ["active", "trialing"].includes(subscriptionStatus));
+        (plan === "pro" &&
+          (["active", "trialing", "on_trial"].includes(subscriptionStatus) ||
+            paidThroughPeriodEnd));
 
       setUserPlan(plan);
       setCanUseAi(allowed);

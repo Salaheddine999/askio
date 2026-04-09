@@ -15,7 +15,7 @@ export const config = {
 function mapPlanStatus(lsStatus = "") {
   const normalized = String(lsStatus || "").toLowerCase();
 
-  if (["active", "on_trial"].includes(normalized)) {
+  if (["active", "on_trial", "cancelled"].includes(normalized)) {
     return {
       plan: "pro",
       subscriptionStatus: normalized,
@@ -24,7 +24,7 @@ function mapPlanStatus(lsStatus = "") {
     };
   }
 
-  if (["paused", "past_due", "unpaid", "cancelled", "expired"].includes(normalized)) {
+  if (["paused", "past_due", "unpaid", "expired"].includes(normalized)) {
     return {
       plan: "free",
       subscriptionStatus: normalized,
