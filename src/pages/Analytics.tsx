@@ -1,11 +1,12 @@
 import { useEffect, useState, useMemo } from "react";
 import { db, auth } from "../utils/firebase";
 import { collection, query, where, getDocs } from "firebase/firestore";
-import { BarChart2, MessageCircle, AlertCircle, Users, LoaderCircle, TrendingUp, HelpCircle } from "lucide-react";
+import { BarChart2, MessageCircle, AlertCircle, Users, TrendingUp, HelpCircle } from "lucide-react";
 import StatsCard from "../components/StatsCard";
 import Card from "../components/Card";
 import { format } from "date-fns";
 import { Helmet } from "react-helmet-async";
+import { PageSkeleton } from "../components/Skeleton";
 
 interface AnalyticsEvent {
   id: string;
@@ -116,9 +117,7 @@ export default function Analytics() {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-[calc(100vh-100px)]">
-        <LoaderCircle className="animate-spin text-[#101723] dark:text-[#D7DFE5]" size={48} />
-      </div>
+      <PageSkeleton tiles={3} />
     );
   }
 

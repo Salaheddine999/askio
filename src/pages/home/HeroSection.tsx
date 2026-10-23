@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { FaGithub } from "react-icons/fa";
 import { motion } from "framer-motion";
 import brandLogo from "../../assets/logo.svg";
+import { ghostCta, primaryCta } from "./buttonStyles";
 
 export default function HeroSection() {
   const sectionBorder = "border-b border-[rgba(16,23,35,0.12)] dark:border-[#2B3646]";
@@ -41,15 +42,15 @@ export default function HeroSection() {
       >
         <Link
           to="/auth"
-          className="group inline-flex h-12 w-full max-w-[264px] sm:w-auto items-center justify-center gap-2 rounded-full border border-[#101723] bg-[#101723] px-8 text-button font-medium text-white shadow-[0_2px_4px_rgba(16,23,35,0.12),inset_0_1px_0_rgba(255,255,255,0.12)] transition-[background-color,box-shadow,transform] duration-200 hover:-translate-y-0.5 hover:bg-[#243040] hover:shadow-[0_6px_16px_rgba(16,23,35,0.14)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#87909D] dark:border-[#D7DFE5] dark:bg-[#D7DFE5] dark:text-[#141D2B] dark:hover:bg-[#E7EDF6] motion-reduce:transform-none motion-reduce:transition-none"
+          className={`${primaryCta} w-full max-w-[264px] sm:w-auto`}
           aria-label="Start using Askio for free"
         >
           Start for free
-          <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5 motion-reduce:transform-none motion-reduce:transition-none" />
+          <ArrowRight className="h-4 w-4" />
         </Link>
         <Link
           to="https://github.com/Salaheddine999/askio"
-          className="inline-flex h-12 items-center justify-center gap-2 rounded-full border border-transparent px-4 text-[#566273] dark:text-[#9BAABD] text-body-sm font-medium transition-colors duration-200 hover:border-[#D8DFE9] hover:bg-[#E7EDF6]/60 hover:text-[#101723] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#87909D] dark:hover:border-[#2B3646] dark:hover:bg-[#243040] dark:hover:text-[#D7DFE5]"
+          className={ghostCta}
           aria-label="Star Askio on GitHub"
         >
           <FaGithub className="h-4 w-4" />

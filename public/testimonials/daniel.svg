@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="10 8 60 60">
+  <defs><clipPath id="daniel-clip"><circle cx="40" cy="40" r="40"/></clipPath></defs>
+  <g clip-path="url(#daniel-clip)">
+    <rect width="80" height="80" fill="#E3E6FB"/>
+    <path d="M9 80c2-15 14-22 31-22s29 7 31 22z" fill="#2F3A8F"/>
+    <path d="M33 58l7 8 7-8z" fill="#F3F7FC"/>
+    <rect x="34" y="47" width="12" height="13" rx="5" fill="#A86E4C"/>
+    <ellipse cx="27.5" cy="38" rx="2.5" ry="3.5" fill="#B97B57"/>
+    <ellipse cx="52.5" cy="38" rx="2.5" ry="3.5" fill="#B97B57"/>
+    <ellipse cx="40" cy="36" rx="12.5" ry="14.5" fill="#C48A64"/>
+    <path d="M27.5 33c0-9 5-15 12.5-15s12.5 6 12.5 14c-3-3-7-5-12.5-5s-9.5 2-12.5 6z" fill="#1E1B1A"/>
+    <path d="M30 43c1 7 5 10 10 10s9-3 10-10c-2 3-6 4-10 4s-8-1-10-4z" fill="#2A2321"/>
+    <ellipse cx="35" cy="38.5" rx="1.6" ry="2" fill="#1E1B1A"/>
+    <ellipse cx="45" cy="38.5" rx="1.6" ry="2" fill="#1E1B1A"/>
+    <path d="M37 46c1.8 1.2 4.2 1.2 6 0" stroke="#F3E3D7" stroke-width="1.3" fill="none" stroke-linecap="round"/>
+  </g>
+</svg>

@@ -1,7 +1,23 @@
-import { Check, Code, MessageCircle, Move, Settings, Palette, BarChart3, Send } from "lucide-react";
+import {
+  BarChart3,
+  Check,
+  Clock,
+  Code,
+  Globe,
+  MessageCircle,
+  PanelLeft,
+  PanelRight,
+  RotateCcw,
+  Send,
+  Settings,
+  Sparkles,
+  Truck,
+  Type,
+  X,
+} from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { useInView } from "react-intersection-observer";
-import { forwardRef, useEffect, useRef, useState } from "react";
+import { forwardRef, useCallback, useEffect, useRef, useState } from "react";
 import { FaAngular, FaReact, FaShopify, FaVuejs, FaWordpress } from "react-icons/fa";
 import { SiWix } from "react-icons/si";
 import { AnimatedBeam } from "../../components/magicui/animated-beam";
@@ -25,160 +41,571 @@ const IntegrationCircle = forwardRef<
 
 IntegrationCircle.displayName = "IntegrationCircle";
 
-const THEME_COLORS = ["#101723", "#2F6FEB", "#0F9D74", "#C2410C"];
-const WIDGET_POSITIONS = ["Bottom right", "Bottom left"];
-const CONFIG_STEP_MS = 2400;
+const EDIT_COLORS = [
+  { name: "Ink", value: "#101723" },
+  { name: "Indigo", value: "#4F46E5" },
+  { name: "Teal", value: "#0F766E" },
+  { name: "Ember", value: "#E8590C" },
+  { name: "Rose", value: "#DB2777" },
+];
+const EDIT_GREETINGS = [
+  "Hi! Ask me anything about your order.",
+  "Hey there! Need a hand? 👋",
+  "Questions before you buy? Ask away.",
+  "Welcome to Northwind! How can I help?",
+];
+// What the AI finds on the page, and the question it turns each into.
+const SITE_FACTS = [
+  { icon: Truck, text: "Free shipping over €50 · 2–4 days", tag: "Shipping", question: "How long is shipping?" },
+  { icon: RotateCcw, text: "30-day free returns", tag: "Returns", question: "Can I return an order?" },
+  { icon: Clock, text: "Open Mon–Sat, 9:00–18:00", tag: "Hours", question: "When are you open?" },
+];
+const SITE_URL = "northwind.shop";
+type WidgetSide = "left" | "right";
 
-type ConfigState = { theme: number; position: number; greeting: boolean; active: number };
+// After a visitor clicks the toolbar, the demo waits this long before editing again.
+const EDIT_IDLE_MS = 9000;
+const EDIT_TYPE_MS = 42;
+const URL_TYPE_MS = 55;
+const editSpring = { type: "spring", stiffness: 380, damping: 32 } as const;
 
-// Each step activates the next row and changes its setting.
-function nextConfigState(state: ConfigState): ConfigState {
-  const active = (state.active + 1) % 3;
-  if (active === 0) return { ...state, active, theme: (state.theme + 1) % THEME_COLORS.length };
-  if (active === 1) return { ...state, active, position: (state.position + 1) % WIDGET_POSITIONS.length };
-  return { ...state, active, greeting: !state.greeting };
-}
-
-function ConfigurationRow({
-  active,
-  name,
-  time,
-  description,
-  icon,
-  iconColor,
-  children,
-}: {
-  active: boolean;
-  name: string;
-  time: string;
-  description: string;
-  icon: React.ReactNode;
-  iconColor: string;
-  children: React.ReactNode;
-}) {
+/**
+ * Colour fill that sweeps in from the left whenever the colour changes: a
+ * circle grows from the left edge over the previous colour, which stays
+ * underneath until it's covered.
+ */
+function ColorSweep({ color }: { color: string }) {
   return (
-    <motion.figure
-      animate={{ opacity: active ? 1 : 0.85, scale: active ? 1 : 0.985 }}
-      transition={{ duration: 0.3, ease: "easeOut" }}
-      className={`relative mx-auto w-full cursor-default rounded-2xl bg-[#F9FCFF]/95 p-3 transition-shadow duration-300 dark:bg-[#202C3C] ${
-        active
-          ? "[box-shadow:0_0_0_1px_rgba(16,23,35,.10),0_10px_24px_rgba(16,23,35,.10)] dark:[box-shadow:0_0_0_1px_rgba(255,255,255,.12),0_12px_28px_rgba(0,0,0,.32)]"
-          : "[box-shadow:0_0_0_1px_rgba(0,0,0,.03),0_6px_18px_rgba(0,0,0,.05)] dark:[box-shadow:0_0_0_1px_rgba(255,255,255,.06),0_12px_28px_rgba(0,0,0,.24)]"
-      }`}
-    >
-      <div className="flex items-center gap-3">
-        <motion.div
-          animate={{ backgroundColor: iconColor }}
-          transition={{ duration: 0.4, ease: "easeOut" }}
-          className="flex size-8 shrink-0 items-center justify-center rounded-xl sm:size-10 sm:rounded-2xl"
-        >
-          {icon}
-        </motion.div>
-        <div className="min-w-0 flex-1">
-          <figcaption className="flex items-center gap-1 text-[11px] font-semibold text-[#101723] dark:text-[#D7DFE5]">
-            <span className="truncate">{name}</span>
-            <span className="hidden text-[#87909D] sm:inline">·</span>
-            <span className="hidden shrink-0 text-[10px] font-medium text-[#9BAABD] sm:inline">{active ? "just now" : time}</span>
-          </figcaption>
-          <p className="mt-0.5 truncate text-[10px] leading-[14px] text-[#647184] dark:text-[#9BAABD]">{description}</p>
-        </div>
-        {children}
-      </div>
-    </motion.figure>
+    <span aria-hidden="true" className="absolute inset-0 overflow-hidden">
+      <AnimatePresence initial={false}>
+        <motion.span
+          key={color}
+          initial={{ scale: 0, zIndex: 1 }}
+          animate={{ scale: 1, zIndex: 1 }}
+          exit={{ zIndex: 0, opacity: 0, transition: { delay: 0.65, duration: 0 } }}
+          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+          className="absolute left-0 top-1/2 aspect-square w-[260%] rounded-full"
+          style={{ backgroundColor: color, x: "-50%", y: "-50%" }}
+        />
+      </AnimatePresence>
+    </span>
   );
 }
 
-function ConfigurationListPreview() {
+type ScanState = "idle" | "scanning" | "done";
+
+function BrandShowcasePreview() {
   const reduceMotion = useReducedMotion();
   const [previewRef, inView] = useInView({ rootMargin: "100px 0px" });
-  const [state, setState] = useState<ConfigState>({ theme: 0, position: 0, greeting: true, active: 0 });
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const swatchRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const greetingButtonRef = useRef<HTMLButtonElement | null>(null);
+  const sideRefs = useRef<Record<WidgetSide, HTMLButtonElement | null>>({ left: null, right: null });
+  const bubbleRef = useRef<HTMLParagraphElement | null>(null);
 
+  // Reduced motion starts (and stays) on the finished result.
+  const finished = !!reduceMotion;
+  const [url, setUrl] = useState(finished ? SITE_URL : "");
+  const [scan, setScan] = useState<ScanState>(finished ? "done" : "idle");
+  const [found, setFound] = useState(finished ? SITE_FACTS.length : 0);
+  const [answers, setAnswers] = useState(finished ? SITE_FACTS.length : 0);
+  const [widgetOpen, setWidgetOpen] = useState(finished);
+  const [editing, setEditing] = useState(finished);
+
+  const [color, setColor] = useState(0);
+  const [greeting, setGreeting] = useState(0);
+  const [typed, setTyped] = useState(EDIT_GREETINGS[0]);
+  const [editingText, setEditingText] = useState<"idle" | "selected" | "typing">("idle");
+  const [side, setSide] = useState<WidgetSide>("right");
+  const [tool, setTool] = useState<"color" | "text" | "side" | null>(null);
+  const [cursor, setCursor] = useState<{ x: number; y: number; pressed: boolean } | null>(null);
+  const [cycle, setCycle] = useState(0);
+  const state = useRef({ color, greeting, side });
+  state.current = { color, greeting, side };
+  const idleUntil = useRef(0);
+
+  // Stable, so React doesn't detach and reattach the in-view observer on every render.
+  const setRefs = useCallback(
+    (el: HTMLDivElement | null) => {
+      containerRef.current = el;
+      previewRef(el);
+    },
+    [previewRef]
+  );
+
+  const showFinished = () => {
+    setUrl(SITE_URL);
+    setScan("done");
+    setFound(SITE_FACTS.length);
+    setAnswers(SITE_FACTS.length);
+    setWidgetOpen(true);
+    setEditing(true);
+  };
+
+  // One pass: the AI reads the page and adds answers, then the widget is
+  // recoloured, its greeting rewritten and it's moved to the other corner.
   useEffect(() => {
-    if (reduceMotion || !inView) return;
-    const id = window.setInterval(() => {
-      if (!document.hidden) setState(nextConfigState);
-    }, CONFIG_STEP_MS);
-    return () => window.clearInterval(id);
-  }, [reduceMotion, inView]);
+    if (reduceMotion) {
+      showFinished();
+      return;
+    }
+    if (!inView) {
+      setCursor(null);
+      return;
+    }
+    const timers: number[] = [];
+    const at = (ms: number, fn: () => void) => timers.push(window.setTimeout(fn, ms));
+    const pointAt = (el: HTMLElement | null | undefined, pressed = false) => {
+      const box = containerRef.current?.getBoundingClientRect();
+      const target = el?.getBoundingClientRect();
+      if (!box || !target) return;
+      setCursor({
+        x: target.left - box.left + target.width * 0.55,
+        y: target.top - box.top + target.height * 0.6,
+        pressed,
+      });
+    };
+    const click = (el: () => HTMLElement | null | undefined, start: number, action: () => void) => {
+      at(start, () => pointAt(el()));
+      at(start + 650, () => pointAt(el(), true));
+      at(start + 800, () => {
+        action();
+        pointAt(el());
+      });
+    };
 
-  const themeColor = THEME_COLORS[state.theme];
-  const position = WIDGET_POSITIONS[state.position];
+    if (document.hidden || Date.now() < idleUntil.current) {
+      at(1000, () => setCycle((c) => c + 1));
+      return () => timers.forEach(window.clearTimeout);
+    }
+
+    // Scan
+    setCursor(null);
+    setTool(null);
+    setEditing(false);
+    setWidgetOpen(false);
+    setAnswers(0);
+    setFound(0);
+    setScan("idle");
+    setUrl("");
+    for (let i = 1; i <= SITE_URL.length; i++) at(250 + i * URL_TYPE_MS, () => setUrl(SITE_URL.slice(0, i)));
+    const scanAt = 250 + SITE_URL.length * URL_TYPE_MS + 350;
+    at(scanAt, () => setScan("scanning"));
+    SITE_FACTS.forEach((_, i) => at(scanAt + 500 + i * 420, () => setFound(i + 1)));
+    const doneAt = scanAt + 500 + SITE_FACTS.length * 420 + 300;
+    at(doneAt, () => {
+      setScan("done");
+      setWidgetOpen(true);
+    });
+    SITE_FACTS.forEach((_, i) => at(doneAt + 350 + i * 300, () => setAnswers(i + 1)));
+
+    // Customise
+    const editAt = doneAt + 350 + SITE_FACTS.length * 300 + 700;
+    at(editAt, () => setEditing(true));
+    const { color: current, greeting: currentGreeting, side: currentSide } = state.current;
+    const nextColor = (current + 1) % EDIT_COLORS.length;
+    const nextGreeting = (currentGreeting + 1) % EDIT_GREETINGS.length;
+    const nextSide: WidgetSide = currentSide === "right" ? "left" : "right";
+    const text = EDIT_GREETINGS[nextGreeting];
+
+    const colorAt = editAt + 500;
+    click(() => swatchRefs.current[nextColor], colorAt, () => {
+      setTool("color");
+      setColor(nextColor);
+    });
+    const textAt = colorAt + 1500;
+    click(() => greetingButtonRef.current, textAt, () => setTool("text"));
+    at(textAt + 1050, () => pointAt(bubbleRef.current));
+    at(textAt + 1600, () => setEditingText("selected"));
+    at(textAt + 2050, () => {
+      setEditingText("typing");
+      setTyped("");
+    });
+    for (let i = 1; i <= text.length; i++) at(textAt + 2050 + i * EDIT_TYPE_MS, () => setTyped(text.slice(0, i)));
+    const typedAt = textAt + 2050 + text.length * EDIT_TYPE_MS;
+    at(typedAt + 150, () => {
+      setGreeting(nextGreeting);
+      setEditingText("idle");
+    });
+    click(() => sideRefs.current[nextSide], typedAt + 500, () => {
+      setTool("side");
+      setSide(nextSide);
+    });
+    at(typedAt + 3200, () => setCycle((c) => c + 1));
+    return () => timers.forEach(window.clearTimeout);
+  }, [cycle, reduceMotion, inView]);
+
+  // A visitor's click applies straight away, finishes the scan and pauses the demo.
+  const takeOver = () => {
+    idleUntil.current = Date.now() + EDIT_IDLE_MS;
+    setCursor(null);
+    setEditingText("idle");
+    showFinished();
+  };
+
+  const accent = EDIT_COLORS[color].value;
+  const onLeft = side === "left";
+  const bubbleText = editingText === "idle" ? EDIT_GREETINGS[greeting] : typed;
+  const scanning = scan === "scanning";
+
+  const toolButton = (active: boolean) =>
+    `relative flex h-6 items-center justify-center rounded-md px-1.5 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-white/60 ${
+      active ? "text-white" : "text-white/65 hover:text-white"
+    }`;
 
   return (
     <div
-      ref={previewRef}
-      className="relative mt-auto flex min-h-[220px] w-full flex-col justify-center gap-2 rounded-[9px] bg-[linear-gradient(180deg,#F9FCFF_0%,#E7EDF6_100%)] p-2 dark:bg-[linear-gradient(180deg,#1A2533_0%,#141D2B_100%)]"
+      ref={setRefs}
+      className="relative mt-auto h-[282px] w-full overflow-hidden rounded-[14px] border border-[#D8DFE9] bg-[#F9FCFF] shadow-[0px_8px_24px_rgba(0,0,0,0.05)] dark:border-[#2B3646] dark:bg-[#141D2B]"
     >
-      <ConfigurationRow
-        active={state.active === 0}
-        name="Theme color"
-        time="2m ago"
-        description="Applied to the launcher and chat"
-        icon={<Palette className="h-4 w-4 text-white" />}
-        iconColor={themeColor}
-      >
-        <div className="flex shrink-0 items-center gap-1">
-          {THEME_COLORS.map((color, i) => (
-            <span key={color} className="relative flex size-4 items-center justify-center">
-              {i === state.theme ? (
-                <motion.span
-                  layoutId="theme-swatch-ring"
-                  transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                  className="absolute inset-0 rounded-full ring-[1.5px] ring-[#101723] dark:ring-[#D7DFE5]"
-                />
-              ) : null}
-              <span className="size-2.5 rounded-full" style={{ backgroundColor: color }} />
-            </span>
+      {/* Browser chrome with the address being typed and the AI's status */}
+      <div className="relative z-20 flex h-[30px] items-center gap-2 border-b border-[#E7EDF6] bg-[#F3F7FC] px-2.5 dark:border-[#2B3646] dark:bg-[#1A2533]">
+        <span className="flex shrink-0 gap-1" aria-hidden="true">
+          {[0, 1, 2].map((i) => (
+            <span key={i} className="h-1.5 w-1.5 rounded-full bg-[#D0D8E3] dark:bg-[#39485B]" />
           ))}
-        </div>
-      </ConfigurationRow>
-
-      <ConfigurationRow
-        active={state.active === 1}
-        name="Widget position"
-        time="1m ago"
-        description={`Launcher anchored to ${position.toLowerCase()}`}
-        icon={<Move className="h-4 w-4 text-white" />}
-        iconColor="#566273"
-      >
-        <div className="relative h-6 w-[78px] shrink-0 overflow-hidden rounded-full bg-[#E7EDF6] text-[10px] font-medium text-[#566273] dark:bg-[#243040] dark:text-[#D7DFE5]">
-          <AnimatePresence initial={false}>
+        </span>
+        <span className="flex h-[18px] min-w-0 flex-1 items-center gap-1 rounded-md bg-[#F9FCFF] px-2 text-[9px] text-[#566273] ring-1 ring-[#E7EDF6] dark:bg-[#141D2B] dark:text-[#9BAABD] dark:ring-[#2B3646]">
+          <Globe className="h-2.5 w-2.5 shrink-0 text-[#9BAABD]" aria-hidden="true" />
+          <span className="truncate">{url || <span className="text-[#9BAABD]">Paste your website…</span>}</span>
+          {url && url.length < SITE_URL.length ? <span className="h-2.5 w-px animate-pulse bg-current" /> : null}
+        </span>
+        <AnimatePresence mode="wait" initial={false}>
+          {scan !== "idle" ? (
             <motion.span
-              key={position}
-              initial={{ y: 12, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              exit={{ y: -12, opacity: 0 }}
-              transition={{ duration: 0.25, ease: "easeOut" }}
-              className="absolute inset-0 flex items-center justify-center"
+              key={scan}
+              initial={{ opacity: 0, y: 4 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -4 }}
+              transition={{ duration: 0.2 }}
+              className={`flex h-[18px] shrink-0 items-center gap-1 rounded-full px-2 text-[8.5px] font-medium ring-1 ring-inset ${
+                scanning
+                  ? "bg-[#EEF3FF] text-[#3B63D9] ring-[#4F8CF7]/25 dark:bg-[#1C2A45] dark:text-[#9DB8FF]"
+                  : "bg-[#EEF6F0] text-[#3F8A55] ring-[#4F9A63]/25 dark:bg-[#1F3127] dark:text-[#8FD19B]"
+              }`}
             >
-              {position}
+              {scanning ? (
+                <Sparkles className="h-2.5 w-2.5 animate-pulse" />
+              ) : (
+                <Check className="h-2.5 w-2.5" strokeWidth={3} />
+              )}
+              <span className="hidden sm:inline">{scanning ? "AI reading page…" : `${SITE_FACTS.length} answers found`}</span>
+              <span className="sm:hidden">{scanning ? "Reading…" : `${SITE_FACTS.length} found`}</span>
+            </motion.span>
+          ) : null}
+        </AnimatePresence>
+      </div>
+
+      {/* The page being read */}
+      <div className="absolute inset-x-0 bottom-0 top-[30px] overflow-hidden" aria-hidden="true">
+        <div className="absolute inset-0 bg-[radial-gradient(rgba(16,23,35,0.06)_1px,transparent_1px)] [background-size:12px_12px] dark:bg-[radial-gradient(rgba(215,223,229,0.06)_1px,transparent_1px)]" />
+
+        <div className="relative px-4 pt-3">
+          <div className="flex items-center gap-1.5">
+            <span className="h-3 w-3 rounded-[4px] bg-[#101723] dark:bg-[#D7DFE5]" />
+            <span className="text-[9px] font-semibold text-[#101723] dark:text-[#D7DFE5]">Northwind</span>
+            <span className="ml-auto flex gap-2">
+              {[18, 14, 20].map((w, i) => (
+                <span key={i} className="h-1 rounded-full bg-[#D8DFE9] dark:bg-[#2B3646]" style={{ width: w }} />
+              ))}
+            </span>
+          </div>
+
+          <p className="mt-4 font-serif text-[15px] leading-[17px] text-[#101723] dark:text-[#E7EDF6]">
+            Everyday goods,
+            <br />
+            made to last.
+          </p>
+          <div className="mt-2 h-1 w-28 rounded-full bg-[#E2E8F1] dark:bg-[#243040]" />
+          <span className="mt-2.5 inline-flex h-4 items-center rounded-full bg-[#101723] px-2 text-[7.5px] font-medium text-white dark:bg-[#D7DFE5] dark:text-[#141D2B]">
+            Shop now
+          </span>
+
+          <ul className="mt-4 w-[58%] max-w-[230px] space-y-1.5">
+            {SITE_FACTS.map((fact, i) => {
+              const FactIcon = fact.icon;
+              const isFound = found > i;
+              const movedToWidget = answers > i;
+              return (
+                <li key={fact.tag} className="relative">
+                  <motion.div
+                    initial={false}
+                    animate={{
+                      backgroundColor: isFound ? "rgba(79,140,247,0.10)" : "rgba(79,140,247,0)",
+                      boxShadow: isFound ? "0 0 0 1px rgba(79,140,247,0.55)" : "0 0 0 1px rgba(79,140,247,0)",
+                    }}
+                    transition={{ duration: 0.3 }}
+                    className="flex items-center gap-1.5 rounded-md px-1.5 py-1"
+                  >
+                    <FactIcon className="h-2.5 w-2.5 shrink-0 text-[#647184] dark:text-[#9BAABD]" />
+                    <span className="truncate text-[8px] text-[#566273] dark:text-[#9BAABD]">{fact.text}</span>
+                  </motion.div>
+                  {isFound && !movedToWidget ? (
+                    <motion.span
+                      layoutId={`site-fact-${i}`}
+                      initial={{ opacity: 0, scale: 0.6 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={editSpring}
+                      className="absolute -right-1 -top-2 z-10 flex items-center gap-0.5 whitespace-nowrap rounded-full bg-[#4F8CF7] px-1.5 py-px text-[7px] font-semibold text-white shadow-sm"
+                    >
+                      <Sparkles className="h-2 w-2" />
+                      {fact.tag}
+                    </motion.span>
+                  ) : null}
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+
+        {/* The scanning line */}
+        <AnimatePresence>
+          {scanning ? (
+            <motion.div
+              key="beam"
+              initial={{ top: "-12%", opacity: 0 }}
+              animate={{ top: "100%", opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ top: { duration: 1.6, ease: "easeInOut", repeat: Infinity, repeatDelay: 0.1 }, opacity: { duration: 0.2 } }}
+              className="absolute inset-x-0 h-12 bg-gradient-to-b from-transparent to-[#4F8CF7]/15"
+            >
+              <div className="absolute inset-x-0 bottom-0 h-px bg-[#4F8CF7] shadow-[0_0_10px_2px_rgba(79,140,247,0.6)]" />
+            </motion.div>
+          ) : null}
+        </AnimatePresence>
+      </div>
+
+      {/* Floating editor toolbar */}
+      <AnimatePresence>
+        {editing ? (
+          <motion.div
+            key="toolbar"
+            initial={{ opacity: 0, y: -8, scale: 0.96 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -8, scale: 0.96 }}
+            transition={{ duration: 0.25, ease: "easeOut" }}
+            className="absolute right-3 top-[42px] z-20"
+          >
+            <div className="flex items-center gap-0.5 rounded-full bg-[#101723] p-1 pl-2 shadow-[0_10px_24px_-10px_rgba(16,23,35,0.6)] ring-1 ring-white/10 dark:bg-[#0B111B]">
+              <div role="radiogroup" aria-label="Widget colour" className="flex items-center gap-1 pr-1">
+                {EDIT_COLORS.map((c, i) => {
+                  const selected = i === color;
+                  return (
+                    <button
+                      key={c.value}
+                      ref={(el) => {
+                        swatchRefs.current[i] = el;
+                      }}
+                      type="button"
+                      role="radio"
+                      aria-checked={selected}
+                      aria-label={c.name}
+                      onClick={() => {
+                        takeOver();
+                        setTool("color");
+                        setColor(i);
+                      }}
+                      className="relative flex h-5 w-5 items-center justify-center rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-white/60"
+                    >
+                      {selected ? (
+                        <motion.span layoutId="edit-swatch" transition={editSpring} className="absolute inset-0 rounded-full ring-[1.5px] ring-white" />
+                      ) : null}
+                      <span
+                        className="h-3 w-3 rounded-full ring-1 ring-white/25"
+                        style={{ backgroundColor: c.value === "#101723" ? "#3A4659" : c.value }}
+                      />
+                    </button>
+                  );
+                })}
+              </div>
+              <span className="mx-0.5 h-4 w-px bg-white/15" aria-hidden="true" />
+              <button
+                ref={greetingButtonRef}
+                type="button"
+                aria-label="Next greeting"
+                onClick={() => {
+                  takeOver();
+                  setTool("text");
+                  setGreeting((g) => (g + 1) % EDIT_GREETINGS.length);
+                }}
+                className={toolButton(tool === "text")}
+              >
+                {tool === "text" ? (
+                  <motion.span layoutId="edit-tool" transition={editSpring} className="absolute inset-0 rounded-md bg-white/15" />
+                ) : null}
+                <Type className="relative h-3 w-3" />
+              </button>
+              <span className="mx-0.5 h-4 w-px bg-white/15" aria-hidden="true" />
+              <div role="radiogroup" aria-label="Widget position" className="flex items-center">
+                {(["left", "right"] as const).map((s) => {
+                  const SideIcon = s === "left" ? PanelLeft : PanelRight;
+                  return (
+                    <button
+                      key={s}
+                      ref={(el) => {
+                        sideRefs.current[s] = el;
+                      }}
+                      type="button"
+                      role="radio"
+                      aria-checked={side === s}
+                      aria-label={s === "left" ? "Bottom left" : "Bottom right"}
+                      onClick={() => {
+                        takeOver();
+                        setTool("side");
+                        setSide(s);
+                      }}
+                      className={toolButton(side === s)}
+                    >
+                      {side === s ? (
+                        <motion.span layoutId="edit-side" transition={editSpring} className="absolute inset-0 rounded-md bg-white/15" />
+                      ) : null}
+                      <SideIcon className="relative h-3 w-3" />
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
+
+      {/* The chat widget */}
+      <div
+        aria-hidden="true"
+        className={`absolute inset-x-3 bottom-3 z-10 flex flex-col gap-2 ${onLeft ? "items-start" : "items-end"}`}
+      >
+        <AnimatePresence>
+          {widgetOpen ? (
+            <motion.div
+              key="widget"
+              layout
+              initial={{ opacity: 0, scale: 0.85, y: 12 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 8 }}
+              transition={editSpring}
+              style={{ transformOrigin: onLeft ? "bottom left" : "bottom right" }}
+              className="relative w-[62%] max-w-[210px] rounded-xl border border-black/5 bg-white shadow-[0_16px_34px_-14px_rgba(16,23,35,0.45)]"
+            >
+              {/* Dashed outline while the editor has the widget selected */}
+              <AnimatePresence>
+                {editing ? (
+                  <motion.span
+                    key="selection"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="pointer-events-none absolute -inset-[3px] z-10 rounded-[14px] border border-dashed border-[#4F8CF7]/80"
+                  >
+                    {["-left-[3px] -top-[3px]", "-right-[3px] -top-[3px]", "-bottom-[3px] -left-[3px]", "-bottom-[3px] -right-[3px]"].map((pos) => (
+                      <span key={pos} className={`absolute h-1.5 w-1.5 rounded-[1px] border border-[#4F8CF7] bg-white ${pos}`} />
+                    ))}
+                  </motion.span>
+                ) : null}
+              </AnimatePresence>
+
+              <div className="relative flex items-center gap-1.5 overflow-hidden rounded-t-xl px-2 py-1.5 text-white">
+                <ColorSweep color={accent} />
+                <span className="relative flex h-4 w-4 items-center justify-center gap-[2px] rounded-full bg-white">
+                  <motion.span animate={{ backgroundColor: accent }} className="h-[5px] w-[2px] rounded-full" />
+                  <motion.span animate={{ backgroundColor: accent }} className="h-[5px] w-[2px] rounded-full" />
+                </span>
+                <span className="relative text-[9px] font-semibold">Northwind</span>
+                <span className="relative ml-auto flex items-center gap-1 text-[8px] opacity-85">
+                  <span className="h-1 w-1 rounded-full bg-[#7CE38B]" />
+                  Online
+                </span>
+              </div>
+              <div className="space-y-1.5 p-2">
+                <p
+                  ref={bubbleRef}
+                  className="w-fit max-w-[94%] rounded-xl rounded-bl-sm bg-[#F1F3F7] px-2 py-1.5 text-[8.5px] leading-[12px] text-[#101723]"
+                >
+                  <span className={editingText === "selected" ? "rounded-[2px] bg-[#4F8CF7]/30" : ""}>{bubbleText || "​"}</span>
+                  {editingText !== "idle" ? (
+                    <span className="ml-px inline-block h-2.5 w-px translate-y-0.5 animate-pulse bg-[#101723]" />
+                  ) : null}
+                </p>
+                <div className="flex min-h-[44px] flex-col items-start gap-1">
+                  {SITE_FACTS.map((fact, i) =>
+                    answers > i ? (
+                      <motion.span
+                        key={fact.tag}
+                        layoutId={`site-fact-${i}`}
+                        transition={editSpring}
+                        className="relative overflow-hidden rounded-full border px-1.5 py-px text-[7.5px] font-medium"
+                        style={{ borderColor: `${accent}55`, color: accent }}
+                      >
+                        {fact.question}
+                      </motion.span>
+                    ) : null
+                  )}
+                </div>
+                <div className="flex items-center gap-1.5 rounded-full border border-[#E7EDF6] py-0.5 pl-2 pr-0.5">
+                  <span className="flex-1 truncate text-[8px] text-[#9BAABD]">Type a message…</span>
+                  <span className="relative flex h-4 w-4 items-center justify-center overflow-hidden rounded-full text-white">
+                    <ColorSweep color={accent} />
+                    <Send className="relative h-2 w-2" />
+                  </span>
+                </div>
+              </div>
+            </motion.div>
+          ) : null}
+        </AnimatePresence>
+
+        <motion.span
+          layout
+          transition={editSpring}
+          className="relative flex h-8 w-8 items-center justify-center overflow-hidden rounded-full text-white shadow-[0_8px_18px_-6px_rgba(16,23,35,0.45)] ring-1 ring-black/5 dark:ring-white/20"
+        >
+          <ColorSweep color={accent} />
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.span
+              key={widgetOpen ? "close" : "open"}
+              initial={{ rotate: -90, opacity: 0 }}
+              animate={{ rotate: 0, opacity: 1 }}
+              exit={{ rotate: 90, opacity: 0 }}
+              transition={{ duration: 0.18 }}
+              className="relative"
+            >
+              {widgetOpen ? <X className="h-3.5 w-3.5" /> : <MessageCircle className="h-3.5 w-3.5" />}
             </motion.span>
           </AnimatePresence>
-        </div>
-      </ConfigurationRow>
+        </motion.span>
+      </div>
 
-      <ConfigurationRow
-        active={state.active === 2}
-        name="Welcome message"
-        time="4m ago"
-        description={state.greeting ? "Greeting shown when a visitor opens Askio" : "Visitors start with an empty chat"}
-        icon={<MessageCircle className="h-4 w-4 text-white" />}
-        iconColor="#6E7C8C"
+      {/* The pretend pointer */}
+      <motion.div
+        aria-hidden="true"
+        className="pointer-events-none absolute left-0 top-0 z-30"
+        initial={false}
+        animate={
+          cursor
+            ? { opacity: 1, x: cursor.x, y: cursor.y, scale: cursor.pressed ? 0.82 : 1 }
+            : { opacity: 0, scale: 1 }
+        }
+        transition={{
+          x: { type: "spring", stiffness: 110, damping: 19 },
+          y: { type: "spring", stiffness: 110, damping: 19 },
+          scale: { duration: 0.12 },
+          opacity: { duration: 0.25 },
+        }}
       >
-        <div
-          className={`flex h-6 w-10 shrink-0 items-center rounded-full px-0.5 transition-colors duration-300 ${
-            state.greeting ? "justify-end bg-[#101723] dark:bg-[#566273]" : "justify-start bg-[#D8DFE9] dark:bg-[#3A4657]"
-          }`}
-        >
-          <motion.div
-            layout
-            transition={{ type: "spring", stiffness: 500, damping: 32 }}
-            className="flex size-5 items-center justify-center rounded-full bg-[#F9FCFF] shadow-sm"
-          >
-            {state.greeting ? <Check className="h-3 w-3 text-[#101723]" /> : null}
-          </motion.div>
-        </div>
-      </ConfigurationRow>
+        <svg width="16" height="18" viewBox="0 0 16 18" className="drop-shadow-[0_2px_3px_rgba(16,23,35,0.35)]">
+          <path d="M1.5 1.2 14 9.1l-5.6 1.2-2.9 5.3z" fill="#101723" stroke="#FFFFFF" strokeWidth="1.3" strokeLinejoin="round" />
+        </svg>
+        <AnimatePresence>
+          {cursor?.pressed ? (
+            <motion.span
+              key="press"
+              initial={{ opacity: 0.55, scale: 0.4 }}
+              animate={{ opacity: 0, scale: 1.7 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.45 }}
+              className="absolute -left-2 -top-2 h-6 w-6 rounded-full bg-[#4F8CF7]/40"
+            />
+          ) : null}
+        </AnimatePresence>
+      </motion.div>
     </div>
   );
 }
@@ -651,9 +1078,9 @@ export default function FeaturesSection() {
               <h3 className="text-[#101723] dark:text-[#D7DFE5] text-h3">Make it your own</h3>
             </div>
             <p className="text-[#566273] dark:text-[#9BAABD] text-body-sm leading-relaxed">
-              Match your colors, set a greeting, and choose where your chatbot appears.
+              Askio reads your website for answers. Then match your colors, set a greeting, and choose where it appears.
             </p>
-            <ConfigurationListPreview />
+            <BrandShowcasePreview />
           </div>
         </div>
         <HatchStrip />

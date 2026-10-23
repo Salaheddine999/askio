@@ -1,9 +1,10 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Eye, Hand, MessageCircle } from "lucide-react";
 import { motion } from "framer-motion";
 import { useInView } from "react-intersection-observer";
 import Badge from "./Badge";
 import { LiveOrb, type LiveOrbMood } from "../../components/LiveOrb";
+import { useSiteDarkMode } from "../../utils/useSiteDarkMode";
 
 const MOODS: { value: LiveOrbMood; label: string }[] = [
   { value: "idle", label: "Following" },
@@ -28,19 +29,6 @@ const POINTS = [
     text: "An optional greeting pops up once per visitor, then gets out of the way.",
   },
 ];
-
-// The site switches themes with a "dark" class on <html>, not the system
-// setting, so the orb follows that class directly.
-function useSiteDarkMode() {
-  const [dark, setDark] = useState(() => document.documentElement.classList.contains("dark"));
-  useEffect(() => {
-    const root = document.documentElement;
-    const observer = new MutationObserver(() => setDark(root.classList.contains("dark")));
-    observer.observe(root, { attributes: true, attributeFilter: ["class"] });
-    return () => observer.disconnect();
-  }, []);
-  return dark;
-}
 
 export default function LiveOrbSection() {
   const [sectionRef, inView] = useInView({ triggerOnce: true, rootMargin: "0px 0px 200px 0px" });

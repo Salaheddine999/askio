@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="10 8 60 60">
+  <defs><clipPath id="lina-clip"><circle cx="40" cy="40" r="40"/></clipPath></defs>
+  <g clip-path="url(#lina-clip)">
+    <rect width="80" height="80" fill="#DDEFEA"/>
+    <circle cx="40" cy="17" r="7.5" fill="#1F1A17"/>
+    <path d="M10 80c2-15 14-22 30-22s28 7 30 22z" fill="#0F766E"/>
+    <path d="M31 58c2 3 5 5 9 5s7-2 9-5z" fill="#0B5F58"/>
+    <rect x="34" y="47" width="12" height="13" rx="5" fill="#D39A72"/>
+    <ellipse cx="40" cy="36" rx="12.5" ry="14.5" fill="#E2AA83"/>
+    <path d="M27.5 36c-1-11 5-18 12.5-18s13.5 7 12.5 18c-1-5-3-9-6-11-4 3-11 4-17 4-1 2-2 4-2 7z" fill="#1F1A17"/>
+    <ellipse cx="35" cy="39.5" rx="1.6" ry="2" fill="#2A1F1A"/>
+    <ellipse cx="45" cy="39.5" rx="1.6" ry="2" fill="#2A1F1A"/>
+    <path d="M36.5 45.5c2 1.6 5 1.6 7 0" stroke="#A9644C" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+    <circle cx="27.6" cy="42" r="1.2" fill="#E8C267"/>
+    <circle cx="52.4" cy="42" r="1.2" fill="#E8C267"/>
+  </g>
+</svg>

@@ -2,13 +2,15 @@ import { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useInView } from "react-intersection-observer";
 import { motion } from "framer-motion";
+import { iconPress } from "./buttonStyles";
 
-const AVATARS = ["/female 1.png", "/male 1.png", "/male 2.png"];
-
+// PLACEHOLDER: pre-launch showcase content. These people and businesses are
+// fictional; replace every entry with a real customer quote (and their
+// permission) before launch.
 const testimonials = [
-  { name: "Sarah L.", role: "Boutique Owner", quote: "I was honestly not sure if a chatbot would work for my small shop. But Askio surprised me. It took maybe ten minutes to set up and now it answers customer questions about shipping and returns all day long, even when I'm not around." },
-  { name: "Mark L.", role: "E-commerce Entrepreneur", quote: "I run three different online stores so managing support was getting out of hand. Askio let me spin up a custom chatbot for each one in the same afternoon. Cart abandonment dropped 15% in the first month. Can't believe it's free." },
-  { name: "Pat M.", role: "Freelance Designer", quote: "What sold me was the customization. I matched the chatbot to my portfolio's look and feel so it doesn't feel out of place at all. Clients get instant answers to common questions and I spend less time on repetitive emails. Win win." },
+  { name: "Emma Visser", role: "Boutique owner", avatar: "/testimonials/emma.svg", quote: "I was honestly not sure if a chatbot would work for my small shop. But Askio surprised me. It took maybe ten minutes to set up and now it answers customer questions about shipping and returns all day long, even when I'm not around." },
+  { name: "Daniel Brooks", role: "E-commerce entrepreneur", avatar: "/testimonials/daniel.svg", quote: "I run three different online stores so managing support was getting out of hand. Askio let me spin up a custom chatbot for each one in the same afternoon. Cart abandonment dropped 15% in the first month. Can't believe it's free." },
+  { name: "Lina Haddad", role: "Freelance designer", avatar: "/testimonials/lina.svg", quote: "What sold me was the customization. I matched the chatbot to my portfolio's look and feel so it doesn't feel out of place at all. Clients get instant answers to common questions and I spend less time on repetitive emails. Win win." },
 ];
 
 export default function TestimonialsSection() {
@@ -64,9 +66,9 @@ export default function TestimonialsSection() {
           >
             {/* Avatar */}
             <img
-              src={AVATARS[activeTestimonial]}
-              alt={testimonials[activeTestimonial].name}
-              className="w-10 h-10 rounded-full object-cover shrink-0 border border-[#D8DFE9] dark:border-[#2B3646]"
+              src={testimonials[activeTestimonial].avatar}
+              alt=""
+              className="w-11 h-11 rounded-full shrink-0 ring-1 ring-[#D8DFE9] dark:ring-[#2B3646]"
             />
             <div className="flex flex-col">
               <div className="text-[rgba(16,23,35,0.90)] dark:text-[#D7DFE5] text-lg font-medium font-sans">
@@ -84,14 +86,14 @@ export default function TestimonialsSection() {
           <div className="flex gap-3">
             <button
               onClick={() => handleTestimonialNav((activeTestimonial - 1 + testimonials.length) % testimonials.length)}
-              className="w-9 h-9 shadow-[0px_1px_2px_rgba(0,0,0,0.08)] rounded-full border border-[rgba(0,0,0,0.15)] dark:border-[#566273] flex items-center justify-center hover:bg-[rgba(16,23,35,0.04)] dark:hover:bg-[#2B3646] hover:scale-110 transition-all duration-200"
+              className={`w-9 h-9 shadow-[0px_1px_2px_rgba(0,0,0,0.08)] rounded-full border border-[rgba(0,0,0,0.15)] dark:border-[#566273] flex items-center justify-center hover:bg-[rgba(16,23,35,0.05)] dark:hover:bg-[#2B3646] ${iconPress}`}
               aria-label="Previous testimonial"
             >
               <ChevronLeft className="w-5 h-5 text-[#243040] dark:text-[#D7DFE5]" />
             </button>
             <button
               onClick={() => handleTestimonialNav((activeTestimonial + 1) % testimonials.length)}
-              className="w-9 h-9 shadow-[0px_1px_2px_rgba(0,0,0,0.08)] rounded-full border border-[rgba(0,0,0,0.15)] dark:border-[#566273] flex items-center justify-center hover:bg-[rgba(16,23,35,0.04)] dark:hover:bg-[#2B3646] hover:scale-110 transition-all duration-200"
+              className={`w-9 h-9 shadow-[0px_1px_2px_rgba(0,0,0,0.08)] rounded-full border border-[rgba(0,0,0,0.15)] dark:border-[#566273] flex items-center justify-center hover:bg-[rgba(16,23,35,0.05)] dark:hover:bg-[#2B3646] ${iconPress}`}
               aria-label="Next testimonial"
             >
               <ChevronRight className="w-5 h-5 text-[#243040] dark:text-[#D7DFE5]" />

@@ -81,7 +81,15 @@ export default function HowItWorks() {
                     </div>
                     <div className="px-6 py-5 w-full flex flex-col gap-2">
                       <div className="self-stretch flex items-center gap-3 text-[#101723] dark:text-[#D7DFE5] text-body-sm font-semibold leading-6 font-sans">
-                        <span className="text-[#566273] dark:text-[#9BAABD] text-xs font-mono font-bold tracking-wider">{String(index + 1).padStart(2, '0')}</span>
+                        <span
+                          className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold tabular-nums transition-colors duration-300 ${
+                            isActive
+                              ? "bg-[#101723] text-white dark:bg-[#D7DFE5] dark:text-[#141D2B]"
+                              : "bg-[#E7EDF6] text-[#566273] dark:bg-[#243040] dark:text-[#9BAABD]"
+                          }`}
+                        >
+                          {index + 1}
+                        </span>
                         {step.title}
                       </div>
                       <div className="self-stretch text-[#566273] dark:text-[#9BAABD] text-body-sm font-normal leading-[22px] font-sans pl-8">

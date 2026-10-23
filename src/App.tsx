@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { LoaderCircle } from "lucide-react";
+import { PageSkeleton, Skeleton } from "./components/Skeleton";
 import {
   BrowserRouter as Router,
   Route,
@@ -24,11 +24,36 @@ import TermsOfService from "./pages/TermsOfService";
 import { HelmetProvider } from "react-helmet-async";
 import Plans from "./pages/Plans";
 
+const SIDEBAR_KEY = "askio_sidebar";
+const PUBLIC_PATHS = ["/", "/auth", "/plans", "/privacy", "/terms"];
+
+// Pages that render inside the signed-in app shell (sidebar + content).
+const isAppRoute = (path: string) => !PUBLIC_PATHS.includes(path) && !path.startsWith("/chatbot/");
+
+function readStorage(key: string) {
+  try {
+    return localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+}
+
+function writeStorage(key: string, value: string) {
+  try {
+    localStorage.setItem(key, value);
+  } catch {
+    // Storage can be unavailable (private mode); the preference just isn't kept.
+  }
+}
+
 const App: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
-  const [darkMode, setDarkMode] = useState(false);
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [darkMode, setDarkMode] = useState(() => readStorage("darkMode") === "true");
+  // Phones start with the drawer closed; desktop remembers expanded vs. icon rail.
+  const [sidebarOpen, setSidebarOpen] = useState(
+    () => window.matchMedia("(min-width: 1024px)").matches && readStorage(SIDEBAR_KEY) !== "collapsed"
+  );
   const [testMode, setTestMode] = useState(false);
 
   useEffect(() => {
@@ -36,9 +61,6 @@ const App: React.FC = () => {
       setUser(currentUser);
       setAuthLoading(false);
     });
-
-    const isDarkMode = localStorage.getItem("darkMode") === "true";
-    setDarkMode(isDarkMode);
 
     return () => unsubscribe();
   }, []);
@@ -49,7 +71,7 @@ const App: React.FC = () => {
     } else {
       document.documentElement.classList.remove("dark");
     }
-    localStorage.setItem("darkMode", darkMode.toString());
+    writeStorage("darkMode", darkMode.toString());
   }, [darkMode]);
 
   const toggleDarkMode = () => {
@@ -57,8 +79,15 @@ const App: React.FC = () => {
   };
 
   const toggleSidebar = () => {
-    setSidebarOpen((prevOpen) => !prevOpen);
+    setSidebarOpen((prevOpen) => {
+      if (window.matchMedia("(min-width: 1024px)").matches) {
+        writeStorage(SIDEBAR_KEY, prevOpen ? "collapsed" : "expanded");
+      }
+      return !prevOpen;
+    });
   };
+
+  const closeSidebar = () => setSidebarOpen(false);
 
   const toggleTestMode = () => {
     setTestMode((prev) => !prev);
@@ -66,8 +95,25 @@ const App: React.FC = () => {
 
   if (authLoading) {
     return (
-      <div className={`min-h-screen ${darkMode ? "dark" : ""} flex justify-center items-center bg-[#F3F7FC] dark:bg-[#141D2B]`}>
-        <LoaderCircle className="animate-spin text-[#101723] dark:text-[#D7DFE5]" size={48} />
+      <div className={`min-h-screen ${darkMode ? "dark" : ""} bg-[#F3F7FC] dark:bg-[#141D2B]`}>
+        {isAppRoute(window.location.pathname) && (
+          <div className="flex">
+            <div
+              className={`hidden h-screen shrink-0 border-r border-[#D8DFE9] bg-[#EDF2F8] p-3 lg:block dark:border-[#2B3646] dark:bg-[#17212F] ${
+                sidebarOpen ? "w-64" : "w-[72px]"
+              }`}
+            >
+              <Skeleton className="mb-4 h-8 w-full" />
+              <Skeleton className="mb-6 h-9 w-full" />
+              {Array.from({ length: 5 }).map((_, i) => (
+                <Skeleton key={i} className="mb-2 h-8 w-full" />
+              ))}
+            </div>
+            <div className="min-w-0 flex-1 pt-14 lg:pt-0">
+              <PageSkeleton tiles={4} />
+            </div>
+          </div>
+        )}
       </div>
     );
   }
@@ -82,13 +128,14 @@ const App: React.FC = () => {
               toggleDarkMode={toggleDarkMode}
               sidebarOpen={sidebarOpen}
               toggleSidebar={toggleSidebar}
+              closeSidebar={closeSidebar}
               testMode={testMode}
               toggleTestMode={toggleTestMode}
             />
           )}
           <div
             className={`flex-1 min-w-0 transition-all duration-300 ${
-              user ? (sidebarOpen ? "lg:ml-64" : "lg:ml-20") : ""
+              user ? `pt-14 lg:pt-0 ${sidebarOpen ? "lg:ml-64" : "lg:ml-[72px]"}` : ""
             }`}
           >
             <Routes>
@@ -145,7 +192,7 @@ const App: React.FC = () => {
               />
               <Route
                 path="/integrations"
-                element={user ? <Integrations /> : <Navigate to="/auth" />}
+                element={user ? <Integrations testMode={testMode} /> : <Navigate to="/auth" />}
               />
               <Route
                 path="/plans"

@@ -33,6 +33,7 @@ import Button from "../components/Button";
 import { toast } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
+import { FormPageSkeleton } from "../components/Skeleton";
 import { redirectToBillingPortal, redirectToProCheckout } from "../utils/billing";
 
 const Settings: React.FC<{ toggleSidebar: () => void }> = ({}) => {
@@ -237,9 +238,7 @@ const Settings: React.FC<{ toggleSidebar: () => void }> = ({}) => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#F3F7FC] dark:bg-[#141D2B] flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-[#101723] dark:border-[#D7DFE5] border-t-transparent rounded-full animate-spin" />
-      </div>
+      <FormPageSkeleton />
     );
   }
 

@@ -4,6 +4,7 @@ import { useInView } from "react-intersection-observer";
 import { motion, useReducedMotion } from "framer-motion";
 import HatchStrip from "./HatchStrip";
 import brandLogo from "../../assets/logo.svg";
+import { ghostCta, primaryCta } from "./buttonStyles";
 
 const TRUST_POINTS = ["Free plan", "No credit card", "Live in minutes"];
 
@@ -63,15 +64,15 @@ export default function CTASection() {
           <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4">
             <Link
               to="/auth"
-              className="group inline-flex h-12 items-center justify-center gap-2 rounded-full border border-[#101723] bg-[#101723] px-8 text-button font-medium text-white shadow-[0_2px_4px_rgba(16,23,35,0.12),inset_0_1px_0_rgba(255,255,255,0.12)] transition-[background-color,box-shadow,transform] duration-200 hover:-translate-y-0.5 hover:bg-[#243040] hover:shadow-[0_6px_16px_rgba(16,23,35,0.14)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#87909D] dark:border-[#D7DFE5] dark:bg-[#D7DFE5] dark:text-[#141D2B] dark:hover:bg-[#E7EDF6] motion-reduce:transform-none motion-reduce:transition-none"
+              className={primaryCta}
               aria-label="Get started with Askio for free"
             >
               Build my free chatbot
-              <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5 motion-reduce:transform-none motion-reduce:transition-none" />
+              <ArrowRight className="h-4 w-4" />
             </Link>
             <a
               href="#how-it-works"
-              className="inline-flex h-12 items-center justify-center gap-2 rounded-full border border-transparent px-4 text-[#566273] dark:text-[#9BAABD] text-body-sm font-medium transition-colors duration-200 hover:border-[#D8DFE9] hover:bg-[#E7EDF6]/60 hover:text-[#101723] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#87909D] dark:hover:border-[#2B3646] dark:hover:bg-[#243040] dark:hover:text-[#D7DFE5]"
+              className={ghostCta}
             >
               See how it works
             </a>
@@ -85,9 +86,6 @@ export default function CTASection() {
               </li>
             ))}
           </ul>
-          <p className="mt-4 text-xs text-[#87909D]">
-            <strong className="font-semibold text-[#566273] dark:text-[#9BAABD]">500+</strong> users already started
-          </p>
         </div>
         <HatchStrip />
       </div>
