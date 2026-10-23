@@ -26,6 +26,7 @@ module.exports = {
       },
       animation: {
         bounce: "bounce 1.3s infinite",
+        marquee: "marquee 45s linear infinite",
       },
       keyframes: {
         bounce: {
@@ -41,6 +42,10 @@ module.exports = {
         shimmer: {
           "0%": { transform: "translateX(-100%)" },
           "100%": { transform: "translateX(100%)" },
+        },
+        marquee: {
+          "0%": { transform: "translateX(0)" },
+          "100%": { transform: "translateX(-50%)" },
         },
       },
     },

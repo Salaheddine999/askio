@@ -25,6 +25,9 @@ import { HelmetProvider } from "react-helmet-async";
 import Plans from "./pages/Plans";
 
 const SIDEBAR_KEY = "askio_sidebar";
+// Remembers whether this browser was signed in last time, so public pages can
+// render straight away instead of waiting for Firebase to restore the session.
+const SIGNED_IN_KEY = "askio_signed_in";
 const PUBLIC_PATHS = ["/", "/auth", "/plans", "/privacy", "/terms"];
 
 // Pages that render inside the signed-in app shell (sidebar + content).
@@ -55,11 +58,13 @@ const App: React.FC = () => {
     () => window.matchMedia("(min-width: 1024px)").matches && readStorage(SIDEBAR_KEY) !== "collapsed"
   );
   const [testMode, setTestMode] = useState(false);
+  const [wasSignedIn] = useState(() => readStorage(SIGNED_IN_KEY) === "1");
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
       setAuthLoading(false);
+      writeStorage(SIGNED_IN_KEY, currentUser ? "1" : "0");
     });
 
     return () => unsubscribe();
@@ -93,10 +98,14 @@ const App: React.FC = () => {
     setTestMode((prev) => !prev);
   };
 
-  if (authLoading) {
+  // Visitors who weren't signed in get public pages immediately; the app shell
+  // (and signed-in visitors heading to the dashboard) wait for the session.
+  const waitForAuth = authLoading && (wasSignedIn || isAppRoute(window.location.pathname));
+
+  if (waitForAuth) {
     return (
       <div className={`min-h-screen ${darkMode ? "dark" : ""} bg-[#F3F7FC] dark:bg-[#141D2B]`}>
-        {isAppRoute(window.location.pathname) && (
+        {(wasSignedIn || isAppRoute(window.location.pathname)) && (
           <div className="flex">
             <div
               className={`hidden h-screen shrink-0 border-r border-[#D8DFE9] bg-[#EDF2F8] p-3 lg:block dark:border-[#2B3646] dark:bg-[#17212F] ${

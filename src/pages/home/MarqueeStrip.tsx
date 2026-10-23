@@ -1,67 +1,82 @@
-import { motion } from "framer-motion";
+import { Globe } from "lucide-react";
+import type { IconType } from "react-icons";
+import {
+  SiAngular,
+  SiFramer,
+  SiGhost,
+  SiHtml5,
+  SiNextdotjs,
+  SiReact,
+  SiShopify,
+  SiSquarespace,
+  SiVuedotjs,
+  SiWebflow,
+  SiWix,
+  SiWordpress,
+} from "react-icons/si";
 
-const ITEMS = [
-  "React",
-  "Next.js",
-  "WordPress",
-  "Shopify",
-  "Webflow",
-  "HTML",
-  "Vue",
-  "Angular",
-  "Wix",
-  "Squarespace",
-  "Custom Sites",
-  "SaaS",
+// Site builders first, then frameworks. The embed works anywhere custom code can go.
+// `wordmark` logos already spell the name, so they show without a label.
+const PLATFORMS: { name: string; icon: IconType | typeof Globe; wordmark?: boolean }[] = [
+  { name: "WordPress", icon: SiWordpress },
+  { name: "Shopify", icon: SiShopify },
+  { name: "Wix", icon: SiWix, wordmark: true },
+  { name: "Webflow", icon: SiWebflow },
+  { name: "Squarespace", icon: SiSquarespace },
+  { name: "Framer", icon: SiFramer },
+  { name: "Ghost", icon: SiGhost },
+  { name: "React", icon: SiReact },
+  { name: "Next.js", icon: SiNextdotjs },
+  { name: "Vue", icon: SiVuedotjs },
+  { name: "Angular", icon: SiAngular },
+  { name: "HTML", icon: SiHtml5 },
+  { name: "Any website", icon: Globe },
 ];
 
-function MarqueeContent() {
+function PlatformList() {
   return (
-    <>
-      {ITEMS.map((item, i) => (
-        <span key={i} className="flex items-center gap-6 sm:gap-8 shrink-0">
-          <span className="text-[15px] sm:text-[17px] font-serif italic text-[#566273] dark:text-[#9BAABD] whitespace-nowrap tracking-wide">
-            {item}
-          </span>
-          <span className="w-1.5 h-1.5 rounded-full bg-[rgba(16,23,35,0.20)] dark:bg-[rgba(255,255,255,0.15)] shrink-0" />
-        </span>
+    <ul className="flex shrink-0 items-center gap-9 pr-9 sm:gap-12 sm:pr-12">
+      {PLATFORMS.map(({ name, icon: Icon, wordmark }) => (
+        <li
+          key={name}
+          className="flex items-center gap-2 whitespace-nowrap text-[14px] font-medium tracking-[-0.01em] text-[#647184] transition-colors duration-200 hover:text-[#101723] dark:text-[#87909D] dark:hover:text-[#E7EDF6]"
+        >
+          {wordmark ? (
+            <Icon className="h-6 w-9 shrink-0" aria-hidden="true" />
+          ) : (
+            <>
+              <Icon className="h-[18px] w-[18px] shrink-0" aria-hidden="true" />
+              {name}
+            </>
+          )}
+        </li>
       ))}
-    </>
+    </ul>
   );
 }
 
 export default function MarqueeStrip() {
   return (
     <section
-      className="border-b border-[rgba(16,23,35,0.12)] dark:border-[#2B3646] overflow-hidden flex items-stretch"
+      className="flex items-stretch overflow-hidden border-b border-[rgba(16,23,35,0.12)] dark:border-[#2B3646]"
       aria-label="Works with"
     >
-      <p className="sr-only">Works with {ITEMS.join(", ")}.</p>
+      <p className="sr-only">Works with {PLATFORMS.map((p) => p.name).join(", ")}.</p>
       <div
-        className="shrink-0 flex items-center px-4 sm:px-6 border-r border-[rgba(16,23,35,0.12)] dark:border-[#2B3646] text-[11px] sm:text-xs font-medium uppercase tracking-[0.08em] text-[#647184] dark:text-[#9BAABD] whitespace-nowrap"
+        className="flex shrink-0 items-center whitespace-nowrap border-r border-[rgba(16,23,35,0.12)] px-4 text-[11px] font-medium uppercase tracking-[0.08em] text-[#647184] sm:px-6 sm:text-xs dark:border-[#2B3646] dark:text-[#9BAABD]"
         aria-hidden="true"
       >
         Works with
       </div>
       <div
-        className="flex-1 min-w-0 py-4 sm:py-5 flex items-center overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_32px,black_calc(100%-32px),transparent)]"
+        className="group flex min-w-0 flex-1 items-center overflow-hidden py-4 [mask-image:linear-gradient(to_right,transparent,black_48px,black_calc(100%-48px),transparent)] sm:py-5"
         aria-hidden="true"
       >
-        <motion.div
-          className="flex items-center gap-6 sm:gap-8"
-          animate={{ x: ["0%", "-50%"] }}
-          transition={{
-            x: {
-              duration: 30,
-              repeat: Infinity,
-              ease: "linear",
-            },
-          }}
-        >
-          {/* Render the content twice for seamless looping */}
-          <MarqueeContent />
-          <MarqueeContent />
-        </motion.div>
+        {/* Two identical lists slide by half their width, so the loop is seamless. */}
+        <div className="flex w-max animate-marquee group-hover:[animation-play-state:paused] motion-reduce:animate-none">
+          <PlatformList />
+          <PlatformList />
+        </div>
       </div>
     </section>
   );
