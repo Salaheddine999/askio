@@ -1,5 +1,5 @@
-// One-time backfill: adds ownerId to existing leads, analytics_events and
-// unanswered_queries, so owners keep seeing them under the owner-only rules.
+// One-time backfill: adds ownerId to existing leads, analytics_events,
+// unanswered_queries and feedback, so owners keep seeing them under the owner-only rules.
 // Run it BEFORE publishing those rules:
 //
 //   node --env-file=.env scripts/backfill-owner-ids.mjs --dry-run
@@ -8,7 +8,7 @@
 // Safe to run again: records that already have an ownerId are skipped.
 import { adminDb } from "../api/_lib/firebaseAdmin.js";
 
-const COLLECTIONS = ["leads", "analytics_events", "unanswered_queries"];
+const COLLECTIONS = ["leads", "analytics_events", "unanswered_queries", "feedback"];
 const BATCH_LIMIT = 400;
 const dryRun = process.argv.includes("--dry-run");
 

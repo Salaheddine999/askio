@@ -28,7 +28,7 @@ import ChatbotsTab from "./dashboard/ChatbotsTab";
 import ReportsTab from "./dashboard/ReportsTab";
 import NotificationsTab from "./dashboard/NotificationsTab";
 import { secondaryButton } from "./dashboard/ui";
-import { downloadCsv, fetchOwnedByChatbots } from "./dashboard/data";
+import { downloadCsv, fetchOwnedByChatbots, fetchRecentOwned } from "./dashboard/data";
 import { Chatbot, FeedbackCounts, NotificationItem, TrendData } from "./dashboard/types";
 
 type TabId = "overview" | "chatbots" | "reports" | "notifications";
@@ -130,7 +130,13 @@ const Dashboard: React.FC<DashboardProps> = ({ testMode }) => {
   const [embedCopied, setEmbedCopied] = useState(false);
   const [activeTab, setActiveTab] = useState<TabId>("overview");
 
-  const [feedbackSnapshot] = useCollection(query(collection(db, "feedback")));
+  // Only this owner's ratings; test mode uses sample data and reads nothing.
+  const ownerUid = testMode ? null : auth.currentUser?.uid ?? null;
+  const feedbackQuery = useMemo(
+    () => (ownerUid ? query(collection(db, "feedback"), where("ownerId", "==", ownerUid)) : null),
+    [ownerUid]
+  );
+  const [feedbackSnapshot] = useCollection(feedbackQuery);
   const [feedbackCounts, setFeedbackCounts] = useState<Record<string, FeedbackCounts>>({});
   const [totalFeedback, setTotalFeedback] = useState(0);
   const [satisfactionRate, setSatisfactionRate] = useState(0);
@@ -204,11 +210,10 @@ const Dashboard: React.FC<DashboardProps> = ({ testMode }) => {
     if (testMode || !user || chatbots.length === 0) return;
     setLoadingNotifications(true);
     try {
-      const ids = chatbots.map((c) => c.id);
       const names = new Map(chatbots.map((c) => [c.id, c.title]));
       const [leads, queries] = await Promise.all([
-        fetchOwnedByChatbots("leads", user.uid, ids),
-        fetchOwnedByChatbots("unanswered_queries", user.uid, ids),
+        fetchRecentOwned("leads", user.uid, NOTIFICATION_LIMIT),
+        fetchRecentOwned("unanswered_queries", user.uid, NOTIFICATION_LIMIT),
       ]);
       setInboxItems([
         ...leads.map((l) => ({

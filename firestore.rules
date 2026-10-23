@@ -42,16 +42,12 @@ service cloud.firestore {
       allow delete: if ownsExistingChatbot();
     }
 
-    match /feedback/{feedbackId} {
-      allow read: if true;
-      allow create: if !exists(/databases/$(database)/documents/feedback/$(feedbackId));
-      allow update, delete: if false;
-    }
-
     // Leads, analytics and unanswered questions are written by anonymous
     // visitors through the widget, and belong to the chatbot's owner. Each
     // record carries ownerId, checked against the chatbot on create, so the
     // owner's queries (where ownerId == uid) are provably theirs alone.
+    // Records are also held to the exact fields, sizes and server timestamp
+    // the widget writes, so they can't be backdated, padded or junked.
     function chatbotPath(chatbotId) {
       return /databases/$(database)/documents/chatbot_configs/$(chatbotId);
     }
@@ -66,19 +62,76 @@ service cloud.firestore {
       return signedIn() && resource.data.ownerId == request.auth.uid;
     }
 
+    function fieldsOnly(allowed) {
+      return request.resource.data.keys().hasOnly(allowed);
+    }
+
+    function stampedNow() {
+      return request.resource.data.timestamp == request.time;
+    }
+
+    function textUpTo(field, max) {
+      return request.resource.data[field] is string
+        && request.resource.data[field].size() > 0
+        && request.resource.data[field].size() <= max;
+    }
+
+    function optionalTextUpTo(field, max) {
+      return !(field in request.resource.data) || textUpTo(field, max);
+    }
+
+    // The anonymous browser id can still be empty while the widget starts up.
+    function validToken() {
+      return !('anonymousToken' in request.resource.data)
+        || request.resource.data.anonymousToken == null
+        || (request.resource.data.anonymousToken is string && request.resource.data.anonymousToken.size() <= 64);
+    }
+
     match /leads/{leadId} {
-      allow create: if validVisitorRecord();
+      allow create: if validVisitorRecord()
+        && fieldsOnly(['chatbotId', 'ownerId', 'email', 'timestamp', 'anonymousToken'])
+        && textUpTo('email', 254)
+        && request.resource.data.email.matches('^[^@ ]+@[^@ ]+[.][^@ ]+$')
+        && stampedNow()
+        && validToken();
       allow read, update, delete: if ownsRecord();
     }
 
     match /analytics_events/{eventId} {
-      allow create: if validVisitorRecord();
+      allow create: if validVisitorRecord()
+        && fieldsOnly(['chatbotId', 'ownerId', 'type', 'question', 'userQuery', 'timestamp', 'anonymousToken'])
+        && request.resource.data.type in ['faq_matched', 'suggestion_clicked', 'ai_generated']
+        && optionalTextUpTo('question', 1000)
+        && optionalTextUpTo('userQuery', 2000)
+        && stampedNow()
+        && validToken();
       allow read, update, delete: if ownsRecord();
     }
 
     match /unanswered_queries/{queryId} {
-      allow create: if validVisitorRecord();
+      allow create: if validVisitorRecord()
+        && fieldsOnly(['chatbotId', 'ownerId', 'query', 'timestamp', 'anonymousToken'])
+        && textUpTo('query', 2000)
+        && stampedNow()
+        && validToken();
       allow read, update, delete: if ownsRecord();
+    }
+
+    match /feedback/{feedbackId} {
+      // The widget reads a visitor's own rating by its id to avoid asking twice;
+      // listing ratings is limited to the chatbot's owner.
+      allow get: if true;
+      allow list: if ownsRecord();
+      allow create: if !exists(/databases/$(database)/documents/feedback/$(feedbackId))
+        && validVisitorRecord()
+        && fieldsOnly(['chatbotId', 'ownerId', 'isPositive', 'timestamp', 'anonymousToken'])
+        && request.resource.data.isPositive is bool
+        && stampedNow()
+        && request.resource.data.anonymousToken is string
+        && request.resource.data.anonymousToken.size() > 0
+        && request.resource.data.anonymousToken.size() <= 64
+        && feedbackId == request.resource.data.chatbotId + '_' + request.resource.data.anonymousToken;
+      allow update, delete: if false;
     }
 
     // Monthly AI reply counts, keyed "{uid}_{YYYY-MM}". Only the server writes

@@ -1,4 +1,4 @@
-import { collection, getDocs, query, where, DocumentData } from "firebase/firestore";
+import { collection, getDocs, limit, orderBy, query, where, DocumentData } from "firebase/firestore";
 import { format } from "date-fns";
 import { db } from "../../utils/db";
 
@@ -30,6 +30,21 @@ export async function fetchOwnedByChatbots(
     });
   }
   return results;
+}
+
+/** The owner's most recent records, newest first; for lists that only show the latest few. */
+export async function fetchRecentOwned(
+  collectionName: "leads" | "unanswered_queries",
+  ownerId: string,
+  max: number
+): Promise<(DocumentData & { id: string; timestamp: Date })[]> {
+  const snap = await getDocs(
+    query(collection(db, collectionName), where("ownerId", "==", ownerId), orderBy("timestamp", "desc"), limit(max))
+  );
+  return snap.docs.map((d) => {
+    const data = d.data();
+    return { ...data, id: d.id, timestamp: data.timestamp?.toDate?.() || data.createdAt?.toDate?.() || new Date(0) };
+  });
 }
 
 const csvCell = (value: string | number) =>

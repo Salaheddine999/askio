@@ -24,6 +24,9 @@ const GREETING_TEXT = "Hi! 👋 Need a hand?";
 /** How long the orb looks at the bubble before following the pointer again. */
 const GREETING_GLANCE_MS = 1500;
 
+
+// Matches the length limit in the Firestore rules for logged questions.
+const MAX_MESSAGE_LENGTH = 2000;
 export interface ChatbotProps {
   id: string;
   title: string;
@@ -170,7 +173,8 @@ const Chatbot: React.FC<ChatbotProps> = ({
     e.preventDefault();
     e.stopPropagation();
     
-    if (!leadEmail || !leadEmail.includes("@")) {
+    // Same shape the Firestore rules accept, so a lead is never silently rejected.
+    if (!/^[^@ ]+@[^@ ]+[.][^@ ]+$/.test(leadEmail.trim())) {
       setMessages((prev) => [
         ...prev,
         { text: "Please enter a valid email address.", sender: "bot" }
@@ -186,7 +190,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
         await addDoc(collection(db, "leads"), {
           chatbotId: id,
           ownerId: user_id ?? null,
-          email: leadEmail,
+          email: leadEmail.trim(),
           timestamp: serverTimestamp(),
           anonymousToken: anonymousToken || "anonymous",
         });
@@ -629,6 +633,8 @@ const Chatbot: React.FC<ChatbotProps> = ({
 
       await setDoc(feedbackRef, {
         chatbotId: id,
+        // Lets the owner's dashboard read only its own ratings.
+        ownerId: user_id ?? null,
         isPositive: isPositive,
         timestamp: serverTimestamp(),
         anonymousToken: anonymousToken,
@@ -941,6 +947,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
           <input
             type="text"
             value={input}
+            maxLength={MAX_MESSAGE_LENGTH}
             onChange={(e) => setInput(e.target.value)}
             onFocus={() => setInputFocused(true)}
             onBlur={() => setInputFocused(false)}

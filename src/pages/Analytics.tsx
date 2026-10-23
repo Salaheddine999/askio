@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
-import { collection, getDocs, query, where } from "firebase/firestore";
+import { Timestamp, collection, getDocs, query, where } from "firebase/firestore";
 import { format, formatDistanceToNowStrict, isAfter, startOfDay, subDays } from "date-fns";
 import { Listbox, ListboxButton, ListboxOption, ListboxOptions } from "@headlessui/react";
 import { Bar } from "react-chartjs-2";
@@ -168,6 +168,8 @@ interface AnalyticsProps {
 
 export default function Analytics({ testMode = false }: AnalyticsProps) {
   const [loading, setLoading] = useState(true);
+  // Range changes refetch in the background; the page stays visible meanwhile.
+  const [refreshing, setRefreshing] = useState(false);
   const [chatbots, setChatbots] = useState<ChatbotInfo[]>([]);
   const [events, setEvents] = useState<AnalyticsEvent[]>([]);
   const [unanswered, setUnanswered] = useState<UnansweredQuery[]>([]);
@@ -176,6 +178,8 @@ export default function Analytics({ testMode = false }: AnalyticsProps) {
   const [chatbotFilter, setChatbotFilter] = useState<string>("all");
   const [leadSearch, setLeadSearch] = useState("");
   const [showAllLeads, setShowAllLeads] = useState(false);
+
+  const rangeDays = RANGES.find((r) => r.id === range)!.days;
 
   useEffect(() => {
     if (testMode) {
@@ -189,7 +193,7 @@ export default function Analytics({ testMode = false }: AnalyticsProps) {
     }
 
     const load = async () => {
-      setLoading(true);
+      setRefreshing(true);
       try {
         const user = auth.currentUser;
         if (!user) return;
@@ -203,8 +207,16 @@ export default function Analytics({ testMode = false }: AnalyticsProps) {
         if (bots.length === 0) return;
 
         const ids = new Set(bots.map((b) => b.id));
+        // Only the selected period and the one before it (for trends); "All time" reads everything.
+        const since = rangeDays ? Timestamp.fromDate(startOfDay(subDays(new Date(), rangeDays * 2 - 1))) : null;
         const owned = async (name: string) =>
-          (await getDocs(query(collection(db, name), where("ownerId", "==", user.uid)))).docs
+          (
+            await getDocs(
+              since
+                ? query(collection(db, name), where("ownerId", "==", user.uid), where("timestamp", ">=", since))
+                : query(collection(db, name), where("ownerId", "==", user.uid))
+            )
+          ).docs
             .filter((d) => ids.has(d.data().chatbotId))
             .map((d) => ({ id: d.id, ...d.data(), timestamp: d.data().timestamp?.toDate?.() || new Date(0) }));
 
@@ -220,13 +232,14 @@ export default function Analytics({ testMode = false }: AnalyticsProps) {
         console.error("Error fetching analytics data:", error);
       } finally {
         setLoading(false);
+        setRefreshing(false);
       }
     };
     load();
-  }, [testMode]);
+  }, [testMode, rangeDays]);
 
   const botById = useMemo(() => new Map(chatbots.map((c) => [c.id, c])), [chatbots]);
-  const days = RANGES.find((r) => r.id === range)!.days;
+  const days = rangeDays;
 
   // The selected period, and the one just before it for comparisons.
   const scoped = useMemo(() => {
@@ -391,7 +404,7 @@ export default function Analytics({ testMode = false }: AnalyticsProps) {
             />
           </div>
         ) : (
-          <>
+          <div aria-busy={refreshing} className={`space-y-6 transition-opacity duration-200 ${refreshing ? "opacity-60" : ""}`}>
             <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
               <StatsCard
                 title="Answered"
@@ -623,7 +636,7 @@ export default function Analytics({ testMode = false }: AnalyticsProps) {
                 />
               )}
             </div>
-          </>
+          </div>
         )}
       </div>
     </div>
