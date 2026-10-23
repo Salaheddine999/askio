@@ -23,7 +23,7 @@ export default function ChatbotLanding() {
     script.async = true;
     script.onload = () => {
       const initScript = document.createElement("script");
-      initScript.text = `ChatbotEmbed.init("eh0qWjVhkPeBwzGxYLv6", "${window.location.origin}", { launcherStyle: "orb", greetingBubble: true });`;
+      initScript.text = `ChatbotEmbed.init("eh0qWjVhkPeBwzGxYLv6", "${window.location.origin}");`;
       document.body.appendChild(initScript);
     };
     document.body.appendChild(script);
