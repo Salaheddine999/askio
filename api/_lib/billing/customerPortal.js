@@ -1,7 +1,7 @@
-import { requireUser } from "../_lib/auth.js";
-import { adminDb } from "../_lib/firebaseAdmin.js";
-import { getLemonSqueezyConfig, lemonRequest } from "../_lib/lemonsqueezy.js";
-import { sendError } from "../_lib/response.js";
+import { requireUser } from "../auth.js";
+import { adminDb } from "../firebaseAdmin.js";
+import { getLemonSqueezyConfig, lemonRequest } from "../lemonsqueezy.js";
+import { sendError } from "../response.js";
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {

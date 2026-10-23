@@ -1,6 +1,6 @@
-import { requireUser } from "../_lib/auth.js";
-import { buildCheckoutUrl, getLemonSqueezyConfig } from "../_lib/lemonsqueezy.js";
-import { sendError } from "../_lib/response.js";
+import { requireUser } from "../auth.js";
+import { buildCheckoutUrl, getLemonSqueezyConfig } from "../lemonsqueezy.js";
+import { sendError } from "../response.js";
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
