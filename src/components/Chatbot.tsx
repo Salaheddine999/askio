@@ -986,7 +986,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
       <div className="py-2 border-t border-[#D8DFE9]/60 dark:border-[#2B3646]/60 text-center text-[10px] text-[#647184] dark:text-[#9BAABD] bg-[#F3F7FC] dark:bg-[#141D2B] rounded-b-xl">
         Powered by{" "}
         <a
-          href="https://askio.vercel.app/"
+          href="https://getaskio.xyz/"
           target="_blank"
           rel="noopener noreferrer"
           className="font-semibold text-[#566273] dark:text-[#9BAABD] hover:text-[#101723] dark:hover:text-[#D7DFE5] transition-colors"

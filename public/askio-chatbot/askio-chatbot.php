@@ -2,9 +2,9 @@
 /**
  * Plugin Name: Askio Chatbot
  * Description: Easily add your Askio AI chatbot to your WordPress site. No coding required.
- * Version: 1.0.0
+ * Version: 1.0.1
  * Author: Askio
- * Author URI: https://askio.vercel.app
+ * Author URI: https://getaskio.xyz
  * License: GPL v2 or later
  */
 
@@ -37,7 +37,7 @@ function askio_chatbot_settings_page() {
     ?>
     <div class="wrap">
         <h1>Askio Chatbot Settings</h1>
-        <p>Enter your Chatbot ID from the <a href="https://askio.vercel.app/integrations" target="_blank">Askio Dashboard</a> to display the chatbot on your site.</p>
+        <p>Enter your Chatbot ID from the <a href="https://getaskio.xyz/integrations" target="_blank">Askio Dashboard</a> to display the chatbot on your site.</p>
         <form method="post">
             <?php wp_nonce_field('askio_save_settings'); ?>
             <table class="form-table">
@@ -61,7 +61,7 @@ function askio_chatbot_inject() {
     if (empty($chatbot_id) || is_admin()) {
         return;
     }
-    $origin = 'https://askio.vercel.app';
+    $origin = 'https://getaskio.xyz';
     ?>
     <div id="chatbot-container"></div>
     <script src="<?php echo esc_url($origin . '/chatbot-embed.js'); ?>"></script>

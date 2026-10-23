@@ -211,7 +211,7 @@ const Documentation: React.FC<{ toggleSidebar: () => void }> = () => {
                   <pre className="p-4 overflow-x-auto">
                     <code className="text-sm text-emerald-400 font-mono leading-relaxed">
 {`<script
-  src="https://askio.vercel.app/embed/YOUR_CHATBOT_ID"
+  src="https://getaskio.xyz/chatbot/YOUR_CHATBOT_ID"
   defer>
 </script>`}
                     </code>

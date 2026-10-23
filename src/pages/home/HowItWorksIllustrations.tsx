@@ -253,7 +253,7 @@ export function DesignIllustration() {
   );
 }
 
-const EMBED_ORIGIN = "https://askio.vercel.app";
+const EMBED_ORIGIN = "https://getaskio.xyz";
 const EMBED_LINES: { text: string; tone: "tag" | "attr" | "string" | "plain" }[][] = [
   [{ text: "<div ", tone: "tag" }, { text: "id", tone: "attr" }, { text: '="chatbot-container"', tone: "string" }, { text: "></div>", tone: "tag" }],
   [{ text: "<script ", tone: "tag" }, { text: "src", tone: "attr" }, { text: `="${EMBED_ORIGIN}/chatbot-embed.js"`, tone: "string" }, { text: "></script>", tone: "tag" }],
