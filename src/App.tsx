@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { Suspense, lazy, useState, useEffect } from "react";
 import { PageSkeleton, Skeleton } from "./components/Skeleton";
 import {
   BrowserRouter as Router,
@@ -8,21 +8,58 @@ import {
 } from "react-router-dom";
 import { auth } from "./utils/firebase";
 import { onAuthStateChanged, User } from "firebase/auth";
-import Dashboard from "./pages/Dashboard";
-import EditChatbot from "./components/EditChatbot";
-import Home from "./pages/home";
-import Auth from "./components/Auth";
-import ChatbotEmbed from "./pages/ChatbotEmbed";
-import Documentation from "./pages/Documentation";
-import Navbar from "./components/Navbar";
 import { Toaster } from "react-hot-toast";
-import Settings from "./pages/Settings";
-import Analytics from "./pages/Analytics";
-import Integrations from "./pages/Integrations";
-import PrivacyPolicy from "./pages/PrivacyPolicy";
-import TermsOfService from "./pages/TermsOfService";
 import { HelmetProvider } from "react-helmet-async";
-import Plans from "./pages/Plans";
+
+// Every page is its own chunk, so visitors only download the page they open.
+// That keeps the homepage light, and the chat widget (/chatbot/:id), which
+// runs on customers' sites, from pulling in the whole dashboard.
+const pages = {
+  home: () => import("./pages/home"),
+  auth: () => import("./components/Auth"),
+  dashboard: () => import("./pages/Dashboard"),
+  editor: () => import("./components/EditChatbot"),
+  embed: () => import("./pages/ChatbotEmbed"),
+  docs: () => import("./pages/Documentation"),
+  settings: () => import("./pages/Settings"),
+  analytics: () => import("./pages/Analytics"),
+  integrations: () => import("./pages/Integrations"),
+  plans: () => import("./pages/Plans"),
+  privacy: () => import("./pages/PrivacyPolicy"),
+  terms: () => import("./pages/TermsOfService"),
+  navbar: () => import("./components/Navbar"),
+};
+
+const Home = lazy(pages.home);
+const Auth = lazy(pages.auth);
+const Dashboard = lazy(pages.dashboard);
+const EditChatbot = lazy(pages.editor);
+const ChatbotEmbed = lazy(pages.embed);
+const Documentation = lazy(pages.docs);
+const Settings = lazy(pages.settings);
+const Analytics = lazy(pages.analytics);
+const Integrations = lazy(pages.integrations);
+const Plans = lazy(pages.plans);
+const PrivacyPolicy = lazy(pages.privacy);
+const TermsOfService = lazy(pages.terms);
+const Navbar = lazy(pages.navbar);
+
+// Start downloading the current page's chunk right away, in parallel with
+// React starting up, instead of waiting until the router asks for it.
+function preloadCurrentPage(path: string) {
+  const match: [boolean, () => Promise<unknown>][] = [
+    [path === "/", pages.home],
+    [path === "/auth", pages.auth],
+    [path.startsWith("/chatbot/"), pages.embed],
+    [path === "/dashboard", pages.dashboard],
+    [path.startsWith("/configure"), pages.editor],
+    [path === "/plans", pages.plans],
+    [path === "/privacy", pages.privacy],
+    [path === "/terms", pages.terms],
+  ];
+  match.find(([hit]) => hit)?.[1]();
+}
+preloadCurrentPage(window.location.pathname);
 
 const SIDEBAR_KEY = "askio_sidebar";
 // Remembers whether this browser was signed in last time, so public pages can
@@ -47,6 +84,15 @@ function writeStorage(key: string, value: string) {
   } catch {
     // Storage can be unavailable (private mode); the preference just isn't kept.
   }
+}
+
+/** Shown while a page's code downloads: the page skeleton in the app, nothing elsewhere. */
+function RouteFallback() {
+  return isAppRoute(window.location.pathname) ? (
+    <PageSkeleton tiles={4} />
+  ) : (
+    <div className="min-h-screen bg-[#F3F7FC] dark:bg-[#141D2B]" />
+  );
 }
 
 const App: React.FC = () => {
@@ -132,6 +178,7 @@ const App: React.FC = () => {
       <Router>
         <div className={`min-h-screen ${darkMode ? "dark" : ""} flex`}>
           {user && (
+            <Suspense fallback={null}>
             <Navbar
               darkMode={darkMode}
               toggleDarkMode={toggleDarkMode}
@@ -141,12 +188,14 @@ const App: React.FC = () => {
               testMode={testMode}
               toggleTestMode={toggleTestMode}
             />
+            </Suspense>
           )}
           <div
             className={`flex-1 min-w-0 transition-all duration-300 ${
               user ? `pt-14 lg:pt-0 ${sidebarOpen ? "lg:ml-64" : "lg:ml-[72px]"}` : ""
             }`}
           >
+            <Suspense fallback={<RouteFallback />}>
             <Routes>
               <Route
                 path="/"
@@ -210,6 +259,7 @@ const App: React.FC = () => {
               <Route path="/privacy" element={<PrivacyPolicy />} />
               <Route path="/terms" element={<TermsOfService />} />
             </Routes>
+            </Suspense>
             <Toaster
               position="top-center"
               toastOptions={{

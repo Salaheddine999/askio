@@ -1,6 +1,7 @@
 import brandLogo from "../assets/logo.svg";
 import React, { useState } from "react";
-import { auth, db } from "../utils/firebase";
+import { auth } from "../utils/firebase";
+import { db } from "../utils/db";
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,

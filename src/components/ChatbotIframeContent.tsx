@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { db } from "../utils/firebase";
+import { db } from "../utils/db";
 import { doc, getDoc } from "firebase/firestore";
 import Chatbot, { ChatbotProps } from "./Chatbot";
 

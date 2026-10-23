@@ -1,6 +1,6 @@
 import { collection, getDocs, query, where, DocumentData } from "firebase/firestore";
 import { format } from "date-fns";
-import { db } from "../../utils/firebase";
+import { db } from "../../utils/db";
 
 // Firestore "in" queries accept at most 10 values, so ids are fetched in batches.
 const IN_QUERY_LIMIT = 10;

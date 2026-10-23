@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
-import { db } from "../utils/firebase";
+import { db } from "../utils/db";
 import { doc, getDoc } from "firebase/firestore";
 import Chatbot, { ChatbotProps } from "../components/Chatbot";
 import { isLauncherStyle } from "../utils/orbColors";

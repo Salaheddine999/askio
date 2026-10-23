@@ -19,7 +19,8 @@ import {
 import { FaWordpress, FaShopify } from "react-icons/fa";
 import { SiWix } from "react-icons/si";
 import { Link } from "react-router-dom";
-import { db, auth } from "../utils/firebase";
+import { auth } from "../utils/firebase";
+import { db } from "../utils/db";
 import { collection, query, where, getDocs, setDoc, doc, deleteDoc } from "firebase/firestore";
 import { toast } from "react-hot-toast";
 import BotAvatar from "../components/BotAvatar";

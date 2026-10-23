@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { doc, getDoc } from "firebase/firestore";
 import { AlertTriangle, Sparkles } from "lucide-react";
-import { auth, db } from "../utils/firebase";
+import { auth } from "../utils/firebase";
+import { db } from "../utils/db";
 import { AI_USAGE_WARNING_RATIO, PRO_AI_REPLY_LIMIT } from "../utils/pricing";
 
 type Usage = { used: number; limit: number | null };

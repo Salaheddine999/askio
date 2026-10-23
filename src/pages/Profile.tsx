@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { auth, db } from "../utils/firebase";
+import { auth } from "../utils/firebase";
+import { db } from "../utils/db";
 import { User, updateProfile } from "firebase/auth";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { Edit2, Save } from "lucide-react";

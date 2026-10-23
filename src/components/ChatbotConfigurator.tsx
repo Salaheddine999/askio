@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { db, auth } from "../utils/firebase";
+import { auth } from "../utils/firebase";
+import { db } from "../utils/db";
 import { collection, getDocs, addDoc } from "firebase/firestore";
 
 const ChatbotConfigurator: React.FC = () => {

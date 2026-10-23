@@ -1,5 +1,6 @@
 import { useEffect, useState, useMemo } from "react";
-import { db, auth } from "../utils/firebase";
+import { auth } from "../utils/firebase";
+import { db } from "../utils/db";
 import { collection, query, where, getDocs } from "firebase/firestore";
 import { BarChart2, MessageCircle, AlertCircle, Users, TrendingUp, HelpCircle } from "lucide-react";
 import StatsCard from "../components/StatsCard";
