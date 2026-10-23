@@ -531,7 +531,8 @@ export default function Analytics({ testMode = false }: AnalyticsProps) {
                           </div>
                           {bot && (
                             <Link
-                              to={`/configure/${bot.id}`}
+                              to={`/configure/${bot.id}?tab=faq`}
+                              state={{ faqQuestion: g.text }}
                               title={`Add an answer in ${bot.title}`}
                               className={`inline-flex h-8 shrink-0 items-center gap-1 rounded-lg border border-[#D8DFE9] px-2.5 text-caption font-medium text-[#101723] transition-colors hover:bg-[#F3F7FC] dark:border-[#2B3646] dark:text-[#D7DFE5] dark:hover:bg-[#273444] ${focusRing}`}
                             >

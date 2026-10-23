@@ -1,0 +1,271 @@
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { toast } from "react-hot-toast";
+import { MessageSquareText, Pencil, Plus, Search, Trash2 } from "lucide-react";
+import { EmptyState, focusRing, primaryButton, secondaryButton, surface } from "../../pages/dashboard/ui";
+import { Field, inputClass } from "./controls";
+import { LIMITS } from "./types";
+
+type Faq = { question: string; answer: string };
+
+interface Props {
+  faqs: Faq[];
+  onChange: (faqs: Faq[]) => void;
+  /** The "Generate with AI" control, when this build includes it. */
+  aiGenerator?: React.ReactNode;
+  /** A question to start answering, e.g. from an unanswered one in Analytics. */
+  initialQuestion?: string | null;
+}
+
+const SEARCH_FROM = 6;
+
+const FaqEditor: React.FC<{
+  initial: Faq;
+  isNew: boolean;
+  others: Faq[];
+  onSave: (faq: Faq) => void;
+  onCancel: () => void;
+}> = ({ initial, isNew, others, onSave, onCancel }) => {
+  const [draft, setDraft] = useState(initial);
+  const questionRef = useRef<HTMLInputElement>(null);
+  const answerRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    // Coming from Analytics the question is already there; go to the answer.
+    if (initial.question && !initial.answer) answerRef.current?.focus();
+    else questionRef.current?.focus();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const question = draft.question.trim();
+  const answer = draft.answer.trim();
+  const duplicate =
+    question.length > 0 && others.some((f) => f.question.trim().toLowerCase() === question.toLowerCase());
+  const canSave = question.length > 0 && answer.length > 0;
+
+  const submit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (canSave) onSave({ question, answer });
+  };
+
+  return (
+    <form
+      onSubmit={submit}
+      onKeyDown={(e) => {
+        if (e.key === "Escape") onCancel();
+      }}
+      className="space-y-4 bg-[#F3F7FC] px-5 py-5 sm:px-6 dark:bg-[#141D2B]"
+    >
+      <Field
+        label="Question"
+        htmlFor="faq-question"
+        hint={duplicate ? "You already have this question. Visitors will get the first answer." : "Phrase it the way a visitor would ask."}
+        counter={{ value: draft.question.length, max: LIMITS.question }}
+      >
+        <input
+          ref={questionRef}
+          id="faq-question"
+          className={`${inputClass} h-10`}
+          placeholder="e.g. How long does shipping take?"
+          maxLength={LIMITS.question}
+          value={draft.question}
+          onChange={(e) => setDraft((d) => ({ ...d, question: e.target.value }))}
+        />
+      </Field>
+      <Field label="Answer" htmlFor="faq-answer" counter={{ value: draft.answer.length, max: LIMITS.answer }}>
+        <textarea
+          ref={answerRef}
+          id="faq-answer"
+          rows={4}
+          className={`${inputClass} resize-y py-2.5 leading-relaxed`}
+          placeholder="e.g. Orders ship within 2 business days and arrive in 3–5 days."
+          maxLength={LIMITS.answer}
+          value={draft.answer}
+          onChange={(e) => setDraft((d) => ({ ...d, answer: e.target.value }))}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) submit(e);
+          }}
+        />
+      </Field>
+      <div className="flex items-center justify-end gap-2">
+        <button type="button" onClick={onCancel} className={secondaryButton}>
+          Cancel
+        </button>
+        <button type="submit" disabled={!canSave} className={primaryButton}>
+          {isNew ? "Add question" : "Save question"}
+        </button>
+      </div>
+    </form>
+  );
+};
+
+const FaqTab: React.FC<Props> = ({ faqs, onChange, aiGenerator, initialQuestion }) => {
+  const [editing, setEditing] = useState<number | "new" | null>(initialQuestion ? "new" : null);
+  const [newDraft, setNewDraft] = useState<Faq>({ question: initialQuestion || "", answer: "" });
+  const [query, setQuery] = useState("");
+
+  const visible = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return faqs
+      .map((faq, index) => ({ faq, index }))
+      .filter(({ faq }) => !q || faq.question.toLowerCase().includes(q) || faq.answer.toLowerCase().includes(q));
+  }, [faqs, query]);
+
+  const startNew = () => {
+    setNewDraft({ question: "", answer: "" });
+    setEditing("new");
+    setQuery("");
+  };
+
+  const save = (index: number | "new", faq: Faq) => {
+    onChange(index === "new" ? [faq, ...faqs] : faqs.map((f, i) => (i === index ? faq : f)));
+    setEditing(null);
+  };
+
+  const remove = (index: number) => {
+    const removed = faqs[index];
+    const before = faqs;
+    onChange(faqs.filter((_, i) => i !== index));
+    if (editing === index) setEditing(null);
+    toast(
+      (t) => (
+        <span className="flex items-center gap-3 text-body-sm">
+          Question removed
+          <button
+            className="font-semibold underline underline-offset-2"
+            onClick={() => {
+              onChange(before);
+              toast.dismiss(t.id);
+            }}
+          >
+            Undo
+          </button>
+        </span>
+      ),
+      { id: `faq-removed-${removed.question}`, duration: 5000 }
+    );
+  };
+
+  return (
+    <section className={surface}>
+      <div className="flex flex-col gap-4 border-b border-[#E7EDF6] px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6 dark:border-[#2B3646]">
+        <div className="min-w-0">
+          <h2 className="flex items-center gap-2 text-body font-semibold text-[#101723] dark:text-[#E7EDF6]">
+            Questions & answers
+            {faqs.length > 0 && (
+              <span className="rounded-full bg-[#E7EDF6] px-2 py-0.5 text-caption font-medium tabular-nums text-[#566273] dark:bg-[#273444] dark:text-[#9BAABD]">
+                {faqs.length}
+              </span>
+            )}
+          </h2>
+          <p className="mt-0.5 text-body-sm text-[#647184] dark:text-[#87909D]">
+            Your chatbot answers from these, matching what visitors ask.
+          </p>
+        </div>
+        <div className="flex shrink-0 flex-wrap items-center gap-2">
+          {aiGenerator}
+          <button type="button" onClick={startNew} disabled={editing === "new"} className={primaryButton}>
+            <Plus size={16} />
+            Add question
+          </button>
+        </div>
+      </div>
+
+      {faqs.length >= SEARCH_FROM && (
+        <div className="border-b border-[#E7EDF6] px-5 py-3 sm:px-6 dark:border-[#2B3646]">
+          <div className="relative">
+            <Search
+              size={15}
+              className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#87909D]"
+            />
+            <input
+              type="search"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder={`Search ${faqs.length} questions`}
+              aria-label="Search questions"
+              className={`${inputClass} h-9 pl-9`}
+            />
+          </div>
+        </div>
+      )}
+
+      {editing === "new" && (
+        <div className="border-b border-[#E7EDF6] dark:border-[#2B3646]">
+          <FaqEditor
+            key="new"
+            initial={newDraft}
+            isNew
+            others={faqs}
+            onSave={(faq) => save("new", faq)}
+            onCancel={() => setEditing(null)}
+          />
+        </div>
+      )}
+
+      {faqs.length === 0 && editing !== "new" ? (
+        <EmptyState
+          compact
+          icon={MessageSquareText}
+          title="No questions yet"
+          description="Add the questions your customers ask most, like shipping, returns or opening hours."
+          action={
+            <button type="button" onClick={startNew} className={secondaryButton}>
+              <Plus size={16} />
+              Add your first question
+            </button>
+          }
+        />
+      ) : visible.length === 0 && faqs.length > 0 ? (
+        <p className="px-6 py-10 text-center text-body-sm text-[#647184] dark:text-[#87909D]">
+          No questions match “{query.trim()}”.
+        </p>
+      ) : (
+        <ul className="divide-y divide-[#E7EDF6] dark:divide-[#2B3646]">
+          {visible.map(({ faq, index }) =>
+            editing === index ? (
+              <li key={`edit-${index}`}>
+                <FaqEditor
+                  initial={faq}
+                  isNew={false}
+                  others={faqs.filter((_, i) => i !== index)}
+                  onSave={(next) => save(index, next)}
+                  onCancel={() => setEditing(null)}
+                />
+              </li>
+            ) : (
+              <li key={`${index}-${faq.question}`} className="group flex items-start gap-3 px-5 py-4 sm:px-6">
+                <button
+                  type="button"
+                  onClick={() => setEditing(index)}
+                  className={`min-w-0 flex-1 rounded-md text-left ${focusRing}`}
+                >
+                  <p className="text-body-sm font-medium text-[#101723] dark:text-[#D7DFE5]">{faq.question}</p>
+                  <p className="mt-1 line-clamp-2 text-body-sm text-[#566273] dark:text-[#9BAABD]">{faq.answer}</p>
+                </button>
+                <div className="flex shrink-0 items-center gap-0.5 sm:opacity-0 sm:transition-opacity sm:group-hover:opacity-100 sm:group-focus-within:opacity-100">
+                  <button
+                    type="button"
+                    onClick={() => setEditing(index)}
+                    aria-label={`Edit “${faq.question}”`}
+                    className={`flex h-8 w-8 items-center justify-center rounded-lg text-[#647184] transition-colors hover:bg-[#E7EDF6] hover:text-[#101723] dark:text-[#9BAABD] dark:hover:bg-[#273444] dark:hover:text-[#D7DFE5] ${focusRing}`}
+                  >
+                    <Pencil size={14} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => remove(index)}
+                    aria-label={`Delete “${faq.question}”`}
+                    className={`flex h-8 w-8 items-center justify-center rounded-lg text-[#647184] transition-colors hover:bg-red-50 hover:text-red-600 dark:text-[#9BAABD] dark:hover:bg-red-950/30 dark:hover:text-red-400 ${focusRing}`}
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                </div>
+              </li>
+            )
+          )}
+        </ul>
+      )}
+    </section>
+  );
+};
+
+export default FaqTab;

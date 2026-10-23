@@ -10,6 +10,7 @@ import bot1 from "../assets/chat1.svg";
 import { apiRequest } from "../utils/api";
 import { LiveOrb } from "./LiveOrb";
 import { headerOrbPropsFor, orbPropsFor, type LauncherStyle } from "../utils/orbColors";
+import { normalizeContactLink } from "../utils/links";
 
 type Message = {
   text: string;
@@ -69,6 +70,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
   greetingBubble = false,
   user_id,
 }) => {
+  const contactHref = normalizeContactLink(liveChatLink);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isOpen, setIsOpen] = useState(!isEmbedded);
@@ -836,10 +838,10 @@ const Chatbot: React.FC<ChatbotProps> = ({
                 {message.text}
                 
                 {/* Fallback Live Chat Link */}
-                {message.isFallback && liveChatLink && (
+                {message.isFallback && contactHref && (
                   <div className="mt-2.5 flex justify-start">
                     <a
-                      href={liveChatLink.startsWith('http') ? liveChatLink : `https://${liveChatLink}`}
+                      href={contactHref}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="inline-flex items-center justify-center bg-[#F9FCFF] dark:bg-[#273444] hover:bg-[#F3F7FC] dark:hover:bg-[#39485B] text-[#101723] dark:text-[#D7DFE5] text-[12px] font-medium py-1.5 px-3 rounded-md shadow-sm border border-[#D8DFE9] dark:border-[#39485B] transition-colors gap-1.5"

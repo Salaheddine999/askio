@@ -8,7 +8,7 @@ import {
   X,
 } from "lucide-react";
 import { toast } from "react-hot-toast";
-import Button from "./Button";
+import { primaryButton, secondaryButton } from "../pages/dashboard/ui";
 import { apiRequest } from "../utils/api";
 import UpgradeModal from "./UpgradeModal";
 import { useNavigate } from "react-router-dom";
@@ -53,7 +53,7 @@ const AiFaqGenerator: React.FC<AiFaqGeneratorProps> = ({
 
     setPendingFaqs(faqsWithState);
     setShowReviewModal(true);
-    toast.success(`Generated ${newFaqs.length} FAQs! Please review them.`);
+    toast.success(`Found ${newFaqs.length} questions. Review them before adding.`);
     setShowUrlModal(false);
     setScrapeUrl("");
   };
@@ -160,21 +160,29 @@ const AiFaqGenerator: React.FC<AiFaqGeneratorProps> = ({
     <>
       {/* AI Trigger Button */}
       {canUseAi ? (
-        <Button
-          onClick={() => setShowUrlModal(true)}
-          className="bg-[#F9FCFF] dark:bg-[#1A2533] border border-[#D8DFE9] dark:border-[#2B3646] text-[#101723] dark:text-[#D7DFE5] hover:bg-[#F3F7FC] dark:hover:bg-[#141D2B] hover:border-[#101723] dark:hover:border-[#9BAABD] shadow-sm rounded-[9px] text-body-sm flex-1 sm:flex-none"
-          icon={Sparkles}
+        <button
+          type="button"
+          onClick={() => {
+            if (!aiEnabled) {
+              toast.error("Turn on “Answer with AI” in General to generate questions.");
+              return;
+            }
+            setShowUrlModal(true);
+          }}
+          title={aiEnabled ? "Write questions & answers from your website" : "Turn on AI replies in General first"}
+          className={secondaryButton}
         >
+          <Sparkles size={15} />
           Generate with AI
-        </Button>
+        </button>
       ) : (
-        <Button
-          onClick={() => navigate("/plans")}
-          className="bg-[#101723] dark:bg-[#D7DFE5] text-white dark:text-[#141D2B] hover:bg-[#243040] dark:hover:bg-[#E7EDF6] shadow-sm rounded-[9px] text-body-sm flex-1 sm:flex-none"
-          icon={Sparkles}
-        >
-          Upgrade to Use AI
-        </Button>
+        <button type="button" onClick={() => navigate("/plans")} className={secondaryButton}>
+          <Sparkles size={15} />
+          Generate with AI
+          <span className="rounded bg-[#E7EDF6] px-1.5 py-px text-[10px] font-semibold uppercase tracking-wide text-[#566273] dark:bg-[#273444] dark:text-[#9BAABD]">
+            Pro
+          </span>
+        </button>
       )}
 
       {/* Upgrade Modal */}
@@ -336,7 +344,7 @@ const AiFaqGenerator: React.FC<AiFaqGeneratorProps> = ({
                           </h3>
                         </div>
                         <p className="text-xs text-[#647184] dark:text-[#9BAABD] leading-relaxed">
-                          Paste a URL and we'll generate FAQs from its content.
+                          Paste a page from your site and we'll write questions & answers from it.
                         </p>
                       </div>
                       <button
@@ -390,19 +398,17 @@ const AiFaqGenerator: React.FC<AiFaqGeneratorProps> = ({
                       </div>
 
                       <div className="flex gap-3 justify-end pt-2">
-                        <Button
-                          onClick={() => setShowUrlModal(false)}
-                          className="bg-[#F9FCFF] dark:bg-[#1A2533] border border-[#D8DFE9] dark:border-[#2B3646] text-[#566273] dark:text-[#9BAABD] hover:bg-[#F3F7FC] dark:hover:bg-[#141D2B] shadow-sm rounded-lg"
-                        >
+                        <button type="button" onClick={() => setShowUrlModal(false)} className={secondaryButton}>
                           Cancel
-                        </Button>
-                        <Button
+                        </button>
+                        <button
+                          type="button"
                           onClick={handleAiScrape}
-                          disabled={!scrapeUrl}
-                          className="bg-[#101723] dark:bg-[#D7DFE5] hover:bg-[#243040] dark:hover:bg-[#E7EDF6] text-white dark:text-[#141D2B] shadow-md rounded-lg min-w-[120px]"
+                          disabled={!scrapeUrl.trim()}
+                          className={`${primaryButton} min-w-[110px]`}
                         >
                           Generate
-                        </Button>
+                        </button>
                       </div>
                     </div>
                   </motion.div>
@@ -436,7 +442,7 @@ const AiFaqGenerator: React.FC<AiFaqGeneratorProps> = ({
                       <Sparkles size={18} />
                     </div>
                     <h3 className="text-xl font-bold text-[#101723] dark:text-[#D7DFE5] font-serif tracking-tight">
-                      Review Generated FAQs
+                      Review generated questions
                     </h3>
                   </div>
                   <p className="text-sm text-[#647184] dark:text-[#9BAABD] leading-relaxed max-w-lg">
@@ -540,13 +546,11 @@ const AiFaqGenerator: React.FC<AiFaqGeneratorProps> = ({
               </div>
 
               <div className="p-4 border-t border-[#D8DFE9] dark:border-[#2B3646] flex justify-end gap-3 shrink-0 bg-[#F9FCFF] dark:bg-[#141D2B]">
-                <Button
-                  onClick={() => setShowReviewModal(false)}
-                  className="bg-transparent border border-[#D8DFE9] dark:border-[#2B3646] text-[#566273] dark:text-[#9BAABD] hover:bg-[#F3F7FC] dark:hover:bg-[#1A2533] shadow-none"
-                >
-                  Discard All
-                </Button>
-                <Button
+                <button type="button" onClick={() => setShowReviewModal(false)} className={secondaryButton}>
+                  Discard all
+                </button>
+                <button
+                  type="button"
                   onClick={() => {
                     const cleanFaqs = pendingFaqs.map(
                       ({ isOpen, ...rest }) => rest
@@ -554,13 +558,13 @@ const AiFaqGenerator: React.FC<AiFaqGeneratorProps> = ({
                     onFaqsApproved(cleanFaqs);
                     setShowReviewModal(false);
                     setPendingFaqs([]);
-                    toast.success("Added to chatbot!");
+                    toast.success("Added. Save to publish them.");
                   }}
                   disabled={pendingFaqs.length === 0}
-                  className="bg-[#101723] dark:bg-[#D7DFE5] hover:bg-[#243040] dark:hover:bg-[#E7EDF6] text-white dark:text-[#141D2B] shadow-md"
+                  className={primaryButton}
                 >
-                  Add {pendingFaqs.length} FAQs to Chatbot
-                </Button>
+                  Add {pendingFaqs.length} {pendingFaqs.length === 1 ? "question" : "questions"}
+                </button>
               </div>
             </motion.div>
           </motion.div>
