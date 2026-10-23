@@ -240,7 +240,7 @@ const Settings: React.FC<SettingsProps> = ({ darkMode, setDarkMode }) => {
       await action();
     } catch (error) {
       console.error("Billing action failed:", error);
-      toast.error(failure);
+      toast.error(error instanceof Error && error.message ? `${failure} ${error.message}` : failure);
     } finally {
       setBillingActionLoading(false);
     }

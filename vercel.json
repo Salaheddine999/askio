@@ -40,6 +40,6 @@
   ],
   "rewrites": [
     { "source": "/chatbot-embed.js", "destination": "/chatbot-embed.js" },
-    { "source": "/(.*)", "destination": "/index.html" }
+    { "source": "/((?!api/).*)", "destination": "/index.html" }
   ]
 }
