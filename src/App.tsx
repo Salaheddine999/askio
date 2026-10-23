@@ -238,7 +238,7 @@ const App: React.FC = () => {
                 path="/settings"
                 element={
                   user ? (
-                    <Settings toggleSidebar={toggleSidebar} />
+                    <Settings toggleSidebar={toggleSidebar} darkMode={darkMode} setDarkMode={setDarkMode} />
                   ) : (
                     <Navigate to="/auth" />
                   )
@@ -246,7 +246,7 @@ const App: React.FC = () => {
               />
               <Route
                 path="/analytics"
-                element={user ? <Analytics /> : <Navigate to="/auth" />}
+                element={user ? <Analytics testMode={testMode} /> : <Navigate to="/auth" />}
               />
               <Route
                 path="/integrations"

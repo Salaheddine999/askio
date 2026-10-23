@@ -8,11 +8,13 @@ interface StatsCardProps {
   trendDirection?: "up" | "down" | "neutral";
   icon?: React.ReactNode;
   description?: string;
+  /** Which direction is good news. For counts like "unanswered", going down is good. */
+  goodWhen?: "up" | "down";
 }
 
-const trendStyles = {
-  up: "bg-emerald-50 text-emerald-700 ring-emerald-600/15 dark:bg-emerald-900/25 dark:text-emerald-400 dark:ring-emerald-400/20",
-  down: "bg-rose-50 text-rose-700 ring-rose-600/15 dark:bg-rose-900/25 dark:text-rose-400 dark:ring-rose-400/20",
+const trendTones = {
+  good: "bg-emerald-50 text-emerald-700 ring-emerald-600/15 dark:bg-emerald-900/25 dark:text-emerald-400 dark:ring-emerald-400/20",
+  bad: "bg-rose-50 text-rose-700 ring-rose-600/15 dark:bg-rose-900/25 dark:text-rose-400 dark:ring-rose-400/20",
   neutral: "bg-[#E7EDF6] text-[#566273] ring-[#566273]/10 dark:bg-[#243040] dark:text-[#9BAABD] dark:ring-white/5",
 };
 
@@ -25,8 +27,10 @@ const StatsCard: React.FC<StatsCardProps> = ({
   trendDirection = "neutral",
   icon,
   description,
+  goodWhen = "up",
 }) => {
   const Arrow = TrendIcon[trendDirection];
+  const tone = trendDirection === "neutral" ? "neutral" : trendDirection === goodWhen ? "good" : "bad";
   return (
     <div className="flex h-full flex-col justify-between rounded-xl border border-[#D8DFE9] bg-[#F9FCFF] p-4 text-[#101723] sm:p-5 shadow-[0_1px_2px_rgba(16,23,35,0.04)] dark:border-[#2B3646] dark:bg-[#1A2533] dark:text-[#D7DFE5]">
       <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1.5">
@@ -40,7 +44,7 @@ const StatsCard: React.FC<StatsCardProps> = ({
         </h3>
         {trend && (
           <span
-            className={`inline-flex shrink-0 items-center gap-0.5 rounded-full px-2 py-0.5 text-caption font-medium tabular-nums ring-1 ring-inset ${trendStyles[trendDirection]}`}
+            className={`inline-flex shrink-0 items-center gap-0.5 rounded-full px-2 py-0.5 text-caption font-medium tabular-nums ring-1 ring-inset ${trendTones[tone]}`}
           >
             <Arrow size={12} strokeWidth={2.25} />
             {trend}
