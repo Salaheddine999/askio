@@ -9,28 +9,92 @@ service cloud.firestore {
       return signedIn() && request.auth.uid == userId;
     }
 
-    function ownsChatbot() {
+    function ownsExistingChatbot() {
       return signedIn() && resource.data.user_id == request.auth.uid;
     }
 
     match /users/{userId} {
       allow read: if ownsUserDoc(userId);
       allow create: if ownsUserDoc(userId);
+
+      // Billing and limit fields are set by the server only.
       allow update: if ownsUserDoc(userId)
         && request.resource.data.plan == resource.data.plan
         && request.resource.data.subscriptionStatus == resource.data.subscriptionStatus
         && request.resource.data.aiChatbotLimit == resource.data.aiChatbotLimit
-        && request.resource.data.isPro == resource.data.isPro;
+        && request.resource.data.isPro == resource.data.isPro
+        && request.resource.data.get('aiReplyLimit', null) == resource.data.get('aiReplyLimit', null);
+
       allow delete: if ownsUserDoc(userId);
     }
 
-    match /chatbot_configs/{chatbotId} {
+    match /chatbot_configs/{configId} {
       allow read: if true;
-      allow create: if signedIn() && request.resource.data.user_id == request.auth.uid;
-      allow update: if ownsChatbot()
+
+      allow create: if signedIn()
+        && request.resource.data.user_id == request.auth.uid
+        && request.resource.data.aiEnabled == false;
+
+      allow update: if ownsExistingChatbot()
         && request.resource.data.user_id == resource.data.user_id
         && request.resource.data.aiEnabled == resource.data.aiEnabled;
-      allow delete: if ownsChatbot();
+
+      allow delete: if ownsExistingChatbot();
+    }
+
+    match /feedback/{feedbackId} {
+      allow read: if true;
+      allow create: if !exists(/databases/$(database)/documents/feedback/$(feedbackId));
+      allow update, delete: if false;
+    }
+
+    // Leads, analytics and unanswered questions are written by anonymous
+    // visitors through the widget, and belong to the chatbot's owner. Each
+    // record carries ownerId, checked against the chatbot on create, so the
+    // owner's queries (where ownerId == uid) are provably theirs alone.
+    function chatbotPath(chatbotId) {
+      return /databases/$(database)/documents/chatbot_configs/$(chatbotId);
+    }
+
+    function validVisitorRecord() {
+      return request.resource.data.chatbotId is string
+        && exists(chatbotPath(request.resource.data.chatbotId))
+        && request.resource.data.ownerId == get(chatbotPath(request.resource.data.chatbotId)).data.user_id;
+    }
+
+    function ownsRecord() {
+      return signedIn() && resource.data.ownerId == request.auth.uid;
+    }
+
+    match /leads/{leadId} {
+      allow create: if validVisitorRecord();
+      allow read, update, delete: if ownsRecord();
+    }
+
+    match /analytics_events/{eventId} {
+      allow create: if validVisitorRecord();
+      allow read, update, delete: if ownsRecord();
+    }
+
+    match /unanswered_queries/{queryId} {
+      allow create: if validVisitorRecord();
+      allow read, update, delete: if ownsRecord();
+    }
+
+    // Monthly AI reply counts, keyed "{uid}_{YYYY-MM}". Only the server writes
+    // them; owners can read their own, including a month with no replies yet.
+    match /ai_usage/{usageId} {
+      allow read: if signedIn() && usageId.matches(request.auth.uid + '_[0-9]{4}-[0-9]{2}');
+      allow write: if false;
+    }
+
+    // Per-minute request counters for the AI chat endpoint. Server only.
+    match /ai_rate_limits/{windowId} {
+      allow read, write: if false;
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }

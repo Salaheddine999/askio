@@ -1,3 +1,4 @@
+import brandLogo from "../assets/logo.svg";
 import React from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { auth } from "../utils/firebase";
@@ -99,27 +100,27 @@ const Navbar: React.FC<NavbarProps> = ({
       )}
 
       <nav
-        className={`h-screen fixed left-0 top-0 z-50 flex flex-col border-r transition-all duration-300 ease-in-out bg-[#FAFAF9] dark:bg-[#292524] border-[rgba(55,50,47,0.08)] dark:border-[#44403C]
+        className={`h-screen fixed left-0 top-0 z-50 flex flex-col border-r transition-all duration-300 ease-in-out bg-[#EEF2F9] dark:bg-[#17212F] border-[rgba(16,23,35,0.08)] dark:border-[#2B3646]
         ${sidebarOpen ? "translate-x-0 w-64" : "-translate-x-full lg:translate-x-0 w-64 lg:w-[70px]"}
         `}
       >
         {/* Header */}
-        <div className="flex h-[60px] items-center px-4 border-b border-[rgba(55,50,47,0.08)] dark:border-[#44403C]">
+        <div className="flex h-[60px] items-center px-4 border-b border-[rgba(16,23,35,0.08)] dark:border-[#2B3646]">
           <Link
             to="/"
             className={`flex items-center gap-1 ${
               !sidebarOpen && "lg:justify-center lg:w-full"
             }`}
           >
-            <img src="/logo.svg" alt="Askio" className="w-8 h-8 flex-shrink-0" />
-            <span className={`font-sans text-body-lg font-bold tracking-tight text-[#37322F] dark:text-[#F5F5F4] leading-none ${!sidebarOpen && "lg:hidden"}`}>
+            <img src={brandLogo} alt="Askio" className="w-8 h-8 flex-shrink-0 dark:brightness-0 dark:invert" />
+            <span className={`font-sans text-body-lg font-bold tracking-tight text-[#101723] dark:text-[#D7DFE5] leading-none ${!sidebarOpen && "lg:hidden"}`}>
               Askio
             </span>
           </Link>
           {/* Mobile Close Button */}
           <button 
              onClick={toggleSidebar}
-             className="ml-auto lg:hidden text-[#605A57] dark:text-[#A8A29E]"
+             className="ml-auto lg:hidden text-[#566273] dark:text-[#9BAABD]"
           >
              <PanelLeftClose className="h-5 w-5" />
           </button>
@@ -130,7 +131,7 @@ const Navbar: React.FC<NavbarProps> = ({
           {navItems.map((group, groupIndex) => (
             <div key={groupIndex} className="px-3 mb-6 last:mb-0">
               {(sidebarOpen) && (
-                <h2 className="mb-2 px-4 text-caption font-semibold tracking-tight text-[#605A57] dark:text-[#A8A29E] uppercase">
+                <h2 className="mb-2 px-4 text-caption font-semibold tracking-tight text-[#566273] dark:text-[#9BAABD] uppercase">
                   {group.title}
                 </h2>
               )}
@@ -150,15 +151,15 @@ const Navbar: React.FC<NavbarProps> = ({
                       title={!sidebarOpen ? item.title : undefined}
                       className={`flex items-center gap-3 rounded-md px-3 py-2 text-body-sm font-medium transition-colors ${
                         isActive
-                          ? "bg-[#E0DEDB] text-[#37322F] dark:bg-[#44403C] dark:text-[#F5F5F4]"
-                          : "text-[#605A57] hover:bg-[#E0DEDB]/50 hover:text-[#37322F] dark:text-[#A8A29E] dark:hover:bg-[#44403C] dark:hover:text-[#F5F5F4]"
+                          ? "bg-[#E7EDF6] text-[#101723] dark:bg-[#243040] dark:text-[#D7DFE5]"
+                          : "text-[#566273] hover:bg-[#D8DFE9]/50 hover:text-[#101723] dark:text-[#9BAABD] dark:hover:bg-[#273444] dark:hover:text-[#D7DFE5]"
                       } ${!sidebarOpen && "lg:justify-center lg:px-2"}`}
                     >
                       <Icon className="h-4 w-4 flex-shrink-0" />
                       <div className={`flex flex-1 items-center justify-between ${!sidebarOpen && "lg:hidden"}`}>
                           <span>{item.title}</span>
                           {badge && (
-                            <span className="px-1.5 py-0.5 rounded text-[10px] bg-[#E0DEDB] dark:bg-[#44403C] text-[#605A57] dark:text-[#A8A29E] font-medium leading-none">
+                            <span className="px-1.5 py-0.5 rounded text-[10px] bg-[#D8DFE9] dark:bg-[#273444] text-[#566273] dark:text-[#9BAABD] font-medium leading-none">
                               {badge}
                             </span>
                           )}
@@ -172,22 +173,22 @@ const Navbar: React.FC<NavbarProps> = ({
         </div>
 
         {/* Footer */}
-        <div className="mt-auto border-t border-[rgba(55,50,47,0.08)] dark:border-[#44403C] p-4 space-y-1">
+        <div className="mt-auto border-t border-[rgba(16,23,35,0.08)] dark:border-[#2B3646] p-4 space-y-1">
           {/* Test Mode Toggle */}
           <button
               onClick={toggleTestMode}
               className={`flex w-full items-center gap-3 rounded-md px-3 py-2 text-body-sm font-medium transition-colors ${
                 testMode
                   ? "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-200"
-                  : "text-[#605A57] hover:bg-[#E0DEDB]/50 hover:text-[#37322F] dark:text-[#A8A29E] dark:hover:bg-[#44403C] dark:hover:text-[#F5F5F4]"
+                  : "text-[#566273] hover:bg-[#D8DFE9]/50 hover:text-[#101723] dark:text-[#9BAABD] dark:hover:bg-[#273444] dark:hover:text-[#D7DFE5]"
               } ${!sidebarOpen && "lg:justify-center lg:px-2"}`}
               title={!sidebarOpen ? (testMode ? "Test Mode On" : "Test Mode Off") : undefined}
             >
               <Beaker className="h-4 w-4" />
               <div className={`flex flex-1 items-center justify-between ${!sidebarOpen && "lg:hidden"}`}>
                   <span>Test Mode</span>
-                  <div className={`w-8 h-4 rounded-full relative transition-colors ${testMode ? "bg-amber-500" : "bg-gray-300 dark:bg-gray-600"}`}>
-                      <div className={`absolute top-0.5 w-3 h-3 rounded-full bg-white transition-all ${testMode ? "left-4.5" : "left-0.5"}`} style={{ left: testMode ? "18px" : "2px" }} />
+                  <div className={`w-8 h-4 rounded-full relative transition-colors ${testMode ? "bg-amber-500" : "bg-[#D7DFE5] dark:bg-[#566273]"}`}>
+                      <div className={`absolute top-0.5 w-3 h-3 rounded-full bg-[#F9FCFF] transition-all ${testMode ? "left-4.5" : "left-0.5"}`} style={{ left: testMode ? "18px" : "2px" }} />
                   </div>
                 </div>
           </button>
@@ -195,7 +196,7 @@ const Navbar: React.FC<NavbarProps> = ({
           {/* Theme Toggle */}
           <button
               onClick={toggleDarkMode}
-              className={`flex w-full items-center gap-3 rounded-md px-3 py-2 text-body-sm font-medium text-[#605A57] hover:bg-[#E0DEDB]/50 hover:text-[#37322F] dark:text-[#A8A29E] dark:hover:bg-[#44403C] dark:hover:text-[#F5F5F4] transition-colors ${
+              className={`flex w-full items-center gap-3 rounded-md px-3 py-2 text-body-sm font-medium text-[#566273] hover:bg-[#D8DFE9]/50 hover:text-[#101723] dark:text-[#9BAABD] dark:hover:bg-[#273444] dark:hover:text-[#D7DFE5] transition-colors ${
                 !sidebarOpen && "lg:justify-center lg:px-2"
               }`}
               title={!sidebarOpen ? (darkMode ? "Light Mode" : "Dark Mode") : undefined}
@@ -207,7 +208,7 @@ const Navbar: React.FC<NavbarProps> = ({
           {/* Collapse Toggle */}
           <button
               onClick={toggleSidebar}
-              className={`hidden lg:flex w-full items-center gap-3 rounded-md px-3 py-2 text-body-sm font-medium text-[#605A57] hover:bg-[#E0DEDB]/50 hover:text-[#37322F] dark:text-[#A8A29E] dark:hover:bg-[#44403C] dark:hover:text-[#F5F5F4] transition-colors ${
+              className={`hidden lg:flex w-full items-center gap-3 rounded-md px-3 py-2 text-body-sm font-medium text-[#566273] hover:bg-[#D8DFE9]/50 hover:text-[#101723] dark:text-[#9BAABD] dark:hover:bg-[#273444] dark:hover:text-[#D7DFE5] transition-colors ${
                   !sidebarOpen && "lg:justify-center lg:px-2"
               }`}
               title={!sidebarOpen ? "Expand Sidebar" : "Collapse Sidebar"}
@@ -217,17 +218,17 @@ const Navbar: React.FC<NavbarProps> = ({
           </button>
 
           {/* User Profile */}
-          <div className={`flex items-center gap-3 pt-2 mt-2 border-t border-[rgba(55,50,47,0.08)] dark:border-[#44403C] ${!sidebarOpen && "lg:justify-center"}`}>
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#E0DEDB] dark:bg-[#44403C] text-[#37322F] dark:text-[#F5F5F4]">
+          <div className={`flex items-center gap-3 pt-2 mt-2 border-t border-[rgba(16,23,35,0.08)] dark:border-[#2B3646] ${!sidebarOpen && "lg:justify-center"}`}>
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#D8DFE9] dark:bg-[#273444] text-[#101723] dark:text-[#D7DFE5]">
                   <User className="h-4 w-4" />
               </div>
               <div className={`flex flex-col overflow-hidden ${!sidebarOpen && "lg:hidden"}`}>
-                      <span className="truncate text-body-sm font-medium text-[#37322F] dark:text-[#F5F5F4]">
+                      <span className="truncate text-body-sm font-medium text-[#101723] dark:text-[#D7DFE5]">
                           {auth.currentUser?.displayName || "User"}
                       </span>
                       <button
                           onClick={handleSignOut}
-                          className="truncate text-caption text-[#605A57] hover:text-[#37322F] dark:text-[#A8A29E] dark:hover:text-[#F5F5F4] text-left"
+                          className="truncate text-caption text-[#566273] hover:text-[#101723] dark:text-[#9BAABD] dark:hover:text-[#D7DFE5] text-left"
                       >
                           Sign out
                       </button>

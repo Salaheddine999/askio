@@ -1,11 +1,16 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useSearchParams } from "react-router-dom";
 import { db } from "../utils/firebase";
 import { doc, getDoc } from "firebase/firestore";
 import Chatbot, { ChatbotProps } from "../components/Chatbot";
+import { isLauncherStyle } from "../utils/orbColors";
 
 const ChatbotEmbed: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const [searchParams] = useSearchParams();
+  // The embed code can override saved settings with ?launcher= and ?greeting=.
+  const launcherOverride = searchParams.get("launcher");
+  const greetingOverride = searchParams.get("greeting");
   const [config, setConfig] = useState<ChatbotProps | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -21,7 +26,17 @@ const ChatbotEmbed: React.FC = () => {
             throw new Error("No such document!");
           }
 
-          setConfig({ id: docSnap.id, ...docSnap.data() } as ChatbotProps);
+          const saved = { id: docSnap.id, ...docSnap.data() } as ChatbotProps;
+          setConfig({
+            ...saved,
+            launcherStyle: isLauncherStyle(launcherOverride)
+              ? launcherOverride
+              : isLauncherStyle(saved.launcherStyle)
+                ? saved.launcherStyle
+                : "classic",
+            greetingBubble:
+              greetingOverride === "1" ? true : greetingOverride === "0" ? false : saved.greetingBubble === true,
+          });
         } catch (err) {
           console.error("Error fetching chatbot config:", err);
           setError("Failed to load chatbot configuration");
@@ -32,7 +47,7 @@ const ChatbotEmbed: React.FC = () => {
     };
 
     fetchConfig();
-  }, [id]);
+  }, [id, launcherOverride, greetingOverride]);
 
   useEffect(() => {
     // Notify parent window that the chatbot is ready

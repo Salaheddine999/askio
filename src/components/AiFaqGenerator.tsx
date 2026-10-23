@@ -162,7 +162,7 @@ const AiFaqGenerator: React.FC<AiFaqGeneratorProps> = ({
       {canUseAi ? (
         <Button
           onClick={() => setShowUrlModal(true)}
-          className="bg-white dark:bg-[#292524] border border-[#E0DEDB] dark:border-[#44403C] text-[#37322F] dark:text-[#F5F5F4] hover:bg-[#FAFAF9] dark:hover:bg-[#1C1917] hover:border-[#37322F] dark:hover:border-[#A8A29E] shadow-sm rounded-[9px] text-body-sm flex-1 sm:flex-none"
+          className="bg-[#F9FCFF] dark:bg-[#1A2533] border border-[#D8DFE9] dark:border-[#2B3646] text-[#101723] dark:text-[#D7DFE5] hover:bg-[#F3F7FC] dark:hover:bg-[#141D2B] hover:border-[#101723] dark:hover:border-[#9BAABD] shadow-sm rounded-[9px] text-body-sm flex-1 sm:flex-none"
           icon={Sparkles}
         >
           Generate with AI
@@ -170,7 +170,7 @@ const AiFaqGenerator: React.FC<AiFaqGeneratorProps> = ({
       ) : (
         <Button
           onClick={() => navigate("/plans")}
-          className="bg-[#37322F] dark:bg-[#F5F5F4] text-white dark:text-[#1C1917] hover:bg-[#2a2522] dark:hover:bg-[#E7E5E4] shadow-sm rounded-[9px] text-body-sm flex-1 sm:flex-none"
+          className="bg-[#101723] dark:bg-[#D7DFE5] text-white dark:text-[#141D2B] hover:bg-[#243040] dark:hover:bg-[#E7EDF6] shadow-sm rounded-[9px] text-body-sm flex-1 sm:flex-none"
           icon={Sparkles}
         >
           Upgrade to Use AI
@@ -199,7 +199,7 @@ const AiFaqGenerator: React.FC<AiFaqGeneratorProps> = ({
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 10 }}
               transition={{ duration: 0.2 }}
-              className="bg-white dark:bg-[#1C1917] rounded-xl shadow-xl w-full max-w-md p-6 border border-[#E0DEDB] dark:border-[#44403C] overflow-hidden relative"
+              className="bg-[#F9FCFF] dark:bg-[#141D2B] rounded-xl shadow-xl w-full max-w-md p-6 border border-[#D8DFE9] dark:border-[#2B3646] overflow-hidden relative"
             >
               <AnimatePresence mode="wait">
                 {isScraping ? (
@@ -212,7 +212,7 @@ const AiFaqGenerator: React.FC<AiFaqGeneratorProps> = ({
                   >
                     {/* Document icon with animated scan lines */}
                     <div className="relative w-20 h-24 mb-8">
-                      <div className="w-full h-full rounded-lg border-2 border-[#E0DEDB] dark:border-[#57534E] bg-[#FAFAF9] dark:bg-[#292524] flex flex-col items-center justify-center gap-2 overflow-hidden relative">
+                      <div className="w-full h-full rounded-lg border-2 border-[#D8DFE9] dark:border-[#39485B] bg-[#F3F7FC] dark:bg-[#1A2533] flex flex-col items-center justify-center gap-2 overflow-hidden relative">
                         <motion.div
                           animate={{ y: ["-100%", "400%"] }}
                           transition={{
@@ -220,7 +220,7 @@ const AiFaqGenerator: React.FC<AiFaqGeneratorProps> = ({
                             duration: 1.8,
                             ease: "easeInOut",
                           }}
-                          className="absolute left-2 right-2 h-4 bg-gradient-to-b from-transparent via-[#37322F]/5 dark:via-[#F5F5F4]/5 to-transparent rounded z-10"
+                          className="absolute left-2 right-2 h-4 bg-gradient-to-b from-transparent via-[#101723]/5 dark:via-[#D7DFE5]/5 to-transparent rounded z-10"
                         />
                         <div className="space-y-2 w-full px-3">
                           <motion.div
@@ -230,7 +230,7 @@ const AiFaqGenerator: React.FC<AiFaqGeneratorProps> = ({
                               duration: 1.5,
                               delay: 0,
                             }}
-                            className="h-1.5 bg-[#D6D3D1] dark:bg-[#57534E] rounded-full w-[85%]"
+                            className="h-1.5 bg-[#D7DFE5] dark:bg-[#39485B] rounded-full w-[85%]"
                           />
                           <motion.div
                             animate={{ opacity: [0.3, 0.7, 0.3] }}
@@ -239,7 +239,7 @@ const AiFaqGenerator: React.FC<AiFaqGeneratorProps> = ({
                               duration: 1.5,
                               delay: 0.2,
                             }}
-                            className="h-1.5 bg-[#D6D3D1] dark:bg-[#57534E] rounded-full w-[65%]"
+                            className="h-1.5 bg-[#D7DFE5] dark:bg-[#39485B] rounded-full w-[65%]"
                           />
                           <motion.div
                             animate={{ opacity: [0.3, 0.7, 0.3] }}
@@ -248,7 +248,7 @@ const AiFaqGenerator: React.FC<AiFaqGeneratorProps> = ({
                               duration: 1.5,
                               delay: 0.4,
                             }}
-                            className="h-1.5 bg-[#D6D3D1] dark:bg-[#57534E] rounded-full w-[75%]"
+                            className="h-1.5 bg-[#D7DFE5] dark:bg-[#39485B] rounded-full w-[75%]"
                           />
                           <motion.div
                             animate={{ opacity: [0.3, 0.7, 0.3] }}
@@ -257,7 +257,7 @@ const AiFaqGenerator: React.FC<AiFaqGeneratorProps> = ({
                               duration: 1.5,
                               delay: 0.6,
                             }}
-                            className="h-1.5 bg-[#D6D3D1] dark:bg-[#57534E] rounded-full w-[50%]"
+                            className="h-1.5 bg-[#D7DFE5] dark:bg-[#39485B] rounded-full w-[50%]"
                           />
                         </div>
                       </div>
@@ -271,19 +271,19 @@ const AiFaqGenerator: React.FC<AiFaqGeneratorProps> = ({
                           duration: 2.5,
                           ease: "easeInOut",
                         }}
-                        className="absolute -bottom-2 -right-2 w-8 h-8 rounded-full bg-[#37322F] dark:bg-[#F5F5F4] flex items-center justify-center shadow-md"
+                        className="absolute -bottom-2 -right-2 w-8 h-8 rounded-full bg-[#101723] dark:bg-[#D7DFE5] flex items-center justify-center shadow-md"
                       >
                         <Sparkles
                           size={14}
-                          className="text-white dark:text-[#1C1917]"
+                          className="text-white dark:text-[#141D2B]"
                         />
                       </motion.div>
                     </div>
 
-                    <h3 className="text-lg font-bold text-[#37322F] dark:text-[#F5F5F4] mb-1.5 font-serif tracking-tight">
+                    <h3 className="text-lg font-bold text-[#101723] dark:text-[#D7DFE5] mb-1.5 font-serif tracking-tight">
                       Reading your website...
                     </h3>
-                    <p className="text-sm text-[#78716C] dark:text-[#A8A29E] max-w-[280px] leading-relaxed">
+                    <p className="text-sm text-[#647184] dark:text-[#9BAABD] max-w-[280px] leading-relaxed">
                       Our AI is scanning the page content and crafting relevant
                       FAQs for your chatbot.
                     </p>
@@ -295,7 +295,7 @@ const AiFaqGenerator: React.FC<AiFaqGeneratorProps> = ({
                           duration: 1,
                           delay: 0,
                         }}
-                        className="w-1.5 h-1.5 rounded-full bg-[#37322F] dark:bg-[#A8A29E]"
+                        className="w-1.5 h-1.5 rounded-full bg-[#101723] dark:bg-[#9BAABD]"
                       />
                       <motion.div
                         animate={{ opacity: [0.3, 1, 0.3] }}
@@ -304,7 +304,7 @@ const AiFaqGenerator: React.FC<AiFaqGeneratorProps> = ({
                           duration: 1,
                           delay: 0.2,
                         }}
-                        className="w-1.5 h-1.5 rounded-full bg-[#37322F] dark:bg-[#A8A29E]"
+                        className="w-1.5 h-1.5 rounded-full bg-[#101723] dark:bg-[#9BAABD]"
                       />
                       <motion.div
                         animate={{ opacity: [0.3, 1, 0.3] }}
@@ -313,7 +313,7 @@ const AiFaqGenerator: React.FC<AiFaqGeneratorProps> = ({
                           duration: 1,
                           delay: 0.4,
                         }}
-                        className="w-1.5 h-1.5 rounded-full bg-[#37322F] dark:bg-[#A8A29E]"
+                        className="w-1.5 h-1.5 rounded-full bg-[#101723] dark:bg-[#9BAABD]"
                       />
                     </div>
                   </motion.div>
@@ -329,19 +329,19 @@ const AiFaqGenerator: React.FC<AiFaqGeneratorProps> = ({
                         <div className="flex items-center gap-2 mb-0.5">
                           <Sparkles
                             size={16}
-                            className="text-[#37322F] dark:text-[#F5F5F4]"
+                            className="text-[#101723] dark:text-[#D7DFE5]"
                           />
-                          <h3 className="text-lg font-bold text-[#37322F] dark:text-[#F5F5F4] font-serif tracking-tight">
+                          <h3 className="text-lg font-bold text-[#101723] dark:text-[#D7DFE5] font-serif tracking-tight">
                             Generate with AI
                           </h3>
                         </div>
-                        <p className="text-xs text-[#78716C] dark:text-[#A8A29E] leading-relaxed">
+                        <p className="text-xs text-[#647184] dark:text-[#9BAABD] leading-relaxed">
                           Paste a URL and we'll generate FAQs from its content.
                         </p>
                       </div>
                       <button
                         onClick={() => setShowUrlModal(false)}
-                        className="text-[#A8A29E] hover:text-[#37322F] dark:hover:text-[#F5F5F4] p-1 rounded-md hover:bg-[#F5F5F4] dark:hover:bg-[#292524] transition-colors"
+                        className="text-[#647184] hover:text-[#101723] dark:hover:text-[#D7DFE5] p-1 rounded-md hover:bg-[#E7EDF6] dark:hover:bg-[#1A2533] transition-colors"
                       >
                         <X size={18} />
                       </button>
@@ -349,7 +349,7 @@ const AiFaqGenerator: React.FC<AiFaqGeneratorProps> = ({
 
                     <div className="space-y-4">
                       <div>
-                        <label className="block text-xs font-semibold text-[#605A57] dark:text-[#A8A29E] mb-1.5 uppercase tracking-wider">
+                        <label className="block text-xs font-semibold text-[#566273] dark:text-[#9BAABD] mb-1.5 uppercase tracking-wider">
                           Website URL
                         </label>
                         <input
@@ -357,26 +357,26 @@ const AiFaqGenerator: React.FC<AiFaqGeneratorProps> = ({
                           placeholder="https://example.com/about"
                           value={scrapeUrl}
                           onChange={(e) => setScrapeUrl(e.target.value)}
-                          className="w-full px-3.5 py-2.5 border border-[#E0DEDB] dark:border-[#44403C] rounded-xl focus:ring-2 focus:ring-[#37322F]/10 dark:focus:ring-[#F5F5F4]/10 focus:border-[#37322F] dark:focus:border-[#A8A29E] bg-[#FAFAF9] dark:bg-[#292524] text-[#37322F] dark:text-[#F5F5F4] text-sm outline-none transition-all placeholder-[#A8A29E] dark:placeholder-[#78716C]"
+                          className="w-full px-3.5 py-2.5 border border-[#D8DFE9] dark:border-[#2B3646] rounded-xl focus:ring-2 focus:ring-[#101723]/10 dark:focus:ring-[#D7DFE5]/10 focus:border-[#101723] dark:focus:border-[#9BAABD] bg-[#F3F7FC] dark:bg-[#1A2533] text-[#101723] dark:text-[#D7DFE5] text-sm outline-none transition-all placeholder-[#647184] dark:placeholder-[#87909D]"
                         />
                       </div>
 
-                      <div className="flex items-center justify-between p-3 rounded-xl border border-[#E0DEDB] dark:border-[#44403C] bg-[#FAFAF9] dark:bg-[#292524]">
+                      <div className="flex items-center justify-between p-3 rounded-xl border border-[#D8DFE9] dark:border-[#2B3646] bg-[#F3F7FC] dark:bg-[#1A2533]">
                         <div>
-                          <p className="text-sm font-semibold text-[#37322F] dark:text-[#F5F5F4]">
+                          <p className="text-sm font-semibold text-[#101723] dark:text-[#D7DFE5]">
                             Deep Crawl
                           </p>
-                          <p className="text-xs text-[#78716C] dark:text-[#A8A29E] mt-0.5">
+                          <p className="text-xs text-[#647184] dark:text-[#9BAABD] mt-0.5">
                             Scans a few linked pages like About, Pricing, and
                             Contact for more complete FAQs.
                           </p>
                         </div>
                         <button
                           onClick={() => setIsDeepCrawl(!isDeepCrawl)}
-                          className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-[#37322F]/30 dark:focus:ring-[#F5F5F4]/30 focus:ring-offset-2 ${
+                          className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-[#101723]/30 dark:focus:ring-[#D7DFE5]/30 focus:ring-offset-2 ${
                             isDeepCrawl
-                              ? "bg-[#37322F] dark:bg-[#F5F5F4]"
-                              : "bg-[#D6D3D1] dark:bg-[#57534E]"
+                              ? "bg-[#101723] dark:bg-[#D7DFE5]"
+                              : "bg-[#D7DFE5] dark:bg-[#39485B]"
                           }`}
                           role="switch"
                           aria-checked={isDeepCrawl}
@@ -384,7 +384,7 @@ const AiFaqGenerator: React.FC<AiFaqGeneratorProps> = ({
                           <span
                             className={`${
                               isDeepCrawl ? "translate-x-4" : "translate-x-0"
-                            } pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white dark:bg-[#1C1917] shadow ring-0 transition duration-200 ease-in-out`}
+                            } pointer-events-none inline-block h-4 w-4 transform rounded-full bg-[#F9FCFF] dark:bg-[#141D2B] shadow ring-0 transition duration-200 ease-in-out`}
                           />
                         </button>
                       </div>
@@ -392,14 +392,14 @@ const AiFaqGenerator: React.FC<AiFaqGeneratorProps> = ({
                       <div className="flex gap-3 justify-end pt-2">
                         <Button
                           onClick={() => setShowUrlModal(false)}
-                          className="bg-white dark:bg-[#292524] border border-[#E0DEDB] dark:border-[#44403C] text-[#605A57] dark:text-[#A8A29E] hover:bg-[#FAFAF9] dark:hover:bg-[#1C1917] shadow-sm rounded-lg"
+                          className="bg-[#F9FCFF] dark:bg-[#1A2533] border border-[#D8DFE9] dark:border-[#2B3646] text-[#566273] dark:text-[#9BAABD] hover:bg-[#F3F7FC] dark:hover:bg-[#141D2B] shadow-sm rounded-lg"
                         >
                           Cancel
                         </Button>
                         <Button
                           onClick={handleAiScrape}
                           disabled={!scrapeUrl}
-                          className="bg-[#37322F] dark:bg-[#F5F5F4] hover:bg-[#2a2522] dark:hover:bg-[#E7E5E4] text-white dark:text-[#1C1917] shadow-md rounded-lg min-w-[120px]"
+                          className="bg-[#101723] dark:bg-[#D7DFE5] hover:bg-[#243040] dark:hover:bg-[#E7EDF6] text-white dark:text-[#141D2B] shadow-md rounded-lg min-w-[120px]"
                         >
                           Generate
                         </Button>
@@ -427,19 +427,19 @@ const AiFaqGenerator: React.FC<AiFaqGeneratorProps> = ({
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 10 }}
               transition={{ duration: 0.2 }}
-              className="bg-white dark:bg-[#1C1917] rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col border border-[#E0DEDB] dark:border-[#44403C] overflow-hidden"
+              className="bg-[#F9FCFF] dark:bg-[#141D2B] rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col border border-[#D8DFE9] dark:border-[#2B3646] overflow-hidden"
             >
-              <div className="p-6 border-b border-[#E0DEDB] dark:border-[#44403C] flex justify-between items-start shrink-0">
+              <div className="p-6 border-b border-[#D8DFE9] dark:border-[#2B3646] flex justify-between items-start shrink-0">
                 <div>
                   <div className="flex items-center gap-2 mb-1.5">
-                    <div className="p-1.5 bg-[#F5F5F4] dark:bg-[#292524] rounded-lg text-[#37322F] dark:text-[#F5F5F4]">
+                    <div className="p-1.5 bg-[#E7EDF6] dark:bg-[#1A2533] rounded-lg text-[#101723] dark:text-[#D7DFE5]">
                       <Sparkles size={18} />
                     </div>
-                    <h3 className="text-xl font-bold text-[#37322F] dark:text-[#F5F5F4] font-serif tracking-tight">
+                    <h3 className="text-xl font-bold text-[#101723] dark:text-[#D7DFE5] font-serif tracking-tight">
                       Review Generated FAQs
                     </h3>
                   </div>
-                  <p className="text-sm text-[#78716C] dark:text-[#A8A29E] leading-relaxed max-w-lg">
+                  <p className="text-sm text-[#647184] dark:text-[#9BAABD] leading-relaxed max-w-lg">
                     We've extracted the core information from the website. You
                     can edit any text or remove irrelevant questions before
                     adding them.
@@ -447,13 +447,13 @@ const AiFaqGenerator: React.FC<AiFaqGeneratorProps> = ({
                 </div>
                 <button
                   onClick={() => setShowReviewModal(false)}
-                  className="text-[#A8A29E] hover:text-[#37322F] dark:hover:text-[#F5F5F4] p-1 rounded-lg hover:bg-[#FAFAF9] dark:hover:bg-[#292524] transition-colors"
+                  className="text-[#647184] hover:text-[#101723] dark:hover:text-[#D7DFE5] p-1 rounded-lg hover:bg-[#F3F7FC] dark:hover:bg-[#1A2533] transition-colors"
                 >
                   <X size={20} />
                 </button>
               </div>
 
-              <div className="p-6 overflow-y-auto overflow-x-hidden space-y-5 bg-[#FAFAF9] dark:bg-[#1C1917] flex-1 custom-scrollbar">
+              <div className="p-6 overflow-y-auto overflow-x-hidden space-y-5 bg-[#F3F7FC] dark:bg-[#141D2B] flex-1 custom-scrollbar">
                 <AnimatePresence mode="popLayout">
                   {pendingFaqs.map((faq, index) => (
                     <motion.div
@@ -467,7 +467,7 @@ const AiFaqGenerator: React.FC<AiFaqGeneratorProps> = ({
                       }}
                       transition={{ duration: 0.3, delay: index * 0.05 }}
                       key={index}
-                      className="bg-white dark:bg-[#292524] p-5 rounded-2xl shadow-sm border border-[#E0DEDB] dark:border-[#44403C] group relative hover:border-[#37322F]/20 dark:hover:border-[#A8A29E]/30 transition-colors"
+                      className="bg-[#F9FCFF] dark:bg-[#1A2533] p-5 rounded-2xl shadow-sm border border-[#D8DFE9] dark:border-[#2B3646] group relative hover:border-[#101723]/20 dark:hover:border-[#9BAABD]/30 transition-colors"
                     >
                       <button
                         onClick={() =>
@@ -475,7 +475,7 @@ const AiFaqGenerator: React.FC<AiFaqGeneratorProps> = ({
                             prev.filter((_, i) => i !== index)
                           )
                         }
-                        className="absolute -right-3 -top-3 bg-white dark:bg-[#292524] border border-[#E0DEDB] dark:border-[#44403C] text-[#A8A29E] hover:text-red-500 p-2 rounded-full shadow-sm opacity-0 group-hover:opacity-100 transition-all hover:scale-110 hover:border-red-200 dark:hover:border-red-900/50 hover:bg-red-50 dark:hover:bg-red-900/20 z-10"
+                        className="absolute -right-3 -top-3 bg-[#F9FCFF] dark:bg-[#1A2533] border border-[#D8DFE9] dark:border-[#2B3646] text-[#647184] hover:text-red-500 p-2 rounded-full shadow-sm opacity-0 group-hover:opacity-100 transition-all hover:scale-110 hover:border-red-200 dark:hover:border-red-900/50 hover:bg-red-50 dark:hover:bg-red-900/20 z-10"
                         title="Remove FAQ"
                       >
                         <Trash2 size={16} />
@@ -483,8 +483,8 @@ const AiFaqGenerator: React.FC<AiFaqGeneratorProps> = ({
 
                       <div className="space-y-4">
                         <div>
-                          <label className="block text-[10px] font-bold text-[#A8A29E] uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
-                            <span className="w-4 h-px bg-[#E0DEDB] dark:bg-[#44403C] inline-block"></span>
+                          <label className="block text-[10px] font-bold text-[#647184] uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+                            <span className="w-4 h-px bg-[#D8DFE9] dark:bg-[#273444] inline-block"></span>
                             Question
                           </label>
                           <input
@@ -495,12 +495,12 @@ const AiFaqGenerator: React.FC<AiFaqGeneratorProps> = ({
                               newFaqs[index].question = e.target.value;
                               setPendingFaqs(newFaqs);
                             }}
-                            className="w-full bg-[#FAFAF9] dark:bg-[#1C1917] border border-transparent hover:border-[#E0DEDB] dark:hover:border-[#44403C] px-3 py-2 rounded-lg text-[#37322F] dark:text-[#F5F5F4] font-medium outline-none focus:bg-white dark:focus:bg-[#292524] focus:border-[#37322F]/30 dark:focus:border-[#A8A29E]/30 focus:ring-4 focus:ring-[#37322F]/5 dark:focus:ring-[#F5F5F4]/5 transition-all text-sm"
+                            className="w-full bg-[#F3F7FC] dark:bg-[#141D2B] border border-transparent hover:border-[#D8DFE9] dark:hover:border-[#2B3646] px-3 py-2 rounded-lg text-[#101723] dark:text-[#D7DFE5] font-medium outline-none focus:bg-[#F9FCFF] dark:focus:bg-[#1A2533] focus:border-[#101723]/30 dark:focus:border-[#9BAABD]/30 focus:ring-4 focus:ring-[#101723]/5 dark:focus:ring-[#D7DFE5]/5 transition-all text-sm"
                           />
                         </div>
                         <div>
-                          <label className="block text-[10px] font-bold text-[#A8A29E] uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
-                            <span className="w-4 h-px bg-[#E0DEDB] dark:bg-[#44403C] inline-block"></span>
+                          <label className="block text-[10px] font-bold text-[#647184] uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+                            <span className="w-4 h-px bg-[#D8DFE9] dark:bg-[#273444] inline-block"></span>
                             Answer
                           </label>
                           <textarea
@@ -510,7 +510,7 @@ const AiFaqGenerator: React.FC<AiFaqGeneratorProps> = ({
                               newFaqs[index].answer = e.target.value;
                               setPendingFaqs(newFaqs);
                             }}
-                            className="w-full bg-[#FAFAF9] dark:bg-[#1C1917] border border-transparent hover:border-[#E0DEDB] dark:hover:border-[#44403C] px-3 py-2.5 rounded-lg text-[#605A57] dark:text-[#A8A29E] text-sm resize-none outline-none focus:bg-white dark:focus:bg-[#292524] focus:border-[#37322F]/30 dark:focus:border-[#A8A29E]/30 focus:ring-4 focus:ring-[#37322F]/5 dark:focus:ring-[#F5F5F4]/5 transition-all min-h-[80px]"
+                            className="w-full bg-[#F3F7FC] dark:bg-[#141D2B] border border-transparent hover:border-[#D8DFE9] dark:hover:border-[#2B3646] px-3 py-2.5 rounded-lg text-[#566273] dark:text-[#9BAABD] text-sm resize-none outline-none focus:bg-[#F9FCFF] dark:focus:bg-[#1A2533] focus:border-[#101723]/30 dark:focus:border-[#9BAABD]/30 focus:ring-4 focus:ring-[#101723]/5 dark:focus:ring-[#D7DFE5]/5 transition-all min-h-[80px]"
                             rows={3}
                           />
                         </div>
@@ -525,13 +525,13 @@ const AiFaqGenerator: React.FC<AiFaqGeneratorProps> = ({
                     animate={{ opacity: 1 }}
                     className="flex flex-col items-center justify-center py-12 text-center"
                   >
-                    <div className="w-16 h-16 bg-gray-100 dark:bg-[#292524] rounded-full flex items-center justify-center mb-4 text-gray-400 dark:text-gray-500">
+                    <div className="w-16 h-16 bg-[#E7EDF6] dark:bg-[#1A2533] rounded-full flex items-center justify-center mb-4 text-[#87909D] dark:text-[#647184]">
                       <Check size={32} />
                     </div>
-                    <h4 className="text-lg font-bold text-[#37322F] dark:text-[#F5F5F4] mb-1">
+                    <h4 className="text-lg font-bold text-[#101723] dark:text-[#D7DFE5] mb-1">
                       You're all clear!
                     </h4>
-                    <p className="text-sm text-[#78716C] dark:text-[#A8A29E] max-w-[250px]">
+                    <p className="text-sm text-[#647184] dark:text-[#9BAABD] max-w-[250px]">
                       You've discarded all the generated questions. You can
                       close this modal or generate again.
                     </p>
@@ -539,10 +539,10 @@ const AiFaqGenerator: React.FC<AiFaqGeneratorProps> = ({
                 )}
               </div>
 
-              <div className="p-4 border-t border-[#E0DEDB] dark:border-[#44403C] flex justify-end gap-3 shrink-0 bg-white dark:bg-[#1C1917]">
+              <div className="p-4 border-t border-[#D8DFE9] dark:border-[#2B3646] flex justify-end gap-3 shrink-0 bg-[#F9FCFF] dark:bg-[#141D2B]">
                 <Button
                   onClick={() => setShowReviewModal(false)}
-                  className="bg-transparent border border-[#E0DEDB] dark:border-[#44403C] text-[#605A57] dark:text-[#A8A29E] hover:bg-[#FAFAF9] dark:hover:bg-[#292524] shadow-none"
+                  className="bg-transparent border border-[#D8DFE9] dark:border-[#2B3646] text-[#566273] dark:text-[#9BAABD] hover:bg-[#F3F7FC] dark:hover:bg-[#1A2533] shadow-none"
                 >
                   Discard All
                 </Button>
@@ -557,7 +557,7 @@ const AiFaqGenerator: React.FC<AiFaqGeneratorProps> = ({
                     toast.success("Added to chatbot!");
                   }}
                   disabled={pendingFaqs.length === 0}
-                  className="bg-[#37322F] dark:bg-[#F5F5F4] hover:bg-[#2a2522] dark:hover:bg-[#E7E5E4] text-white dark:text-[#1C1917] shadow-md"
+                  className="bg-[#101723] dark:bg-[#D7DFE5] hover:bg-[#243040] dark:hover:bg-[#E7EDF6] text-white dark:text-[#141D2B] shadow-md"
                 >
                   Add {pendingFaqs.length} FAQs to Chatbot
                 </Button>

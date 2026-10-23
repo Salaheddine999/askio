@@ -2,25 +2,34 @@ import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { FaGithub } from "react-icons/fa";
 import { motion } from "framer-motion";
+import brandLogo from "../../assets/logo.svg";
 
 export default function HeroSection() {
-  const sectionBorder = "border-b border-[rgba(55,50,47,0.12)] dark:border-[#44403C]";
+  const sectionBorder = "border-b border-[rgba(16,23,35,0.12)] dark:border-[#2B3646]";
 
   return (
-    <section className={`pt-20 lg:pt-28 pb-10 lg:pb-14 flex flex-col items-center text-center ${sectionBorder}`}>
+    <section className={`pt-16 sm:pt-20 lg:pt-24 pb-8 sm:pb-12 flex flex-col items-center text-center ${sectionBorder}`}>
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        className="max-w-[750px] px-4"
+        className="max-w-[920px] px-4"
       >
-        <h1 className="text-hero font-serif text-[#37322F] dark:text-[#F5F5F4] mb-6">
-          Custom Chatbots,{" "}
+        <a
+          href="#kio"
+          className="group mb-6 inline-flex items-center gap-2 rounded-full border border-[#D8DFE9] bg-[#F9FCFF]/80 py-1 pl-1 pr-3 text-xs font-medium text-[#566273] transition-colors duration-200 hover:border-[#B8C2CF] hover:text-[#101723] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#87909D] dark:border-[#2B3646] dark:bg-[#1A2533]/80 dark:text-[#9BAABD] dark:hover:text-[#D7DFE5]"
+        >
+          <span className="rounded-full bg-[#101723] px-2 py-0.5 text-[11px] font-semibold text-white dark:bg-[#D7DFE5] dark:text-[#141D2B]">New</span>
+          Meet Kio, our new chat launcher
+          <ArrowRight className="h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-x-0.5 motion-reduce:transform-none" />
+        </a>
+        <h1 className="text-[2.25rem] sm:text-[clamp(2.5rem,5vw,4rem)] font-serif leading-[1.08] tracking-[-0.025em] [text-wrap:balance] text-[#101723] dark:text-[#D7DFE5] mb-5">
+          Answer customer questions.{" "}
           <br className="hidden sm:block" />
-          Limitless Possibilities
+          Even when you’re away.
         </h1>
-        <p className="text-[rgba(55,50,47,0.80)] dark:text-[#A8A29E] text-body-lg font-medium max-w-[510px] mx-auto mb-8">
-          Create custom chatbots tailored to your brand. Effortlessly integrate them into your website and engage visitors with smarter interactions.
+        <p className="text-[#566273] dark:text-[#9BAABD] text-body-lg font-normal leading-relaxed max-w-[540px] mx-auto mb-7">
+          Turn your FAQs into a chatbot that looks like your brand. Give visitors instant answers and capture leads, no coding needed.
         </p>
       </motion.div>
 
@@ -28,23 +37,23 @@ export default function HeroSection() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.2 }}
-        className="flex flex-col sm:flex-row items-center gap-4 mb-12"
+        className="w-full flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-5 px-6 mb-10 sm:mb-14"
       >
         <Link
           to="/auth"
-          className="h-11 px-10 bg-[#37322F] dark:bg-[#F5F5F4] shadow-[0px_0px_0px_2.5px_rgba(255,255,255,0.08)_inset] rounded-full flex items-center text-white dark:text-[#1C1917] text-button font-medium hover:bg-[#2a2522] dark:hover:bg-[#E7E5E4] hover:scale-[1.03] hover:shadow-[0px_4px_20px_rgba(55,50,47,0.25)] transition-all duration-300"
+          className="group inline-flex h-12 w-full max-w-[264px] sm:w-auto items-center justify-center gap-2 rounded-full border border-[#101723] bg-[#101723] px-8 text-button font-medium text-white shadow-[0_2px_4px_rgba(16,23,35,0.12),inset_0_1px_0_rgba(255,255,255,0.12)] transition-[background-color,box-shadow,transform] duration-200 hover:-translate-y-0.5 hover:bg-[#243040] hover:shadow-[0_6px_16px_rgba(16,23,35,0.14)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#87909D] dark:border-[#D7DFE5] dark:bg-[#D7DFE5] dark:text-[#141D2B] dark:hover:bg-[#E7EDF6] motion-reduce:transform-none motion-reduce:transition-none"
           aria-label="Start using Askio for free"
         >
           Start for free
-          <ArrowRight className="ml-2 h-4 w-4" />
+          <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5 motion-reduce:transform-none motion-reduce:transition-none" />
         </Link>
         <Link
           to="https://github.com/Salaheddine999/askio"
-          className="flex items-center gap-2 text-[rgba(49,45,43,0.80)] dark:text-[#A8A29E] text-body-sm font-medium hover:text-[#37322F] dark:hover:text-[#F5F5F4] transition-colors group"
+          className="inline-flex h-12 items-center justify-center gap-2 rounded-full border border-transparent px-4 text-[#566273] dark:text-[#9BAABD] text-body-sm font-medium transition-colors duration-200 hover:border-[#D8DFE9] hover:bg-[#E7EDF6]/60 hover:text-[#101723] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#87909D] dark:hover:border-[#2B3646] dark:hover:bg-[#243040] dark:hover:text-[#D7DFE5]"
           aria-label="Star Askio on GitHub"
         >
-          <FaGithub className="h-5 w-5 group-hover:rotate-12 transition-transform" />
-          Star on Github
+          <FaGithub className="h-4 w-4" />
+          Star on GitHub
         </Link>
       </motion.div>
 
@@ -53,19 +62,48 @@ export default function HeroSection() {
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.4 }}
-        className="w-full max-w-[1000px] px-4 relative isolate"
+        className="w-full max-w-[1000px] px-4 relative isolate md:pb-6"
       >
-        {/* Glow Effect */}
-        <div className="absolute top-[0%] left-1/2 -translate-x-1/2 w-[70%] h-[40%] bg-gradient-to-tr from-[#F59E0B] via-[#FBBF24] to-[#F59E0B] opacity-20 blur-[60px] rounded-full -z-10 dark:opacity-10 pointer-events-none" />
-
-        <div className="relative z-10 rounded-xl bg-[rgba(55,50,47,0.05)] dark:bg-[rgba(255,255,255,0.05)] p-2 sm:p-3 border border-[rgba(55,50,47,0.05)] dark:border-[rgba(255,255,255,0.08)]">
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute -top-8 left-1/2 -z-10 h-[55%] w-[85%] -translate-x-1/2 rounded-full bg-[#93B5D9]/40 blur-[72px] dark:bg-[#769CC5]/20"
+        />
+        <div className="relative z-10 rounded-2xl border border-[#D8DFE9]/80 bg-[#F9FCFF]/60 p-1.5 sm:p-2 shadow-[0_16px_48px_-24px_rgba(16,23,35,0.25)] dark:border-[#2B3646] dark:bg-[#1A2533]/70 dark:shadow-[0_16px_48px_-24px_rgba(0,0,0,0.5)]">
+          {/* Below md, crop to the left of the dashboard so it stays legible */}
           <img
             src="/screenshot askio.png"
-            alt="Askio Dashboard — manage and customize your chatbots"
-            className="w-full h-auto rounded-lg shadow-2xl"
-            loading="lazy"
+            alt="Askio dashboard for managing and customizing your chatbots"
+            className="w-full aspect-[5/4] object-cover object-left-top md:aspect-auto md:h-auto rounded-xl"
+            width={2560}
+            height={1280}
+            loading="eager"
           />
         </div>
+        <aside
+          aria-label="Example customer conversation"
+          className="relative z-20 mx-auto -mt-20 w-[88%] max-w-[300px] overflow-hidden rounded-2xl border border-[#D8DFE9] bg-[#F9FCFF] text-left shadow-[0_12px_36px_-16px_rgba(16,23,35,0.3)] dark:border-[#2B3646] dark:bg-[#1A2533] md:absolute md:bottom-0 md:right-8 md:mt-0"
+        >
+          <div className="flex items-center gap-2.5 border-b border-[#D8DFE9]/70 px-4 py-3 dark:border-[#2B3646]">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#E7EDF6] dark:bg-[#243040]">
+              <img src={brandLogo} alt="" className="h-6 w-6 dark:brightness-0 dark:invert" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-[#101723] dark:text-[#D7DFE5]">Your website assistant</p>
+              <p className="mt-0.5 text-xs text-[#647184] dark:text-[#9BAABD]">Example conversation</p>
+            </div>
+          </div>
+          <div className="space-y-3 p-4 text-[13px] leading-relaxed">
+            <p className="ml-8 rounded-2xl rounded-br-md bg-[#101723] px-3 py-2.5 text-white dark:bg-[#D7DFE5] dark:text-[#141D2B]">
+              Where can I track my order?
+            </p>
+            <p className="mr-5 rounded-2xl rounded-bl-md bg-[#E7EDF6] px-3 py-2.5 text-[#101723] dark:bg-[#243040] dark:text-[#D7DFE5]">
+              You’ll find your tracking link in your shipping confirmation email.
+            </p>
+          </div>
+          <div className="hidden sm:block border-t border-[#D8DFE9]/70 px-4 py-2.5 text-center text-[11px] text-[#647184] dark:border-[#2B3646] dark:text-[#9BAABD]">
+            Your answers. Your brand. Powered by Askio.
+          </div>
+        </aside>
       </motion.div>
     </section>
   );

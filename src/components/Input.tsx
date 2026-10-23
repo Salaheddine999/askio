@@ -8,12 +8,12 @@ const Input: React.FC<InputProps> = ({ label, className = "", ...props }) => {
   return (
     <div>
       {label && (
-        <label className="block text-sm font-medium text-[#37322F] dark:text-[#F5F5F4] mb-1">
+        <label className="block text-sm font-medium text-[#101723] dark:text-[#D7DFE5] mb-1">
           {label}
         </label>
       )}
       <input
-        className={`w-full p-2 border border-[#E0DEDB] dark:border-[#44403C] rounded-md text-[#37322F] dark:text-[#F5F5F4] bg-white dark:bg-[#292524] focus:ring-[#37322F] dark:focus:ring-[#F5F5F4] focus:border-[#37322F] dark:focus:border-[#F5F5F4] focus:outline-none placeholder:text-[#9CA3AF] dark:placeholder:text-[#605A57] ${className}`}
+        className={`w-full p-2 border border-[#D8DFE9] dark:border-[#2B3646] rounded-md text-[#101723] dark:text-[#D7DFE5] bg-[#F9FCFF] dark:bg-[#1A2533] focus:ring-[#101723] dark:focus:ring-[#D7DFE5] focus:border-[#101723] dark:focus:border-[#D7DFE5] focus:outline-none placeholder:text-[#647184] dark:placeholder:text-[#87909D] ${className}`}
         {...props}
       />
     </div>

@@ -1,3 +1,4 @@
+import brandLogo from "../assets/logo.svg";
 import React, { useState } from "react";
 import { auth, db } from "../utils/firebase";
 import {
@@ -26,7 +27,7 @@ const Auth: React.FC = () => {
     const next = params.get("next");
 
     if (next === "pro-checkout") {
-      await redirectToProCheckout();
+      await redirectToProCheckout(params.get("interval") === "yearly" ? "yearly" : "monthly");
       return;
     }
 
@@ -102,7 +103,7 @@ const Auth: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#F7F5F3] dark:bg-[#1C1917] px-4">
+    <div className="min-h-screen flex items-center justify-center bg-[#F3F7FC] dark:bg-[#141D2B] px-4">
       <motion.div
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
@@ -111,14 +112,14 @@ const Auth: React.FC = () => {
       >
         {/* Brand */}
         <Link to="/" className="flex items-center justify-center gap-2 mb-8">
-          <img src="./logo.svg" alt="Askio" className="w-7 h-7" />
-          <span className="text-lg font-medium font-sans text-[#37322F] dark:text-[#F5F5F4] tracking-tight">
+          <img src={brandLogo} alt="Askio" className="w-7 h-7 dark:brightness-0 dark:invert" />
+          <span className="text-lg font-medium font-sans text-[#101723] dark:text-[#D7DFE5] tracking-tight">
             Askio
           </span>
         </Link>
 
         {/* Card */}
-        <div className="bg-white dark:bg-[#292524] rounded-2xl shadow-[0_1px_3px_rgba(0,0,0,0.04),0_8px_30px_-10px_rgba(0,0,0,0.08)] dark:shadow-none border border-[rgba(55,50,47,0.06)] dark:border-[#44403C] overflow-hidden">
+        <div className="bg-[#F9FCFF] dark:bg-[#1A2533] rounded-2xl shadow-[0_1px_3px_rgba(0,0,0,0.04),0_8px_30px_-10px_rgba(0,0,0,0.08)] dark:shadow-none border border-[rgba(16,23,35,0.06)] dark:border-[#2B3646] overflow-hidden">
           {/* Header */}
           <div className="px-6 pt-6 pb-0">
             <AnimatePresence mode="wait">
@@ -129,10 +130,10 @@ const Auth: React.FC = () => {
                 exit={{ opacity: 0, x: mode === "login" ? 8 : -8 }}
                 transition={{ duration: 0.15 }}
               >
-                <h2 className="text-xl font-serif text-[#37322F] dark:text-[#F5F5F4] tracking-tight">
+                <h2 className="text-xl font-serif text-[#101723] dark:text-[#D7DFE5] tracking-tight">
                   {mode === "login" ? "Welcome back" : "Create account"}
                 </h2>
-                <p className="text-[13px] text-[#78716C] dark:text-[#A8A29E] mt-1">
+                <p className="text-[13px] text-[#647184] dark:text-[#9BAABD] mt-1">
                   {mode === "login"
                     ? "Sign in to your dashboard"
                     : "Start building chatbots for free"}
@@ -174,7 +175,7 @@ const Auth: React.FC = () => {
             {/* Google OAuth */}
             <button
               onClick={handleOAuth}
-              className="w-full flex items-center justify-center py-2.5 px-4 border border-[#E0DEDB] dark:border-[#44403C] rounded-xl bg-white dark:bg-[#1C1917] text-[#37322F] dark:text-[#F5F5F4] text-[13px] font-medium hover:bg-[#FAFAF9] dark:hover:bg-[#292524] hover:border-[#D6D3D1] dark:hover:border-[#57534E] transition-all duration-200 group"
+              className="w-full flex items-center justify-center py-2.5 px-4 border border-[#D8DFE9] dark:border-[#2B3646] rounded-xl bg-[#F9FCFF] dark:bg-[#141D2B] text-[#101723] dark:text-[#D7DFE5] text-[13px] font-medium hover:bg-[#F3F7FC] dark:hover:bg-[#1A2533] hover:border-[#D7DFE5] dark:hover:border-[#39485B] transition-all duration-200 group"
             >
               <svg
                 className="h-4 w-4 mr-2.5 group-hover:scale-110 transition-transform"
@@ -203,10 +204,10 @@ const Auth: React.FC = () => {
             {/* Divider */}
             <div className="relative my-4">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-[#E0DEDB] dark:border-[#44403C]" />
+                <div className="w-full border-t border-[#D8DFE9] dark:border-[#2B3646]" />
               </div>
               <div className="relative flex justify-center text-[11px]">
-                <span className="px-2.5 bg-white dark:bg-[#292524] text-[#9CA3AF] dark:text-[#78716C] font-medium uppercase tracking-wider">
+                <span className="px-2.5 bg-[#F9FCFF] dark:bg-[#1A2533] text-[#647184] dark:text-[#9BAABD] font-medium uppercase tracking-wider">
                   or
                 </span>
               </div>
@@ -217,7 +218,7 @@ const Auth: React.FC = () => {
               <div>
                 <label
                   htmlFor="email"
-                  className="block text-[11px] font-semibold text-[#605A57] dark:text-[#A8A29E] mb-1 uppercase tracking-wider"
+                  className="block text-[11px] font-semibold text-[#566273] dark:text-[#9BAABD] mb-1 uppercase tracking-wider"
                 >
                   Email
                 </label>
@@ -228,14 +229,14 @@ const Auth: React.FC = () => {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-3.5 py-2.5 border border-[#E0DEDB] dark:border-[#44403C] rounded-xl focus:ring-2 focus:ring-[#37322F]/15 dark:focus:ring-[#F5F5F4]/15 focus:border-[#37322F] dark:focus:border-[#F5F5F4] transition-all duration-200 bg-[#FAFAF9] dark:bg-[#1C1917] text-[#37322F] dark:text-[#F5F5F4] text-[13px] placeholder-[#9CA3AF] dark:placeholder-[#78716C] outline-none"
+                  className="w-full px-3.5 py-2.5 border border-[#D8DFE9] dark:border-[#2B3646] rounded-xl focus:ring-2 focus:ring-[#101723]/15 dark:focus:ring-[#D7DFE5]/15 focus:border-[#101723] dark:focus:border-[#D7DFE5] transition-all duration-200 bg-[#F3F7FC] dark:bg-[#141D2B] text-[#101723] dark:text-[#D7DFE5] text-[13px] placeholder-[#647184] dark:placeholder-[#87909D] outline-none"
                 />
               </div>
 
               <div>
                 <label
                   htmlFor="password"
-                  className="block text-[11px] font-semibold text-[#605A57] dark:text-[#A8A29E] mb-1 uppercase tracking-wider"
+                  className="block text-[11px] font-semibold text-[#566273] dark:text-[#9BAABD] mb-1 uppercase tracking-wider"
                 >
                   Password
                 </label>
@@ -246,14 +247,14 @@ const Auth: React.FC = () => {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-3.5 py-2.5 border border-[#E0DEDB] dark:border-[#44403C] rounded-xl focus:ring-2 focus:ring-[#37322F]/15 dark:focus:ring-[#F5F5F4]/15 focus:border-[#37322F] dark:focus:border-[#F5F5F4] transition-all duration-200 bg-[#FAFAF9] dark:bg-[#1C1917] text-[#37322F] dark:text-[#F5F5F4] text-[13px] placeholder-[#9CA3AF] dark:placeholder-[#78716C] outline-none"
+                  className="w-full px-3.5 py-2.5 border border-[#D8DFE9] dark:border-[#2B3646] rounded-xl focus:ring-2 focus:ring-[#101723]/15 dark:focus:ring-[#D7DFE5]/15 focus:border-[#101723] dark:focus:border-[#D7DFE5] transition-all duration-200 bg-[#F3F7FC] dark:bg-[#141D2B] text-[#101723] dark:text-[#D7DFE5] text-[13px] placeholder-[#647184] dark:placeholder-[#87909D] outline-none"
                 />
               </div>
 
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full bg-[#37322F] dark:bg-[#F5F5F4] text-white dark:text-[#1C1917] py-2.5 px-4 rounded-xl text-[13px] font-medium hover:bg-[#2a2522] dark:hover:bg-[#E7E5E4] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.99] mt-1"
+                className="w-full bg-[#101723] dark:bg-[#D7DFE5] text-white dark:text-[#141D2B] py-2.5 px-4 rounded-xl text-[13px] font-medium hover:bg-[#243040] dark:hover:bg-[#E7EDF6] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.99] mt-1"
               >
                 {isLoading ? (
                   <span className="flex items-center justify-center">
@@ -288,14 +289,14 @@ const Auth: React.FC = () => {
           </div>
 
           {/* Footer */}
-          <div className="px-6 py-4 bg-[#FAFAF9] dark:bg-[#1C1917] border-t border-[rgba(55,50,47,0.06)] dark:border-[#44403C]">
-            <p className="text-center text-[13px] text-[#78716C] dark:text-[#A8A29E]">
+          <div className="px-6 py-4 bg-[#F3F7FC] dark:bg-[#141D2B] border-t border-[rgba(16,23,35,0.06)] dark:border-[#2B3646]">
+            <p className="text-center text-[13px] text-[#647184] dark:text-[#9BAABD]">
               {mode === "login" ? (
                 <span>
                   Don't have an account?{" "}
                   <button
                     onClick={() => setMode("register")}
-                    className="text-[#37322F] dark:text-[#F5F5F4] font-semibold hover:underline"
+                    className="text-[#101723] dark:text-[#D7DFE5] font-semibold hover:underline"
                   >
                     Sign up
                   </button>
@@ -305,7 +306,7 @@ const Auth: React.FC = () => {
                   Already have an account?{" "}
                   <button
                     onClick={() => setMode("login")}
-                    className="text-[#37322F] dark:text-[#F5F5F4] font-semibold hover:underline"
+                    className="text-[#101723] dark:text-[#D7DFE5] font-semibold hover:underline"
                   >
                     Sign in
                   </button>
@@ -316,7 +317,7 @@ const Auth: React.FC = () => {
         </div>
 
         {/* Trust line */}
-        <p className="mt-5 text-center text-[11px] text-[#9CA3AF] dark:text-[#78716C]">
+        <p className="mt-5 text-center text-[11px] text-[#647184] dark:text-[#9BAABD]">
           Secure · No credit card required · Free forever
         </p>
       </motion.div>

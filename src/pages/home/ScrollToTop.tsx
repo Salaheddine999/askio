@@ -19,7 +19,7 @@ export default function ScrollToTop() {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 20 }}
           onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-          className="fixed bottom-24 right-6 z-50 w-10 h-10 rounded-full bg-[#37322F] dark:bg-[#F5F5F4] text-white dark:text-[#1C1917] shadow-lg hover:shadow-xl hover:scale-110 transition-all duration-200 flex items-center justify-center"
+          className="fixed bottom-24 right-6 z-50 hidden sm:flex w-10 h-10 rounded-full bg-[#101723] dark:bg-[#D7DFE5] text-white dark:text-[#141D2B] shadow-lg hover:shadow-xl hover:scale-110 transition-all duration-200 items-center justify-center"
           aria-label="Scroll to top"
         >
           <ArrowUp className="w-4 h-4" />

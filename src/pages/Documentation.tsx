@@ -114,7 +114,7 @@ const Documentation: React.FC<{ toggleSidebar: () => void }> = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#F7F5F3] dark:bg-[#1C1917] font-sans text-[#37322F]">
+    <div className="min-h-screen bg-[#F3F7FC] dark:bg-[#141D2B] font-sans text-[#101723]">
       <Helmet>
         <title>Documentation | Askio Chatbot</title>
         <meta
@@ -126,18 +126,18 @@ const Documentation: React.FC<{ toggleSidebar: () => void }> = () => {
       <main className="w-full px-4 sm:px-6 lg:px-10 xl:px-16 py-8 lg:py-12 max-w-[1400px]">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl lg:text-4xl font-bold font-sans text-[#37322F] dark:text-[#F5F5F4] tracking-tight mb-3">
+          <h1 className="text-3xl lg:text-4xl font-bold font-sans text-[#101723] dark:text-[#D7DFE5] tracking-tight mb-3">
             Documentation
           </h1>
-          <p className="text-base lg:text-lg text-[#605A57] dark:text-[#A8A29E] max-w-3xl leading-relaxed">
+          <p className="text-base lg:text-lg text-[#566273] dark:text-[#9BAABD] max-w-3xl leading-relaxed">
             Everything you need to create, customize, and embed your Askio
             chatbot. Follow the steps below to get up and running.
           </p>
         </div>
 
         {/* Quick Jump Navigation */}
-        <div className="mb-10 lg:mb-12 p-4 rounded-xl bg-white dark:bg-[#292524] border border-[#E0DEDB] dark:border-[#44403C] shadow-sm">
-          <p className="text-xs font-semibold uppercase tracking-wider text-[#A8A29E] dark:text-[#78716C] mb-3">
+        <div className="mb-10 lg:mb-12 p-4 rounded-xl bg-[#F9FCFF] dark:bg-[#1A2533] border border-[#D8DFE9] dark:border-[#2B3646] shadow-sm">
+          <p className="text-xs font-semibold uppercase tracking-wider text-[#647184] dark:text-[#9BAABD] mb-3">
             Jump to
           </p>
           <div className="flex flex-wrap gap-2">
@@ -145,7 +145,7 @@ const Documentation: React.FC<{ toggleSidebar: () => void }> = () => {
               <button
                 key={section.id}
                 onClick={() => scrollTo(section.id)}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm text-[#605A57] dark:text-[#A8A29E] hover:text-[#37322F] dark:hover:text-[#F5F5F4] hover:bg-[#F7F5F3] dark:hover:bg-[#1C1917] border border-[#E0DEDB] dark:border-[#44403C] transition-colors"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm text-[#566273] dark:text-[#9BAABD] hover:text-[#101723] dark:hover:text-[#D7DFE5] hover:bg-[#F3F7FC] dark:hover:bg-[#141D2B] border border-[#D8DFE9] dark:border-[#2B3646] transition-colors"
               >
                 <section.icon size={14} className="opacity-60" />
                 {section.title}
@@ -153,7 +153,7 @@ const Documentation: React.FC<{ toggleSidebar: () => void }> = () => {
             ))}
             <button
               onClick={() => scrollTo("best-practices")}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm text-[#605A57] dark:text-[#A8A29E] hover:text-[#37322F] dark:hover:text-[#F5F5F4] hover:bg-[#F7F5F3] dark:hover:bg-[#1C1917] border border-[#E0DEDB] dark:border-[#44403C] transition-colors"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm text-[#566273] dark:text-[#9BAABD] hover:text-[#101723] dark:hover:text-[#D7DFE5] hover:bg-[#F3F7FC] dark:hover:bg-[#141D2B] border border-[#D8DFE9] dark:border-[#2B3646] transition-colors"
             >
               <Lightbulb size={14} className="opacity-60" />
               Best Practices
@@ -172,13 +172,13 @@ const Documentation: React.FC<{ toggleSidebar: () => void }> = () => {
             >
               {/* Section Header */}
               <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 rounded-xl bg-[#37322F]/[0.05] dark:bg-white/[0.06] border border-[#E0DEDB] dark:border-[#44403C] flex items-center justify-center shrink-0">
+                <div className="w-10 h-10 rounded-xl bg-[#101723]/[0.05] dark:bg-[#F9FCFF]/[0.06] border border-[#D8DFE9] dark:border-[#2B3646] flex items-center justify-center shrink-0">
                   <section.icon
                     size={20}
-                    className="text-[#37322F] dark:text-[#F5F5F4]"
+                    className="text-[#101723] dark:text-[#D7DFE5]"
                   />
                 </div>
-                <h2 className="text-xl lg:text-2xl font-semibold text-[#37322F] dark:text-[#F5F5F4] font-sans tracking-tight">
+                <h2 className="text-xl lg:text-2xl font-semibold text-[#101723] dark:text-[#D7DFE5] font-sans tracking-tight">
                   {section.title}
                 </h2>
               </div>
@@ -187,10 +187,10 @@ const Documentation: React.FC<{ toggleSidebar: () => void }> = () => {
               <div className="space-y-4 lg:space-y-5 max-w-3xl">
                 {section.steps.map((step, index) => (
                   <div key={index} className="flex items-start gap-4">
-                    <span className="flex items-center justify-center w-7 h-7 rounded-full bg-[#37322F] dark:bg-[#F5F5F4] text-white dark:text-[#1C1917] text-xs font-bold shrink-0 mt-0.5 shadow-sm">
+                    <span className="flex items-center justify-center w-7 h-7 rounded-full bg-[#101723] dark:bg-[#D7DFE5] text-white dark:text-[#141D2B] text-xs font-bold shrink-0 mt-0.5 shadow-sm">
                       {index + 1}
                     </span>
-                    <p className="text-[15px] text-[#605A57] dark:text-[#D6D3D1] leading-relaxed pt-0.5">
+                    <p className="text-[15px] text-[#566273] dark:text-[#D7DFE5] leading-relaxed pt-0.5">
                       {step}
                     </p>
                   </div>
@@ -199,12 +199,12 @@ const Documentation: React.FC<{ toggleSidebar: () => void }> = () => {
 
               {/* Embed Code Block */}
               {section.id === "generating-embed-code" && (
-                <div className="mt-6 rounded-xl bg-[#1C1917] dark:bg-[#0C0A09] border border-[#44403C] overflow-hidden max-w-3xl">
-                  <div className="flex items-center justify-between px-4 py-2.5 border-b border-[#44403C]">
-                    <span className="text-xs font-medium text-[#A8A29E]">
+                <div className="mt-6 rounded-xl bg-[#141D2B] dark:bg-[#0C0A09] border border-[#2B3646] overflow-hidden max-w-3xl">
+                  <div className="flex items-center justify-between px-4 py-2.5 border-b border-[#2B3646]">
+                    <span className="text-xs font-medium text-[#647184]">
                       HTML
                     </span>
-                    <span className="text-[10px] text-[#78716C] uppercase tracking-wider">
+                    <span className="text-[10px] text-[#647184] uppercase tracking-wider">
                       Example
                     </span>
                   </div>
@@ -220,7 +220,7 @@ const Documentation: React.FC<{ toggleSidebar: () => void }> = () => {
               )}
 
               {/* Divider */}
-              <div className="mt-8 lg:mt-12 border-t border-[#E0DEDB] dark:border-[#44403C]/60" />
+              <div className="mt-8 lg:mt-12 border-t border-[#D8DFE9] dark:border-[#2B3646]/60" />
             </section>
           ))}
 
@@ -231,27 +231,27 @@ const Documentation: React.FC<{ toggleSidebar: () => void }> = () => {
             className="scroll-mt-8"
           >
             <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800/40 flex items-center justify-center shrink-0">
+              <div className="w-10 h-10 rounded-xl bg-[#E7EDF6] dark:bg-[#243040]/20 border border-[#D8DFE9] dark:border-[#2B3646]/40 flex items-center justify-center shrink-0">
                 <Lightbulb
                   size={20}
-                  className="text-amber-600 dark:text-amber-400"
+                  className="text-[#566273] dark:text-[#9BAABD]"
                 />
               </div>
-              <h2 className="text-xl lg:text-2xl font-semibold text-[#37322F] dark:text-[#F5F5F4] font-sans tracking-tight">
+              <h2 className="text-xl lg:text-2xl font-semibold text-[#101723] dark:text-[#D7DFE5] font-sans tracking-tight">
                 Best Practices
               </h2>
             </div>
 
-            <div className="rounded-xl bg-amber-50/50 dark:bg-amber-950/20 border border-amber-100 dark:border-amber-900/30 p-5 lg:p-6 max-w-3xl">
+            <div className="rounded-xl bg-[#E7EDF6]/50 dark:bg-[#243040]/20 border border-[#D8DFE9] dark:border-[#2B3646]/30 p-5 lg:p-6 max-w-3xl">
               <ul className="space-y-3.5">
                 {bestPractices.map((tip, index) => (
                   <li
                     key={index}
-                    className="flex items-start gap-3 text-[15px] text-[#605A57] dark:text-[#D6D3D1] leading-relaxed"
+                    className="flex items-start gap-3 text-[15px] text-[#566273] dark:text-[#D7DFE5] leading-relaxed"
                   >
                     <ChevronRight
                       size={16}
-                      className="text-amber-500 dark:text-amber-400 shrink-0 mt-1"
+                      className="text-[#566273] dark:text-[#9BAABD] shrink-0 mt-1"
                     />
                     <span>{tip}</span>
                   </li>

@@ -1,9 +1,11 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, Check } from "lucide-react";
 import { Helmet } from "react-helmet-async";
 import { redirectToProCheckout } from "../utils/billing";
 import { auth } from "../utils/firebase";
+import BillingToggle from "../components/BillingToggle";
+import { PRO_AI_REPLY_LIMIT, PRO_PRICE, proYearlyMonthlyEquivalent, type BillingInterval } from "../utils/pricing";
 
 type PlanCardProps = {
   title: string;
@@ -35,24 +37,24 @@ function PlanCard({
   external = false,
 }: PlanCardProps) {
   const cardClass = featured
-    ? "bg-[#3B3531] text-white dark:bg-[#312C28] dark:text-[#F5F5F4]"
-    : "bg-[#F7F5F3] text-[#37322F] dark:bg-[#1C1917] dark:text-[#F5F5F4]";
+    ? "bg-[#101723] text-white dark:bg-[#243040] dark:text-[#D7DFE5]"
+    : "bg-[#F3F7FC] text-[#101723] dark:bg-[#141D2B] dark:text-[#D7DFE5]";
 
   const mutedClass = featured
-    ? "text-[rgba(255,255,255,0.72)] dark:text-[#D6D3D1]"
-    : "text-[#6D6662] dark:text-[#A8A29E]";
+    ? "text-[rgba(255,255,255,0.72)] dark:text-[#D7DFE5]"
+    : "text-[#566273] dark:text-[#9BAABD]";
 
   const buttonClass = featured
-    ? "bg-white text-[#37322F] hover:bg-[#F1EEEA]"
-    : "bg-[#3B3531] text-white hover:bg-[#2F2A27] dark:bg-[#F5F5F4] dark:text-[#1C1917] dark:hover:bg-[#E7E5E4]";
+    ? "bg-[#F9FCFF] text-[#101723] hover:bg-[#E7EDF6]"
+    : "bg-[#101723] text-white hover:bg-[#243040] dark:bg-[#D7DFE5] dark:text-[#141D2B] dark:hover:bg-[#E7EDF6]";
 
   const featureClass = featured
-    ? "text-[rgba(255,255,255,0.86)] dark:text-[#E7E5E4]"
-    : "text-[#5C5551] dark:text-[#D6D3D1]";
+    ? "text-[rgba(255,255,255,0.86)] dark:text-[#E7EDF6]"
+    : "text-[#566273] dark:text-[#D7DFE5]";
 
   const checkClass = featured
-    ? "text-[#F59E0B] dark:text-[#FBBF24]"
-    : "text-[#98A2B3] dark:text-[#A8A29E]";
+    ? "text-[#D7DFE5]"
+    : "text-[#87909D] dark:text-[#9BAABD]";
 
   const buttonContent = (
     <>
@@ -63,13 +65,13 @@ function PlanCard({
 
   return (
     <div
-      className={`min-h-full p-6 sm:p-7 lg:p-8 border-b lg:border-b-0 lg:border-r last:border-r-0 border-[rgba(55,50,47,0.12)] dark:border-[#44403C] ${cardClass}`}
+      className={`min-h-full p-6 sm:p-7 lg:p-8 border-b lg:border-b-0 lg:border-r last:border-r-0 border-[rgba(16,23,35,0.12)] dark:border-[#2B3646] ${cardClass}`}
     >
       <div className="max-w-[290px] mx-auto lg:mx-0">
         <div className="flex items-end justify-between gap-3">
           <h3 className="text-[30px] leading-none font-serif">{title}</h3>
           {featured && featuredLabel ? (
-            <p className="shrink-0 rounded-full border border-[#C9A66B]/30 bg-[#C9A66B]/12 px-2.5 py-1 text-[10px] font-medium tracking-[0.02em] text-[#E7C27D] dark:border-[#E7C27D]/20 dark:bg-[#E7C27D]/10 dark:text-[#F3D9A3]">
+            <p className="shrink-0 rounded-full border border-[#D7DFE5]/30 bg-[#D7DFE5]/12 px-2.5 py-1 text-[10px] font-medium tracking-[0.02em] text-[#D7DFE5] dark:border-[#D7DFE5]/20 dark:bg-[#D7DFE5]/10 dark:text-[#F3F7FC]">
               {featuredLabel}
             </p>
           ) : null}
@@ -130,9 +132,11 @@ function PlanCard({
 
 const Plans: React.FC = () => {
   const isAuthenticated = Boolean(auth.currentUser);
+  const [billingInterval, setBillingInterval] = useState<BillingInterval>("monthly");
+  const yearly = billingInterval === "yearly";
 
   return (
-    <div className="min-h-screen bg-[#F7F5F3] dark:bg-[#1C1917] text-[#37322F] dark:text-[#F5F5F4]">
+    <div className="min-h-screen bg-[#F3F7FC] dark:bg-[#141D2B] text-[#101723] dark:text-[#D7DFE5]">
       <Helmet>
         <title>Plans | Askio</title>
         <meta
@@ -143,24 +147,27 @@ const Plans: React.FC = () => {
 
       <div className="max-w-[1060px] mx-auto px-4 sm:px-6 lg:px-0 py-12 sm:py-16">
         <div className="text-center max-w-2xl mx-auto px-4">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-white dark:bg-[#292524] shadow-[0px_0px_0px_4px_rgba(55,50,47,0.05)] rounded-full border border-[rgba(2,6,23,0.08)] dark:border-[#44403C]">
-            <div className="w-2 h-2 rounded-full bg-[#37322F] dark:bg-[#F5F5F4]" />
-            <span className="text-[#37322F] dark:text-[#F5F5F4] text-caption font-medium">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-[#F9FCFF] dark:bg-[#1A2533] shadow-[0px_0px_0px_4px_rgba(16,23,35,0.05)] rounded-full border border-[rgba(2,6,23,0.08)] dark:border-[#2B3646]">
+            <div className="w-2 h-2 rounded-full bg-[#101723] dark:bg-[#D7DFE5]" />
+            <span className="text-[#101723] dark:text-[#D7DFE5] text-caption font-medium">
               Plans
             </span>
           </div>
 
-          <h1 className="mt-5 text-4xl sm:text-5xl lg:text-[56px] font-serif tracking-tight text-[#49423D] dark:text-[#F5F5F4]">
+          <h1 className="mt-5 text-4xl sm:text-5xl lg:text-[56px] font-serif tracking-tight text-[#101723] dark:text-[#D7DFE5]">
             Pick the right Askio setup
           </h1>
-          <p className="mt-4 text-[#57524F] dark:text-[#A8A29E] text-base sm:text-lg leading-relaxed">
+          <p className="mt-4 text-[#566273] dark:text-[#9BAABD] text-base sm:text-lg leading-relaxed">
             Unlimited manual chatbots for everyone, with AI reserved for teams
             that need smarter automation.
           </p>
+          <div className="mt-8">
+            <BillingToggle value={billingInterval} onChange={setBillingInterval} layoutId="plans-billing-toggle" />
+          </div>
         </div>
 
-        <div className="mt-12 border-t border-b border-[rgba(55,50,47,0.12)] dark:border-[#44403C]">
-          <div className="border-t border-l border-r border-[rgba(55,50,47,0.12)] dark:border-[#44403C]">
+        <div className="mt-12 border-t border-b border-[rgba(16,23,35,0.12)] dark:border-[#2B3646]">
+          <div className="border-t border-l border-r border-[rgba(16,23,35,0.12)] dark:border-[#2B3646]">
             <div className="grid grid-cols-1 lg:grid-cols-3">
               <PlanCard
                 title="Starter"
@@ -182,15 +189,19 @@ const Plans: React.FC = () => {
               <PlanCard
                 title="Professional"
                 description="AI tools for teams that need faster setup."
-                price="$19"
-                priceSuffix="/month"
-                subtext="Best for AI-powered chatbot creation and growth."
+                price={`$${yearly ? PRO_PRICE.yearly : PRO_PRICE.monthly}`}
+                priceSuffix={yearly ? "/year" : "/month"}
+                subtext={
+                  yearly
+                    ? `${proYearlyMonthlyEquivalent()}/month, billed yearly.`
+                    : "Best for AI-powered chatbot creation and growth."
+                }
                 ctaLabel="Upgrade to Pro"
-                ctaHref="/auth?next=pro-checkout"
+                ctaHref={yearly ? "/auth?next=pro-checkout&interval=yearly" : "/auth?next=pro-checkout"}
                 ctaAction={
                   isAuthenticated
                     ? () => {
-                        void redirectToProCheckout();
+                        void redirectToProCheckout(billingInterval);
                       }
                     : null
                 }
@@ -202,6 +213,7 @@ const Plans: React.FC = () => {
                   "AI persona customization",
                   "Deep site crawl for richer FAQs",
                   "Up to 10 AI-enabled chatbots",
+                  `${PRO_AI_REPLY_LIMIT.toLocaleString("en-US")} AI replies every month`,
                   "Faster premium setup workflow",
                 ]}
               />
@@ -217,6 +229,7 @@ const Plans: React.FC = () => {
                 features={[
                   "Everything in Professional",
                   "More than 10 AI chatbots",
+                  "Custom AI reply limits",
                   "Custom onboarding support",
                   "Priority coordination",
                   "Tailored rollout for larger teams",
@@ -230,7 +243,7 @@ const Plans: React.FC = () => {
         <div className="mt-10 text-center">
           <Link
             to="/"
-            className="inline-flex items-center text-sm font-medium text-[#605A57] dark:text-[#A8A29E] hover:text-[#37322F] dark:hover:text-[#F5F5F4]"
+            className="inline-flex items-center text-sm font-medium text-[#566273] dark:text-[#9BAABD] hover:text-[#101723] dark:hover:text-[#D7DFE5]"
           >
             Back to home
           </Link>

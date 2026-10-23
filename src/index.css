@@ -4,12 +4,25 @@
 
 @layer base {
   html {
+    color-scheme: light;
+  }
+
+  html.dark {
+    color-scheme: dark;
+  }
+
+  * {
+    @apply border-[#D8DFE9] dark:border-[#2B3646];
+  }
+
+  html {
     font-family: 'Inter', system-ui, sans-serif;
     scroll-behavior: smooth;
-    @apply text-body text-[#37322F] dark:text-[#F5F5F4] antialiased;
+    @apply text-body text-[#101723] dark:text-[#D7DFE5] antialiased;
   }
   
-  h1 {
-    @apply font-serif;
+  h1, h2, h3 {
+    @apply font-serif font-medium;
+    font-synthesis: none;
   }
 }

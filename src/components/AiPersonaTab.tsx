@@ -49,7 +49,7 @@ const CHARACTERS: Character[] = [
     prompt:
       "You are a super friendly, upbeat, and enthusiastic customer service representative! Use an encouraging tone and feel free to use emojis appropriately to keep the mood light and helpful. 😊",
     sampleResponse:
-      "Hey there! 😊 Great question! We're open Mon–Fri, 9 AM to 6 PM EST. Don't hesitate to reach out anytime — we're always happy to help! 🎉",
+      "Hey there! 😊 Great question! We're open Mon–Fri, 9 AM to 6 PM EST. Don't hesitate to reach out anytime. We're always happy to help! 🎉",
   },
   {
     id: "genz",
@@ -91,7 +91,7 @@ const CHARACTERS: Character[] = [
     prompt:
       "You are a calm, mindful, and centered support agent. Speak gently and reassuringly. Use a warm, zen-like tone that puts people at ease. Encourage patience and understanding. Occasionally use nature metaphors.",
     sampleResponse:
-      "Welcome 🌿 Our doors are open Monday through Friday, from 9 AM to 6 PM EST — like the sun rising and setting, we're here during the brightest hours. Take your time, and reach out whenever feels right.",
+      "Welcome 🌿 Our doors are open Monday through Friday, from 9 AM to 6 PM EST. Like the sun rising and setting, we're here during the brightest hours. Take your time, and reach out whenever feels right.",
   },
   {
     id: "robot",
@@ -133,11 +133,11 @@ const AiPersonaTab: React.FC<AiPersonaTabProps> = ({
     <div>
       {/* Header */}
       <div className="mb-6">
-        <h2 className="text-base font-semibold text-[#37322F] dark:text-[#F5F5F4] flex items-center gap-2">
-          <Sparkles size={18} className="text-amber-500" />
+        <h2 className="text-base font-semibold text-[#101723] dark:text-[#D7DFE5] flex items-center gap-2">
+          <Sparkles size={18} className="text-[#566273] dark:text-[#9BAABD]" />
           Choose a Character
         </h2>
-        <p className="text-sm text-[#78716C] dark:text-[#A8A29E] mt-1">
+        <p className="text-sm text-[#647184] dark:text-[#9BAABD] mt-1">
           Pick a personality for your chatbot. Each character has a unique voice
           and tone that shapes how it responds.
         </p>
@@ -156,16 +156,16 @@ const AiPersonaTab: React.FC<AiPersonaTabProps> = ({
                 onClick={() => handleSelectCharacter(char)}
                 className={`relative text-left p-4 rounded-xl border-2 transition-all duration-200 group ${
                   isActive
-                    ? "border-[#37322F] dark:border-[#F5F5F4] shadow-md"
-                    : "border-[#E0DEDB] dark:border-[#44403C] hover:border-[#A8A29E] dark:hover:border-[#78716C] hover:shadow-sm"
+                    ? "border-[#101723] dark:border-[#D7DFE5] shadow-md"
+                    : "border-[#D8DFE9] dark:border-[#2B3646] hover:border-[#9BAABD] dark:hover:border-[#647184] hover:shadow-sm"
                 }`}
               >
                 {/* Selected badge */}
                 {isActive && (
-                  <div className="absolute top-2.5 right-2.5 w-5 h-5 rounded-full bg-[#37322F] dark:bg-[#F5F5F4] flex items-center justify-center">
+                  <div className="absolute top-2.5 right-2.5 w-5 h-5 rounded-full bg-[#101723] dark:bg-[#D7DFE5] flex items-center justify-center">
                     <Check
                       size={12}
-                      className="text-white dark:text-[#1C1917]"
+                      className="text-white dark:text-[#141D2B]"
                       strokeWidth={3}
                     />
                   </div>
@@ -173,7 +173,7 @@ const AiPersonaTab: React.FC<AiPersonaTabProps> = ({
 
                 <div className="flex items-start gap-3">
                   {/* Avatar */}
-                  <div className="w-11 h-11 rounded-xl flex-shrink-0 transition-transform duration-200 group-hover:scale-105 overflow-hidden ring-2 ring-white dark:ring-[#1C1917] shadow-sm">
+                  <div className="w-11 h-11 rounded-xl flex-shrink-0 transition-transform duration-200 group-hover:scale-105 overflow-hidden ring-2 ring-white dark:ring-[#141D2B] shadow-sm">
                     <img
                       src={char.imageSrc}
                       alt={char.name}
@@ -183,10 +183,10 @@ const AiPersonaTab: React.FC<AiPersonaTabProps> = ({
 
                   {/* Info */}
                   <div className="min-w-0 flex-1">
-                    <p className="font-semibold text-[13px] text-[#37322F] dark:text-[#F5F5F4] leading-tight">
+                    <p className="font-semibold text-[13px] text-[#101723] dark:text-[#D7DFE5] leading-tight">
                       {char.name}
                     </p>
-                    <p className="text-[11px] text-[#78716C] dark:text-[#A8A29E] mt-0.5 leading-snug">
+                    <p className="text-[11px] text-[#647184] dark:text-[#9BAABD] mt-0.5 leading-snug">
                       {char.tagline}
                     </p>
                   </div>
@@ -198,7 +198,7 @@ const AiPersonaTab: React.FC<AiPersonaTabProps> = ({
                     e.stopPropagation();
                     setPreviewCharId(isPreviewing ? null : char.id);
                   }}
-                  className="mt-2.5 flex items-center gap-1 text-[11px] font-medium text-[#A8A29E] dark:text-[#78716C] hover:text-[#37322F] dark:hover:text-[#F5F5F4] transition-colors"
+                  className="mt-2.5 flex items-center gap-1 text-[11px] font-medium text-[#647184] dark:text-[#9BAABD] hover:text-[#101723] dark:hover:text-[#D7DFE5] transition-colors"
                 >
                   <MessageSquare size={11} />
                   <span>{isPreviewing ? "Hide preview" : "Preview voice"}</span>
@@ -207,8 +207,8 @@ const AiPersonaTab: React.FC<AiPersonaTabProps> = ({
 
               {/* Preview Bubble */}
               {isPreviewing && (
-                <div className="mt-2 mx-2 px-3.5 py-3 rounded-xl rounded-tl-md bg-[#F5F5F4] dark:bg-[#292524] border border-[#E0DEDB] dark:border-[#44403C] text-[12px] text-[#605A57] dark:text-[#D6D3D1] leading-relaxed animate-in fade-in slide-in-from-top-1 duration-200">
-                  <p className="text-[10px] font-semibold text-[#A8A29E] dark:text-[#78716C] uppercase tracking-wider mb-1.5">
+                <div className="mt-2 mx-2 px-3.5 py-3 rounded-xl rounded-tl-md bg-[#E7EDF6] dark:bg-[#1A2533] border border-[#D8DFE9] dark:border-[#2B3646] text-[12px] text-[#566273] dark:text-[#D7DFE5] leading-relaxed animate-in fade-in slide-in-from-top-1 duration-200">
+                  <p className="text-[10px] font-semibold text-[#647184] dark:text-[#9BAABD] uppercase tracking-wider mb-1.5">
                     Sample response
                   </p>
                   <p className="whitespace-pre-line italic">"{char.sampleResponse}"</p>
@@ -224,27 +224,27 @@ const AiPersonaTab: React.FC<AiPersonaTabProps> = ({
         onClick={handleClear}
         className={`w-full text-left px-4 py-3 rounded-xl border-2 transition-all duration-200 mb-5 ${
           !aiTone || aiTone.trim() === ""
-            ? "border-[#37322F] dark:border-[#F5F5F4] bg-[#FAFAF9] dark:bg-[#1C1917] shadow-md"
-            : "border-[#E0DEDB] dark:border-[#44403C] hover:border-[#A8A29E] dark:hover:border-[#78716C]"
+            ? "border-[#101723] dark:border-[#D7DFE5] bg-[#F3F7FC] dark:bg-[#141D2B] shadow-md"
+            : "border-[#D8DFE9] dark:border-[#2B3646] hover:border-[#9BAABD] dark:hover:border-[#647184]"
         }`}
       >
         <div className="flex items-center gap-3">
-          <div className="w-11 h-11 rounded-xl bg-[#F5F5F4] dark:bg-[#292524] border-[1.5px] border-[#E0DEDB] dark:border-[#44403C] flex items-center justify-center text-[#A8A29E] dark:text-[#78716C]">
+          <div className="w-11 h-11 rounded-xl bg-[#E7EDF6] dark:bg-[#1A2533] border-[1.5px] border-[#D8DFE9] dark:border-[#2B3646] flex items-center justify-center text-[#647184] dark:text-[#9BAABD]">
             <Ban size={22} strokeWidth={1.5} />
           </div>
           <div>
-            <p className="font-semibold text-[13px] text-[#37322F] dark:text-[#F5F5F4] leading-tight">
+            <p className="font-semibold text-[13px] text-[#101723] dark:text-[#D7DFE5] leading-tight">
               No Persona
             </p>
-            <p className="text-[11px] text-[#78716C] dark:text-[#A8A29E] mt-0.5">
-              Use standard FAQ matching only — no AI generation
+            <p className="text-[11px] text-[#647184] dark:text-[#9BAABD] mt-0.5">
+              Use standard FAQ matching only, without AI generation
             </p>
           </div>
           {(!aiTone || aiTone.trim() === "") && (
-            <div className="ml-auto w-5 h-5 rounded-full bg-[#37322F] dark:bg-[#F5F5F4] flex items-center justify-center flex-shrink-0">
+            <div className="ml-auto w-5 h-5 rounded-full bg-[#101723] dark:bg-[#D7DFE5] flex items-center justify-center flex-shrink-0">
               <Check
                 size={12}
-                className="text-white dark:text-[#1C1917]"
+                className="text-white dark:text-[#141D2B]"
                 strokeWidth={3}
               />
             </div>
@@ -253,29 +253,29 @@ const AiPersonaTab: React.FC<AiPersonaTabProps> = ({
       </button>
 
       {/* Advanced / Custom Section */}
-      <div className="border border-[#E0DEDB] dark:border-[#44403C] rounded-xl overflow-hidden">
+      <div className="border border-[#D8DFE9] dark:border-[#2B3646] rounded-xl overflow-hidden">
         <button
           onClick={() => setShowAdvanced(!showAdvanced)}
-          className="w-full flex items-center justify-between px-4 py-3 bg-[#FAFAF9] dark:bg-[#1C1917] hover:bg-[#F5F5F4] dark:hover:bg-[#292524] transition-colors"
+          className="w-full flex items-center justify-between px-4 py-3 bg-[#F3F7FC] dark:bg-[#141D2B] hover:bg-[#E7EDF6] dark:hover:bg-[#1A2533] transition-colors"
         >
           <div className="flex items-center gap-2">
-            <span className="text-[13px] font-medium text-[#37322F] dark:text-[#F5F5F4]">
+            <span className="text-[13px] font-medium text-[#101723] dark:text-[#D7DFE5]">
               ✍️ Custom Persona
             </span>
-            <span className="text-[11px] text-[#A8A29E] dark:text-[#78716C]">
+            <span className="text-[11px] text-[#647184] dark:text-[#9BAABD]">
               Write your own prompt
             </span>
           </div>
           {showAdvanced ? (
-            <ChevronUp size={16} className="text-[#A8A29E]" />
+            <ChevronUp size={16} className="text-[#647184]" />
           ) : (
-            <ChevronDown size={16} className="text-[#A8A29E]" />
+            <ChevronDown size={16} className="text-[#647184]" />
           )}
         </button>
 
         {showAdvanced && (
-          <div className="px-4 pb-4 pt-3 bg-white dark:bg-[#292524] border-t border-[#E0DEDB] dark:border-[#44403C]">
-            <p className="text-[11px] text-[#A8A29E] dark:text-[#78716C] mb-2 leading-relaxed">
+          <div className="px-4 pb-4 pt-3 bg-[#F9FCFF] dark:bg-[#1A2533] border-t border-[#D8DFE9] dark:border-[#2B3646]">
+            <p className="text-[11px] text-[#647184] dark:text-[#9BAABD] mb-2 leading-relaxed">
               Describe how the AI should act. For example: "You are a friendly
               agent who uses emojis and keeps answers under 2 sentences." Leave
               blank to disable AI responses.

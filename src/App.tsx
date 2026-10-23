@@ -66,8 +66,8 @@ const App: React.FC = () => {
 
   if (authLoading) {
     return (
-      <div className={`min-h-screen ${darkMode ? "dark" : ""} flex justify-center items-center bg-[#F7F5F3] dark:bg-[#1C1917]`}>
-        <LoaderCircle className="animate-spin text-[#37322F] dark:text-[#F5F5F4]" size={48} />
+      <div className={`min-h-screen ${darkMode ? "dark" : ""} flex justify-center items-center bg-[#F3F7FC] dark:bg-[#141D2B]`}>
+        <LoaderCircle className="animate-spin text-[#101723] dark:text-[#D7DFE5]" size={48} />
       </div>
     );
   }
@@ -154,7 +154,16 @@ const App: React.FC = () => {
               <Route path="/privacy" element={<PrivacyPolicy />} />
               <Route path="/terms" element={<TermsOfService />} />
             </Routes>
-            <Toaster position="top-center" />
+            <Toaster
+              position="top-center"
+              toastOptions={{
+                style: {
+                  background: darkMode ? "#1A2533" : "#F9FCFF",
+                  color: darkMode ? "#D7DFE5" : "#101723",
+                  border: `1px solid ${darkMode ? "#2B3646" : "#D8DFE9"}`,
+                },
+              }}
+            />
           </div>
         </div>
       </Router>

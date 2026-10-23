@@ -10,6 +10,10 @@ export function getLemonSqueezyConfig() {
       process.env.LEMONSQUEEZY_PRO_CHECKOUT_URL ||
       process.env.VITE_LEMONSQUEEZY_PRO_CHECKOUT_URL ||
       "",
+    proYearlyCheckoutUrl:
+      process.env.LEMONSQUEEZY_PRO_YEARLY_CHECKOUT_URL ||
+      process.env.VITE_LEMONSQUEEZY_PRO_YEARLY_CHECKOUT_URL ||
+      "",
     billingUrl:
       process.env.LEMONSQUEEZY_BILLING_URL ||
       process.env.VITE_LEMONSQUEEZY_BILLING_URL ||

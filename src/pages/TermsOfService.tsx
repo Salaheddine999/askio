@@ -1,17 +1,17 @@
 export default function TermsOfService() {
   return (
-    <div className="min-h-screen bg-[#F5F3F0] dark:bg-[#1C1917] py-16 px-4">
+    <div className="min-h-screen bg-[#F3F7FC] dark:bg-[#141D2B] py-16 px-4">
       <div className="max-w-3xl mx-auto">
-        <h1 className="text-3xl font-bold text-[#37322F] dark:text-[#F5F5F4] mb-2">
+        <h1 className="text-3xl font-bold text-[#101723] dark:text-[#D7DFE5] mb-2">
           Terms of Service
         </h1>
-        <p className="text-sm text-[#A8A29E] dark:text-[#78716C] mb-10">
+        <p className="text-sm text-[#647184] dark:text-[#9BAABD] mb-10">
           Last updated: April 1, 2026
         </p>
 
-        <div className="space-y-8 text-[#605A57] dark:text-[#D6D3D1] text-sm leading-relaxed">
+        <div className="space-y-8 text-[#566273] dark:text-[#D7DFE5] text-sm leading-relaxed">
           <section>
-            <h2 className="text-lg font-semibold text-[#37322F] dark:text-[#F5F5F4] mb-3">
+            <h2 className="text-lg font-semibold text-[#101723] dark:text-[#D7DFE5] mb-3">
               1. Overview
             </h2>
             <p>
@@ -22,7 +22,7 @@ export default function TermsOfService() {
           </section>
 
           <section>
-            <h2 className="text-lg font-semibold text-[#37322F] dark:text-[#F5F5F4] mb-3">
+            <h2 className="text-lg font-semibold text-[#101723] dark:text-[#D7DFE5] mb-3">
               2. Eligibility and Accounts
             </h2>
             <ul className="list-disc pl-6 space-y-2">
@@ -33,7 +33,7 @@ export default function TermsOfService() {
           </section>
 
           <section>
-            <h2 className="text-lg font-semibold text-[#37322F] dark:text-[#F5F5F4] mb-3">
+            <h2 className="text-lg font-semibold text-[#101723] dark:text-[#D7DFE5] mb-3">
               3. Acceptable Use
             </h2>
             <p className="mb-3">You agree not to use Askio to:</p>
@@ -47,7 +47,7 @@ export default function TermsOfService() {
           </section>
 
           <section>
-            <h2 className="text-lg font-semibold text-[#37322F] dark:text-[#F5F5F4] mb-3">
+            <h2 className="text-lg font-semibold text-[#101723] dark:text-[#D7DFE5] mb-3">
               4. Your Content and Configuration
             </h2>
             <p>
@@ -58,7 +58,7 @@ export default function TermsOfService() {
           </section>
 
           <section>
-            <h2 className="text-lg font-semibold text-[#37322F] dark:text-[#F5F5F4] mb-3">
+            <h2 className="text-lg font-semibold text-[#101723] dark:text-[#D7DFE5] mb-3">
               5. AI-Generated Responses
             </h2>
             <p>
@@ -70,7 +70,7 @@ export default function TermsOfService() {
           </section>
 
           <section>
-            <h2 className="text-lg font-semibold text-[#37322F] dark:text-[#F5F5F4] mb-3">
+            <h2 className="text-lg font-semibold text-[#101723] dark:text-[#D7DFE5] mb-3">
               6. Integrations and Third-Party Services
             </h2>
             <p>
@@ -81,7 +81,7 @@ export default function TermsOfService() {
           </section>
 
           <section>
-            <h2 className="text-lg font-semibold text-[#37322F] dark:text-[#F5F5F4] mb-3">
+            <h2 className="text-lg font-semibold text-[#101723] dark:text-[#D7DFE5] mb-3">
               7. Paid Plans
             </h2>
             <p>
@@ -92,7 +92,7 @@ export default function TermsOfService() {
           </section>
 
           <section>
-            <h2 className="text-lg font-semibold text-[#37322F] dark:text-[#F5F5F4] mb-3">
+            <h2 className="text-lg font-semibold text-[#101723] dark:text-[#D7DFE5] mb-3">
               8. Suspension and Termination
             </h2>
             <p>
@@ -103,7 +103,7 @@ export default function TermsOfService() {
           </section>
 
           <section>
-            <h2 className="text-lg font-semibold text-[#37322F] dark:text-[#F5F5F4] mb-3">
+            <h2 className="text-lg font-semibold text-[#101723] dark:text-[#D7DFE5] mb-3">
               9. Disclaimers
             </h2>
             <p>
@@ -114,7 +114,7 @@ export default function TermsOfService() {
           </section>
 
           <section>
-            <h2 className="text-lg font-semibold text-[#37322F] dark:text-[#F5F5F4] mb-3">
+            <h2 className="text-lg font-semibold text-[#101723] dark:text-[#D7DFE5] mb-3">
               10. Limitation of Liability
             </h2>
             <p>
@@ -126,7 +126,7 @@ export default function TermsOfService() {
           </section>
 
           <section>
-            <h2 className="text-lg font-semibold text-[#37322F] dark:text-[#F5F5F4] mb-3">
+            <h2 className="text-lg font-semibold text-[#101723] dark:text-[#D7DFE5] mb-3">
               11. Changes to These Terms
             </h2>
             <p>
@@ -138,14 +138,14 @@ export default function TermsOfService() {
           </section>
 
           <section>
-            <h2 className="text-lg font-semibold text-[#37322F] dark:text-[#F5F5F4] mb-3">
+            <h2 className="text-lg font-semibold text-[#101723] dark:text-[#D7DFE5] mb-3">
               12. Contact
             </h2>
             <p>
               Questions about these Terms of Service can be sent to{" "}
               <a
                 href="mailto:abw.salaheddine@gmail.com"
-                className="text-[#37322F] dark:text-[#F5F5F4] underline hover:opacity-70"
+                className="text-[#101723] dark:text-[#D7DFE5] underline hover:opacity-70"
               >
                 abw.salaheddine@gmail.com
               </a>
@@ -154,10 +154,10 @@ export default function TermsOfService() {
           </section>
         </div>
 
-        <div className="mt-12 pt-8 border-t border-[#E0DEDB] dark:border-[#44403C]">
+        <div className="mt-12 pt-8 border-t border-[#D8DFE9] dark:border-[#2B3646]">
           <a
             href="/"
-            className="text-sm text-[#605A57] dark:text-[#A8A29E] hover:text-[#37322F] dark:hover:text-[#F5F5F4] transition-colors"
+            className="text-sm text-[#566273] dark:text-[#9BAABD] hover:text-[#101723] dark:hover:text-[#D7DFE5] transition-colors"
           >
             Back to Askio
           </a>

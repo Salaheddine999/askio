@@ -1,6 +1,9 @@
 (function (window, document) {
   window.ChatbotEmbed = {
-    init: function (chatbotId, origin) {
+    // options.launcherStyle: "classic" or "orb" overrides the saved launcher style.
+    // options.greetingBubble: true or false overrides the saved greeting bubble.
+    init: function (chatbotId, origin, options) {
+      options = options || {};
       console.log("Initializing chatbot with ID:", chatbotId);
       var container = document.getElementById("chatbot-container");
       if (!container) {
@@ -16,6 +19,15 @@
 
       var iframe = document.createElement("iframe");
       iframe.src = origin + "/chatbot/" + chatbotId;
+      var params = [];
+      if (options.launcherStyle === "orb" || options.launcherStyle === "classic") {
+        params.push("launcher=" + options.launcherStyle);
+      }
+      if (options.greetingBubble === true || options.greetingBubble === false) {
+        params.push("greeting=" + (options.greetingBubble ? "1" : "0"));
+      }
+      if (params.length) iframe.src += "?" + params.join("&");
+      var frameOrigin = new URL(iframe.src, window.location.href).origin;
       iframe.style.position = "fixed";
       iframe.style.border = "none";
       iframe.style.zIndex = "10000";
@@ -35,6 +47,11 @@
         if (isOpen) {
           iframe.style.width = "370px";
           iframe.style.height = "540px";
+          iframe.style.borderRadius = "0";
+        } else if (greetingSize) {
+          // Just enough room for the greeting bubble beside the launcher.
+          iframe.style.width = greetingSize.width + "px";
+          iframe.style.height = greetingSize.height + "px";
           iframe.style.borderRadius = "0";
         } else {
           iframe.style.width = "62px";
@@ -61,6 +78,7 @@
 
       var isOpen = false;
       var currentPosition = "bottom-right";
+      var greetingSize = null;
 
       function toggleChatbot() {
         isOpen = !isOpen;
@@ -69,6 +87,34 @@
           { type: "toggleChatbot", isOpen },
           "*"
         );
+      }
+
+      // The orb launcher's eyes follow the visitor's pointer across the page.
+      // Positions are sent relative to the iframe, at most once per frame, and
+      // only while the chat is closed.
+      var pointerFrame = 0;
+      var lastPointer = null;
+      var forwardingPointer = false;
+
+      function sendPointer() {
+        pointerFrame = 0;
+        if (!lastPointer || isOpen || !iframe.contentWindow) return;
+        var rect = iframe.getBoundingClientRect();
+        iframe.contentWindow.postMessage(
+          { type: "askioPointer", x: lastPointer.x - rect.left, y: lastPointer.y - rect.top },
+          frameOrigin
+        );
+      }
+
+      function onPointerMove(e) {
+        lastPointer = { x: e.clientX, y: e.clientY };
+        if (!pointerFrame) pointerFrame = window.requestAnimationFrame(sendPointer);
+      }
+
+      function startPointerForwarding() {
+        if (forwardingPointer) return;
+        forwardingPointer = true;
+        window.addEventListener("pointermove", onPointerMove, { passive: true });
       }
 
       iframe.addEventListener("load", function () {
@@ -88,8 +134,19 @@
           iframe.style.display = "block"; // Ensure visible if active
           currentPosition = event.data.config.position;
           updatePosition(currentPosition, isOpen);
+          if (event.source === iframe.contentWindow && event.data.config.launcherStyle === "orb") {
+            startPointerForwarding();
+          }
         } else if (event.data.type === "chatbotState") {
           isOpen = event.data.isOpen;
+          updatePosition(currentPosition, isOpen);
+        } else if (event.data.type === "chatbotGreeting" && event.source === iframe.contentWindow) {
+          var w = Number(event.data.width);
+          var h = Number(event.data.height);
+          greetingSize =
+            event.data.visible && w > 0 && h > 0
+              ? { width: Math.min(w, 360), height: Math.min(h, 240) }
+              : null;
           updatePosition(currentPosition, isOpen);
         } else if (event.data.type === "chatbotPosition") {
           currentPosition = event.data.position;

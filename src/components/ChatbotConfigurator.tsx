@@ -55,19 +55,19 @@ const ChatbotConfigurator: React.FC = () => {
   };
 
   return (
-    <div className="container mx-auto p-4 dark:text-[#F5F5F4]">
-      <h1 className="text-h2 font-bold mb-4 dark:text-[#F5F5F4] font-serif">Chatbot Configurator</h1>
+    <div className="container mx-auto p-4 dark:text-[#D7DFE5]">
+      <h1 className="text-h2 font-bold mb-4 dark:text-[#D7DFE5] font-serif">Chatbot Configurator</h1>
 
       <div className="mb-4">
         <h2 className="font-sans">Your Chatbots</h2>
         {chatbots.map((chatbot) => (
           <div
             key={chatbot.id}
-            className="flex justify-between items-center mb-2 p-2 border rounded dark:bg-[#292524] dark:border-[#57534E]"
+            className="flex justify-between items-center mb-2 p-2 border rounded dark:bg-[#1A2533] dark:border-[#39485B]"
           >
-            <span className="dark:text-[#D6D3D1] text-body">{chatbot.name}</span>
+            <span className="dark:text-[#D7DFE5] text-body">{chatbot.name}</span>
             <button
-              className="bg-[#37322F] hover:bg-[#2a2522] text-white p-2 rounded dark:bg-[#F5F5F4] dark:text-[#1C1917] dark:hover:bg-[#E7E5E4] text-button"
+              className="bg-[#101723] hover:bg-[#243040] text-white p-2 rounded dark:bg-[#D7DFE5] dark:text-[#141D2B] dark:hover:bg-[#E7EDF6] text-button"
               onClick={() => handleEditChatbot(chatbot.id)}
             >
               Edit
@@ -80,13 +80,13 @@ const ChatbotConfigurator: React.FC = () => {
         <h2 className="font-sans">Create New Chatbot</h2>
         <div className="flex">
           <input
-            className="flex-grow p-2 border rounded-l dark:bg-[#44403C] dark:text-[#F5F5F4] dark:border-[#57534E] dark:placeholder-[#78716C] text-body-sm"
+            className="flex-grow p-2 border rounded-l dark:bg-[#273444] dark:text-[#D7DFE5] dark:border-[#39485B] dark:placeholder-[#87909D] text-body-sm"
             placeholder="New Chatbot Name"
             value={newChatbotName}
             onChange={(e) => setNewChatbotName(e.target.value)}
           />
           <button
-            className="bg-[#37322F] hover:bg-[#2a2522] text-white p-2 rounded-r dark:bg-[#F5F5F4] dark:text-[#1C1917] dark:hover:bg-[#E7E5E4] text-button"
+            className="bg-[#101723] hover:bg-[#243040] text-white p-2 rounded-r dark:bg-[#D7DFE5] dark:text-[#141D2B] dark:hover:bg-[#E7EDF6] text-button"
             onClick={createNewChatbot}
           >
             Create

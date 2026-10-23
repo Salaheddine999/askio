@@ -3,6 +3,7 @@ import { Helmet } from "react-helmet-async";
 import LandingNav from "./LandingNav";
 import HeroSection from "./HeroSection";
 import FeaturesSection from "./FeaturesSection";
+import LiveOrbSection from "./LiveOrbSection";
 import PlansSection from "./PlansSection";
 import HowItWorks from "./HowItWorks";
 import TestimonialsSection from "./TestimonialsSection";
@@ -22,7 +23,7 @@ export default function ChatbotLanding() {
     script.async = true;
     script.onload = () => {
       const initScript = document.createElement("script");
-      initScript.text = `ChatbotEmbed.init("eh0qWjVhkPeBwzGxYLv6", "${window.location.origin}");`;
+      initScript.text = `ChatbotEmbed.init("eh0qWjVhkPeBwzGxYLv6", "${window.location.origin}", { launcherStyle: "orb", greetingBubble: true });`;
       document.body.appendChild(initScript);
     };
     document.body.appendChild(script);
@@ -35,20 +36,21 @@ export default function ChatbotLanding() {
   }, []);
 
   return (
-    <div className="w-full min-h-screen bg-[#F7F5F3] dark:bg-[#1C1917] font-sans text-[#37322F] overflow-x-hidden">
+    <div className="askio-home w-full min-h-screen bg-[#F3F7FC] dark:bg-[#141D2B] font-sans text-[#101723] overflow-x-hidden">
       <Helmet>
         <title>Askio - Your Chatbot Builder</title>
         <meta name="description" content="Create custom chatbots tailored to your brand. Effortlessly integrate them into your website." />
       </Helmet>
 
       <div className="relative mx-auto max-w-[1060px] px-4 sm:px-6 lg:px-0">
-        <div className="hidden lg:block w-[1px] h-full absolute left-0 top-0 bg-[rgba(55,50,47,0.12)] dark:bg-[#44403C]" />
-        <div className="hidden lg:block w-[1px] h-full absolute right-0 top-0 bg-[rgba(55,50,47,0.12)] dark:bg-[#44403C]" />
+        <div className="hidden lg:block w-[1px] h-full absolute left-0 top-0 bg-[rgba(16,23,35,0.12)] dark:bg-[#2B3646]" />
+        <div className="hidden lg:block w-[1px] h-full absolute right-0 top-0 bg-[rgba(16,23,35,0.12)] dark:bg-[#2B3646]" />
 
         <LandingNav />
         <HeroSection />
         <MarqueeStrip />
         <FeaturesSection />
+        <LiveOrbSection />
         <PlansSection />
         <HowItWorks />
         <TestimonialsSection />

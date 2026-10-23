@@ -173,48 +173,48 @@ export default function Integrations() {
     { key: "wordpress", label: "WordPress", icon: <FaWordpress size={18} className="text-[#21759B]" /> },
     { key: "shopify", label: "Shopify", icon: <FaShopify size={18} className="text-[#95BF47]" /> },
     { key: "wix", label: "Wix", icon: <SiWix size={18} className="text-[#0C6EFC]" /> },
-    { key: "html", label: "Any Website", icon: <Globe size={18} className="text-[#605A57] dark:text-[#A8A29E]" /> },
+    { key: "html", label: "Any Website", icon: <Globe size={18} className="text-[#566273] dark:text-[#9BAABD]" /> },
   ];
 
   const selectedBot = chatbots.find((c) => c.id === selectedChatbot);
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#F7F5F3] dark:bg-[#1C1917] flex items-center justify-center">
-        <LoaderCircle className="animate-spin text-[#37322F] dark:text-[#F5F5F4]" size={32} />
+      <div className="min-h-screen bg-[#F3F7FC] dark:bg-[#141D2B] flex items-center justify-center">
+        <LoaderCircle className="animate-spin text-[#101723] dark:text-[#D7DFE5]" size={32} />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#F7F5F3] dark:bg-[#1C1917] font-sans text-[#37322F]">
+    <div className="min-h-screen bg-[#F3F7FC] dark:bg-[#141D2B] font-sans text-[#101723]">
       <div className="w-full px-4 sm:px-6 lg:px-8 py-8 space-y-8">
       {/* Header */}
       <div className="flex items-center gap-3 mb-8">
-        <div className="w-10 h-10 rounded-full bg-[#FAFAF9] dark:bg-[#292524] flex items-center justify-center border border-[#E0DEDB] dark:border-[#44403C]">
-          <Blocks className="w-5 h-5 text-[#37322F] dark:text-[#F5F5F4]" />
+        <div className="w-10 h-10 rounded-full bg-[#F3F7FC] dark:bg-[#1A2533] flex items-center justify-center border border-[#D8DFE9] dark:border-[#2B3646]">
+          <Blocks className="w-5 h-5 text-[#101723] dark:text-[#D7DFE5]" />
         </div>
         <div>
-          <h1 className="text-h1 font-serif text-[#37322F] dark:text-[#F5F5F4]">
+          <h1 className="text-h1 font-serif text-[#101723] dark:text-[#D7DFE5]">
             Integrations
           </h1>
-          <p className="text-body text-[#605A57] dark:text-[#A8A29E]">
+          <p className="text-body text-[#566273] dark:text-[#9BAABD]">
             Connect your Askio chatbot to any website or platform.
           </p>
         </div>
       </div>
 
       {chatbots.length === 0 ? (
-        <div className="rounded-xl border border-[rgba(55,50,47,0.12)] dark:border-[#44403C] bg-white dark:bg-[#292524] p-12 text-center shadow-sm">
-          <h2 className="text-lg font-semibold text-[#37322F] dark:text-[#F5F5F4] mb-2">
+        <div className="rounded-xl border border-[rgba(16,23,35,0.12)] dark:border-[#2B3646] bg-[#F9FCFF] dark:bg-[#1A2533] p-12 text-center shadow-sm">
+          <h2 className="text-lg font-semibold text-[#101723] dark:text-[#D7DFE5] mb-2">
             No chatbots yet
           </h2>
-          <p className="text-sm text-[#605A57] dark:text-[#A8A29E] mb-4">
+          <p className="text-sm text-[#566273] dark:text-[#9BAABD] mb-4">
             Create a chatbot first, then come back here to integrate it with your website.
           </p>
           <a
             href="/dashboard"
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#37322F] dark:bg-[#F5F5F4] text-white dark:text-[#1C1917] text-sm font-medium hover:opacity-90 transition-opacity"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#101723] dark:bg-[#D7DFE5] text-white dark:text-[#141D2B] text-sm font-medium hover:opacity-90 transition-opacity"
           >
             Go to Dashboard
           </a>
@@ -223,26 +223,26 @@ export default function Integrations() {
         <>
           {/* Chatbot Selector */}
           <div className="mb-6">
-            <label className="block text-xs font-medium text-[#605A57] dark:text-[#A8A29E] mb-2 uppercase tracking-wider">
+            <label className="block text-xs font-medium text-[#566273] dark:text-[#9BAABD] mb-2 uppercase tracking-wider">
               Select Chatbot
             </label>
             <div className="relative w-full max-w-sm">
               <button
                 onClick={() => setDropdownOpen(!dropdownOpen)}
-                className="w-full flex items-center justify-between px-4 py-2.5 rounded-lg border border-[#E0DEDB] dark:border-[#44403C] bg-white dark:bg-[#292524] text-sm text-[#37322F] dark:text-[#F5F5F4] hover:border-[#37322F]/30 dark:hover:border-[#A8A29E]/30 transition-colors"
+                className="w-full flex items-center justify-between px-4 py-2.5 rounded-lg border border-[#D8DFE9] dark:border-[#2B3646] bg-[#F9FCFF] dark:bg-[#1A2533] text-sm text-[#101723] dark:text-[#D7DFE5] hover:border-[#101723]/30 dark:hover:border-[#9BAABD]/30 transition-colors"
               >
                 <span className="truncate">
                   {selectedBot?.title || "Select a chatbot"}
                 </span>
                 <ChevronDown
                   size={16}
-                  className={`text-[#A8A29E] transition-transform ${
+                  className={`text-[#647184] transition-transform ${
                     dropdownOpen ? "rotate-180" : ""
                   }`}
                 />
               </button>
               {dropdownOpen && (
-                <div className="absolute z-20 mt-1 w-full rounded-lg border border-[#E0DEDB] dark:border-[#44403C] bg-white dark:bg-[#292524] shadow-lg overflow-hidden">
+                <div className="absolute z-20 mt-1 w-full rounded-lg border border-[#D8DFE9] dark:border-[#2B3646] bg-[#F9FCFF] dark:bg-[#1A2533] shadow-lg overflow-hidden">
                   {chatbots.map((bot) => (
                     <button
                       key={bot.id}
@@ -250,10 +250,10 @@ export default function Integrations() {
                         setSelectedChatbot(bot.id);
                         setDropdownOpen(false);
                       }}
-                      className={`w-full text-left px-4 py-2.5 text-sm hover:bg-[#F5F5F4] dark:hover:bg-[#44403C] transition-colors ${
+                      className={`w-full text-left px-4 py-2.5 text-sm hover:bg-[#E7EDF6] dark:hover:bg-[#273444] transition-colors ${
                         bot.id === selectedChatbot
-                          ? "bg-[#F5F5F4] dark:bg-[#44403C] text-[#37322F] dark:text-[#F5F5F4] font-medium"
-                          : "text-[#605A57] dark:text-[#A8A29E]"
+                          ? "bg-[#E7EDF6] dark:bg-[#273444] text-[#101723] dark:text-[#D7DFE5] font-medium"
+                          : "text-[#566273] dark:text-[#9BAABD]"
                       }`}
                     >
                       {bot.title}
@@ -265,19 +265,19 @@ export default function Integrations() {
           </div>
 
           {/* Chatbot ID Display */}
-          <div className="mb-8 p-4 rounded-xl border border-[#E0DEDB] dark:border-[#44403C] bg-[#FAFAF9] dark:bg-[#292524]">
+          <div className="mb-8 p-4 rounded-xl border border-[#D8DFE9] dark:border-[#2B3646] bg-[#F3F7FC] dark:bg-[#1A2533]">
             <div className="flex items-center justify-between">
               <div>
-                <span className="text-xs text-[#A8A29E] dark:text-[#78716C] uppercase tracking-wider font-medium">
+                <span className="text-xs text-[#647184] dark:text-[#9BAABD] uppercase tracking-wider font-medium">
                   Your Chatbot ID
                 </span>
-                <p className="mt-1 font-mono text-sm text-[#37322F] dark:text-[#F5F5F4] select-all">
+                <p className="mt-1 font-mono text-sm text-[#101723] dark:text-[#D7DFE5] select-all">
                   {selectedChatbot}
                 </p>
               </div>
               <button
                 onClick={() => copyToClipboard(selectedChatbot, "id")}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-[#E0DEDB] dark:border-[#44403C] bg-white dark:bg-[#1C1917] text-[#605A57] dark:text-[#A8A29E] hover:bg-[#F5F5F4] dark:hover:bg-[#44403C] transition-colors"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-[#D8DFE9] dark:border-[#2B3646] bg-[#F9FCFF] dark:bg-[#141D2B] text-[#566273] dark:text-[#9BAABD] hover:bg-[#E7EDF6] dark:hover:bg-[#273444] transition-colors"
               >
                 {copiedId ? (
                   <>
@@ -295,15 +295,15 @@ export default function Integrations() {
           </div>
 
           {/* Platform Tabs */}
-          <div className="flex gap-1 mb-6 p-1 rounded-lg bg-[#FAFAF9] dark:bg-[#292524] border border-[#E0DEDB] dark:border-[#44403C] w-fit">
+          <div className="flex gap-1 mb-6 p-1 rounded-lg bg-[#F3F7FC] dark:bg-[#1A2533] border border-[#D8DFE9] dark:border-[#2B3646] w-fit">
             {platforms.map((p) => (
               <button
                 key={p.key}
                 onClick={() => setActivePlatform(p.key)}
                 className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${
                   activePlatform === p.key
-                    ? "bg-white dark:bg-[#44403C] text-[#37322F] dark:text-[#F5F5F4] shadow-sm"
-                    : "text-[#605A57] dark:text-[#A8A29E] hover:text-[#37322F] dark:hover:text-[#F5F5F4]"
+                    ? "bg-[#F9FCFF] dark:bg-[#273444] text-[#101723] dark:text-[#D7DFE5] shadow-sm"
+                    : "text-[#566273] dark:text-[#9BAABD] hover:text-[#101723] dark:hover:text-[#D7DFE5]"
                 }`}
               >
                 <span>{p.icon}</span>
@@ -313,35 +313,35 @@ export default function Integrations() {
           </div>
 
           {/* Content Area */}
-          <div className="rounded-xl border border-[rgba(55,50,47,0.12)] dark:border-[#44403C] bg-white dark:bg-[#292524] overflow-hidden">
+          <div className="rounded-xl border border-[rgba(16,23,35,0.12)] dark:border-[#2B3646] bg-[#F9FCFF] dark:bg-[#1A2533] overflow-hidden">
             {/* WordPress */}
             {activePlatform === "wordpress" && (
               <div className="p-6">
                 <div className="flex items-center gap-3 mb-6">
                   <FaWordpress size={28} className="text-[#21759B]" />
                   <div>
-                    <h2 className="text-lg font-semibold text-[#37322F] dark:text-[#F5F5F4]">
+                    <h2 className="text-lg font-semibold text-[#101723] dark:text-[#D7DFE5]">
                       WordPress Integration
                     </h2>
-                    <p className="text-sm text-[#605A57] dark:text-[#A8A29E]">
-                      No coding required — install the plugin and enter your Chatbot ID.
+                    <p className="text-sm text-[#566273] dark:text-[#9BAABD]">
+                      No coding required. Install the plugin and enter your Chatbot ID.
                     </p>
                   </div>
                 </div>
 
                 {/* Download Plugin */}
-                <div className="mb-8 p-5 rounded-xl bg-[#FAFAF9] dark:bg-[#1C1917] border border-[#E0DEDB] dark:border-[#44403C]">
-                  <h3 className="text-sm font-semibold text-[#37322F] dark:text-[#F5F5F4] mb-3 flex items-center gap-2">
-                    <Download size={16} className="text-[#605A57] dark:text-[#A8A29E]" />
+                <div className="mb-8 p-5 rounded-xl bg-[#F3F7FC] dark:bg-[#141D2B] border border-[#D8DFE9] dark:border-[#2B3646]">
+                  <h3 className="text-sm font-semibold text-[#101723] dark:text-[#D7DFE5] mb-3 flex items-center gap-2">
+                    <Download size={16} className="text-[#566273] dark:text-[#9BAABD]" />
                     Step 1: Download the Plugin
                   </h3>
-                  <p className="text-sm text-[#605A57] dark:text-[#A8A29E] mb-4">
+                  <p className="text-sm text-[#566273] dark:text-[#9BAABD] mb-4">
                     Download the Askio Chatbot plugin for WordPress. This is a lightweight plugin that connects your site to Askio.
                   </p>
                   <button
                     onClick={downloadWordPressPlugin}
                     disabled={downloading}
-                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[#37322F] dark:bg-[#F5F5F4] text-white dark:text-[#1C1917] text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
+                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[#101723] dark:bg-[#D7DFE5] text-white dark:text-[#141D2B] text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
                   >
                     {downloading ? (
                       <>
@@ -372,7 +372,7 @@ export default function Integrations() {
                   <StepCard
                     number={4}
                     title="You're Done!"
-                    description="Visit your WordPress site — the Askio chatbot will appear automatically. Any changes you make in the Askio dashboard will be reflected instantly."
+                    description="Visit your WordPress site and the Askio chatbot will appear automatically. Any changes you make in the Askio dashboard will be reflected instantly."
                   />
                 </div>
               </div>
@@ -384,10 +384,10 @@ export default function Integrations() {
                 <div className="flex items-center gap-3 mb-6">
                   <FaShopify size={28} className="text-[#95BF47]" />
                   <div>
-                    <h2 className="text-lg font-semibold text-[#37322F] dark:text-[#F5F5F4]">
+                    <h2 className="text-lg font-semibold text-[#101723] dark:text-[#D7DFE5]">
                       Shopify Integration
                     </h2>
-                    <p className="text-sm text-[#605A57] dark:text-[#A8A29E]">
+                    <p className="text-sm text-[#566273] dark:text-[#9BAABD]">
                       Add the chatbot to your Shopify store in a few simple steps.
                     </p>
                   </div>
@@ -396,7 +396,7 @@ export default function Integrations() {
                 {/* Connected Stores */}
                 {shopifyConnections.length > 0 && (
                   <div className="mb-8">
-                    <h3 className="text-sm font-semibold text-[#37322F] dark:text-[#F5F5F4] mb-3 flex items-center gap-2">
+                    <h3 className="text-sm font-semibold text-[#101723] dark:text-[#D7DFE5] mb-3 flex items-center gap-2">
                       <Check size={16} className="text-green-600" />
                       Connected Stores
                     </h3>
@@ -404,18 +404,18 @@ export default function Integrations() {
                       {shopifyConnections.map((conn) => (
                         <div
                           key={conn.id}
-                          className="flex items-center justify-between p-4 rounded-xl bg-[#FAFAF9] dark:bg-[#1C1917] border border-[#E0DEDB] dark:border-[#44403C]"
+                          className="flex items-center justify-between p-4 rounded-xl bg-[#F3F7FC] dark:bg-[#141D2B] border border-[#D8DFE9] dark:border-[#2B3646]"
                         >
                           <div className="flex items-center gap-3">
                             <div className="w-8 h-8 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
                               <ShoppingBag size={16} className="text-green-600" />
                             </div>
                             <div>
-                              <p className="text-sm font-medium text-[#37322F] dark:text-[#F5F5F4]">
+                              <p className="text-sm font-medium text-[#101723] dark:text-[#D7DFE5]">
                                 {conn.shop}
                               </p>
-                              <p className="text-xs text-[#A8A29E] dark:text-[#78716C]">
-                                Chatbot: <span className="font-medium text-[#605A57] dark:text-[#D6D3D1]">{conn.chatbotTitle || chatbots.find(b => b.id === conn.chatbotId)?.title || conn.chatbotId}</span>
+                              <p className="text-xs text-[#647184] dark:text-[#9BAABD]">
+                                Chatbot: <span className="font-medium text-[#566273] dark:text-[#D7DFE5]">{conn.chatbotTitle || chatbots.find(b => b.id === conn.chatbotId)?.title || conn.chatbotId}</span>
                               </p>
                             </div>
                           </div>
@@ -432,12 +432,12 @@ export default function Integrations() {
                 )}
 
                 {/* Connect to Shopify */}
-                <div className="mb-8 p-5 rounded-xl bg-[#FAFAF9] dark:bg-[#1C1917] border border-[#E0DEDB] dark:border-[#44403C]">
-                  <h3 className="text-sm font-semibold text-[#37322F] dark:text-[#F5F5F4] mb-3 flex items-center gap-2">
-                    <ShoppingBag size={16} className="text-[#605A57] dark:text-[#A8A29E]" />
+                <div className="mb-8 p-5 rounded-xl bg-[#F3F7FC] dark:bg-[#141D2B] border border-[#D8DFE9] dark:border-[#2B3646]">
+                  <h3 className="text-sm font-semibold text-[#101723] dark:text-[#D7DFE5] mb-3 flex items-center gap-2">
+                    <ShoppingBag size={16} className="text-[#566273] dark:text-[#9BAABD]" />
                     {shopifyConnections.length > 0 ? 'Connect Another Store' : 'Connect Your Shopify Store'}
                   </h3>
-                  <p className="text-sm text-[#605A57] dark:text-[#A8A29E] mb-6">
+                  <p className="text-sm text-[#566273] dark:text-[#9BAABD] mb-6">
                     Enter your Shopify store URL and click connect. We'll automatically add the chatbot to your storefront.
                   </p>
 
@@ -458,7 +458,7 @@ export default function Integrations() {
 
                   <div className="flex gap-3 items-end">
                     <div className="flex-1 max-w-sm">
-                      <label className="block text-xs text-[#A8A29E] dark:text-[#78716C] mb-1.5 font-medium">
+                      <label className="block text-xs text-[#647184] dark:text-[#9BAABD] mb-1.5 font-medium">
                         Store URL
                       </label>
                       <input
@@ -466,7 +466,7 @@ export default function Integrations() {
                         value={shopUrl}
                         onChange={(e) => setShopUrl(e.target.value)}
                         placeholder="yourstore.myshopify.com"
-                        className="w-full px-4 py-2.5 rounded-lg border border-[#E0DEDB] dark:border-[#44403C] bg-white dark:bg-[#292524] text-sm text-[#37322F] dark:text-[#F5F5F4] placeholder-[#A8A29E] dark:placeholder-[#78716C] focus:outline-none focus:border-[#37322F]/30 dark:focus:border-[#A8A29E]/30 transition-colors"
+                        className="w-full px-4 py-2.5 rounded-lg border border-[#D8DFE9] dark:border-[#2B3646] bg-[#F9FCFF] dark:bg-[#1A2533] text-sm text-[#101723] dark:text-[#D7DFE5] placeholder-[#647184] dark:placeholder-[#87909D] focus:outline-none focus:border-[#101723]/30 dark:focus:border-[#9BAABD]/30 transition-colors"
                       />
                     </div>
                     <button
@@ -483,7 +483,7 @@ export default function Integrations() {
                         const chatbotTitle = chatbots.find(b => b.id === selectedChatbot)?.title || 'Chatbot';
                         window.location.href = `/api/shopify/auth?shop=${encodeURIComponent(shop)}&chatbotId=${encodeURIComponent(selectedChatbot)}&chatbotTitle=${encodeURIComponent(chatbotTitle)}`;
                       }}
-                      className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[#37322F] dark:bg-[#F5F5F4] text-white dark:text-[#1C1917] text-sm font-medium hover:opacity-90 transition-opacity whitespace-nowrap"
+                      className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[#101723] dark:bg-[#D7DFE5] text-white dark:text-[#141D2B] text-sm font-medium hover:opacity-90 transition-opacity whitespace-nowrap"
                     >
                       <ShoppingBag size={16} />
                       Connect to Shopify
@@ -518,10 +518,10 @@ export default function Integrations() {
                 <div className="flex items-center gap-3 mb-6">
                   <SiWix size={28} className="text-[#0C6EFC]" />
                   <div>
-                    <h2 className="text-lg font-semibold text-[#37322F] dark:text-[#F5F5F4]">
+                    <h2 className="text-lg font-semibold text-[#101723] dark:text-[#D7DFE5]">
                       Wix Integration
                     </h2>
-                    <p className="text-sm text-[#605A57] dark:text-[#A8A29E]">
+                    <p className="text-sm text-[#566273] dark:text-[#9BAABD]">
                       Add the chatbot to your Wix site using the HTML embed feature.
                     </p>
                   </div>
@@ -562,14 +562,14 @@ export default function Integrations() {
             {activePlatform === "html" && (
               <div className="p-6">
                 <div className="flex items-center gap-3 mb-6">
-                  <Globe size={28} className="text-[#605A57] dark:text-[#A8A29E]" />
+                  <Globe size={28} className="text-[#566273] dark:text-[#9BAABD]" />
                   <div>
-                    <h2 className="text-lg font-semibold text-[#37322F] dark:text-[#F5F5F4]">
+                    <h2 className="text-lg font-semibold text-[#101723] dark:text-[#D7DFE5]">
                       Any Website
                     </h2>
-                    <p className="text-sm text-[#605A57] dark:text-[#A8A29E]">
+                    <p className="text-sm text-[#566273] dark:text-[#9BAABD]">
                       Add the chatbot to any website by pasting this code before the closing{" "}
-                      <code className="text-xs bg-[#F5F5F4] dark:bg-[#44403C] px-1.5 py-0.5 rounded">
+                      <code className="text-xs bg-[#E7EDF6] dark:bg-[#273444] px-1.5 py-0.5 rounded">
                         {"</body>"}
                       </code>{" "}
                       tag.
@@ -585,7 +585,7 @@ export default function Integrations() {
 
                 <div className="mt-6 p-4 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/30">
                   <p className="text-sm text-amber-800 dark:text-amber-300">
-                    <strong>Tip:</strong> This code works on any platform — Squarespace, Webflow, Ghost, custom HTML, and more. Just paste it before the closing{" "}
+                    <strong>Tip:</strong> This code works on any platform, including Squarespace, Webflow, Ghost, custom HTML, and more. Just paste it before the closing{" "}
                     <code className="text-xs bg-amber-100 dark:bg-amber-800/30 px-1 py-0.5 rounded">
                       {"</body>"}
                     </code>{" "}
@@ -600,7 +600,7 @@ export default function Integrations() {
           <div className="mt-6 text-center">
             <a
               href="/documentation"
-              className="inline-flex items-center gap-1.5 text-sm text-[#605A57] dark:text-[#A8A29E] hover:text-[#37322F] dark:hover:text-[#F5F5F4] transition-colors"
+              className="inline-flex items-center gap-1.5 text-sm text-[#566273] dark:text-[#9BAABD] hover:text-[#101723] dark:hover:text-[#D7DFE5] transition-colors"
             >
               Need help? Visit the documentation
               <ExternalLink size={14} />
@@ -625,15 +625,15 @@ function StepCard({
   description: string;
 }) {
   return (
-    <div className="flex gap-4 p-4 rounded-lg border border-[#E0DEDB] dark:border-[#44403C] bg-white dark:bg-[#292524]">
-      <div className="flex-shrink-0 w-7 h-7 rounded-full bg-[#37322F] dark:bg-[#F5F5F4] text-white dark:text-[#1C1917] text-xs font-bold flex items-center justify-center">
+    <div className="flex gap-4 p-4 rounded-lg border border-[#D8DFE9] dark:border-[#2B3646] bg-[#F9FCFF] dark:bg-[#1A2533]">
+      <div className="flex-shrink-0 w-7 h-7 rounded-full bg-[#101723] dark:bg-[#D7DFE5] text-white dark:text-[#141D2B] text-xs font-bold flex items-center justify-center">
         {number}
       </div>
       <div>
-        <h4 className="text-sm font-semibold text-[#37322F] dark:text-[#F5F5F4] mb-1">
+        <h4 className="text-sm font-semibold text-[#101723] dark:text-[#D7DFE5] mb-1">
           {title}
         </h4>
-        <p className="text-sm text-[#605A57] dark:text-[#A8A29E] leading-relaxed">
+        <p className="text-sm text-[#566273] dark:text-[#9BAABD] leading-relaxed">
           {description}
         </p>
       </div>
@@ -651,14 +651,14 @@ function EmbedCodeBlock({
   onCopy: () => void;
 }) {
   return (
-    <div className="rounded-xl border border-[#E0DEDB] dark:border-[#44403C] overflow-hidden">
-      <div className="flex items-center justify-between px-4 py-2.5 bg-[#FAFAF9] dark:bg-[#1C1917] border-b border-[#E0DEDB] dark:border-[#44403C]">
-        <span className="text-xs font-medium text-[#A8A29E] dark:text-[#78716C] uppercase tracking-wider">
+    <div className="rounded-xl border border-[#D8DFE9] dark:border-[#2B3646] overflow-hidden">
+      <div className="flex items-center justify-between px-4 py-2.5 bg-[#F3F7FC] dark:bg-[#141D2B] border-b border-[#D8DFE9] dark:border-[#2B3646]">
+        <span className="text-xs font-medium text-[#647184] dark:text-[#9BAABD] uppercase tracking-wider">
           Embed Code
         </span>
         <button
           onClick={onCopy}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium border border-[#E0DEDB] dark:border-[#44403C] bg-white dark:bg-[#292524] text-[#605A57] dark:text-[#A8A29E] hover:bg-[#F5F5F4] dark:hover:bg-[#44403C] transition-colors"
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium border border-[#D8DFE9] dark:border-[#2B3646] bg-[#F9FCFF] dark:bg-[#1A2533] text-[#566273] dark:text-[#9BAABD] hover:bg-[#E7EDF6] dark:hover:bg-[#273444] transition-colors"
         >
           {copied ? (
             <>
@@ -673,7 +673,7 @@ function EmbedCodeBlock({
           )}
         </button>
       </div>
-      <pre className="p-4 overflow-x-auto text-xs leading-relaxed font-mono text-[#37322F] dark:text-[#E7E5E4] bg-white dark:bg-[#292524]">
+      <pre className="p-4 overflow-x-auto text-xs leading-relaxed font-mono text-[#101723] dark:text-[#E7EDF6] bg-[#F9FCFF] dark:bg-[#1A2533]">
         <code>{code}</code>
       </pre>
     </div>

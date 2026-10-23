@@ -34,6 +34,9 @@ import Input from "./Input";
 import Card from "./Card";
 import { Helmet } from "react-helmet-async";
 import { apiRequest } from "../utils/api";
+import { LiveOrb } from "./LiveOrb";
+import { orbPropsFor } from "../utils/orbColors";
+import chatIcon from "../assets/chat1.svg";
 
 // Dynamic import: AI feature is optional (not included in open-source builds)
 const aiModules = import.meta.glob('./AiFaqGenerator.tsx');
@@ -74,8 +77,8 @@ interface FAQItem {
 // --- Section Header ---
 const SectionHeader = ({ title, description }: { title: string; description: string }) => (
   <div className="mb-6">
-    <h2 className="text-lg font-semibold text-[#37322F] dark:text-[#F5F5F4] font-sans">{title}</h2>
-    <p className="text-body-sm text-[#78716C] dark:text-[#A8A29E] mt-1">{description}</p>
+    <h2 className="text-lg font-semibold text-[#101723] dark:text-[#D7DFE5] font-sans">{title}</h2>
+    <p className="text-body-sm text-[#647184] dark:text-[#9BAABD] mt-1">{description}</p>
   </div>
 );
 
@@ -89,22 +92,22 @@ const ToggleSwitch = ({ checked, onChange, label }: { checked: boolean; onChange
         checked={checked}
         onChange={(e) => onChange(e.target.checked)}
       />
-      <div className={`w-10 h-[22px] rounded-full transition-colors duration-200 ${checked ? "bg-[#37322F] dark:bg-[#F5F5F4]" : "bg-[#D6D3D1] dark:bg-[#57534E]"}`} />
-      <div className={`absolute top-[3px] left-[3px] w-4 h-4 rounded-full bg-white dark:bg-[#1C1917] shadow transition-transform duration-200 ${checked ? "translate-x-[18px]" : "translate-x-0"}`} />
+      <div className={`w-10 h-[22px] rounded-full transition-colors duration-200 ${checked ? "bg-[#101723] dark:bg-[#D7DFE5]" : "bg-[#D7DFE5] dark:bg-[#39485B]"}`} />
+      <div className={`absolute top-[3px] left-[3px] w-4 h-4 rounded-full bg-[#F9FCFF] dark:bg-[#141D2B] shadow transition-transform duration-200 ${checked ? "translate-x-[18px]" : "translate-x-0"}`} />
     </div>
-    <span className="ml-3 text-body-sm font-medium text-[#37322F] dark:text-[#F5F5F4] group-hover:text-[#1C1917] dark:group-hover:text-white transition-colors">{label}</span>
+    <span className="ml-3 text-body-sm font-medium text-[#101723] dark:text-[#D7DFE5] group-hover:text-[#141D2B] dark:group-hover:text-white transition-colors">{label}</span>
   </label>
 );
 
 // --- Input Field with helper text ---
 const FormField = ({ label, helperText, children }: { label: string; helperText?: string; children: React.ReactNode }) => (
   <div>
-    <label className="block mb-1.5 text-[#37322F] dark:text-[#F5F5F4] font-medium text-body-sm">
+    <label className="block mb-1.5 text-[#101723] dark:text-[#D7DFE5] font-medium text-body-sm">
       {label}
     </label>
     {children}
     {helperText && (
-      <p className="mt-1.5 text-xs text-[#A8A29E] dark:text-[#78716C]">{helperText}</p>
+      <p className="mt-1.5 text-xs text-[#647184] dark:text-[#9BAABD]">{helperText}</p>
     )}
   </div>
 );
@@ -116,9 +119,11 @@ const EditChatbot: React.FC = () => {
     id: "",
     name: "",
     title: "",
-    primaryColor: "#4F46E5",
-    secondaryColor: "#6366F1",
+    primaryColor: "#101723",
+    secondaryColor: "#243040",
     position: "bottom-right",
+    launcherStyle: "classic",
+    greetingBubble: false,
     initialMessage: "Hello! How can I help you today?",
     placeholder: "Type your message...",
     faqData: [],
@@ -135,8 +140,8 @@ const EditChatbot: React.FC = () => {
   const [editingFaqIndex, setEditingFaqIndex] = useState<number | null>(null);
   const [isDeleteFaqModalOpen, setIsDeleteFaqModalOpen] = useState(false);
   const [faqToDelete, setFaqToDelete] = useState<number | null>(null);
-  const [gradientStart, setGradientStart] = useState("#4F46E5");
-  const [gradientEnd, setGradientEnd] = useState("#6366F1");
+  const [gradientStart, setGradientStart] = useState("#101723");
+  const [gradientEnd, setGradientEnd] = useState("#243040");
   const [useGradient, setUseGradient] = useState(false);
   const [gradientAngle, setGradientAngle] = useState(90);
   const [hasChanges, setHasChanges] = useState(false);
@@ -405,6 +410,8 @@ const EditChatbot: React.FC = () => {
   };
 
   const predefinedColors: string[] = [
+    "#101723",
+    "#566273",
     "#818CF8",
     "#EF4444",
     "#10B981",
@@ -418,19 +425,19 @@ const EditChatbot: React.FC = () => {
 
   const EmbedPreviewModal = () => (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white p-4 rounded-lg w-full max-w-4xl h-3/4 flex flex-col">
+      <div className="bg-[#F9FCFF] p-4 rounded-lg w-full max-w-4xl h-3/4 flex flex-col">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-bold">Embedded Chatbot Preview</h2>
           <button
             onClick={() => setShowEmbedPreview(false)}
-            className="text-gray-500 hover:text-gray-700"
+            className="text-[#647184] hover:text-[#243040]"
           >
             Close
           </button>
         </div>
         <div className="flex-grow overflow-hidden relative">
           <div className="absolute inset-0 overflow-auto">
-            <div className="min-h-full p-4 bg-gray-100">
+            <div className="min-h-full p-4 bg-[#E7EDF6]">
               <h1 className="text-3xl font-bold mb-4">Sample Website</h1>
               <p className="mb-4">
                 This is how your chatbot would appear on a real website.
@@ -455,10 +462,10 @@ const EditChatbot: React.FC = () => {
 
 
 
-  const inputClasses = "w-full p-2.5 bg-white dark:bg-[#44403C] border border-[#E0DEDB] dark:border-[#57534E] text-[#37322F] dark:text-[#F5F5F4] placeholder-[#9CA3AF] dark:placeholder-[#78716C] focus:ring-2 focus:ring-[#37322F]/20 dark:focus:ring-[#F5F5F4]/20 focus:border-[#37322F] dark:focus:border-[#F5F5F4] rounded-[9px] shadow-sm text-body-sm transition-all duration-200 outline-none";
+  const inputClasses = "w-full p-2.5 bg-[#F9FCFF] dark:bg-[#273444] border border-[#D8DFE9] dark:border-[#39485B] text-[#101723] dark:text-[#D7DFE5] placeholder-[#647184] dark:placeholder-[#87909D] focus:ring-2 focus:ring-[#101723]/20 dark:focus:ring-[#D7DFE5]/20 focus:border-[#101723] dark:focus:border-[#D7DFE5] rounded-[9px] shadow-sm text-body-sm transition-all duration-200 outline-none";
 
   return (
-    <div className="min-h-screen bg-[#F7F5F3] dark:bg-[#1C1917] font-sans text-[#37322F] dark:text-[#F5F5F4]">
+    <div className="min-h-screen bg-[#F3F7FC] dark:bg-[#141D2B] font-sans text-[#101723] dark:text-[#D7DFE5]">
       <Helmet>
         <title>
           {id ? `Edit Chatbot: ${config.name}` : "Create New Chatbot"} | Askio
@@ -476,11 +483,11 @@ const EditChatbot: React.FC = () => {
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-10 gap-4">
           <div className="flex items-center gap-3">
-            <h1 className="text-h1 font-normal font-serif text-[#37322F] dark:text-[#F5F5F4] tracking-tight">
+            <h1 className="text-h1 font-normal font-serif text-[#101723] dark:text-[#D7DFE5] tracking-tight">
               {id ? `Edit Chatbot` : "Create New Chatbot"}
             </h1>
             {id && config.name && (
-              <span className="text-body-sm text-[#78716C] dark:text-[#A8A29E] bg-[#F5F5F4] dark:bg-[#292524] px-3 py-1 rounded-full border border-[#E0DEDB] dark:border-[#44403C]">
+              <span className="text-body-sm text-[#647184] dark:text-[#9BAABD] bg-[#E7EDF6] dark:bg-[#1A2533] px-3 py-1 rounded-full border border-[#D8DFE9] dark:border-[#2B3646]">
                 {config.name}
               </span>
             )}
@@ -494,14 +501,14 @@ const EditChatbot: React.FC = () => {
           <div className="flex flex-wrap gap-2">
             <Button
               onClick={() => setShowChatbot(!showChatbot)}
-              className="bg-[#37322F] dark:bg-[#F5F5F4] hover:bg-[#2a2522] dark:hover:bg-[#E7E5E4] text-white dark:text-[#1C1917] shadow-md text-button font-medium px-4 py-2 rounded-[9px]"
+              className="bg-[#101723] dark:bg-[#D7DFE5] hover:bg-[#243040] dark:hover:bg-[#E7EDF6] text-white dark:text-[#141D2B] shadow-md text-button font-medium px-4 py-2 rounded-[9px]"
               icon={showChatbot ? EyeOff : Eye}
             >
               {showChatbot ? "Hide Preview" : "Live Preview"}
             </Button>
             <Button
               onClick={() => navigate("/")}
-              className="bg-white dark:bg-[#292524] border border-[#E0DEDB] dark:border-[#44403C] text-[#605A57] dark:text-[#A8A29E] hover:bg-[#FAFAF9] dark:hover:bg-[#1C1917] hover:text-[#37322F] dark:hover:text-[#F5F5F4] shadow-sm text-button font-medium px-4 py-2 rounded-[9px]"
+              className="bg-[#F9FCFF] dark:bg-[#1A2533] border border-[#D8DFE9] dark:border-[#2B3646] text-[#566273] dark:text-[#9BAABD] hover:bg-[#F3F7FC] dark:hover:bg-[#141D2B] hover:text-[#101723] dark:hover:text-[#D7DFE5] shadow-sm text-button font-medium px-4 py-2 rounded-[9px]"
               icon={ArrowLeft}
             >
               Back
@@ -511,9 +518,9 @@ const EditChatbot: React.FC = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
           {/* Main Config Panel */}
-          <Card className="lg:col-span-2 bg-white dark:bg-[#292524] shadow-[0px_0px_0px_0.9px_rgba(0,0,0,0.08),0px_2px_4px_rgba(0,0,0,0.04)] dark:shadow-none rounded-[9px] border-none dark:border dark:border-[#44403C] overflow-visible">
+          <Card className="lg:col-span-2 bg-[#F9FCFF] dark:bg-[#1A2533] shadow-[0px_0px_0px_0.9px_rgba(0,0,0,0.08),0px_2px_4px_rgba(0,0,0,0.04)] dark:shadow-none rounded-[9px] border-none dark:border dark:border-[#2B3646] overflow-visible">
             {/* Tab Navigation */}
-            <div className="flex border-b border-[#E0DEDB] dark:border-[#44403C] px-3 sm:px-6 pt-3 sm:pt-4 gap-0.5 sm:gap-1 overflow-x-auto scrollbar-hide">
+            <div className="flex border-b border-[#D8DFE9] dark:border-[#2B3646] px-3 sm:px-6 pt-3 sm:pt-4 gap-0.5 sm:gap-1 overflow-x-auto scrollbar-hide">
               {tabs.map((tab) => {
                 const Icon = tab.icon;
                 const isActive = activeTab === tab.key;
@@ -523,14 +530,14 @@ const EditChatbot: React.FC = () => {
                     onClick={() => setActiveTab(tab.key)}
                     className={`relative flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-4 py-2.5 sm:py-3 text-xs sm:text-body-sm font-medium transition-all duration-200 rounded-t-lg whitespace-nowrap ${
                       isActive
-                        ? "text-[#37322F] dark:text-[#F5F5F4] bg-[#FAFAF9] dark:bg-[#1C1917]"
-                        : "text-[#78716C] dark:text-[#78716C] hover:text-[#37322F] dark:hover:text-[#D6D3D1] hover:bg-[#FAFAF9]/50 dark:hover:bg-[#1C1917]/30"
+                        ? "text-[#101723] dark:text-[#D7DFE5] bg-[#F3F7FC] dark:bg-[#141D2B]"
+                        : "text-[#647184] dark:text-[#9BAABD] hover:text-[#101723] dark:hover:text-[#D7DFE5] hover:bg-[#F3F7FC]/50 dark:hover:bg-[#141D2B]/30"
                     }`}
                   >
-                    <Icon size={16} className={isActive ? "text-[#37322F] dark:text-[#F5F5F4]" : ""} />
+                    <Icon size={16} className={isActive ? "text-[#101723] dark:text-[#D7DFE5]" : ""} />
                     <span>{tab.label}</span>
                     {isActive && (
-                      <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#37322F] dark:bg-[#F5F5F4] rounded-full" />
+                      <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#101723] dark:bg-[#D7DFE5] rounded-full" />
                     )}
                   </button>
                 );
@@ -565,7 +572,7 @@ const EditChatbot: React.FC = () => {
                       </FormField>
                     </div>
 
-                    <div className="h-px bg-[#E0DEDB] dark:bg-[#44403C]" />
+                    <div className="h-px bg-[#D8DFE9] dark:bg-[#273444]" />
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                       <FormField label="Widget Position" helperText="Where the chat widget appears on your site">
@@ -626,23 +633,23 @@ const EditChatbot: React.FC = () => {
                             onChange={(val) => handleConfigChange("aiEnabled", val)}
                             label="Enable AI features for this chatbot"
                           />
-                          <p className="mt-2 text-xs text-[#A8A29E] dark:text-[#78716C]">
+                          <p className="mt-2 text-xs text-[#647184] dark:text-[#9BAABD]">
                             {userPlan === "enterprise"
                               ? "Enterprise can enable AI across custom chatbot limits."
                               : "Pro includes up to 10 AI-enabled chatbots."}
                           </p>
                         </>
                       ) : (
-                        <div className="rounded-[9px] border border-[#E0DEDB] dark:border-[#44403C] bg-[#FAFAF9] dark:bg-[#1C1917] p-4">
-                          <p className="text-body-sm font-medium text-[#37322F] dark:text-[#F5F5F4]">
+                        <div className="rounded-[9px] border border-[#D8DFE9] dark:border-[#2B3646] bg-[#F3F7FC] dark:bg-[#141D2B] p-4">
+                          <p className="text-body-sm font-medium text-[#101723] dark:text-[#D7DFE5]">
                             AI features are part of Pro
                           </p>
-                          <p className="mt-1 text-xs text-[#A8A29E] dark:text-[#78716C]">
+                          <p className="mt-1 text-xs text-[#647184] dark:text-[#9BAABD]">
                             Free plans can create unlimited manual chatbots. Upgrade to enable AI on up to 10 chatbots.
                           </p>
                           <Link
                             to="/plans"
-                            className="mt-3 inline-flex items-center justify-center rounded-lg bg-[#37322F] dark:bg-[#F5F5F4] px-4 py-2 text-sm font-medium text-white dark:text-[#1C1917] hover:bg-[#2a2522] dark:hover:bg-[#E7E5E4] transition-colors"
+                            className="mt-3 inline-flex items-center justify-center rounded-lg bg-[#101723] dark:bg-[#D7DFE5] px-4 py-2 text-sm font-medium text-white dark:text-[#141D2B] hover:bg-[#243040] dark:hover:bg-[#E7EDF6] transition-colors"
                           >
                             Upgrade
                           </Link>
@@ -662,6 +669,63 @@ const EditChatbot: React.FC = () => {
                   />
 
                   <div className="space-y-6">
+                    {/* Launcher Style */}
+                    <FormField label="Launcher Style" helperText="The button visitors click to open the chat. Kio is a little orb in your primary color whose eyes follow the visitor's pointer.">
+                      <div className="grid grid-cols-2 gap-3 max-w-[420px]" role="radiogroup" aria-label="Launcher style">
+                        {([
+                          { value: "classic", label: "Classic" },
+                          { value: "orb", label: "Kio" },
+                        ] as const).map((option) => {
+                          const selected = (config.launcherStyle ?? "classic") === option.value;
+                          return (
+                            <button
+                              key={option.value}
+                              type="button"
+                              role="radio"
+                              aria-checked={selected}
+                              onClick={() => handleConfigChange("launcherStyle", option.value)}
+                              className={`flex flex-col items-center gap-3 rounded-[9px] border p-4 transition-colors ${
+                                selected
+                                  ? "border-[#101723] bg-[#F9FCFF] ring-2 ring-[#101723]/10 dark:border-[#D7DFE5] dark:bg-[#1A2533] dark:ring-[#D7DFE5]/10"
+                                  : "border-[#D8DFE9] hover:border-[#9BAABD] dark:border-[#2B3646] dark:hover:border-[#566273]"
+                              }`}
+                            >
+                              <span className="flex h-16 items-center justify-center">
+                                {option.value === "orb" ? (
+                                  <LiveOrb size={52} {...orbPropsFor(config.primaryColor)} />
+                                ) : (
+                                  <span
+                                    className="flex h-12 w-12 items-center justify-center rounded-full shadow-md"
+                                    style={{
+                                      background: config.primaryColor.startsWith("linear-gradient")
+                                        ? config.primaryColor
+                                        : `linear-gradient(145deg, ${config.primaryColor}, ${config.primaryColor}cc)`,
+                                    }}
+                                  >
+                                    <img src={chatIcon} alt="" className="h-6 w-6" />
+                                  </span>
+                                )}
+                              </span>
+                              <span className="text-body-sm font-medium text-[#101723] dark:text-[#D7DFE5]">{option.label}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </FormField>
+
+                    <div>
+                      <ToggleSwitch
+                        checked={config.greetingBubble === true}
+                        onChange={(val) => handleConfigChange("greetingBubble", val)}
+                        label="Show a greeting bubble"
+                      />
+                      <p className="mt-2 text-xs text-[#647184] dark:text-[#9BAABD]">
+                        Shows a short "Hi! 👋 Need a hand?" beside the launcher a few seconds after a visitor arrives, once per visitor. They can dismiss it or click it to open the chat.
+                      </p>
+                    </div>
+
+                    <div className="h-px bg-[#D8DFE9] dark:bg-[#273444]" />
+
                     {/* Gradient Toggle */}
                     <ToggleSwitch
                       checked={useGradient}
@@ -706,9 +770,9 @@ const EditChatbot: React.FC = () => {
                               max="360"
                               value={gradientAngle}
                               onChange={(e) => setGradientAngle(parseInt(e.target.value))}
-                              className="flex-1 h-2 bg-[#E0DEDB] dark:bg-[#57534E] rounded-lg appearance-none cursor-pointer accent-[#37322F] dark:accent-[#F5F5F4]"
+                              className="flex-1 h-2 bg-[#D8DFE9] dark:bg-[#39485B] rounded-lg appearance-none cursor-pointer accent-[#101723] dark:accent-[#D7DFE5]"
                             />
-                            <span className="text-body-sm font-mono text-[#37322F] dark:text-[#F5F5F4] bg-[#F5F5F4] dark:bg-[#44403C] px-2.5 py-1 rounded-md min-w-[52px] text-center">
+                            <span className="text-body-sm font-mono text-[#101723] dark:text-[#D7DFE5] bg-[#E7EDF6] dark:bg-[#273444] px-2.5 py-1 rounded-md min-w-[52px] text-center">
                               {gradientAngle}°
                             </span>
                           </div>
@@ -716,12 +780,12 @@ const EditChatbot: React.FC = () => {
 
                         {/* Gradient Preview */}
                         <div className="space-y-2">
-                          <p className="text-body-sm font-medium text-[#37322F] dark:text-[#F5F5F4]">Preview</p>
+                          <p className="text-body-sm font-medium text-[#101723] dark:text-[#D7DFE5]">Preview</p>
                           <div
-                            className="h-16 rounded-[9px] border border-[#E0DEDB] dark:border-[#44403C] shadow-inner"
+                            className="h-16 rounded-[9px] border border-[#D8DFE9] dark:border-[#2B3646] shadow-inner"
                             style={{ background: config.primaryColor }}
                           />
-                          <p className="text-xs text-[#A8A29E] dark:text-[#78716C]">
+                          <p className="text-xs text-[#647184] dark:text-[#9BAABD]">
                             This gradient will be applied to both primary and secondary colors.
                           </p>
                         </div>
@@ -763,7 +827,7 @@ const EditChatbot: React.FC = () => {
 
                     {/* Quick Colors */}
                     <div>
-                      <p className="text-body-sm font-medium text-[#37322F] dark:text-[#F5F5F4] mb-3">Quick Colors</p>
+                      <p className="text-body-sm font-medium text-[#101723] dark:text-[#D7DFE5] mb-3">Quick Colors</p>
                       <div className="flex flex-wrap gap-2">
                         {predefinedColors.map((color) => {
                           const isActive = !useGradient && config.primaryColor === color;
@@ -772,8 +836,8 @@ const EditChatbot: React.FC = () => {
                               key={color}
                               className={`w-9 h-9 rounded-full border-2 transition-all duration-200 hover:scale-110 ${
                                 isActive
-                                  ? "border-[#37322F] dark:border-[#F5F5F4] ring-2 ring-[#37322F]/20 dark:ring-[#F5F5F4]/20 scale-110"
-                                  : "border-[#E0DEDB] dark:border-[#44403C] hover:border-[#A8A29E]"
+                                  ? "border-[#101723] dark:border-[#D7DFE5] ring-2 ring-[#101723]/20 dark:ring-[#D7DFE5]/20 scale-110"
+                                  : "border-[#D8DFE9] dark:border-[#2B3646] hover:border-[#9BAABD]"
                               }`}
                               style={{ backgroundColor: color }}
                               onClick={() => {
@@ -803,8 +867,8 @@ const EditChatbot: React.FC = () => {
                   />
 
                   {/* FAQ Form */}
-                  <div className="bg-[#FAFAF9] dark:bg-[#1C1917] rounded-[9px] border border-[#E0DEDB] dark:border-[#44403C] p-5 mb-6">
-                    <h3 className="text-body-sm font-semibold text-[#37322F] dark:text-[#F5F5F4] mb-3">
+                  <div className="bg-[#F3F7FC] dark:bg-[#141D2B] rounded-[9px] border border-[#D8DFE9] dark:border-[#2B3646] p-5 mb-6">
+                    <h3 className="text-body-sm font-semibold text-[#101723] dark:text-[#D7DFE5] mb-3">
                       {editingFaqIndex !== null ? "Edit FAQ" : "Add New FAQ"}
                     </h3>
                     <div className="space-y-3">
@@ -817,7 +881,7 @@ const EditChatbot: React.FC = () => {
                             setFaqInput((prev) => ({ ...prev, question: e.target.value }))
                           }
                         />
-                        <p className="text-xs text-[#A8A29E] dark:text-[#78716C] mt-1 text-right">
+                        <p className="text-xs text-[#647184] dark:text-[#9BAABD] mt-1 text-right">
                           {faqInput.question.length} characters
                         </p>
                       </div>
@@ -830,7 +894,7 @@ const EditChatbot: React.FC = () => {
                             setFaqInput((prev) => ({ ...prev, answer: e.target.value }))
                           }
                         />
-                        <p className="text-xs text-[#A8A29E] dark:text-[#78716C] mt-1 text-right">
+                        <p className="text-xs text-[#647184] dark:text-[#9BAABD] mt-1 text-right">
                           {faqInput.answer.length} characters
                         </p>
                       </div>
@@ -838,14 +902,14 @@ const EditChatbot: React.FC = () => {
                         <div className="flex gap-2">
                           <Button
                             onClick={handleUpdateFaq}
-                            className="bg-[#37322F] dark:bg-[#F5F5F4] hover:bg-[#2a2522] dark:hover:bg-[#E7E5E4] text-white dark:text-[#1C1917] shadow-md rounded-[9px] text-body-sm"
+                            className="bg-[#101723] dark:bg-[#D7DFE5] hover:bg-[#243040] dark:hover:bg-[#E7EDF6] text-white dark:text-[#141D2B] shadow-md rounded-[9px] text-body-sm"
                             icon={Save}
                           >
                             Update
                           </Button>
                           <Button
                             onClick={handleCancelEdit}
-                            className="bg-white dark:bg-[#292524] border border-[#E0DEDB] dark:border-[#44403C] text-[#605A57] dark:text-[#A8A29E] hover:bg-[#FAFAF9] dark:hover:bg-[#1C1917] hover:text-[#37322F] dark:hover:text-[#F5F5F4] shadow-sm rounded-[9px] text-body-sm"
+                            className="bg-[#F9FCFF] dark:bg-[#1A2533] border border-[#D8DFE9] dark:border-[#2B3646] text-[#566273] dark:text-[#9BAABD] hover:bg-[#F3F7FC] dark:hover:bg-[#141D2B] hover:text-[#101723] dark:hover:text-[#D7DFE5] shadow-sm rounded-[9px] text-body-sm"
                           >
                             Cancel
                           </Button>
@@ -854,14 +918,14 @@ const EditChatbot: React.FC = () => {
                         <div className="flex flex-col sm:flex-row gap-3">
                           <Button
                             onClick={handleAddFaq}
-                            className="bg-[#37322F] dark:bg-[#F5F5F4] hover:bg-[#2a2522] dark:hover:bg-[#E7E5E4] text-white dark:text-[#1C1917] shadow-md rounded-[9px] text-body-sm flex-1 sm:flex-none"
+                            className="bg-[#101723] dark:bg-[#D7DFE5] hover:bg-[#243040] dark:hover:bg-[#E7EDF6] text-white dark:text-[#141D2B] shadow-md rounded-[9px] text-body-sm flex-1 sm:flex-none"
                             icon={Plus}
                           >
                             Add FAQ
                           </Button>
                           {AiFaqGenerator && (
                             <>
-                              <div className="hidden sm:block w-px bg-[#E0DEDB] dark:bg-[#44403C] mx-1"></div>
+                              <div className="hidden sm:block w-px bg-[#D8DFE9] dark:bg-[#273444] mx-1"></div>
                               <Suspense fallback={null}>
                                 <AiFaqGenerator
                                   chatbotId={config.id || id}
@@ -894,13 +958,13 @@ const EditChatbot: React.FC = () => {
                   {/* FAQ List */}
                   {faqList.length === 0 ? (
                     <div className="text-center py-12">
-                      <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-[#F5F5F4] dark:bg-[#292524] flex items-center justify-center">
-                        <MessageSquare size={28} className="text-[#A8A29E] dark:text-[#78716C]" />
+                      <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-[#E7EDF6] dark:bg-[#1A2533] flex items-center justify-center">
+                        <MessageSquare size={28} className="text-[#647184] dark:text-[#9BAABD]" />
                       </div>
-                      <h3 className="text-body-sm font-semibold text-[#37322F] dark:text-[#F5F5F4] mb-1">
+                      <h3 className="text-body-sm font-semibold text-[#101723] dark:text-[#D7DFE5] mb-1">
                         No FAQs yet
                       </h3>
-                      <p className="text-xs text-[#A8A29E] dark:text-[#78716C] max-w-[260px] mx-auto">
+                      <p className="text-xs text-[#647184] dark:text-[#9BAABD] max-w-[260px] mx-auto">
                         Add your first question above to help users get quick answers from your chatbot.
                       </p>
                     </div>
@@ -909,23 +973,23 @@ const EditChatbot: React.FC = () => {
                       {faqList.map((faq, index) => (
                         <div
                           key={index}
-                          className="border border-[#E0DEDB] dark:border-[#44403C] rounded-[9px] overflow-hidden transition-shadow duration-200 hover:shadow-sm"
+                          className="border border-[#D8DFE9] dark:border-[#2B3646] rounded-[9px] overflow-hidden transition-shadow duration-200 hover:shadow-sm"
                         >
                           <div
-                            className="bg-white dark:bg-[#292524] p-4 flex justify-between items-center cursor-pointer hover:bg-[#FAFAF9] dark:hover:bg-[#1C1917] transition-colors duration-200"
+                            className="bg-[#F9FCFF] dark:bg-[#1A2533] p-4 flex justify-between items-center cursor-pointer hover:bg-[#F3F7FC] dark:hover:bg-[#141D2B] transition-colors duration-200"
                             onClick={() => toggleFAQ(index)}
                           >
                             <div className="flex items-center gap-3">
-                              <span className="flex-shrink-0 w-6 h-6 rounded-full bg-[#F5F5F4] dark:bg-[#44403C] flex items-center justify-center text-xs font-semibold text-[#605A57] dark:text-[#A8A29E]">
+                              <span className="flex-shrink-0 w-6 h-6 rounded-full bg-[#E7EDF6] dark:bg-[#273444] flex items-center justify-center text-xs font-semibold text-[#566273] dark:text-[#9BAABD]">
                                 {index + 1}
                               </span>
-                              <span className="font-medium text-body-sm text-[#37322F] dark:text-[#F5F5F4]">
+                              <span className="font-medium text-body-sm text-[#101723] dark:text-[#D7DFE5]">
                                 {faq.question}
                               </span>
                             </div>
                             <div className="flex items-center gap-1 flex-shrink-0 ml-2">
                               <button
-                                className="text-[#A8A29E] dark:text-[#78716C] hover:text-[#37322F] dark:hover:text-[#F5F5F4] p-1.5 rounded-md hover:bg-[#F5F5F4] dark:hover:bg-[#44403C] transition-colors"
+                                className="text-[#647184] dark:text-[#9BAABD] hover:text-[#101723] dark:hover:text-[#D7DFE5] p-1.5 rounded-md hover:bg-[#E7EDF6] dark:hover:bg-[#273444] transition-colors"
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   handleEditFaq(index);
@@ -934,7 +998,7 @@ const EditChatbot: React.FC = () => {
                                 <Edit2 size={14} />
                               </button>
                               <button
-                                className="text-[#A8A29E] dark:text-[#78716C] hover:text-red-500 p-1.5 rounded-md hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                                className="text-[#647184] dark:text-[#9BAABD] hover:text-red-500 p-1.5 rounded-md hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   openDeleteFaqModal(index);
@@ -943,15 +1007,15 @@ const EditChatbot: React.FC = () => {
                                 <Trash2 size={14} />
                               </button>
                               {faq.isOpen ? (
-                                <ChevronUp size={16} className="text-[#A8A29E] ml-1" />
+                                <ChevronUp size={16} className="text-[#647184] ml-1" />
                               ) : (
-                                <ChevronDown size={16} className="text-[#A8A29E] ml-1" />
+                                <ChevronDown size={16} className="text-[#647184] ml-1" />
                               )}
                             </div>
                           </div>
                           {faq.isOpen && (
-                            <div className="px-4 pb-4 pt-2 bg-[#FAFAF9] dark:bg-[#1C1917] border-t border-[#E0DEDB] dark:border-[#44403C]">
-                              <p className="text-body-sm text-[#605A57] dark:text-[#A8A29E] pl-9">
+                            <div className="px-4 pb-4 pt-2 bg-[#F3F7FC] dark:bg-[#141D2B] border-t border-[#D8DFE9] dark:border-[#2B3646]">
+                              <p className="text-body-sm text-[#566273] dark:text-[#9BAABD] pl-9">
                                 {faq.answer}
                               </p>
                             </div>
@@ -974,7 +1038,7 @@ const EditChatbot: React.FC = () => {
                     />
                   </Suspense>
                 ) : (
-                  <div className="rounded-[9px] border border-[#E0DEDB] dark:border-[#44403C] bg-[#FAFAF9] dark:bg-[#1C1917] p-5">
+                  <div className="rounded-[9px] border border-[#D8DFE9] dark:border-[#2B3646] bg-[#F3F7FC] dark:bg-[#141D2B] p-5">
                     <SectionHeader
                       title="AI Persona"
                       description={
@@ -983,7 +1047,7 @@ const EditChatbot: React.FC = () => {
                           : "Upgrade to Pro to unlock AI personas and AI-powered replies."
                       }
                     />
-                    <p className="text-body-sm text-[#605A57] dark:text-[#A8A29E]">
+                    <p className="text-body-sm text-[#566273] dark:text-[#9BAABD]">
                       {canUseAi
                         ? "This chatbot is currently using manual FAQ matching only."
                         : "Free plans include unlimited manual chatbots. Upgrade when you want AI responses and custom AI behavior."}
@@ -991,7 +1055,7 @@ const EditChatbot: React.FC = () => {
                     {!canUseAi && (
                       <Link
                         to="/plans"
-                        className="mt-4 inline-flex items-center justify-center rounded-lg bg-[#37322F] dark:bg-[#F5F5F4] px-4 py-2 text-sm font-medium text-white dark:text-[#1C1917] hover:bg-[#2a2522] dark:hover:bg-[#E7E5E4] transition-colors"
+                        className="mt-4 inline-flex items-center justify-center rounded-lg bg-[#101723] dark:bg-[#D7DFE5] px-4 py-2 text-sm font-medium text-white dark:text-[#141D2B] hover:bg-[#243040] dark:hover:bg-[#E7EDF6] transition-colors"
                       >
                         Upgrade to Pro
                       </Link>
@@ -1018,7 +1082,7 @@ const EditChatbot: React.FC = () => {
                       </div>
                       <Button
                         onClick={saveConfig}
-                        className="bg-[#37322F] dark:bg-[#F5F5F4] hover:bg-[#2a2522] dark:hover:bg-[#E7E5E4] text-white dark:text-[#1C1917] shadow-md rounded-[9px]"
+                        className="bg-[#101723] dark:bg-[#D7DFE5] hover:bg-[#243040] dark:hover:bg-[#E7EDF6] text-white dark:text-[#141D2B] shadow-md rounded-[9px]"
                         icon={Save}
                       >
                         Save Configuration
@@ -1040,26 +1104,26 @@ const EditChatbot: React.FC = () => {
                         ].map((item) => (
                           <div
                             key={item.step}
-                            className="flex items-start gap-3 p-3 rounded-[9px] bg-[#FAFAF9] dark:bg-[#1C1917] border border-[#E0DEDB] dark:border-[#44403C]"
+                            className="flex items-start gap-3 p-3 rounded-[9px] bg-[#F3F7FC] dark:bg-[#141D2B] border border-[#D8DFE9] dark:border-[#2B3646]"
                           >
-                            <span className="flex-shrink-0 w-7 h-7 rounded-full bg-[#37322F] dark:bg-[#F5F5F4] text-white dark:text-[#1C1917] flex items-center justify-center text-xs font-bold">
+                            <span className="flex-shrink-0 w-7 h-7 rounded-full bg-[#101723] dark:bg-[#D7DFE5] text-white dark:text-[#141D2B] flex items-center justify-center text-xs font-bold">
                               {item.step}
                             </span>
                             <div>
-                              <p className="text-body-sm font-semibold text-[#37322F] dark:text-[#F5F5F4]">{item.title}</p>
-                              <p className="text-xs text-[#A8A29E] dark:text-[#78716C]">{item.desc}</p>
+                              <p className="text-body-sm font-semibold text-[#101723] dark:text-[#D7DFE5]">{item.title}</p>
+                              <p className="text-xs text-[#647184] dark:text-[#9BAABD]">{item.desc}</p>
                             </div>
                           </div>
                         ))}
                       </div>
 
                       {/* Embed Code Block */}
-                      <div className="rounded-[9px] border border-[#E0DEDB] dark:border-[#44403C] overflow-hidden">
-                        <div className="flex items-center justify-between px-4 py-2.5 bg-[#FAFAF9] dark:bg-[#1C1917] border-b border-[#E0DEDB] dark:border-[#44403C]">
-                          <span className="text-xs font-medium text-[#78716C] dark:text-[#A8A29E] uppercase tracking-wider">HTML</span>
+                      <div className="rounded-[9px] border border-[#D8DFE9] dark:border-[#2B3646] overflow-hidden">
+                        <div className="flex items-center justify-between px-4 py-2.5 bg-[#F3F7FC] dark:bg-[#141D2B] border-b border-[#D8DFE9] dark:border-[#2B3646]">
+                          <span className="text-xs font-medium text-[#647184] dark:text-[#9BAABD] uppercase tracking-wider">HTML</span>
                           <button
                             onClick={handleCopyEmbed}
-                            className="flex items-center gap-1.5 text-xs font-medium text-[#605A57] dark:text-[#A8A29E] hover:text-[#37322F] dark:hover:text-[#F5F5F4] bg-white dark:bg-[#292524] border border-[#E0DEDB] dark:border-[#44403C] px-3 py-1.5 rounded-md transition-all duration-200 hover:shadow-sm"
+                            className="flex items-center gap-1.5 text-xs font-medium text-[#566273] dark:text-[#9BAABD] hover:text-[#101723] dark:hover:text-[#D7DFE5] bg-[#F9FCFF] dark:bg-[#1A2533] border border-[#D8DFE9] dark:border-[#2B3646] px-3 py-1.5 rounded-md transition-all duration-200 hover:shadow-sm"
                           >
                             {embedCopied ? (
                               <>
@@ -1074,12 +1138,12 @@ const EditChatbot: React.FC = () => {
                             )}
                           </button>
                         </div>
-                        <pre className="p-4 bg-[#1C1917] dark:bg-[#0C0A09] text-[#E7E5E4] text-xs font-mono overflow-x-auto leading-relaxed">
+                        <pre className="p-4 bg-[#141D2B] dark:bg-[#0C0A09] text-[#E7EDF6] text-xs font-mono overflow-x-auto leading-relaxed">
                           <code>{generateEmbedCode()}</code>
                         </pre>
                       </div>
 
-                      <p className="mt-4 text-xs text-[#A8A29E] dark:text-[#78716C] flex items-center gap-1.5">
+                      <p className="mt-4 text-xs text-[#647184] dark:text-[#9BAABD] flex items-center gap-1.5">
                         <AlertCircle size={13} />
                         Make sure to replace any placeholder values in the embed code with your actual chatbot configuration.
                       </p>
@@ -1090,15 +1154,15 @@ const EditChatbot: React.FC = () => {
             </div>
 
             {/* Floating Save Bar */}
-            <div className="sticky bottom-0 bg-white/80 dark:bg-[#292524]/80 backdrop-blur-md border-t border-[#E0DEDB] dark:border-[#44403C] px-4 sm:px-6 py-3 sm:py-4 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-0 rounded-b-[9px]">
-              <p className="text-xs text-[#A8A29E] dark:text-[#78716C] text-center sm:text-left">
+            <div className="sticky bottom-0 bg-[#F9FCFF]/80 dark:bg-[#1A2533]/80 backdrop-blur-md border-t border-[#D8DFE9] dark:border-[#2B3646] px-4 sm:px-6 py-3 sm:py-4 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-0 rounded-b-[9px]">
+              <p className="text-xs text-[#647184] dark:text-[#9BAABD] text-center sm:text-left">
                 {hasChanges ? "You have unsaved changes" : "All changes saved"}
               </p>
               <div className="flex gap-2 justify-center sm:justify-end">
                 {hasChanges && id && (
                   <Button
                     onClick={discardChanges}
-                    className="bg-white dark:bg-[#1C1917] border border-[#E0DEDB] dark:border-[#44403C] text-[#605A57] dark:text-[#A8A29E] hover:bg-[#FAFAF9] dark:hover:bg-[#292524] hover:text-[#37322F] dark:hover:text-[#F5F5F4] shadow-sm text-body-sm font-medium px-4 py-2 rounded-[9px]"
+                    className="bg-[#F9FCFF] dark:bg-[#141D2B] border border-[#D8DFE9] dark:border-[#2B3646] text-[#566273] dark:text-[#9BAABD] hover:bg-[#F3F7FC] dark:hover:bg-[#1A2533] hover:text-[#101723] dark:hover:text-[#D7DFE5] shadow-sm text-body-sm font-medium px-4 py-2 rounded-[9px]"
                     icon={RotateCcw}
                   >
                     Discard
@@ -1106,7 +1170,7 @@ const EditChatbot: React.FC = () => {
                 )}
                 <Button
                   onClick={saveConfig}
-                  className="bg-[#37322F] dark:bg-[#F5F5F4] hover:bg-[#2a2522] dark:hover:bg-[#E7E5E4] text-white dark:text-[#1C1917] shadow-md text-body-sm font-medium px-5 py-2 rounded-[9px]"
+                  className="bg-[#101723] dark:bg-[#D7DFE5] hover:bg-[#243040] dark:hover:bg-[#E7EDF6] text-white dark:text-[#141D2B] shadow-md text-body-sm font-medium px-5 py-2 rounded-[9px]"
                   icon={Save}
                 >
                   {id ? "Save" : "Create Chatbot"}
@@ -1120,15 +1184,15 @@ const EditChatbot: React.FC = () => {
             <div className="sticky top-8">
               <div>
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-lg font-semibold text-[#37322F] dark:text-[#F5F5F4] font-sans">
+                  <h2 className="text-lg font-semibold text-[#101723] dark:text-[#D7DFE5] font-sans">
                     Preview
                   </h2>
-                  <span className="text-xs text-[#A8A29E] dark:text-[#78716C] bg-[#F5F5F4] dark:bg-[#292524] px-2.5 py-1 rounded-full border border-[#E0DEDB] dark:border-[#44403C]">
+                  <span className="text-xs text-[#647184] dark:text-[#9BAABD] bg-[#E7EDF6] dark:bg-[#1A2533] px-2.5 py-1 rounded-full border border-[#D8DFE9] dark:border-[#2B3646]">
                     {positionLabels[config.position] || config.position}
                   </span>
                 </div>
 
-                <div className="border border-[#E0DEDB] dark:border-[#44403C] rounded-[9px] overflow-hidden bg-white dark:bg-[#292524]">
+                <div className="border border-[#D8DFE9] dark:border-[#2B3646] rounded-[9px] overflow-hidden bg-[#F9FCFF] dark:bg-[#1A2533]">
                   <div
                     className="relative overflow-hidden w-full"
                     style={{ height: "500px" }}
@@ -1168,7 +1232,7 @@ const EditChatbot: React.FC = () => {
           cancelText="Cancel"
           confirmButtonClass="bg-red-600 text-white hover:bg-red-700 shadow-md"
         >
-          <p className="text-[#605A57] dark:text-[#A8A29E]">
+          <p className="text-[#566273] dark:text-[#9BAABD]">
             Are you sure you want to delete this FAQ?
           </p>
         </ConfirmationModal>

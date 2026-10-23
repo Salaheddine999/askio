@@ -58,19 +58,19 @@ const ChatbotCard: React.FC<ChatbotCardProps> = ({
 
   if (viewMode === "list") {
     return (
-      <tr className="hover:bg-[#FAFAF9] dark:hover:bg-[#292524] transition-colors group">
+      <tr className="hover:bg-[#F3F7FC] dark:hover:bg-[#1A2533] transition-colors group">
         <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
           <div className="flex items-center">
-            <div className="relative flex-shrink-0 h-10 w-10 flex items-center justify-center bg-[#F7F5F3] dark:bg-[#292524] rounded-lg border border-[#E0DEDB] dark:border-[#44403C] text-[#37322F] dark:text-[#F5F5F4]">
+            <div className="relative flex-shrink-0 h-10 w-10 flex items-center justify-center bg-[#F3F7FC] dark:bg-[#1A2533] rounded-lg border border-[#D8DFE9] dark:border-[#2B3646] text-[#101723] dark:text-[#D7DFE5]">
               <Bot size={20} />
               <div
-                className={`absolute -bottom-1 -right-1 h-3 w-3 rounded-full border-2 border-white dark:border-[#1C1917] ${
-                  isActive ? "bg-emerald-500" : "bg-zinc-400"
+                className={`absolute -bottom-1 -right-1 h-3 w-3 rounded-full border-2 border-white dark:border-[#141D2B] ${
+                  isActive ? "bg-emerald-500" : "bg-[#87909D]"
                 }`}
               />
             </div>
             <div className="ml-3 sm:ml-4">
-              <div className="text-body-sm font-medium text-[#37322F] dark:text-[#F5F5F4] font-sans truncate max-w-[120px] sm:max-w-xs">
+              <div className="text-body-sm font-medium text-[#101723] dark:text-[#D7DFE5] font-sans truncate max-w-[120px] sm:max-w-xs">
                 {chatbot.title}
               </div>
               {isAiEnabled && (
@@ -94,38 +94,38 @@ const ChatbotCard: React.FC<ChatbotCardProps> = ({
             </div>
           </div>
         </td>
-        <td className="hidden lg:table-cell px-6 py-4 whitespace-nowrap text-body-sm text-[#605A57] dark:text-[#A8A29E]">
+        <td className="hidden lg:table-cell px-6 py-4 whitespace-nowrap text-body-sm text-[#566273] dark:text-[#9BAABD]">
           {format(chatbot.createdAt, "MMM d, yyyy")}
         </td>
-        <td className="hidden xl:table-cell px-6 py-4 whitespace-nowrap text-body-sm text-[#605A57] dark:text-[#A8A29E]">
+        <td className="hidden xl:table-cell px-6 py-4 whitespace-nowrap text-body-sm text-[#566273] dark:text-[#9BAABD]">
           {format(chatbot.lastUpdated, "MMM d, yyyy")}
         </td>
         <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-right text-body-sm font-medium">
           <div className="flex items-center justify-end space-x-1 sm:space-x-3">
             <button
               onClick={() => onToggleActive(chatbot.id)}
-              className={`${isActive ? "text-emerald-600 dark:text-emerald-400" : "text-zinc-400 dark:text-zinc-500"} hover:text-[#37322F] dark:hover:text-[#F5F5F4] transition-colors`}
+              className={`${isActive ? "text-emerald-600 dark:text-emerald-400" : "text-[#87909D] dark:text-[#647184]"} hover:text-[#101723] dark:hover:text-[#D7DFE5] transition-colors`}
               title={isActive ? "Deactivate" : "Activate"}
             >
               <Power size={16} />
             </button>
             <button
               onClick={() => onEdit(chatbot.id)}
-              className="text-[#605A57] dark:text-[#A8A29E] hover:text-[#37322F] dark:hover:text-[#F5F5F4] transition-colors"
+              className="text-[#566273] dark:text-[#9BAABD] hover:text-[#101723] dark:hover:text-[#D7DFE5] transition-colors"
               title="Edit"
             >
               <Edit2 size={16} />
             </button>
             <button
               onClick={() => onEmbed(chatbot.id)}
-              className="text-[#605A57] dark:text-[#A8A29E] hover:text-[#37322F] dark:hover:text-[#F5F5F4] transition-colors"
+              className="text-[#566273] dark:text-[#9BAABD] hover:text-[#101723] dark:hover:text-[#D7DFE5] transition-colors"
               title="Embed"
             >
               <Code size={16} />
             </button>
             <button
               onClick={() => onDelete(chatbot.id)}
-              className="text-[#605A57] dark:text-[#A8A29E] hover:text-red-600 dark:hover:text-red-400 transition-colors"
+              className="text-[#566273] dark:text-[#9BAABD] hover:text-red-600 dark:hover:text-red-400 transition-colors"
               title="Delete"
             >
               <Trash2 size={16} />
@@ -146,20 +146,20 @@ const ChatbotCard: React.FC<ChatbotCardProps> = ({
         delay: index * 0.05,
         ease: "easeOut",
       }}
-      className="group relative flex flex-col justify-between bg-white dark:bg-[#1C1917] rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-[0_2px_8px_rgba(0,0,0,0.04)] dark:shadow-none hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)] dark:hover:shadow-[0_8px_24px_rgba(0,0,0,0.2)] hover:border-zinc-300 dark:hover:border-zinc-700 transition-all duration-300 transform hover:-translate-y-1"
+      className="group relative flex flex-col justify-between bg-[#F9FCFF] dark:bg-[#141D2B] rounded-xl border border-[#D8DFE9] dark:border-[#1A2533] shadow-[0_2px_8px_rgba(0,0,0,0.04)] dark:shadow-none hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)] dark:hover:shadow-[0_8px_24px_rgba(0,0,0,0.2)] hover:border-[#D7DFE5] dark:hover:border-[#243040] transition-all duration-300 transform hover:-translate-y-1"
     >
       <div className="p-3 sm:p-4 flex flex-col h-full">
         <div className="flex justify-between items-start mb-3 sm:mb-4">
           <div className="flex items-start gap-3 sm:gap-4">
             <div className="relative group-hover:scale-105 transition-transform duration-300">
-              <div className="relative h-9 w-9 sm:h-10 sm:w-10 flex items-center justify-center rounded-xl bg-gradient-to-b from-zinc-50 to-zinc-100 dark:from-zinc-800 dark:to-zinc-900 border border-zinc-200 dark:border-zinc-700 shadow-sm">
+              <div className="relative h-9 w-9 sm:h-10 sm:w-10 flex items-center justify-center rounded-xl bg-gradient-to-b from-[#F3F7FC] to-[#E7EDF6] dark:from-[#1A2533] dark:to-[#141D2B] border border-[#D8DFE9] dark:border-[#243040] shadow-sm">
                 <Bot
                   size={20}
-                  className="sm:w-[22px] sm:h-[22px] text-zinc-700 dark:text-zinc-300"
+                  className="sm:w-[22px] sm:h-[22px] text-[#243040] dark:text-[#D7DFE5]"
                   strokeWidth={1.5}
                 />
               </div>
-              <div className="absolute -bottom-1 -right-1 h-3.5 w-3.5 sm:h-4 sm:w-4 bg-white dark:bg-[#1C1917] rounded-full flex items-center justify-center">
+              <div className="absolute -bottom-1 -right-1 h-3.5 w-3.5 sm:h-4 sm:w-4 bg-[#F9FCFF] dark:bg-[#141D2B] rounded-full flex items-center justify-center">
                 <span className="relative flex h-2 w-2 sm:h-2.5 sm:w-2.5">
                   {isActive ? (
                     <>
@@ -167,18 +167,18 @@ const ChatbotCard: React.FC<ChatbotCardProps> = ({
                       <span className="relative inline-flex rounded-full h-full w-full bg-emerald-500" />
                     </>
                   ) : (
-                    <span className="relative inline-flex rounded-full h-full w-full bg-zinc-400" />
+                    <span className="relative inline-flex rounded-full h-full w-full bg-[#87909D]" />
                   )}
                 </span>
               </div>
             </div>
 
             <div className="pt-0.5">
-              <h3 className="text-base sm:text-lg font-semibold text-zinc-900 dark:text-zinc-50 leading-tight mb-1 tracking-tight">
+              <h3 className="text-base sm:text-lg font-semibold text-[#141D2B] dark:text-[#F3F7FC] leading-tight mb-1 tracking-tight">
                 {chatbot.title}
               </h3>
-              <div className="flex flex-wrap items-center gap-2 text-xs font-medium text-zinc-500 dark:text-zinc-400">
-                <span className="px-2 py-0.5 rounded-full bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-400">
+              <div className="flex flex-wrap items-center gap-2 text-xs font-medium text-[#647184] dark:text-[#87909D]">
+                <span className="px-2 py-0.5 rounded-full bg-[#E7EDF6] dark:bg-[#1A2533] border border-[#D8DFE9] dark:border-[#243040] text-[#566273] dark:text-[#87909D]">
                   v1.0
                 </span>
                 {isAiEnabled && (
@@ -194,7 +194,7 @@ const ChatbotCard: React.FC<ChatbotCardProps> = ({
           </div>
 
           <Menu as="div" className="relative -mr-2 -mt-2">
-            <Menu.Button className="p-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-400 hover:text-zinc-600 dark:text-zinc-500 dark:hover:text-zinc-300 transition-colors focus:outline-none">
+            <Menu.Button className="p-2 rounded-lg hover:bg-[#E7EDF6] dark:hover:bg-[#1A2533] text-[#87909D] hover:text-[#566273] dark:text-[#647184] dark:hover:text-[#D7DFE5] transition-colors focus:outline-none">
               <MoreVertical size={18} />
             </Menu.Button>
             <Transition
@@ -206,7 +206,7 @@ const ChatbotCard: React.FC<ChatbotCardProps> = ({
               leaveFrom="transform opacity-100 scale-100"
               leaveTo="transform opacity-0 scale-95"
             >
-              <Menu.Items className="absolute right-0 mt-1 w-48 origin-top-right bg-white dark:bg-[#1C1917] rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-xl p-1.5 z-10 focus:outline-none divide-y divide-dashed divide-zinc-200 dark:divide-zinc-800">
+              <Menu.Items className="absolute right-0 mt-1 w-48 origin-top-right bg-[#F9FCFF] dark:bg-[#141D2B] rounded-xl border border-[#D8DFE9] dark:border-[#1A2533] shadow-xl p-1.5 z-10 focus:outline-none divide-y divide-dashed divide-[#D8DFE9] dark:divide-[#1A2533]">
                 <div className="pb-1">
                   <Menu.Item>
                     {({ active }) => (
@@ -214,8 +214,8 @@ const ChatbotCard: React.FC<ChatbotCardProps> = ({
                         onClick={() => onToggleActive(chatbot.id)}
                         className={`${
                           active
-                            ? "bg-zinc-50 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-50"
-                            : "text-zinc-600 dark:text-zinc-400"
+                            ? "bg-[#F3F7FC] dark:bg-[#1A2533] text-[#141D2B] dark:text-[#F3F7FC]"
+                            : "text-[#566273] dark:text-[#87909D]"
                         } group flex w-full items-center rounded-lg px-2.5 py-2 text-sm font-medium transition-colors`}
                       >
                         {isActive ? (
@@ -238,8 +238,8 @@ const ChatbotCard: React.FC<ChatbotCardProps> = ({
                         onClick={() => onEmbed(chatbot.id)}
                         className={`${
                           active
-                            ? "bg-zinc-50 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-50"
-                            : "text-zinc-600 dark:text-zinc-400"
+                            ? "bg-[#F3F7FC] dark:bg-[#1A2533] text-[#141D2B] dark:text-[#F3F7FC]"
+                            : "text-[#566273] dark:text-[#87909D]"
                         } group flex w-full items-center rounded-lg px-2.5 py-2 text-sm font-medium transition-colors`}
                       >
                         <Code className="mr-2.5 h-4 w-4 opacity-70" />
@@ -270,13 +270,13 @@ const ChatbotCard: React.FC<ChatbotCardProps> = ({
           </Menu>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3 sm:mb-4 py-3 px-3 bg-zinc-50/50 dark:bg-zinc-800/30 rounded-xl border border-dashed border-zinc-200 dark:border-zinc-800">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3 sm:mb-4 py-3 px-3 bg-[#F3F7FC]/50 dark:bg-[#1A2533]/30 rounded-xl border border-dashed border-[#D8DFE9] dark:border-[#1A2533]">
           <div className="flex flex-col">
-            <span className="text-[10px] uppercase tracking-widest font-semibold text-zinc-400 dark:text-zinc-500 mb-1">
+            <span className="text-[10px] uppercase tracking-widest font-semibold text-[#87909D] dark:text-[#647184] mb-1">
               Satisfaction
             </span>
             <div className="flex items-baseline gap-2">
-              <span className="text-xl sm:text-2xl font-serif text-zinc-900 dark:text-zinc-50 leading-none">
+              <span className="text-xl sm:text-2xl font-serif text-[#141D2B] dark:text-[#F3F7FC] leading-none">
                 {satisfactionRate}%
               </span>
               {satisfactionRate > 0 && (
@@ -299,25 +299,25 @@ const ChatbotCard: React.FC<ChatbotCardProps> = ({
             </div>
           </div>
 
-          <div className="flex flex-col sm:pl-4 sm:border-l border-dashed border-zinc-200 dark:border-zinc-800">
-            <span className="text-[10px] uppercase tracking-widest font-semibold text-zinc-400 dark:text-zinc-500 mb-1">
+          <div className="flex flex-col sm:pl-4 sm:border-l border-dashed border-[#D8DFE9] dark:border-[#1A2533]">
+            <span className="text-[10px] uppercase tracking-widest font-semibold text-[#87909D] dark:text-[#647184] mb-1">
               Feedback
             </span>
             <div className="flex items-baseline gap-2">
-              <span className="text-xl sm:text-2xl font-serif text-zinc-900 dark:text-zinc-50 leading-none">
+              <span className="text-xl sm:text-2xl font-serif text-[#141D2B] dark:text-[#F3F7FC] leading-none">
                 {totalFeedback}
               </span>
-              <span className="text-xs text-zinc-400 dark:text-zinc-500 font-serif italic">
+              <span className="text-xs text-[#87909D] dark:text-[#647184] font-serif italic">
                 responses
               </span>
             </div>
           </div>
         </div>
 
-        <div className="mt-auto pt-3 border-t border-zinc-100 dark:border-zinc-800">
+        <div className="mt-auto pt-3 border-t border-[#E7EDF6] dark:border-[#1A2533]">
           <button
             onClick={() => onEdit(chatbot.id)}
-            className="group/btn w-full relative flex items-center justify-center gap-2 py-2 rounded-lg bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-zinc-200 text-white dark:text-zinc-900 text-sm font-medium shadow-sm hover:shadow transition-all duration-200"
+            className="group/btn w-full relative flex items-center justify-center gap-2 py-2 rounded-lg bg-[#141D2B] hover:bg-[#1A2533] dark:bg-[#E7EDF6] dark:hover:bg-[#D8DFE9] text-white dark:text-[#141D2B] text-sm font-medium shadow-sm hover:shadow transition-all duration-200"
           >
             <Edit2 size={14} className="opacity-80" />
             <span>Manage Chatbot</span>

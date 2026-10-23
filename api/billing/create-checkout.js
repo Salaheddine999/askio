@@ -10,11 +10,16 @@ export default async function handler(req, res) {
 
   try {
     const decodedToken = await requireUser(req);
-    const { proCheckoutUrl } = getLemonSqueezyConfig();
-    const { email = decodedToken.email || "", name = "" } = req.body || {};
+    const { proCheckoutUrl, proYearlyCheckoutUrl } = getLemonSqueezyConfig();
+    const { email = decodedToken.email || "", name = "", interval = "monthly" } = req.body || {};
+    const yearly = interval === "yearly";
+
+    if (yearly && !proYearlyCheckoutUrl) {
+      throw new Error("LEMONSQUEEZY_PRO_YEARLY_CHECKOUT_URL is not configured.");
+    }
 
     const url = buildCheckoutUrl({
-      checkoutUrl: proCheckoutUrl,
+      checkoutUrl: yearly ? proYearlyCheckoutUrl : proCheckoutUrl,
       email,
       name,
       uid: decodedToken.uid,

@@ -1,52 +1,93 @@
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Check } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useInView } from "react-intersection-observer";
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import HatchStrip from "./HatchStrip";
+import brandLogo from "../../assets/logo.svg";
+
+const TRUST_POINTS = ["Free plan", "No credit card", "Live in minutes"];
 
 export default function CTASection() {
-  const [ctaRef, ctaInView] = useInView({ triggerOnce: true, threshold: 0.1 });
+  const [ctaRef, ctaInView] = useInView({ triggerOnce: true, rootMargin: "0px 0px 200px 0px" });
+  const reduceMotion = useReducedMotion();
+
+  // The after-hours exchange plays once the section is in view.
+  const bubble = (delay: number) => ({
+    initial: { opacity: 0, y: 8, scale: 0.98 },
+    animate: ctaInView ? { opacity: 1, y: 0, scale: 1 } : {},
+    transition: { duration: 0.35, ease: "easeOut", delay: reduceMotion ? 0 : delay },
+  });
 
   return (
     <motion.section
       ref={ctaRef}
       initial={{ opacity: 0, y: 40 }}
       animate={ctaInView ? { opacity: 1, y: 0 } : {}}
-      transition={{ duration: 0.5 }}
-      className="border-b border-[rgba(55,50,47,0.12)] dark:border-[#44403C] bg-gradient-to-b from-[#F7F5F3] to-[#EDE9E3] dark:from-[#1C1917] dark:to-[#262220]"
+      transition={{ duration: 0.35 }}
+      className="border-b border-[rgba(16,23,35,0.12)] dark:border-[#2B3646] bg-gradient-to-b from-[#F3F7FC] to-[#E7EDF6] dark:from-[#141D2B] dark:to-[#1A2533]"
     >
       <div className="flex">
         <HatchStrip />
-        <div className="flex-1 py-20 sm:py-28 flex flex-col items-center text-center px-4 border-l border-r border-[rgba(55,50,47,0.12)] dark:border-[#44403C]">
-          <h2 className="text-display font-serif text-[#37322F] dark:text-[#F5F5F4] mb-6">
-            Ready to transform<br className="hidden sm:block" /> your website?
+        <div className="relative isolate flex-1 overflow-hidden py-20 sm:py-24 flex flex-col items-center text-center px-4 border-l border-r border-[rgba(16,23,35,0.12)] dark:border-[#2B3646]">
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute left-1/2 top-10 -z-10 h-[260px] w-[70%] -translate-x-1/2 rounded-full bg-[#93B5D9]/35 blur-[80px] dark:bg-[#769CC5]/15"
+          />
+
+          <div className="mb-10 w-full max-w-[340px] space-y-2 text-left" aria-label="Example: a visitor question answered at 3:12 AM">
+            <motion.div {...bubble(0.15)} className="flex items-end justify-end gap-2">
+              <span className="mb-1 text-[10px] font-medium text-[#87909D]">3:12 AM</span>
+              <p className="rounded-2xl rounded-br-md bg-[#101723] px-3.5 py-2.5 text-[13px] text-white dark:bg-[#D7DFE5] dark:text-[#141D2B]">
+                Do you ship to Belgium?
+              </p>
+            </motion.div>
+            <motion.div {...bubble(0.75)}>
+              <div className="flex items-end gap-2">
+                <span className="flex size-7 shrink-0 items-center justify-center rounded-full border border-[#D8DFE9] bg-[#F9FCFF] dark:border-[#2B3646] dark:bg-[#202C3C]">
+                  <img src={brandLogo} alt="" className="h-4 w-4 dark:brightness-0 dark:invert" />
+                </span>
+                <p className="rounded-2xl rounded-bl-md border border-[#D8DFE9] bg-[#F9FCFF] px-3.5 py-2.5 text-[13px] text-[#101723] shadow-[0_8px_24px_-16px_rgba(16,23,35,0.35)] dark:border-[#2B3646] dark:bg-[#202C3C] dark:text-[#D7DFE5]">
+                  Yes! Orders to Belgium arrive in 2–3 business days.
+                </p>
+              </div>
+              <span className="mt-1 block pl-9 text-[10px] font-medium text-[#87909D]">Answered instantly by Askio</span>
+            </motion.div>
+          </div>
+
+          <h2 className="text-[clamp(2rem,4vw,3rem)] leading-[1.1] [text-wrap:balance] font-serif text-[#101723] dark:text-[#D7DFE5] mb-5">
+            Give your visitors answers,<br className="hidden sm:block" /> around the clock.
           </h2>
-          <p className="text-[#57524F] dark:text-[#A8A29E] text-body-lg max-w-md mb-10 leading-relaxed">
-            Join thousands of websites using Askio to provide instant support and enhance user experience.
+          <p className="text-[#566273] dark:text-[#9BAABD] text-body-lg max-w-md mb-8 leading-relaxed">
+            Start with your FAQs. Add your branding. Put your first chatbot on your website without writing code.
           </p>
-          <div className="flex flex-col sm:flex-row items-center gap-4">
+          <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4">
             <Link
               to="/auth"
-              className="h-12 px-12 bg-[#37322F] dark:bg-[#F5F5F4] shadow-[0px_0px_0px_2.5px_rgba(255,255,255,0.08)_inset] rounded-full flex items-center text-white dark:text-[#1C1917] text-[15px] font-medium hover:bg-[#2a2522] dark:hover:bg-[#E7E5E4] hover:scale-[1.03] hover:shadow-[0px_4px_20px_rgba(55,50,47,0.25)] transition-all duration-300"
+              className="group inline-flex h-12 items-center justify-center gap-2 rounded-full border border-[#101723] bg-[#101723] px-8 text-button font-medium text-white shadow-[0_2px_4px_rgba(16,23,35,0.12),inset_0_1px_0_rgba(255,255,255,0.12)] transition-[background-color,box-shadow,transform] duration-200 hover:-translate-y-0.5 hover:bg-[#243040] hover:shadow-[0_6px_16px_rgba(16,23,35,0.14)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#87909D] dark:border-[#D7DFE5] dark:bg-[#D7DFE5] dark:text-[#141D2B] dark:hover:bg-[#E7EDF6] motion-reduce:transform-none motion-reduce:transition-none"
               aria-label="Get started with Askio for free"
             >
-              Get Started Free
-              <ArrowRight className="ml-2 h-4 w-4" />
+              Build my free chatbot
+              <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5 motion-reduce:transform-none motion-reduce:transition-none" />
             </Link>
-            <div className="flex items-center gap-2 text-[#57524F] text-sm">
-              <div className="flex -space-x-2">
-                {[1, 2, 3].map((i) => (
-                  <div key={i} className="w-8 h-8 rounded-full bg-[#E0DEDB] dark:bg-[#44403C] border-2 border-[#EDE9E3] dark:border-[#262220] flex items-center justify-center text-[#57524F] dark:text-[#A8A29E] text-xs font-medium">✓</div>
-                ))}
-              </div>
-              <span><strong className="text-[#37322F] dark:text-[#F5F5F4]">500+</strong> users already started</span>
-            </div>
+            <a
+              href="#how-it-works"
+              className="inline-flex h-12 items-center justify-center gap-2 rounded-full border border-transparent px-4 text-[#566273] dark:text-[#9BAABD] text-body-sm font-medium transition-colors duration-200 hover:border-[#D8DFE9] hover:bg-[#E7EDF6]/60 hover:text-[#101723] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#87909D] dark:hover:border-[#2B3646] dark:hover:bg-[#243040] dark:hover:text-[#D7DFE5]"
+            >
+              See how it works
+            </a>
           </div>
-          <div className="flex flex-wrap justify-center gap-3 mt-10">
-            {["No Credit Card", "Easy Setup", "Full Customization"].map((t) => (
-              <span key={t} className="px-4 py-1.5 bg-white/80 dark:bg-[#2A2522] border border-[#E0DEDB] dark:border-[#44403C] rounded-full text-xs font-medium text-[#57524F] dark:text-[#A8A29E] backdrop-blur-sm">{t}</span>
+
+          <ul className="mt-8 flex flex-wrap justify-center gap-x-5 gap-y-2 text-sm text-[#566273] dark:text-[#9BAABD]">
+            {TRUST_POINTS.map((point) => (
+              <li key={point} className="flex items-center gap-1.5">
+                <Check className="h-3.5 w-3.5 text-[#4F9A63] dark:text-[#8FD19B]" />
+                {point}
+              </li>
             ))}
-          </div>
+          </ul>
+          <p className="mt-4 text-xs text-[#87909D]">
+            <strong className="font-semibold text-[#566273] dark:text-[#9BAABD]">500+</strong> users already started
+          </p>
         </div>
         <HatchStrip />
       </div>

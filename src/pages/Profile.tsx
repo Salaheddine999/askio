@@ -48,20 +48,20 @@ const Profile: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-gray-900">
+    <div className="min-h-screen bg-[#E7EDF6] dark:bg-[#141D2B]">
       <div className="w-full lg:w-[80%] px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
-        <h1 className="text-3xl font-medium mt-8 mb-6 dark:text-gray-100">
+        <h1 className="text-3xl font-medium mt-8 mb-6 dark:text-[#E7EDF6]">
           Profile
         </h1>
-        <div className="bg-white shadow-md rounded-lg p-6 dark:bg-gray-800">
+        <div className="bg-[#F9FCFF] shadow-md rounded-lg p-6 dark:bg-[#1A2533]">
           <div className="mb-4">
-            <label className="block text-gray-700 text-sm font-bold mb-2 dark:text-gray-100">
+            <label className="block text-[#243040] text-sm font-bold mb-2 dark:text-[#E7EDF6]">
               Email
             </label>
-            <p className="text-gray-600 dark:text-gray-100">{user?.email}</p>
+            <p className="text-[#566273] dark:text-[#E7EDF6]">{user?.email}</p>
           </div>
           <div className="mb-4">
-            <label className="block text-gray-700 text-sm font-bold mb-2 dark:text-gray-100">
+            <label className="block text-[#243040] text-sm font-bold mb-2 dark:text-[#E7EDF6]">
               Name
             </label>
             {editing ? (
@@ -69,10 +69,10 @@ const Profile: React.FC = () => {
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600"
+                className="shadow appearance-none border rounded w-full py-2 px-3 text-[#243040] leading-tight focus:outline-none focus:shadow-outline dark:bg-[#243040] dark:text-[#E7EDF6] dark:border-[#566273]"
               />
             ) : (
-              <p className="text-gray-600 dark:text-gray-100">
+              <p className="text-[#566273] dark:text-[#E7EDF6]">
                 {name || "Not set"}
               </p>
             )}
@@ -88,7 +88,7 @@ const Profile: React.FC = () => {
           ) : (
             <button
               onClick={() => setEditing(true)}
-              className="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline flex items-center"
+              className="bg-[#647184] hover:bg-[#566273] text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline flex items-center"
             >
               <Edit2 size={20} className="mr-2" />
               Edit Profile
@@ -101,7 +101,7 @@ const Profile: React.FC = () => {
             title="Update Profile"
             confirmText="Update"
             cancelText="Cancel"
-            confirmButtonClass="bg-[#aab2ff] text-black hover:bg-[#8e98ff] dark:bg-blue-500 dark:hover:bg-blue-600"
+            confirmButtonClass="bg-[#101723] text-white hover:bg-[#243040] dark:bg-[#D7DFE5] dark:text-[#141D2B] dark:hover:bg-[#E7EDF6]"
           >
             <p>Are you sure you want to update your profile?</p>
           </ConfirmationModal>

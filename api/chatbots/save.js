@@ -29,6 +29,8 @@ function normalizeChatbotPayload(payload, uid) {
     primaryColor: String(payload.primaryColor || "#4F46E5"),
     secondaryColor: String(payload.secondaryColor || "#6366F1"),
     position: String(payload.position || "bottom-right"),
+    launcherStyle: payload.launcherStyle === "orb" ? "orb" : "classic",
+    greetingBubble: payload.greetingBubble === true,
     initialMessage: String(payload.initialMessage || "Hello! How can I help you today?"),
     placeholder: String(payload.placeholder || "Type your message..."),
     faqData: normalizeFaqData(payload.faqData),

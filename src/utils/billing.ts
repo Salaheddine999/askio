@@ -1,8 +1,10 @@
 import { doc, getDoc } from "firebase/firestore";
 import { auth, db } from "./firebase";
 import { apiRequest } from "./api";
+import type { BillingInterval } from "./pricing";
 
 const publicCheckoutUrl = import.meta.env.VITE_LEMONSQUEEZY_PRO_CHECKOUT_URL || "";
+const publicYearlyCheckoutUrl = import.meta.env.VITE_LEMONSQUEEZY_PRO_YEARLY_CHECKOUT_URL || "";
 const publicBillingUrl = import.meta.env.VITE_LEMONSQUEEZY_BILLING_URL || "";
 
 function hasPaidAccessUntilPeriodEnd(subscriptionStatus: string, currentPeriodEnd?: string | null) {
@@ -75,15 +77,16 @@ async function userHasActivePaidPlan(uid: string) {
   );
 }
 
-export async function redirectToProCheckout() {
+export async function redirectToProCheckout(interval: BillingInterval = "monthly") {
   const user = auth.currentUser;
+  const checkoutUrl = interval === "yearly" ? publicYearlyCheckoutUrl : publicCheckoutUrl;
 
-  if (!publicCheckoutUrl) {
-    throw new Error("Public checkout URL is not configured.");
+  if (!checkoutUrl) {
+    throw new Error(`Public ${interval} checkout URL is not configured.`);
   }
 
   if (!user) {
-    window.location.href = publicCheckoutUrl;
+    window.location.href = checkoutUrl;
     return;
   }
 
@@ -104,6 +107,7 @@ export async function redirectToProCheckout() {
       body: {
         email: user.email || "",
         name: user.displayName || "",
+        interval,
       },
     });
 
@@ -111,7 +115,7 @@ export async function redirectToProCheckout() {
   } catch (error) {
     console.warn("Falling back to client-built Lemon Squeezy checkout URL:", error);
     window.location.href = buildClientCheckoutUrl({
-      baseUrl: publicCheckoutUrl,
+      baseUrl: checkoutUrl,
       uid: user.uid,
       email: user.email || "",
       name: user.displayName || "",

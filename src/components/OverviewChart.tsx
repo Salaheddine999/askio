@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Bar } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -23,18 +23,44 @@ interface OverviewChartProps {
 }
 
 const OverviewChart: React.FC<OverviewChartProps> = ({ data }) => {
+  const [darkMode, setDarkMode] = useState(() =>
+    document.documentElement.classList.contains("dark")
+  );
+
+  useEffect(() => {
+    const observer = new MutationObserver(() => {
+      setDarkMode(document.documentElement.classList.contains("dark"));
+    });
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+    return () => observer.disconnect();
+  }, []);
+
+  const themedData = {
+    ...data,
+    datasets: data.datasets.map((dataset) => ({
+      ...dataset,
+      backgroundColor: darkMode
+        ? dataset.backgroundColor === "#101723"
+          ? "#D7DFE5"
+          : dataset.backgroundColor === "#D8DFE9"
+            ? "#566273"
+            : dataset.backgroundColor
+        : dataset.backgroundColor,
+    })),
+  };
+
   return (
-    <div className="rounded-xl border border-[rgba(55,50,47,0.12)] dark:border-[#44403C] bg-white dark:bg-[#292524] text-[#37322F] dark:text-[#F5F5F4] shadow-sm col-span-4 lg:col-span-3">
+    <div className="rounded-xl border border-[rgba(16,23,35,0.12)] dark:border-[#2B3646] bg-[#F9FCFF] dark:bg-[#1A2533] text-[#101723] dark:text-[#D7DFE5] shadow-sm col-span-4 lg:col-span-3">
         <div className="p-6 pb-4">
             <h3 className="text-body-lg font-semibold font-sans tracking-tight">Overview</h3>
-             <p className="text-body-sm text-[#605A57] dark:text-[#A8A29E]">
+             <p className="text-body-sm text-[#566273] dark:text-[#9BAABD]">
               Feedback volume per chatbot for the last 30 days.
             </p>
         </div>
       <div className="p-6 pt-0 pl-2">
         <div className="h-[350px] w-full">
             <Bar
-                data={data}
+                data={themedData}
                 options={{
                 responsive: true,
                 maintainAspectRatio: false,
@@ -43,9 +69,9 @@ const OverviewChart: React.FC<OverviewChartProps> = ({ data }) => {
                         display: false,
                     },
                     tooltip: {
-                         backgroundColor: "#1C1917",
-                         titleColor: "#F5F5F4",
-                         bodyColor: "#F5F5F4",
+                         backgroundColor: "#141D2B",
+                         titleColor: "#D7DFE5",
+                         bodyColor: "#D7DFE5",
                          padding: 12,
                          cornerRadius: 8,
                          displayColors: false,
@@ -57,7 +83,7 @@ const OverviewChart: React.FC<OverviewChartProps> = ({ data }) => {
                             display: false,
                         },
                         ticks: {
-                            color: "#A8A29E",
+                            color: darkMode ? "#9BAABD" : "#647184",
                             font: {
                                 family: '"Inter", sans-serif',
                                 size: 12
@@ -70,10 +96,10 @@ const OverviewChart: React.FC<OverviewChartProps> = ({ data }) => {
                              dash: [4, 4],
                         },
                         grid: {
-                            color: "rgba(55,50,47,0.06)",
+                            color: darkMode ? "rgba(215,223,229,0.10)" : "rgba(16,23,35,0.06)",
                         },
                         ticks: {
-                            color: "#A8A29E",
+                            color: darkMode ? "#9BAABD" : "#647184",
                             font: {
                                 family: '"Inter", sans-serif',
                                 size: 12

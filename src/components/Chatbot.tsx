@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useRef } from "react";
+import brandLogo from "../assets/logo.svg";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { Send, X, ThumbsUp, ThumbsDown, MessageSquare } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Fuse from "fuse.js";
@@ -7,6 +8,8 @@ import { doc, setDoc, getDoc, collection, addDoc, serverTimestamp } from "fireba
 import toast from "react-hot-toast";
 import bot1 from "../assets/chat1.svg";
 import { apiRequest } from "../utils/api";
+import { LiveOrb } from "./LiveOrb";
+import { headerOrbPropsFor, orbPropsFor, type LauncherStyle } from "../utils/orbColors";
 
 type Message = {
   text: string;
@@ -14,6 +17,12 @@ type Message = {
   isFallback?: boolean;
   isLeadCapture?: boolean;
 };
+
+/** How long the launcher waits before showing the greeting bubble. */
+const GREETING_DELAY_MS = 4000;
+const GREETING_TEXT = "Hi! 👋 Need a hand?";
+/** How long the orb looks at the bubble before following the pointer again. */
+const GREETING_GLANCE_MS = 1500;
 
 export interface ChatbotProps {
   id: string;
@@ -33,6 +42,10 @@ export interface ChatbotProps {
   enableLeadCapture?: boolean;
   aiTone?: string;
   aiEnabled?: boolean;
+  launcherStyle?: LauncherStyle;
+  greetingBubble?: boolean;
+  /** The chatbot owner's uid, from the saved config. */
+  user_id?: string;
 }
 
 const Chatbot: React.FC<ChatbotProps> = ({
@@ -49,6 +62,9 @@ const Chatbot: React.FC<ChatbotProps> = ({
   liveChatLink,
   enableLeadCapture,
   aiEnabled,
+  launcherStyle = "classic",
+  greetingBubble = false,
+  user_id,
 }) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
@@ -56,6 +72,12 @@ const Chatbot: React.FC<ChatbotProps> = ({
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(true);
   const [isTyping, setIsTyping] = useState(false);
+  const [inputFocused, setInputFocused] = useState(false);
+  const [showGreeting, setShowGreeting] = useState(false);
+  const [greetingGlance, setGreetingGlance] = useState(false);
+  const launcherRef = useRef<HTMLDivElement>(null);
+  // Guards late size reports once the bubble starts hiding.
+  const greetingVisibleRef = useRef(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [fuse, setFuse] = useState<Fuse<{
     question: string;
@@ -163,6 +185,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
       if (id) {
         await addDoc(collection(db, "leads"), {
           chatbotId: id,
+          ownerId: user_id ?? null,
           email: leadEmail,
           timestamp: serverTimestamp(),
           anonymousToken: anonymousToken || "anonymous",
@@ -211,9 +234,12 @@ const Chatbot: React.FC<ChatbotProps> = ({
     setIsTyping(true);
 
     if (aiEnabled && id) {
+      // Stays true unless the server sends no AI reply (monthly limit, rate
+      // limit or AI unavailable); then the regular FAQ flow below answers.
+      let aiHandled = true;
       try {
         const historyContext = messages.filter(m => !m.isFallback && !m.isLeadCapture);
-        const { reply: aiResponseText } = await apiRequest<{ reply: string }>(
+        const { reply: aiResponseText } = await apiRequest<{ reply: string | null; fallback?: string }>(
           "/api/ai/chat-response",
           {
             body: {
@@ -267,6 +293,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
               try {
                 await addDoc(collection(db, "unanswered_queries"), {
                   chatbotId: id,
+                  ownerId: user_id ?? null,
                   query: input,
                   timestamp: serverTimestamp(),
                   anonymousToken: anonymousToken,
@@ -281,6 +308,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
             try {
               await addDoc(collection(db, "analytics_events"), {
                 chatbotId: id,
+                ownerId: user_id ?? null,
                 type: "ai_generated",
                 userQuery: input,
                 timestamp: serverTimestamp(),
@@ -290,6 +318,8 @@ const Chatbot: React.FC<ChatbotProps> = ({
               console.error("Error tracking analytics event:", error);
             }
           }
+        } else {
+          aiHandled = false;
         }
       } catch (error) {
         console.error("Error generating AI response:", error);
@@ -319,9 +349,9 @@ const Chatbot: React.FC<ChatbotProps> = ({
           }, 100);
         }
       } finally {
-        setIsTyping(false);
+        if (aiHandled) setIsTyping(false);
       }
-      return; // Exit early since we used the AI
+      if (aiHandled) return; // Exit early since we used the AI
     }
 
     setTimeout(async () => {
@@ -337,6 +367,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
           try {
             await addDoc(collection(db, "analytics_events"), {
               chatbotId: id,
+              ownerId: user_id ?? null,
               type: "faq_matched",
               question: matchedFaq.question,
               userQuery: input,
@@ -375,6 +406,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
           try {
             await addDoc(collection(db, "unanswered_queries"), {
               chatbotId: id,
+              ownerId: user_id ?? null,
               query: input,
               timestamp: serverTimestamp(),
               anonymousToken: anonymousToken,
@@ -427,6 +459,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
           try {
             await addDoc(collection(db, "analytics_events"), {
               chatbotId: id,
+              ownerId: user_id ?? null,
               type: "suggestion_clicked",
               question: matchedFaq.question,
               timestamp: serverTimestamp(),
@@ -471,6 +504,100 @@ const Chatbot: React.FC<ChatbotProps> = ({
     window.addEventListener("message", handleMessage);
     return () => window.removeEventListener("message", handleMessage);
   }, []);
+
+  // The embed script forwards the host page's pointer so the orb's eyes can
+  // follow it beyond this small iframe. Replaying it as a pointermove lets the
+  // orb treat it like a local pointer.
+  useEffect(() => {
+    if (!isEmbedded || launcherStyle !== "orb") return;
+    const handlePointer = (event: MessageEvent) => {
+      if (event.source !== window.parent || event.data?.type !== "askioPointer") return;
+      const { x, y } = event.data;
+      if (typeof x !== "number" || typeof y !== "number") return;
+      window.dispatchEvent(new PointerEvent("pointermove", { clientX: x, clientY: y }));
+    };
+    window.addEventListener("message", handlePointer);
+    return () => window.removeEventListener("message", handlePointer);
+  }, [isEmbedded, launcherStyle]);
+
+  // The greeting bubble shows once per visitor, a few seconds after the
+  // launcher appears. Opening the chat also counts as having seen it.
+  const greetingSeenKey = `askio-greeting-seen:${id}`;
+  const markGreetingSeen = () => {
+    try {
+      localStorage.setItem(greetingSeenKey, "1");
+    } catch {
+      // Storage can be blocked in third-party iframes; then it may show again.
+    }
+  };
+
+  useEffect(() => {
+    if (!isEmbedded || !greetingBubble || isOpen) return;
+    try {
+      if (localStorage.getItem(greetingSeenKey) === "1") return;
+    } catch {
+      // Unreadable storage: show it, at worst once per page load.
+    }
+    const timer = window.setTimeout(() => {
+      setShowGreeting(true);
+      markGreetingSeen();
+    }, GREETING_DELAY_MS);
+    return () => window.clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isEmbedded, greetingBubble, isOpen, greetingSeenKey]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    setShowGreeting(false);
+    if (greetingBubble) markGreetingSeen();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, greetingBubble]);
+
+  // While the bubble shows, tell the embed script how much room it needs so
+  // the iframe grows just around it. It shrinks again after the exit animation.
+  // A quick glance at the bubble as it appears, then back to the pointer.
+  useEffect(() => {
+    if (!showGreeting) {
+      setGreetingGlance(false);
+      return;
+    }
+    setGreetingGlance(true);
+    const timer = window.setTimeout(() => setGreetingGlance(false), GREETING_GLANCE_MS);
+    return () => window.clearTimeout(timer);
+  }, [showGreeting]);
+
+  const handleGreetingHidden = () => {
+    if (isEmbedded && window.parent !== window) {
+      window.parent.postMessage({ type: "chatbotGreeting", visible: false }, "*");
+    }
+  };
+
+  useEffect(() => {
+    const el = launcherRef.current;
+    if (!isEmbedded || window.parent === window) return;
+    if (!showGreeting) {
+      if (!greetingVisibleRef.current) return;
+      greetingVisibleRef.current = false;
+      // Shrink back once the exit animation has had time to finish.
+      const timer = window.setTimeout(handleGreetingHidden, 300);
+      return () => window.clearTimeout(timer);
+    }
+    if (!el) return;
+    greetingVisibleRef.current = true;
+    const report = () => {
+      if (!greetingVisibleRef.current) return;
+      window.parent.postMessage(
+        // The pill sits beside the launcher, so only the width grows.
+        { type: "chatbotGreeting", visible: true, width: Math.ceil(el.offsetWidth) + 4, height: 62 },
+        "*"
+      );
+    };
+    report();
+    const observer = new ResizeObserver(report);
+    observer.observe(el);
+    return () => observer.disconnect();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isEmbedded, showGreeting]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -521,10 +648,34 @@ const Chatbot: React.FC<ChatbotProps> = ({
     }
   };
 
-  const chatbotButton = (
+  // With the orb launcher, the orb carries into the chat as the bot's face.
+  const useOrb = launcherStyle === "orb";
+  const orbMood = isTyping ? "thinking" : inputFocused && input.trim() ? "listening" : "idle";
+  const statusText = !useOrb ? "Ready to chat" : orbMood === "thinking" ? "Thinking…" : orbMood === "listening" ? "Listening…" : "Ready to chat";
+
+  const isLeftPosition = position.endsWith("left");
+  // The orb glances toward the bubble as it appears.
+  const greetingLook = useMemo(
+    () => (greetingGlance ? { x: isLeftPosition ? 0.55 : -0.55, y: 0.05 } : null),
+    [greetingGlance, isLeftPosition]
+  );
+
+  const launcherButton = launcherStyle === "orb" ? (
     <motion.button
       onClick={toggleChatbot}
-      className={`fixed ${combinedPositionClass} z-50 w-16 h-16 flex items-center justify-center text-white rounded-full shadow-lg transition-all duration-300 overflow-hidden`}
+      aria-label="Open chat"
+      className={`relative w-16 h-16 flex items-center justify-center rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#87909D]`}
+      style={{ filter: "drop-shadow(0 6px 12px rgba(16, 23, 35, 0.22))" }}
+      whileHover={{ scale: 1.06 }}
+      whileTap={{ scale: 0.95 }}
+    >
+      <LiveOrb size={56} {...orbPropsFor(primaryColor)} lookAt={greetingLook} />
+    </motion.button>
+  ) : (
+    <motion.button
+      onClick={toggleChatbot}
+      aria-label="Open chat"
+      className={`relative w-16 h-16 flex items-center justify-center text-white rounded-full shadow-lg transition-all duration-300 overflow-hidden`}
       style={{
         background: isGradient
           ? primaryColor
@@ -543,6 +694,54 @@ const Chatbot: React.FC<ChatbotProps> = ({
     </motion.button>
   );
 
+  // A short pill beside the launcher, so it never reaches up over the page.
+  const greetingBubbleEl = (
+    <motion.div
+      key="greeting"
+      initial={{ opacity: 0, x: isLeftPosition ? -8 : 8, scale: 0.94 }}
+      animate={{ opacity: 1, x: 0, scale: 1 }}
+      exit={{ opacity: 0, x: isLeftPosition ? -6 : 6, scale: 0.96 }}
+      transition={{ duration: 0.25, ease: "easeOut" }}
+      style={{ transformOrigin: isLeftPosition ? "left center" : "right center" }}
+      className="flex items-center rounded-full border border-[#D8DFE9] bg-[#F9FCFF] shadow-[0_8px_24px_-12px_rgba(16,23,35,0.35)]"
+    >
+      <button
+        type="button"
+        onClick={(e) => {
+          e.stopPropagation();
+          setShowGreeting(false);
+          setIsOpen(true);
+        }}
+        className="whitespace-nowrap rounded-full py-2 pl-3.5 pr-1 text-[13px] font-medium text-[#101723] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#87909D]"
+      >
+        {GREETING_TEXT}
+      </button>
+      <button
+        type="button"
+        aria-label="Dismiss greeting"
+        onClick={(e) => {
+          e.stopPropagation();
+          setShowGreeting(false);
+        }}
+        className="mr-1.5 flex h-6 w-6 items-center justify-center rounded-full text-[#87909D] transition-colors hover:bg-[#E7EDF6] hover:text-[#101723] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#87909D]"
+      >
+        <X size={12} strokeWidth={2.5} />
+      </button>
+    </motion.div>
+  );
+
+  const chatbotButton = (
+    <div
+      ref={launcherRef}
+      className={`fixed ${combinedPositionClass} z-50 flex items-center gap-2 ${isLeftPosition ? "flex-row-reverse" : "flex-row"}`}
+    >
+      <AnimatePresence onExitComplete={handleGreetingHidden}>
+        {showGreeting ? greetingBubbleEl : null}
+      </AnimatePresence>
+      {launcherButton}
+    </div>
+  );
+
   const chatbotContent = (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -551,7 +750,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
       transition={{ duration: 0.3 }}
       className={`${
         isEmbedded ? `fixed ${combinedPositionClass} z-50` : "w-full h-full"
-      } bg-white dark:bg-[#1C1917] flex flex-col rounded-xl overflow-hidden ${
+      } bg-[#F9FCFF] dark:bg-[#141D2B] flex flex-col rounded-xl overflow-hidden ${
         isEmbedded ? "w-[350px] h-[520px] shadow-2xl shadow-black/10 dark:shadow-black/30" : "shadow-lg"
       }`}
     >
@@ -566,9 +765,13 @@ const Chatbot: React.FC<ChatbotProps> = ({
         
         <div className="flex items-center gap-3.5 relative z-10">
           <div className="relative">
-            <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center shadow-sm shadow-black/10">
-              <img src="/logo.svg" alt="Askio" className="w-6 h-6 brightness-0 invert" />
-            </div>
+            {useOrb ? (
+              <LiveOrb size={40} {...headerOrbPropsFor(primaryColor)} mood={orbMood} />
+            ) : (
+              <div className="w-10 h-10 rounded-xl bg-[#F9FCFF]/20 backdrop-blur-sm flex items-center justify-center shadow-sm shadow-black/10">
+                <img src={brandLogo} alt="Askio" className="w-6 h-6 brightness-0 invert" />
+              </div>
+            )}
             <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-400 rounded-full border-2 border-white shadow-sm">
               <div className="absolute inset-0 rounded-full bg-emerald-400 animate-ping opacity-40" />
             </div>
@@ -578,7 +781,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
             <div className="flex items-center gap-1.5 mt-0.5">
               <span className="text-[11px] text-white/60 font-medium">Online</span>
               <span className="text-white/30">·</span>
-              <span className="text-[11px] text-white/50">Ready to chat</span>
+              <span className="text-[11px] text-white/50" aria-live="polite">{statusText}</span>
             </div>
           </div>
         </div>
@@ -586,7 +789,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
         {isEmbedded && (
           <button
             onClick={toggleChatbot}
-            className="relative z-10 w-8 h-8 rounded-xl bg-white/10 hover:bg-white/20 border border-white/10 flex items-center justify-center transition-all duration-200 hover:scale-105"
+            className="relative z-10 w-8 h-8 rounded-xl bg-[#F9FCFF]/10 hover:bg-[#F9FCFF]/20 border border-white/10 flex items-center justify-center transition-all duration-200 hover:scale-105"
           >
             <X size={15} strokeWidth={2.5} />
           </button>
@@ -611,7 +814,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
                 className={`inline-block px-3.5 py-2.5 max-w-[80%] text-[13px] leading-relaxed ${
                   message.sender === "user"
                     ? "text-white rounded-2xl rounded-br-md"
-                    : "bg-[#F5F5F4] dark:bg-[#292524] text-[#37322F] dark:text-[#F5F5F4] rounded-2xl rounded-bl-md"
+                    : "bg-[#E7EDF6] dark:bg-[#1A2533] text-[#101723] dark:text-[#D7DFE5] rounded-2xl rounded-bl-md"
                 }`}
                 style={message.sender === "user" ? userMessageStyle : {}}
               >
@@ -624,7 +827,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
                       href={liveChatLink.startsWith('http') ? liveChatLink : `https://${liveChatLink}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center justify-center bg-white dark:bg-[#44403C] hover:bg-[#FAFAF9] dark:hover:bg-[#57534E] text-[#37322F] dark:text-[#F5F5F4] text-[12px] font-medium py-1.5 px-3 rounded-md shadow-sm border border-[#E0DEDB] dark:border-[#57534E] transition-colors gap-1.5"
+                      className="inline-flex items-center justify-center bg-[#F9FCFF] dark:bg-[#273444] hover:bg-[#F3F7FC] dark:hover:bg-[#39485B] text-[#101723] dark:text-[#D7DFE5] text-[12px] font-medium py-1.5 px-3 rounded-md shadow-sm border border-[#D8DFE9] dark:border-[#39485B] transition-colors gap-1.5"
                     >
                       <MessageSquare size={14} className="text-emerald-500" />
                       Chat with a human
@@ -648,7 +851,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
                         value={leadEmail}
                         onChange={(e) => setLeadEmail(e.target.value)}
                         placeholder="your@email.com"
-                        className="w-full px-3 py-2 rounded-md bg-white dark:bg-[#292524] border border-[#E0DEDB] dark:border-[#57534E] text-[13px] text-[#37322F] dark:text-[#F5F5F4] placeholder-[#A8A29E] focus:outline-none focus:border-emerald-500 transition-colors"
+                        className="w-full px-3 py-2 rounded-md bg-[#F9FCFF] dark:bg-[#1A2533] border border-[#D8DFE9] dark:border-[#39485B] text-[13px] text-[#101723] dark:text-[#D7DFE5] placeholder-[#647184] focus:outline-none focus:border-emerald-500 transition-colors"
                         required
                         onClick={(e) => e.stopPropagation()}
                       />
@@ -661,8 +864,8 @@ const Chatbot: React.FC<ChatbotProps> = ({
                       </button>
                     </form>
                     {liveChatLink && (
-                       <div className="mt-2 text-center text-[11px] text-[#A8A29E]">
-                         Or <a href={liveChatLink.startsWith('http') ? liveChatLink : `https://${liveChatLink}`} target="_blank" rel="noopener noreferrer" className="underline hover:text-[#37322F] dark:hover:text-[#F5F5F4]" onClick={(e) => e.stopPropagation()}>chat with us</a> directly.
+                       <div className="mt-2 text-center text-[11px] text-[#647184]">
+                         Or <a href={liveChatLink.startsWith('http') ? liveChatLink : `https://${liveChatLink}`} target="_blank" rel="noopener noreferrer" className="underline hover:text-[#101723] dark:hover:text-[#D7DFE5]" onClick={(e) => e.stopPropagation()}>chat with us</a> directly.
                        </div>
                     )}
                   </div>
@@ -689,7 +892,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                       onClick={(e) => handleSuggestionClick(e, question)}
-                      className="text-[12px] bg-white dark:bg-[#292524] hover:bg-[#F5F5F4] dark:hover:bg-[#44403C] text-[#37322F] dark:text-[#F5F5F4] py-1.5 px-3 rounded-full transition-colors duration-150 border border-[#E0DEDB] dark:border-[#44403C] text-left shadow-sm hover:shadow"
+                      className="text-[12px] bg-[#F9FCFF] dark:bg-[#1A2533] hover:bg-[#E7EDF6] dark:hover:bg-[#273444] text-[#101723] dark:text-[#D7DFE5] py-1.5 px-3 rounded-full transition-colors duration-150 border border-[#D8DFE9] dark:border-[#2B3646] text-left shadow-sm hover:shadow"
                     >
                       {question}
                     </motion.button>
@@ -706,24 +909,33 @@ const Chatbot: React.FC<ChatbotProps> = ({
             animate={{ opacity: 1, y: 0 }}
             className="flex justify-start"
           >
-            <div className="inline-flex items-center gap-1 px-3.5 py-3 rounded-2xl rounded-bl-md bg-[#F5F5F4] dark:bg-[#292524]">
-              <span className="h-1.5 w-1.5 bg-[#A8A29E] dark:bg-[#78716C] rounded-full animate-bounce" style={{ animationDelay: "0s" }}></span>
-              <span className="h-1.5 w-1.5 bg-[#A8A29E] dark:bg-[#78716C] rounded-full animate-bounce" style={{ animationDelay: "0.15s" }}></span>
-              <span className="h-1.5 w-1.5 bg-[#A8A29E] dark:bg-[#78716C] rounded-full animate-bounce" style={{ animationDelay: "0.3s" }}></span>
-            </div>
+            {useOrb ? (
+              <div className="inline-flex items-center gap-2 py-1.5 pl-1.5 pr-3.5 rounded-2xl rounded-bl-md bg-[#E7EDF6] dark:bg-[#1A2533]">
+                <LiveOrb size={24} {...orbPropsFor(primaryColor)} mood="thinking" interactive={false} />
+                <span className="text-[12px] text-[#647184] dark:text-[#9BAABD]">Thinking…</span>
+              </div>
+            ) : (
+              <div className="inline-flex items-center gap-1 px-3.5 py-3 rounded-2xl rounded-bl-md bg-[#E7EDF6] dark:bg-[#1A2533]">
+                <span className="h-1.5 w-1.5 bg-[#9BAABD] dark:bg-[#647184] rounded-full animate-bounce" style={{ animationDelay: "0s" }}></span>
+                <span className="h-1.5 w-1.5 bg-[#9BAABD] dark:bg-[#647184] rounded-full animate-bounce" style={{ animationDelay: "0.15s" }}></span>
+                <span className="h-1.5 w-1.5 bg-[#9BAABD] dark:bg-[#647184] rounded-full animate-bounce" style={{ animationDelay: "0.3s" }}></span>
+              </div>
+            )}
           </motion.div>
         )}
         <div ref={messagesEndRef} />
       </div>
 
       {/* Input Area */}
-      <div className="px-4 py-3 border-t border-[#E0DEDB]/60 dark:border-[#44403C]/60 bg-[#FAFAF9] dark:bg-[#1C1917]">
+      <div className="px-4 py-3 border-t border-[#D8DFE9]/60 dark:border-[#2B3646]/60 bg-[#F3F7FC] dark:bg-[#141D2B]">
         <form onSubmit={handleSend} className="flex items-center gap-2">
           <input
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            className="flex-grow px-3.5 py-2 rounded-full bg-white dark:bg-[#292524] border border-[#E0DEDB] dark:border-[#44403C] text-[13px] text-[#37322F] dark:text-[#F5F5F4] placeholder-[#A8A29E] dark:placeholder-[#78716C] focus:outline-none focus:border-[#37322F]/30 dark:focus:border-[#A8A29E]/30 transition-colors"
+            onFocus={() => setInputFocused(true)}
+            onBlur={() => setInputFocused(false)}
+            className="flex-grow px-3.5 py-2 rounded-full bg-[#F9FCFF] dark:bg-[#1A2533] border border-[#D8DFE9] dark:border-[#2B3646] text-[13px] text-[#101723] dark:text-[#D7DFE5] placeholder-[#647184] dark:placeholder-[#87909D] focus:outline-none focus:border-[#101723]/30 dark:focus:border-[#9BAABD]/30 transition-colors"
             placeholder={placeholder}
           />
           <motion.button
@@ -741,17 +953,17 @@ const Chatbot: React.FC<ChatbotProps> = ({
 
       {/* Feedback prompt */}
       {!hasFeedback && !showFeedback && messages.length > 1 && (
-        <div className="px-4 py-2 border-t border-[#E0DEDB]/60 dark:border-[#44403C]/60 text-center">
+        <div className="px-4 py-2 border-t border-[#D8DFE9]/60 dark:border-[#2B3646]/60 text-center">
           <button
             onClick={handleFeedbackClick}
-            className="text-[11px] text-[#A8A29E] dark:text-[#78716C] hover:text-[#37322F] dark:hover:text-[#F5F5F4] transition-colors duration-200"
+            className="text-[11px] text-[#647184] dark:text-[#9BAABD] hover:text-[#101723] dark:hover:text-[#D7DFE5] transition-colors duration-200"
           >
             Was this helpful? Give feedback
           </button>
         </div>
       )}
       {showFeedback && !hasFeedback && (
-        <div className="px-4 py-2.5 border-t border-[#E0DEDB]/60 dark:border-[#44403C]/60 flex justify-center items-center gap-4">
+        <div className="px-4 py-2.5 border-t border-[#D8DFE9]/60 dark:border-[#2B3646]/60 flex justify-center items-center gap-4">
           <button
             onClick={(e) => handleFeedback(true, e)}
             className="flex items-center gap-1 text-[12px] text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300 transition-colors duration-200"
@@ -759,7 +971,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
             <ThumbsUp size={14} />
             <span>Helpful</span>
           </button>
-          <div className="w-px h-4 bg-[#E0DEDB] dark:bg-[#44403C]"></div>
+          <div className="w-px h-4 bg-[#D8DFE9] dark:bg-[#273444]"></div>
           <button
             onClick={(e) => handleFeedback(false, e)}
             className="flex items-center gap-1 text-[12px] text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300 transition-colors duration-200"
@@ -771,13 +983,13 @@ const Chatbot: React.FC<ChatbotProps> = ({
       )}
 
       {/* Footer */}
-      <div className="py-2 border-t border-[#E0DEDB]/60 dark:border-[#44403C]/60 text-center text-[10px] text-[#A8A29E] dark:text-[#78716C] bg-[#FAFAF9] dark:bg-[#1C1917] rounded-b-xl">
+      <div className="py-2 border-t border-[#D8DFE9]/60 dark:border-[#2B3646]/60 text-center text-[10px] text-[#647184] dark:text-[#9BAABD] bg-[#F3F7FC] dark:bg-[#141D2B] rounded-b-xl">
         Powered by{" "}
         <a
           href="https://askio.vercel.app/"
           target="_blank"
           rel="noopener noreferrer"
-          className="font-semibold text-[#605A57] dark:text-[#A8A29E] hover:text-[#37322F] dark:hover:text-[#F5F5F4] transition-colors"
+          className="font-semibold text-[#566273] dark:text-[#9BAABD] hover:text-[#101723] dark:hover:text-[#D7DFE5] transition-colors"
         >
           Askio
         </a>

@@ -1,101 +1,118 @@
 import { Link } from "react-router-dom";
 import { FaGithub } from "react-icons/fa";
+import { ArrowUpRight } from "lucide-react";
+import logoHome from "../../assets/logo.svg";
+
+const GITHUB_URL = "https://github.com/Salaheddine999/askio";
+
+type FooterLink = { label: string; href: string; route?: boolean; external?: boolean };
+
+const COLUMNS: { title: string; links: FooterLink[] }[] = [
+  {
+    title: "Product",
+    links: [
+      { label: "Features", href: "#features" },
+      { label: "How it works", href: "#how-it-works" },
+      { label: "Pricing", href: "#plans" },
+      { label: "FAQ", href: "#faq" },
+    ],
+  },
+  {
+    title: "Resources",
+    links: [
+      { label: "Get started", href: "/auth", route: true },
+      { label: "Testimonials", href: "#testimonials" },
+      { label: "GitHub", href: GITHUB_URL, external: true },
+    ],
+  },
+  {
+    title: "Legal",
+    links: [
+      { label: "Privacy policy", href: "/privacy", route: true },
+      { label: "Terms of service", href: "/terms", route: true },
+    ],
+  },
+];
+
+const linkClass =
+  "group inline-flex items-center gap-1 rounded-sm text-sm text-[#566273] transition-colors duration-150 hover:text-[#101723] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#87909D] dark:text-[#9BAABD] dark:hover:text-[#D7DFE5]";
+
+function FooterNavLink({ link }: { link: FooterLink }) {
+  if (link.route) {
+    return (
+      <Link to={link.href} className={linkClass}>
+        {link.label}
+      </Link>
+    );
+  }
+  return (
+    <a
+      href={link.href}
+      className={linkClass}
+      {...(link.external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+    >
+      {link.label}
+      {link.external ? (
+        <ArrowUpRight className="h-3.5 w-3.5 opacity-60 transition-transform duration-150 group-hover:-translate-y-px group-hover:translate-x-px" />
+      ) : null}
+    </a>
+  );
+}
 
 export default function Footer() {
   return (
-    <footer className="w-full pt-10 border-t border-[rgba(55,50,47,0.12)] dark:border-[#44403C]">
-      <div className="mx-auto max-w-[1060px] px-4 sm:px-6 lg:px-0">
-        <div className="flex flex-col md:flex-row justify-between items-stretch pb-8 gap-8">
-          <div className="p-4 md:p-8 flex flex-col gap-6">
-            <Link to="/" className="flex items-center gap-2">
-              <img src="./logo.svg" alt="Askio" className="w-7 h-7" />
-              <span className="text-[#49423D] dark:text-[#F5F5F4] text-xl font-semibold font-sans">
-                Askio
-              </span>
-            </Link>
-            <p className="max-w-[320px] text-[rgba(73,66,61,0.90)] dark:text-[#A8A29E] text-sm font-medium leading-[18px] font-sans">
-              Your chatbot, your way, tailored to your brand and customer experience.
-            </p>
-            <div className="flex gap-4">
-              <a
-                href="https://github.com/Salaheddine999/askio"
-                className="w-6 h-6 flex items-center justify-center"
-                aria-label="Askio on GitHub"
-              >
-                <FaGithub className="w-4 h-4 text-[#49423D] dark:text-[#F5F5F4]" />
-              </a>
-            </div>
-          </div>
-
-          <div className="p-4 md:p-8 flex flex-col sm:flex-row flex-wrap gap-6 md:gap-12">
-            <div className="flex flex-col gap-3 min-w-[120px]">
-              <span className="text-[rgba(73,66,61,0.50)] dark:text-[#78716C] text-sm font-medium font-sans">
-                Product
-              </span>
-              {["Features", "How it Works", "Testimonials", "FAQ"].map((item) => (
-                <a
-                  key={item}
-                  href={`#${item.toLowerCase().replace(" ", "-")}`}
-                  className="text-[#49423D] dark:text-[#D6D3D1] text-sm font-normal font-sans hover:text-[#37322F] dark:hover:text-[#F5F5F4] transition-colors"
-                >
-                  {item}
-                </a>
-              ))}
-            </div>
-            <div className="flex flex-col gap-3 min-w-[120px]">
-              <span className="text-[rgba(73,66,61,0.50)] dark:text-[#78716C] text-sm font-medium font-sans">
-                Resources
-              </span>
-              <Link
-                to="/auth"
-                className="text-[#49423D] dark:text-[#D6D3D1] text-sm font-normal font-sans hover:text-[#37322F] dark:hover:text-[#F5F5F4] transition-colors"
-              >
-                Get Started
-              </Link>
-              <a
-                href="https://github.com/Salaheddine999/askio"
-                className="text-[#49423D] dark:text-[#D6D3D1] text-sm font-normal font-sans hover:text-[#37322F] dark:hover:text-[#F5F5F4] transition-colors"
-              >
-                GitHub
-              </a>
-              <Link
-                to="/privacy"
-                className="text-[#49423D] dark:text-[#D6D3D1] text-sm font-normal font-sans hover:text-[#37322F] dark:hover:text-[#F5F5F4] transition-colors"
-              >
-                Privacy Policy
-              </Link>
-              <Link
-                to="/terms"
-                className="text-[#49423D] dark:text-[#D6D3D1] text-sm font-normal font-sans hover:text-[#37322F] dark:hover:text-[#F5F5F4] transition-colors"
-              >
-                Terms of Service
-              </Link>
-            </div>
-          </div>
-        </div>
-
-        <div className="border-t border-[rgba(55,50,47,0.12)] dark:border-[#44403C] py-6 text-center">
-          <p className="text-[#9CA3AF] dark:text-[#78716C] text-xs font-sans">
-            Copyright {new Date().getFullYear()} Askio. All rights reserved.
+    <footer className="w-full border-t border-[rgba(16,23,35,0.12)] dark:border-[#2B3646]">
+      <div className="grid gap-10 px-4 pt-12 pb-10 sm:px-8 md:grid-cols-[1.2fr_2fr] md:gap-16 md:pt-14 lg:px-12">
+        <div className="flex flex-col items-start gap-5">
+          <Link to="/" className="flex items-center gap-2 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#87909D]">
+            <img src={logoHome} alt="" className="h-7 w-7 dark:brightness-0 dark:invert" />
+            <span className="font-sans text-xl font-semibold text-[#101723] dark:text-[#D7DFE5]">Askio</span>
+          </Link>
+          <p className="max-w-[300px] text-sm leading-relaxed text-[#566273] dark:text-[#9BAABD]">
+            Turn your FAQs into a chatbot that looks like your brand and answers visitors around the clock.
           </p>
+          <a
+            href={GITHUB_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex h-9 items-center gap-2 rounded-full border border-[#D8DFE9] bg-[#F9FCFF] px-3.5 text-[13px] font-medium text-[#101723] transition-colors duration-150 hover:border-[#B8C2CF] hover:bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#87909D] dark:border-[#2B3646] dark:bg-[#1A2533] dark:text-[#D7DFE5] dark:hover:border-[#566273]"
+          >
+            <FaGithub className="h-4 w-4" />
+            Star on GitHub
+          </a>
         </div>
+
+        <nav aria-label="Footer" className="grid grid-cols-2 gap-8 sm:grid-cols-3">
+          {COLUMNS.map((column) => (
+            <div key={column.title} className="flex flex-col gap-3">
+              <h2 className="text-xs font-medium uppercase tracking-[0.08em] text-[#87909D] dark:text-[#647184]">
+                {column.title}
+              </h2>
+              <ul className="flex flex-col gap-2.5">
+                {column.links.map((link) => (
+                  <li key={link.label}>
+                    <FooterNavLink link={link} />
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </nav>
       </div>
 
-      <div className="h-12 relative overflow-hidden border-t border-b border-[rgba(55,50,47,0.12)] dark:border-[#44403C]">
-        <div className="absolute inset-0 overflow-hidden">
-          {Array.from({ length: 200 }).map((_, i) => (
-            <div
-              key={i}
-              className="absolute w-[300px] h-16 border border-[rgba(3,7,18,0.08)] dark:border-[#44403C]/20"
-              style={{
-                left: `${i * 300 - 600}px`,
-                top: "-120px",
-                transform: "rotate(-45deg)",
-                transformOrigin: "top left",
-              }}
-            />
-          ))}
-        </div>
+      <div className="flex flex-col-reverse items-start gap-3 border-t border-[rgba(16,23,35,0.12)] px-4 py-5 text-xs text-[#647184] sm:flex-row sm:items-center sm:justify-between sm:px-8 lg:px-12 dark:border-[#2B3646] dark:text-[#87909D]">
+        <p>© {new Date().getFullYear()} Askio. All rights reserved.</p>
+        <p className="flex items-center gap-2">
+          <span className="size-1.5 rounded-full bg-[#10B981]" />
+          Answering questions, day and night
+        </p>
+      </div>
+
+      {/* Oversized wordmark closing the page */}
+      <div className="relative h-[clamp(5rem,18vw,12rem)] overflow-hidden border-t border-[rgba(16,23,35,0.12)] dark:border-[#2B3646]" aria-hidden="true">
+        <span className="absolute inset-x-0 top-[0.06em] select-none text-center font-serif text-[clamp(6rem,24vw,16rem)] font-semibold leading-none tracking-[-0.04em] text-transparent bg-clip-text bg-gradient-to-b from-[rgba(16,23,35,0.10)] to-[rgba(16,23,35,0)] dark:from-[rgba(215,223,229,0.10)] dark:to-[rgba(215,223,229,0)]">
+          Askio
+        </span>
       </div>
     </footer>
   );

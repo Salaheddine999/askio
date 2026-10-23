@@ -12,7 +12,7 @@ const testimonials = [
 ];
 
 export default function TestimonialsSection() {
-  const [testimonialsRef, testimonialsInView] = useInView({ triggerOnce: true, threshold: 0.1 });
+  const [testimonialsRef, testimonialsInView] = useInView({ triggerOnce: true, rootMargin: "0px 0px 200px 0px" });
   const [activeTestimonial, setActiveTestimonial] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
 
@@ -40,20 +40,20 @@ export default function TestimonialsSection() {
       ref={testimonialsRef}
       initial={{ opacity: 0, y: 40 }}
       animate={testimonialsInView ? { opacity: 1, y: 0 } : {}}
-      transition={{ duration: 0.5 }}
+      transition={{ duration: 0.35 }}
       id="testimonials"
-      className="border-b border-[rgba(55,50,47,0.12)] dark:border-[#44403C] bg-white dark:bg-[#262220]"
+      className="border-b border-[rgba(16,23,35,0.12)] dark:border-[#2B3646] bg-[#F9FCFF] dark:bg-[#1A2533]"
     >
       <div className="py-20 flex flex-col md:flex-row justify-center items-end gap-6 px-4 sm:px-6 md:px-12 relative">
         {/* Decorative Quote Mark */}
-        <div className="absolute top-8 left-4 sm:left-8 md:left-12 text-[180px] md:text-[240px] font-serif leading-none text-[rgba(55,50,47,0.04)] dark:text-[rgba(255,255,255,0.03)] select-none pointer-events-none" aria-hidden="true">
+        <div className="absolute top-8 left-4 sm:left-8 md:left-12 text-[180px] md:text-[240px] font-serif leading-none text-[rgba(16,23,35,0.04)] dark:text-[rgba(255,255,255,0.03)] select-none pointer-events-none" aria-hidden="true">
           &ldquo;
         </div>
 
         {/* Quote + Name */}
         <div className="flex-1 flex flex-col gap-6 relative z-10">
           <div
-            className="text-[#49423D] dark:text-[#F5F5F4] text-h2 md:text-[32px] font-medium leading-10 md:leading-[42px] font-sans tracking-tight min-h-[120px] md:min-h-[160px] transition-all duration-700 ease-in-out"
+            className="text-[#101723] dark:text-[#D7DFE5] text-h2 md:text-[32px] font-medium leading-10 md:leading-[42px] font-sans tracking-tight min-h-[120px] md:min-h-[160px] transition-all duration-700 ease-in-out"
             style={{ filter: isTransitioning ? "blur(4px)" : "blur(0px)" }}
           >
             "{testimonials[activeTestimonial].quote}"
@@ -66,13 +66,13 @@ export default function TestimonialsSection() {
             <img
               src={AVATARS[activeTestimonial]}
               alt={testimonials[activeTestimonial].name}
-              className="w-10 h-10 rounded-full object-cover shrink-0 border border-[#E0DEDB] dark:border-[#44403C]"
+              className="w-10 h-10 rounded-full object-cover shrink-0 border border-[#D8DFE9] dark:border-[#2B3646]"
             />
             <div className="flex flex-col">
-              <div className="text-[rgba(73,66,61,0.90)] dark:text-[#D6D3D1] text-lg font-medium font-sans">
+              <div className="text-[rgba(16,23,35,0.90)] dark:text-[#D7DFE5] text-lg font-medium font-sans">
                 {testimonials[activeTestimonial].name}
               </div>
-              <div className="text-[rgba(73,66,61,0.70)] dark:text-[#A8A29E] text-sm font-medium font-sans">
+              <div className="text-[rgba(16,23,35,0.70)] dark:text-[#9BAABD] text-sm font-medium font-sans">
                 {testimonials[activeTestimonial].role}
               </div>
             </div>
@@ -84,17 +84,17 @@ export default function TestimonialsSection() {
           <div className="flex gap-3">
             <button
               onClick={() => handleTestimonialNav((activeTestimonial - 1 + testimonials.length) % testimonials.length)}
-              className="w-9 h-9 shadow-[0px_1px_2px_rgba(0,0,0,0.08)] rounded-full border border-[rgba(0,0,0,0.15)] dark:border-[#57534E] flex items-center justify-center hover:bg-[rgba(55,50,47,0.04)] dark:hover:bg-[#44403C] hover:scale-110 transition-all duration-200"
+              className="w-9 h-9 shadow-[0px_1px_2px_rgba(0,0,0,0.08)] rounded-full border border-[rgba(0,0,0,0.15)] dark:border-[#566273] flex items-center justify-center hover:bg-[rgba(16,23,35,0.04)] dark:hover:bg-[#2B3646] hover:scale-110 transition-all duration-200"
               aria-label="Previous testimonial"
             >
-              <ChevronLeft className="w-5 h-5 text-[#46413E] dark:text-[#F5F5F4]" />
+              <ChevronLeft className="w-5 h-5 text-[#243040] dark:text-[#D7DFE5]" />
             </button>
             <button
               onClick={() => handleTestimonialNav((activeTestimonial + 1) % testimonials.length)}
-              className="w-9 h-9 shadow-[0px_1px_2px_rgba(0,0,0,0.08)] rounded-full border border-[rgba(0,0,0,0.15)] dark:border-[#57534E] flex items-center justify-center hover:bg-[rgba(55,50,47,0.04)] dark:hover:bg-[#44403C] hover:scale-110 transition-all duration-200"
+              className="w-9 h-9 shadow-[0px_1px_2px_rgba(0,0,0,0.08)] rounded-full border border-[rgba(0,0,0,0.15)] dark:border-[#566273] flex items-center justify-center hover:bg-[rgba(16,23,35,0.04)] dark:hover:bg-[#2B3646] hover:scale-110 transition-all duration-200"
               aria-label="Next testimonial"
             >
-              <ChevronRight className="w-5 h-5 text-[#46413E] dark:text-[#F5F5F4]" />
+              <ChevronRight className="w-5 h-5 text-[#243040] dark:text-[#D7DFE5]" />
             </button>
           </div>
           {/* Pagination Dots */}
@@ -105,8 +105,8 @@ export default function TestimonialsSection() {
                 onClick={() => handleTestimonialNav(i)}
                 className={`h-1.5 rounded-full transition-all duration-300 ${
                   i === activeTestimonial
-                    ? "w-6 bg-[#37322F] dark:bg-[#F5F5F4]"
-                    : "w-1.5 bg-[rgba(55,50,47,0.2)] dark:bg-[rgba(255,255,255,0.15)] hover:bg-[rgba(55,50,47,0.4)] dark:hover:bg-[rgba(255,255,255,0.3)]"
+                    ? "w-6 bg-[#101723] dark:bg-[#D7DFE5]"
+                    : "w-1.5 bg-[rgba(16,23,35,0.2)] dark:bg-[rgba(255,255,255,0.15)] hover:bg-[rgba(16,23,35,0.4)] dark:hover:bg-[rgba(255,255,255,0.3)]"
                 }`}
                 aria-label={`Go to testimonial ${i + 1}`}
               />

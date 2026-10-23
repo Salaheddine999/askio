@@ -43,6 +43,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import Button from "../components/Button";
 import Input from "../components/Input";
 import StatsCard from "../components/StatsCard";
+import AiUsageMeter from "../components/AiUsageMeter";
 import Tabs from "../components/Tabs";
 import ChatbotCard from "../components/ChatbotCard";
 import OverviewChart from "../components/OverviewChart";
@@ -197,7 +198,7 @@ const Dashboard: React.FC<DashboardProps> = ({ toggleSidebar, testMode }) => {
            const batchIds = chatbotIds.slice(i, i + batchSize);
            
            // Fetch Leads
-           const leadsQuery = query(collection(db, "leads"), where("chatbotId", "in", batchIds));
+           const leadsQuery = query(collection(db, "leads"), where("ownerId", "==", user.uid), where("chatbotId", "in", batchIds));
            const leadsSnap = await getDocs(leadsQuery);
 
            const leads = leadsSnap.docs.map(d => {
@@ -213,7 +214,7 @@ const Dashboard: React.FC<DashboardProps> = ({ toggleSidebar, testMode }) => {
            });
 
            // Fetch Unanswered Queries
-           const queryQuery = query(collection(db, "unanswered_queries"), where("chatbotId", "in", batchIds));
+           const queryQuery = query(collection(db, "unanswered_queries"), where("ownerId", "==", user.uid), where("chatbotId", "in", batchIds));
            const querySnap = await getDocs(queryQuery);
 
            const queries = querySnap.docs.map(d => {
@@ -570,12 +571,12 @@ const Dashboard: React.FC<DashboardProps> = ({ toggleSidebar, testMode }) => {
         {
           label: "Positive",
           data: positiveData,
-          backgroundColor: "#37322F",
+          backgroundColor: "#101723",
         },
         {
             label: "Negative",
             data: negativeData,
-            backgroundColor: "#E0DEDB",
+            backgroundColor: "#D8DFE9",
         }
       ],
     };
@@ -665,7 +666,7 @@ const Dashboard: React.FC<DashboardProps> = ({ toggleSidebar, testMode }) => {
       const batchSize = 10;
       for (let i = 0; i < chatbotIds.length; i += batchSize) {
         const batchIds = chatbotIds.slice(i, i + batchSize);
-        const leadsQuery = query(collection(db, "leads"), where("chatbotId", "in", batchIds));
+        const leadsQuery = query(collection(db, "leads"), where("ownerId", "==", user.uid), where("chatbotId", "in", batchIds));
         const leadsSnap = await getDocs(leadsQuery);
         allLeads = [...allLeads, ...leadsSnap.docs.map(doc => ({
            id: doc.id,
@@ -726,7 +727,7 @@ const Dashboard: React.FC<DashboardProps> = ({ toggleSidebar, testMode }) => {
       const batchSize = 10;
       for (let i = 0; i < chatbotIds.length; i += batchSize) {
         const batchIds = chatbotIds.slice(i, i + batchSize);
-        const queryQuery = query(collection(db, "unanswered_queries"), where("chatbotId", "in", batchIds));
+        const queryQuery = query(collection(db, "unanswered_queries"), where("ownerId", "==", user.uid), where("chatbotId", "in", batchIds));
         const queriesSnap = await getDocs(queryQuery);
         allQueries = [...allQueries, ...queriesSnap.docs.map(doc => ({
            id: doc.id,
@@ -783,7 +784,7 @@ const Dashboard: React.FC<DashboardProps> = ({ toggleSidebar, testMode }) => {
   const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
 
   return (
-    <div className="bg-[#F7F5F3] dark:bg-[#1C1917] min-h-screen font-sans text-[#37322F]">
+    <div className="bg-[#F3F7FC] dark:bg-[#141D2B] min-h-screen font-sans text-[#101723]">
       <Helmet>
         <title>Dashboard | Askio Chatbot</title>
         <meta
@@ -796,16 +797,16 @@ const Dashboard: React.FC<DashboardProps> = ({ toggleSidebar, testMode }) => {
             <div className="flex items-center gap-4">
                 <button
                     onClick={toggleSidebar}
-                    className="lg:hidden text-[#605A57] hover:text-[#37322F] dark:text-[#A8A29E] dark:hover:text-[#F5F5F4]"
+                    className="lg:hidden text-[#566273] hover:text-[#101723] dark:text-[#9BAABD] dark:hover:text-[#D7DFE5]"
                 >
                     <Menu size={24} />
                 </button>
-                <h2 className="text-h1 font-medium tracking-tight font-serif text-[#37322F] dark:text-[#F5F5F4]">Dashboard</h2>
+                <h2 className="text-h1 font-medium tracking-tight font-serif text-[#101723] dark:text-[#D7DFE5]">Dashboard</h2>
             </div>
             <div className="flex items-center space-x-2">
                  <Link
                     to="/configure"
-                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-[#37322F] hover:bg-[#2a2522] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#37322F] transition-all duration-200 shadow-sm dark:bg-[#F5F5F4] dark:text-[#1C1917] dark:hover:bg-[#E7E5E4]"
+                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-[#101723] hover:bg-[#243040] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#101723] transition-all duration-200 shadow-sm dark:bg-[#D7DFE5] dark:text-[#141D2B] dark:hover:bg-[#E7EDF6]"
                 >
                     <PlusCircle size={16} className="mr-2" />
                     Quick Create
@@ -835,14 +836,14 @@ const Dashboard: React.FC<DashboardProps> = ({ toggleSidebar, testMode }) => {
             <div className="flex items-center gap-2">
                 <Button
                     onClick={refreshDashboard}
-                    className="bg-white text-[#605A57] border border-[#E0DEDB] hover:bg-[#FAFAF9] hover:text-[#37322F] shadow-sm dark:bg-[#292524] dark:text-[#A8A29E] dark:border-[#44403C] dark:hover:bg-[#44403C] dark:hover:text-[#F5F5F4]"
+                    className="bg-[#F9FCFF] text-[#566273] border border-[#D8DFE9] hover:bg-[#F3F7FC] hover:text-[#101723] shadow-sm dark:bg-[#1A2533] dark:text-[#9BAABD] dark:border-[#2B3646] dark:hover:bg-[#273444] dark:hover:text-[#D7DFE5]"
                     icon={RefreshCw}
                 >
                     Refresh
                 </Button>
                 <Button
                     onClick={downloadReport}
-                    className="bg-white text-[#605A57] border border-[#E0DEDB] hover:bg-[#FAFAF9] hover:text-[#37322F] shadow-sm dark:bg-[#292524] dark:text-[#A8A29E] dark:border-[#44403C] dark:hover:bg-[#44403C] dark:hover:text-[#F5F5F4]"
+                    className="bg-[#F9FCFF] text-[#566273] border border-[#D8DFE9] hover:bg-[#F3F7FC] hover:text-[#101723] shadow-sm dark:bg-[#1A2533] dark:text-[#9BAABD] dark:border-[#2B3646] dark:hover:bg-[#273444] dark:hover:text-[#D7DFE5]"
                     icon={Download}
                 >
                     Download Report
@@ -852,6 +853,7 @@ const Dashboard: React.FC<DashboardProps> = ({ toggleSidebar, testMode }) => {
 
         {activeTab === "overview" && (
             <>
+                <AiUsageMeter />
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                     <StatsCard
                         title="Total Chatbots"
@@ -892,7 +894,7 @@ const Dashboard: React.FC<DashboardProps> = ({ toggleSidebar, testMode }) => {
 
                 <div className="mt-8">
                      <div className="flex flex-col md:flex-row justify-between md:items-center space-y-4 md:space-y-0 mb-6">
-                        <h2 className="text-h3 font-medium text-[#37322F] dark:text-[#F5F5F4]">
+                        <h2 className="text-h3 font-medium text-[#101723] dark:text-[#D7DFE5]">
                             Your Chatbots
                         </h2>
                         <div className="flex flex-wrap items-center gap-4">
@@ -902,10 +904,10 @@ const Dashboard: React.FC<DashboardProps> = ({ toggleSidebar, testMode }) => {
                                 placeholder="Search chatbots..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                className="pl-10 pr-4 py-2 w-full bg-white border border-[#E0DEDB] text-[#37322F] placeholder-[#9CA3AF] focus:ring-[#37322F] focus:border-[#37322F] dark:bg-[#44403C] dark:text-[#F5F5F4] dark:border-[#57534E] rounded-md shadow-sm"
+                                className="pl-10 pr-4 py-2 w-full bg-[#F9FCFF] border border-[#D8DFE9] text-[#101723] placeholder-[#647184] focus:ring-[#101723] focus:border-[#101723] dark:bg-[#273444] dark:text-[#D7DFE5] dark:border-[#39485B] rounded-md shadow-sm"
                             />
                             <Search
-                                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#9CA3AF]"
+                                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#647184]"
                                 size={18}
                             />
                             </div>
@@ -913,19 +915,19 @@ const Dashboard: React.FC<DashboardProps> = ({ toggleSidebar, testMode }) => {
                              <div className="relative">
                                 <Button
                                     onClick={toggleSortDropdown}
-                                    className="bg-white border border-[#E0DEDB] text-[#605A57] hover:bg-[#FAFAF9] hover:text-[#37322F] shadow-sm dark:bg-[#292524] dark:text-[#A8A29E] dark:border-[#44403C] dark:hover:bg-[#44403C] dark:hover:text-[#F5F5F4]"
+                                    className="bg-[#F9FCFF] border border-[#D8DFE9] text-[#566273] hover:bg-[#F3F7FC] hover:text-[#101723] shadow-sm dark:bg-[#1A2533] dark:text-[#9BAABD] dark:border-[#2B3646] dark:hover:bg-[#273444] dark:hover:text-[#D7DFE5]"
                                     icon={Filter}
                                 >
                                     Sort: {sortBy === "title" ? "Name" : sortBy === "createdAt" ? "Created" : "Updated"}
                                 </Button>
                                 {isSortDropdownOpen && (
-                                    <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-[#292524] rounded-md shadow-lg py-1 z-50 border border-[#E0DEDB] dark:border-[#44403C]">
+                                    <div className="absolute right-0 mt-2 w-48 bg-[#F9FCFF] dark:bg-[#1A2533] rounded-md shadow-lg py-1 z-50 border border-[#D8DFE9] dark:border-[#2B3646]">
                                     <button
                                         onClick={() => {
                                         handleSort("title");
                                         setIsSortDropdownOpen(false);
                                         }}
-                                        className="flex items-center justify-between px-4 py-2 text-sm text-[#605A57] hover:bg-[#FAFAF9] hover:text-[#37322F] dark:text-[#A8A29E] dark:hover:bg-[#44403C] dark:hover:text-[#F5F5F4] w-full text-left cursor-pointer"
+                                        className="flex items-center justify-between px-4 py-2 text-sm text-[#566273] hover:bg-[#F3F7FC] hover:text-[#101723] dark:text-[#9BAABD] dark:hover:bg-[#273444] dark:hover:text-[#D7DFE5] w-full text-left cursor-pointer"
                                     >
                                         <span>Sort by Title</span>
                                         {sortBy === "title" && (
@@ -940,7 +942,7 @@ const Dashboard: React.FC<DashboardProps> = ({ toggleSidebar, testMode }) => {
                                         handleSort("createdAt");
                                         setIsSortDropdownOpen(false);
                                         }}
-                                        className="flex items-center justify-between px-4 py-2 text-sm text-[#605A57] hover:bg-[#FAFAF9] hover:text-[#37322F] dark:text-[#A8A29E] dark:hover:bg-[#44403C] dark:hover:text-[#F5F5F4] w-full text-left cursor-pointer"
+                                        className="flex items-center justify-between px-4 py-2 text-sm text-[#566273] hover:bg-[#F3F7FC] hover:text-[#101723] dark:text-[#9BAABD] dark:hover:bg-[#273444] dark:hover:text-[#D7DFE5] w-full text-left cursor-pointer"
                                     >
                                         <span>Sort by Creation Date</span>
                                         {sortBy === "createdAt" && (
@@ -955,7 +957,7 @@ const Dashboard: React.FC<DashboardProps> = ({ toggleSidebar, testMode }) => {
                                         handleSort("lastUpdated");
                                         setIsSortDropdownOpen(false);
                                         }}
-                                        className="flex items-center justify-between px-4 py-2 text-sm text-[#605A57] hover:bg-[#FAFAF9] hover:text-[#37322F] dark:text-[#A8A29E] dark:hover:bg-[#44403C] dark:hover:text-[#F5F5F4] w-full text-left cursor-pointer"
+                                        className="flex items-center justify-between px-4 py-2 text-sm text-[#566273] hover:bg-[#F3F7FC] hover:text-[#101723] dark:text-[#9BAABD] dark:hover:bg-[#273444] dark:hover:text-[#D7DFE5] w-full text-left cursor-pointer"
                                     >
                                         <span>Sort by Last Updated</span>
                                         {sortBy === "lastUpdated" && (
@@ -984,7 +986,7 @@ const Dashboard: React.FC<DashboardProps> = ({ toggleSidebar, testMode }) => {
                         >
                         <div className="flex justify-center items-center h-64">
                             <LoaderCircle
-                            className="animate-spin text-indigo-500 dark:text-indigo-400"
+                            className="animate-spin text-[#566273] dark:text-[#9BAABD]"
                             size={48}
                             />
                         </div>
@@ -1017,13 +1019,13 @@ const Dashboard: React.FC<DashboardProps> = ({ toggleSidebar, testMode }) => {
                         )}
                         <AnimatePresence>
                         {!loading && !error && (
-                            <div className="bg-white dark:bg-[#1C1917] rounded-lg border border-[#E0DEDB] dark:border-[#44403C] overflow-hidden shadow-sm overflow-x-auto">
-                                <table className="min-w-full divide-y divide-[#E0DEDB] dark:divide-[#44403C]">
-                                    <thead className="bg-[#FAFAF9] dark:bg-[#292524]">
+                            <div className="bg-[#F9FCFF] dark:bg-[#141D2B] rounded-lg border border-[#D8DFE9] dark:border-[#2B3646] overflow-hidden shadow-sm overflow-x-auto">
+                                <table className="min-w-full divide-y divide-[#D8DFE9] dark:divide-[#2B3646]">
+                                    <thead className="bg-[#F3F7FC] dark:bg-[#1A2533]">
                                         <tr>
                                             <th 
                                                 scope="col" 
-                                                className="px-6 py-3 text-left text-caption font-medium text-[#605A57] dark:text-[#A8A29E] uppercase tracking-wider font-sans cursor-pointer hover:text-[#37322F] dark:hover:text-[#F5F5F4] transition-colors group"
+                                                className="px-6 py-3 text-left text-caption font-medium text-[#566273] dark:text-[#9BAABD] uppercase tracking-wider font-sans cursor-pointer hover:text-[#101723] dark:hover:text-[#D7DFE5] transition-colors group"
                                                 onClick={() => handleSort("title")}
                                             >
                                                 <div className="flex items-center">
@@ -1035,12 +1037,12 @@ const Dashboard: React.FC<DashboardProps> = ({ toggleSidebar, testMode }) => {
                                                     )}
                                                 </div>
                                             </th>
-                                            <th scope="col" className="px-6 py-3 text-left text-caption font-medium text-[#605A57] dark:text-[#A8A29E] uppercase tracking-wider font-sans">
+                                            <th scope="col" className="px-6 py-3 text-left text-caption font-medium text-[#566273] dark:text-[#9BAABD] uppercase tracking-wider font-sans">
                                                 Feedback
                                             </th>
                                             <th 
                                                 scope="col" 
-                                                className="hidden sm:table-cell px-6 py-3 text-left text-caption font-medium text-[#605A57] dark:text-[#A8A29E] uppercase tracking-wider font-sans cursor-pointer hover:text-[#37322F] dark:hover:text-[#F5F5F4] transition-colors group"
+                                                className="hidden sm:table-cell px-6 py-3 text-left text-caption font-medium text-[#566273] dark:text-[#9BAABD] uppercase tracking-wider font-sans cursor-pointer hover:text-[#101723] dark:hover:text-[#D7DFE5] transition-colors group"
                                                 onClick={() => handleSort("createdAt")}
                                             >
                                                 <div className="flex items-center">
@@ -1054,7 +1056,7 @@ const Dashboard: React.FC<DashboardProps> = ({ toggleSidebar, testMode }) => {
                                             </th>
                                             <th 
                                                 scope="col" 
-                                                className="hidden md:table-cell px-6 py-3 text-left text-caption font-medium text-[#605A57] dark:text-[#A8A29E] uppercase tracking-wider font-sans cursor-pointer hover:text-[#37322F] dark:hover:text-[#F5F5F4] transition-colors group"
+                                                className="hidden md:table-cell px-6 py-3 text-left text-caption font-medium text-[#566273] dark:text-[#9BAABD] uppercase tracking-wider font-sans cursor-pointer hover:text-[#101723] dark:hover:text-[#D7DFE5] transition-colors group"
                                                 onClick={() => handleSort("lastUpdated")}
                                             >
                                                 <div className="flex items-center">
@@ -1071,7 +1073,7 @@ const Dashboard: React.FC<DashboardProps> = ({ toggleSidebar, testMode }) => {
                                             </th>
                                         </tr>
                                     </thead>
-                                    <tbody className="bg-white dark:bg-[#1C1917] divide-y divide-[#E0DEDB] dark:divide-[#44403C]">
+                                    <tbody className="bg-[#F9FCFF] dark:bg-[#141D2B] divide-y divide-[#D8DFE9] dark:divide-[#2B3646]">
                                         {currentChatbots.map((chatbot, index) => {
                                              const fb = feedbackCounts[chatbot.id] || { positive: 0, negative: 0 };
                                             return (
@@ -1095,13 +1097,13 @@ const Dashboard: React.FC<DashboardProps> = ({ toggleSidebar, testMode }) => {
                         </AnimatePresence>
                         {!loading && !error && filteredChatbots.length === 0 && (
                         <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
-                            <div className="w-16 h-16 bg-[#FAFAF9] dark:bg-[#292524] rounded-full flex items-center justify-center mb-6 shadow-sm border border-[#E0DEDB] dark:border-[#44403C]">
-                                <Bot className="w-8 h-8 text-[#605A57] dark:text-[#A8A29E]" />
+                            <div className="w-16 h-16 bg-[#F3F7FC] dark:bg-[#1A2533] rounded-full flex items-center justify-center mb-6 shadow-sm border border-[#D8DFE9] dark:border-[#2B3646]">
+                                <Bot className="w-8 h-8 text-[#566273] dark:text-[#9BAABD]" />
                             </div>
-                            <h3 className="text-h3 font-medium text-[#37322F] dark:text-[#F5F5F4] mb-2 font-sans">
+                            <h3 className="text-h3 font-medium text-[#101723] dark:text-[#D7DFE5] mb-2 font-sans">
                             {searchTerm ? "No chatbots found" : "No chatbots yet"}
                             </h3>
-                            <p className="text-body text-[#605A57] dark:text-[#A8A29E] max-w-sm mb-8">
+                            <p className="text-body text-[#566273] dark:text-[#9BAABD] max-w-sm mb-8">
                             {searchTerm
                                 ? `We couldn't find any chatbots matching "${searchTerm}". Try a different search term.`
                                 : "Create your first chatbot to start engaging with your visitors automatically."}
@@ -1109,7 +1111,7 @@ const Dashboard: React.FC<DashboardProps> = ({ toggleSidebar, testMode }) => {
                             {!searchTerm && (
                             <Link
                                 to="/configure"
-                                className="inline-flex items-center px-6 py-3 border border-transparent text-sm font-medium rounded-full text-white bg-[#37322F] hover:bg-[#2a2522] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#37322F] transition-all duration-200 shadow-lg hover:shadow-xl dark:bg-[#F5F5F4] dark:text-[#1C1917] dark:hover:bg-[#E7E5E4]"
+                                className="inline-flex items-center px-6 py-3 border border-transparent text-sm font-medium rounded-full text-white bg-[#101723] hover:bg-[#243040] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#101723] transition-all duration-200 shadow-lg hover:shadow-xl dark:bg-[#D7DFE5] dark:text-[#141D2B] dark:hover:bg-[#E7EDF6]"
                             >
                                 <PlusCircle size={18} className="mr-2" />
                                 Create Chatbot
@@ -1128,7 +1130,7 @@ const Dashboard: React.FC<DashboardProps> = ({ toggleSidebar, testMode }) => {
                                 <button
                                 onClick={() => paginate(currentPage - 1)}
                                 disabled={currentPage === 1}
-                                className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-[#292524] dark:border-[#44403C] dark:text-[#A8A29E] dark:hover:bg-[#44403C]"
+                                className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-[#D7DFE5] bg-[#F9FCFF] text-sm font-medium text-[#647184] hover:bg-[#F3F7FC] disabled:opacity-50 disabled:cursor-not-allowed dark:bg-[#1A2533] dark:border-[#2B3646] dark:text-[#9BAABD] dark:hover:bg-[#273444]"
                                 >
                                 <span className="sr-only">Previous</span>
                                 <ChevronLeft className="h-5 w-5" aria-hidden="true" />
@@ -1143,8 +1145,8 @@ const Dashboard: React.FC<DashboardProps> = ({ toggleSidebar, testMode }) => {
                                     onClick={() => paginate(index + 1)}
                                     className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
                                     currentPage === index + 1
-                                        ? "z-10 bg-[#37322F] border-[#37322F] text-white dark:bg-[#F5F5F4] dark:border-[#F5F5F4] dark:text-[#1C1917]"
-                                        : "bg-white border-gray-300 text-gray-500 hover:bg-gray-50 dark:bg-[#292524] dark:border-[#44403C] dark:text-[#A8A29E] dark:hover:bg-[#44403C]"
+                                        ? "z-10 bg-[#101723] border-[#101723] text-white dark:bg-[#D7DFE5] dark:border-[#D7DFE5] dark:text-[#141D2B]"
+                                        : "bg-[#F9FCFF] border-[#D7DFE5] text-[#647184] hover:bg-[#F3F7FC] dark:bg-[#1A2533] dark:border-[#2B3646] dark:text-[#9BAABD] dark:hover:bg-[#273444]"
                                     }`}
                                 >
                                     {index + 1}
@@ -1156,7 +1158,7 @@ const Dashboard: React.FC<DashboardProps> = ({ toggleSidebar, testMode }) => {
                                     currentPage ===
                                     Math.ceil(filteredChatbots.length / chatbotsPerPage)
                                 }
-                                className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-[#292524] dark:border-[#44403C] dark:text-[#A8A29E] dark:hover:bg-[#44403C]"
+                                className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-[#D7DFE5] bg-[#F9FCFF] text-sm font-medium text-[#647184] hover:bg-[#F3F7FC] disabled:opacity-50 disabled:cursor-not-allowed dark:bg-[#1A2533] dark:border-[#2B3646] dark:text-[#9BAABD] dark:hover:bg-[#273444]"
                                 >
                                 <span className="sr-only">Next</span>
                                 <ChevronRight className="h-5 w-5" aria-hidden="true" />
@@ -1172,7 +1174,7 @@ const Dashboard: React.FC<DashboardProps> = ({ toggleSidebar, testMode }) => {
           {activeTab === "chatbots" && (
             <div className="space-y-6">
                 <div className="flex flex-col md:flex-row justify-between md:items-center space-y-4 md:space-y-0">
-                  <h2 className="text-h2 font-bold text-[#37322F] dark:text-[#F5F5F4]">
+                  <h2 className="text-h2 font-bold text-[#101723] dark:text-[#D7DFE5]">
                     Your Chatbots
                   </h2>
 
@@ -1183,10 +1185,10 @@ const Dashboard: React.FC<DashboardProps> = ({ toggleSidebar, testMode }) => {
                         placeholder="Search chatbots..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="pl-10 pr-4 py-2 w-full bg-white border border-[#E0DEDB] text-[#37322F] placeholder-[#9CA3AF] focus:ring-[#37322F] focus:border-[#37322F] dark:bg-[#44403C] dark:text-[#F5F5F4] dark:border-[#57534E] rounded-md shadow-sm"
+                        className="pl-10 pr-4 py-2 w-full bg-[#F9FCFF] border border-[#D8DFE9] text-[#101723] placeholder-[#647184] focus:ring-[#101723] focus:border-[#101723] dark:bg-[#273444] dark:text-[#D7DFE5] dark:border-[#39485B] rounded-md shadow-sm"
                       />
                       <Search
-                        className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#9CA3AF]"
+                        className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#647184]"
                         size={18}
                       />
                     </div>
@@ -1195,8 +1197,8 @@ const Dashboard: React.FC<DashboardProps> = ({ toggleSidebar, testMode }) => {
                         onClick={toggleViewMode}
                         className={`p-2 rounded-md transition-colors duration-200 border ${
                           viewMode === "grid"
-                            ? "bg-[#37322F] border-[#37322F] text-white"
-                            : "bg-white border-[#E0DEDB] text-[#605A57] hover:bg-[#FAFAF9] dark:bg-[#292524] dark:text-[#A8A29E] dark:border-[#44403C] dark:hover:bg-[#44403C]"
+                            ? "bg-[#101723] border-[#101723] text-white"
+                            : "bg-[#F9FCFF] border-[#D8DFE9] text-[#566273] hover:bg-[#F3F7FC] dark:bg-[#1A2533] dark:text-[#9BAABD] dark:border-[#2B3646] dark:hover:bg-[#273444]"
                         }`}
                       >
                         <Grid size={20} />
@@ -1205,8 +1207,8 @@ const Dashboard: React.FC<DashboardProps> = ({ toggleSidebar, testMode }) => {
                         onClick={toggleViewMode}
                         className={`p-2 rounded-md transition-colors duration-200 border ${
                           viewMode === "list"
-                            ? "bg-[#37322F] border-[#37322F] text-white"
-                            : "bg-white border-[#E0DEDB] text-[#605A57] hover:bg-[#FAFAF9] dark:bg-[#292524] dark:text-[#A8A29E] dark:border-[#44403C] dark:hover:bg-[#44403C]"
+                            ? "bg-[#101723] border-[#101723] text-white"
+                            : "bg-[#F9FCFF] border-[#D8DFE9] text-[#566273] hover:bg-[#F3F7FC] dark:bg-[#1A2533] dark:text-[#9BAABD] dark:border-[#2B3646] dark:hover:bg-[#273444]"
                         }`}
                       >
                         <List size={20} />
@@ -1215,19 +1217,19 @@ const Dashboard: React.FC<DashboardProps> = ({ toggleSidebar, testMode }) => {
                     <div className="relative">
                         <Button
                             onClick={toggleSortDropdown}
-                            className="bg-white border border-[#E0DEDB] text-[#605A57] hover:bg-[#FAFAF9] hover:text-[#37322F] shadow-sm dark:bg-[#292524] dark:text-[#A8A29E] dark:border-[#44403C] dark:hover:bg-[#44403C] dark:hover:text-[#F5F5F4]"
+                            className="bg-[#F9FCFF] border border-[#D8DFE9] text-[#566273] hover:bg-[#F3F7FC] hover:text-[#101723] shadow-sm dark:bg-[#1A2533] dark:text-[#9BAABD] dark:border-[#2B3646] dark:hover:bg-[#273444] dark:hover:text-[#D7DFE5]"
                             icon={Filter}
                         >
                             Sort: {sortBy === "title" ? "Name" : sortBy === "createdAt" ? "Created" : "Updated"}
                         </Button>
                         {isSortDropdownOpen && (
-                            <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-[#292524] rounded-md shadow-lg py-1 z-50 border border-[#E0DEDB] dark:border-[#44403C]">
+                            <div className="absolute right-0 mt-2 w-48 bg-[#F9FCFF] dark:bg-[#1A2533] rounded-md shadow-lg py-1 z-50 border border-[#D8DFE9] dark:border-[#2B3646]">
                             <button
                                 onClick={() => {
                                 handleSort("title");
                                 setIsSortDropdownOpen(false);
                                 }}
-                                className="flex items-center justify-between px-4 py-2 text-sm text-[#605A57] hover:bg-[#FAFAF9] hover:text-[#37322F] dark:text-[#A8A29E] dark:hover:bg-[#44403C] dark:hover:text-[#F5F5F4] w-full text-left cursor-pointer"
+                                className="flex items-center justify-between px-4 py-2 text-sm text-[#566273] hover:bg-[#F3F7FC] hover:text-[#101723] dark:text-[#9BAABD] dark:hover:bg-[#273444] dark:hover:text-[#D7DFE5] w-full text-left cursor-pointer"
                             >
                                 <span>Sort by Title</span>
                                 {sortBy === "title" && (
@@ -1242,7 +1244,7 @@ const Dashboard: React.FC<DashboardProps> = ({ toggleSidebar, testMode }) => {
                                 handleSort("createdAt");
                                 setIsSortDropdownOpen(false);
                                 }}
-                                className="flex items-center justify-between px-4 py-2 text-sm text-[#605A57] hover:bg-[#FAFAF9] hover:text-[#37322F] dark:text-[#A8A29E] dark:hover:bg-[#44403C] dark:hover:text-[#F5F5F4] w-full text-left cursor-pointer"
+                                className="flex items-center justify-between px-4 py-2 text-sm text-[#566273] hover:bg-[#F3F7FC] hover:text-[#101723] dark:text-[#9BAABD] dark:hover:bg-[#273444] dark:hover:text-[#D7DFE5] w-full text-left cursor-pointer"
                             >
                                 <span>Sort by Creation Date</span>
                                 {sortBy === "createdAt" && (
@@ -1257,7 +1259,7 @@ const Dashboard: React.FC<DashboardProps> = ({ toggleSidebar, testMode }) => {
                                 handleSort("lastUpdated");
                                 setIsSortDropdownOpen(false);
                                 }}
-                                className="flex items-center justify-between px-4 py-2 text-sm text-[#605A57] hover:bg-[#FAFAF9] hover:text-[#37322F] dark:text-[#A8A29E] dark:hover:bg-[#44403C] dark:hover:text-[#F5F5F4] w-full text-left cursor-pointer"
+                                className="flex items-center justify-between px-4 py-2 text-sm text-[#566273] hover:bg-[#F3F7FC] hover:text-[#101723] dark:text-[#9BAABD] dark:hover:bg-[#273444] dark:hover:text-[#D7DFE5] w-full text-left cursor-pointer"
                             >
                                 <span>Sort by Last Updated</span>
                                 {sortBy === "lastUpdated" && (
@@ -1272,7 +1274,7 @@ const Dashboard: React.FC<DashboardProps> = ({ toggleSidebar, testMode }) => {
                         </div>
                     <Button
                     onClick={() => navigate("/configure")}
-                    className="bg-[#37322F] hover:bg-[#2a2522] text-white shadow-md dark:text-white"
+                    className="bg-[#101723] hover:bg-[#243040] text-white shadow-md dark:text-white"
                     icon={PlusCircle}
                     >
                     Create New Chatbot
@@ -1292,7 +1294,7 @@ const Dashboard: React.FC<DashboardProps> = ({ toggleSidebar, testMode }) => {
                     >
                         <div className="flex justify-center items-center h-64">
                             <LoaderCircle
-                            className="animate-spin text-indigo-500 dark:text-indigo-400"
+                            className="animate-spin text-[#566273] dark:text-[#9BAABD]"
                             size={48}
                             />
                         </div>
@@ -1378,13 +1380,13 @@ const Dashboard: React.FC<DashboardProps> = ({ toggleSidebar, testMode }) => {
                                 </div>
 
                                 {/* Desktop List View (Table) */}
-                                <div className="hidden md:block bg-white dark:bg-[#1C1917] rounded-lg border border-[#E0DEDB] dark:border-[#44403C] overflow-hidden shadow-sm overflow-x-auto">
-                                    <table className="min-w-full divide-y divide-[#E0DEDB] dark:divide-[#44403C]">
-                                        <thead className="bg-[#FAFAF9] dark:bg-[#292524]">
+                                <div className="hidden md:block bg-[#F9FCFF] dark:bg-[#141D2B] rounded-lg border border-[#D8DFE9] dark:border-[#2B3646] overflow-hidden shadow-sm overflow-x-auto">
+                                    <table className="min-w-full divide-y divide-[#D8DFE9] dark:divide-[#2B3646]">
+                                        <thead className="bg-[#F3F7FC] dark:bg-[#1A2533]">
                                             <tr>
                                                 <th 
                                                     scope="col" 
-                                                    className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-[#605A57] dark:text-[#A8A29E] uppercase tracking-wider font-sans cursor-pointer hover:text-[#37322F] dark:hover:text-[#F5F5F4] transition-colors group"
+                                                    className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-[#566273] dark:text-[#9BAABD] uppercase tracking-wider font-sans cursor-pointer hover:text-[#101723] dark:hover:text-[#D7DFE5] transition-colors group"
                                                     onClick={() => handleSort("title")}
                                                 >
                                                     <div className="flex items-center">
@@ -1396,12 +1398,12 @@ const Dashboard: React.FC<DashboardProps> = ({ toggleSidebar, testMode }) => {
                                                         )}
                                                     </div>
                                                 </th>
-                                                <th scope="col" className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-[#605A57] dark:text-[#A8A29E] uppercase tracking-wider font-sans">
+                                                <th scope="col" className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-[#566273] dark:text-[#9BAABD] uppercase tracking-wider font-sans">
                                                     Feedback
                                                 </th>
                                                 <th 
                                                     scope="col" 
-                                                    className="hidden lg:table-cell px-6 py-3 text-left text-xs font-medium text-[#605A57] dark:text-[#A8A29E] uppercase tracking-wider font-sans cursor-pointer hover:text-[#37322F] dark:hover:text-[#F5F5F4] transition-colors group"
+                                                    className="hidden lg:table-cell px-6 py-3 text-left text-xs font-medium text-[#566273] dark:text-[#9BAABD] uppercase tracking-wider font-sans cursor-pointer hover:text-[#101723] dark:hover:text-[#D7DFE5] transition-colors group"
                                                     onClick={() => handleSort("createdAt")}
                                                 >
                                                     <div className="flex items-center">
@@ -1415,7 +1417,7 @@ const Dashboard: React.FC<DashboardProps> = ({ toggleSidebar, testMode }) => {
                                                 </th>
                                                 <th 
                                                     scope="col" 
-                                                    className="hidden xl:table-cell px-6 py-3 text-left text-xs font-medium text-[#605A57] dark:text-[#A8A29E] uppercase tracking-wider font-sans cursor-pointer hover:text-[#37322F] dark:hover:text-[#F5F5F4] transition-colors group"
+                                                    className="hidden xl:table-cell px-6 py-3 text-left text-xs font-medium text-[#566273] dark:text-[#9BAABD] uppercase tracking-wider font-sans cursor-pointer hover:text-[#101723] dark:hover:text-[#D7DFE5] transition-colors group"
                                                     onClick={() => handleSort("lastUpdated")}
                                                 >
                                                     <div className="flex items-center">
@@ -1432,7 +1434,7 @@ const Dashboard: React.FC<DashboardProps> = ({ toggleSidebar, testMode }) => {
                                                 </th>
                                             </tr>
                                         </thead>
-                                        <tbody className="bg-white dark:bg-[#1C1917] divide-y divide-[#E0DEDB] dark:divide-[#44403C]">
+                                        <tbody className="bg-[#F9FCFF] dark:bg-[#141D2B] divide-y divide-[#D8DFE9] dark:divide-[#2B3646]">
                                             {currentChatbots.map((chatbot, index) => (
                                                 <ChatbotCard
                                                     key={chatbot.id}
@@ -1461,13 +1463,13 @@ const Dashboard: React.FC<DashboardProps> = ({ toggleSidebar, testMode }) => {
                     </AnimatePresence>
                     {!loading && !error && filteredChatbots.length === 0 && (
                         <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
-                            <div className="w-16 h-16 bg-[#FAFAF9] dark:bg-[#292524] rounded-full flex items-center justify-center mb-6 shadow-sm border border-[#E0DEDB] dark:border-[#44403C]">
-                                <Bot className="w-8 h-8 text-[#605A57] dark:text-[#A8A29E]" />
+                            <div className="w-16 h-16 bg-[#F3F7FC] dark:bg-[#1A2533] rounded-full flex items-center justify-center mb-6 shadow-sm border border-[#D8DFE9] dark:border-[#2B3646]">
+                                <Bot className="w-8 h-8 text-[#566273] dark:text-[#9BAABD]" />
                             </div>
-                            <h3 className="text-xl font-medium text-[#37322F] dark:text-[#F5F5F4] mb-2 font-serif">
+                            <h3 className="text-xl font-medium text-[#101723] dark:text-[#D7DFE5] mb-2 font-serif">
                             {searchTerm ? "No chatbots found" : "No chatbots yet"}
                             </h3>
-                            <p className="text-[#605A57] dark:text-[#A8A29E] max-w-sm mb-8">
+                            <p className="text-[#566273] dark:text-[#9BAABD] max-w-sm mb-8">
                             {searchTerm
                                 ? `We couldn't find any chatbots matching "${searchTerm}". Try a different search term.`
                                 : "Create your first chatbot to start engaging with your visitors automatically."}
@@ -1475,7 +1477,7 @@ const Dashboard: React.FC<DashboardProps> = ({ toggleSidebar, testMode }) => {
                             {!searchTerm && (
                             <Link
                                 to="/configure"
-                                className="inline-flex items-center px-6 py-3 border border-transparent text-sm font-medium rounded-full text-white bg-[#37322F] hover:bg-[#2a2522] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#37322F] transition-all duration-200 shadow-lg hover:shadow-xl dark:bg-[#F5F5F4] dark:text-[#1C1917] dark:hover:bg-[#E7E5E4]"
+                                className="inline-flex items-center px-6 py-3 border border-transparent text-sm font-medium rounded-full text-white bg-[#101723] hover:bg-[#243040] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#101723] transition-all duration-200 shadow-lg hover:shadow-xl dark:bg-[#D7DFE5] dark:text-[#141D2B] dark:hover:bg-[#E7EDF6]"
                             >
                                 <PlusCircle size={18} className="mr-2" />
                                 Create Chatbot
@@ -1494,7 +1496,7 @@ const Dashboard: React.FC<DashboardProps> = ({ toggleSidebar, testMode }) => {
                                 <button
                                 onClick={() => paginate(currentPage - 1)}
                                 disabled={currentPage === 1}
-                                className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-[#292524] dark:border-[#44403C] dark:text-[#A8A29E] dark:hover:bg-[#44403C]"
+                                className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-[#D7DFE5] bg-[#F9FCFF] text-sm font-medium text-[#647184] hover:bg-[#F3F7FC] disabled:opacity-50 disabled:cursor-not-allowed dark:bg-[#1A2533] dark:border-[#2B3646] dark:text-[#9BAABD] dark:hover:bg-[#273444]"
                                 >
                                 <span className="sr-only">Previous</span>
                                 <ChevronLeft className="h-5 w-5" aria-hidden="true" />
@@ -1509,8 +1511,8 @@ const Dashboard: React.FC<DashboardProps> = ({ toggleSidebar, testMode }) => {
                                     onClick={() => paginate(index + 1)}
                                     className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
                                     currentPage === index + 1
-                                        ? "z-10 bg-[#37322F] border-[#37322F] text-white dark:bg-[#F5F5F4] dark:border-[#F5F5F4] dark:text-[#1C1917]"
-                                        : "bg-white border-gray-300 text-gray-500 hover:bg-gray-50 dark:bg-[#292524] dark:border-[#44403C] dark:text-[#A8A29E] dark:hover:bg-[#44403C]"
+                                        ? "z-10 bg-[#101723] border-[#101723] text-white dark:bg-[#D7DFE5] dark:border-[#D7DFE5] dark:text-[#141D2B]"
+                                        : "bg-[#F9FCFF] border-[#D7DFE5] text-[#647184] hover:bg-[#F3F7FC] dark:bg-[#1A2533] dark:border-[#2B3646] dark:text-[#9BAABD] dark:hover:bg-[#273444]"
                                     }`}
                                 >
                                     {index + 1}
@@ -1522,7 +1524,7 @@ const Dashboard: React.FC<DashboardProps> = ({ toggleSidebar, testMode }) => {
                                     currentPage ===
                                     Math.ceil(filteredChatbots.length / chatbotsPerPage)
                                 }
-                                className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-[#292524] dark:border-[#44403C] dark:text-[#A8A29E] dark:hover:bg-[#44403C]"
+                                className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-[#D7DFE5] bg-[#F9FCFF] text-sm font-medium text-[#647184] hover:bg-[#F3F7FC] disabled:opacity-50 disabled:cursor-not-allowed dark:bg-[#1A2533] dark:border-[#2B3646] dark:text-[#9BAABD] dark:hover:bg-[#273444]"
                                 >
                                 <span className="sr-only">Next</span>
                                 <ChevronRight className="h-5 w-5" aria-hidden="true" />
@@ -1537,31 +1539,31 @@ const Dashboard: React.FC<DashboardProps> = ({ toggleSidebar, testMode }) => {
           {activeTab === "reports" && (
              <div className="space-y-6">
                 <div>
-                  <h2 className="text-h2 font-bold text-[#37322F] dark:text-[#F5F5F4]">
+                  <h2 className="text-h2 font-bold text-[#101723] dark:text-[#D7DFE5]">
                     Data Reports
                   </h2>
-                  <p className="text-[#605A57] dark:text-[#A8A29E] mt-1">
+                  <p className="text-[#566273] dark:text-[#9BAABD] mt-1">
                     Download actionable insights and raw data across all your chatbots.
                   </p>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {/* Performance Report */}
-                  <div className="bg-white dark:bg-[#1C1917] flex flex-col justify-between p-6 rounded-xl border border-[#E0DEDB] dark:border-[#44403C] shadow-sm hover:shadow-md transition-shadow">
+                  <div className="bg-[#F9FCFF] dark:bg-[#141D2B] flex flex-col justify-between p-6 rounded-xl border border-[#D8DFE9] dark:border-[#2B3646] shadow-sm hover:shadow-md transition-shadow">
                     <div>
-                      <div className="w-12 h-12 bg-indigo-50 dark:bg-indigo-900/30 rounded-lg flex items-center justify-center mb-4 border border-indigo-100 dark:border-indigo-800">
-                        <FileSpreadsheet className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
+                      <div className="w-12 h-12 bg-[#E7EDF6] dark:bg-[#243040] rounded-lg flex items-center justify-center mb-4 border border-[#D8DFE9] dark:border-[#2B3646]">
+                        <FileSpreadsheet className="w-6 h-6 text-[#566273] dark:text-[#9BAABD]" />
                       </div>
-                      <h3 className="text-lg font-semibold text-[#37322F] dark:text-[#F5F5F4] mb-2">
+                      <h3 className="text-lg font-semibold text-[#101723] dark:text-[#D7DFE5] mb-2">
                         Chatbot Performance
                       </h3>
-                      <p className="text-sm text-[#605A57] dark:text-[#A8A29E] mb-6 line-clamp-3">
+                      <p className="text-sm text-[#566273] dark:text-[#9BAABD] mb-6 line-clamp-3">
                         A comprehensive overview of all your chatbots, including positive and negative feedback counts, creation dates, and last updated timestamps.
                       </p>
                     </div>
                     <Button
                       onClick={downloadReport}
-                      className="w-full justify-center bg-white border border-[#E0DEDB] text-[#37322F] hover:bg-[#FAFAF9] dark:bg-[#292524] dark:border-[#44403C] dark:text-[#F5F5F4] dark:hover:bg-[#44403C]"
+                      className="w-full justify-center bg-[#F9FCFF] border border-[#D8DFE9] text-[#101723] hover:bg-[#F3F7FC] dark:bg-[#1A2533] dark:border-[#2B3646] dark:text-[#D7DFE5] dark:hover:bg-[#273444]"
                       icon={Download}
                     >
                       Download CSV
@@ -1569,22 +1571,22 @@ const Dashboard: React.FC<DashboardProps> = ({ toggleSidebar, testMode }) => {
                   </div>
 
                   {/* Leads Report */}
-                  <div className="bg-white dark:bg-[#1C1917] flex flex-col justify-between p-6 rounded-xl border border-[#E0DEDB] dark:border-[#44403C] shadow-sm hover:shadow-md transition-shadow">
+                  <div className="bg-[#F9FCFF] dark:bg-[#141D2B] flex flex-col justify-between p-6 rounded-xl border border-[#D8DFE9] dark:border-[#2B3646] shadow-sm hover:shadow-md transition-shadow">
                     <div>
                       <div className="w-12 h-12 bg-emerald-50 dark:bg-emerald-900/30 rounded-lg flex items-center justify-center mb-4 border border-emerald-100 dark:border-emerald-800">
                         <FileText className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
                       </div>
-                      <h3 className="text-lg font-semibold text-[#37322F] dark:text-[#F5F5F4] mb-2">
+                      <h3 className="text-lg font-semibold text-[#101723] dark:text-[#D7DFE5] mb-2">
                         Lead Export
                       </h3>
-                      <p className="text-sm text-[#605A57] dark:text-[#A8A29E] mb-6 line-clamp-3">
+                      <p className="text-sm text-[#566273] dark:text-[#9BAABD] mb-6 line-clamp-3">
                         Download all captured email leads from visitors who interacted with your chatbots. Includes which bot they used and when they provided their email.
                       </p>
                     </div>
                     <Button
                       onClick={downloadLeadsReport}
                       disabled={isGeneratingLeadReport}
-                      className="w-full justify-center bg-white border border-[#E0DEDB] text-[#37322F] hover:bg-[#FAFAF9] dark:bg-[#292524] dark:border-[#44403C] dark:text-[#F5F5F4] dark:hover:bg-[#44403C]"
+                      className="w-full justify-center bg-[#F9FCFF] border border-[#D8DFE9] text-[#101723] hover:bg-[#F3F7FC] dark:bg-[#1A2533] dark:border-[#2B3646] dark:text-[#D7DFE5] dark:hover:bg-[#273444]"
                       icon={isGeneratingLeadReport ? LoaderCircle : Download}
                     >
                       {isGeneratingLeadReport ? "Generating..." : "Download CSV"}
@@ -1592,22 +1594,22 @@ const Dashboard: React.FC<DashboardProps> = ({ toggleSidebar, testMode }) => {
                   </div>
 
                   {/* Unanswered Queries Report */}
-                  <div className="bg-white dark:bg-[#1C1917] flex flex-col justify-between p-6 rounded-xl border border-[#E0DEDB] dark:border-[#44403C] shadow-sm hover:shadow-md transition-shadow">
+                  <div className="bg-[#F9FCFF] dark:bg-[#141D2B] flex flex-col justify-between p-6 rounded-xl border border-[#D8DFE9] dark:border-[#2B3646] shadow-sm hover:shadow-md transition-shadow">
                     <div>
                       <div className="w-12 h-12 bg-rose-50 dark:bg-rose-900/30 rounded-lg flex items-center justify-center mb-4 border border-rose-100 dark:border-rose-800">
                         <AlertTriangle className="w-6 h-6 text-rose-600 dark:text-rose-400" />
                       </div>
-                      <h3 className="text-lg font-semibold text-[#37322F] dark:text-[#F5F5F4] mb-2">
+                      <h3 className="text-lg font-semibold text-[#101723] dark:text-[#D7DFE5] mb-2">
                         Unanswered Queries
                       </h3>
-                      <p className="text-sm text-[#605A57] dark:text-[#A8A29E] mb-6 line-clamp-3">
+                      <p className="text-sm text-[#566273] dark:text-[#9BAABD] mb-6 line-clamp-3">
                         Identify holes in your chatbot's knowledge base. Download a list of questions that your bots failed to answer, perfect for training and adding new FAQs.
                       </p>
                     </div>
                     <Button
                       onClick={downloadUnansweredQueriesReport}
                       disabled={isGeneratingQueryReport}
-                      className="w-full justify-center bg-white border border-[#E0DEDB] text-[#37322F] hover:bg-[#FAFAF9] dark:bg-[#292524] dark:border-[#44403C] dark:text-[#F5F5F4] dark:hover:bg-[#44403C]"
+                      className="w-full justify-center bg-[#F9FCFF] border border-[#D8DFE9] text-[#101723] hover:bg-[#F3F7FC] dark:bg-[#1A2533] dark:border-[#2B3646] dark:text-[#D7DFE5] dark:hover:bg-[#273444]"
                       icon={isGeneratingQueryReport ? LoaderCircle : Download}
                     >
                       {isGeneratingQueryReport ? "Generating..." : "Download CSV"}
@@ -1620,34 +1622,34 @@ const Dashboard: React.FC<DashboardProps> = ({ toggleSidebar, testMode }) => {
           {activeTab === "notifications" && (
              <div className="space-y-6 max-w-4xl mx-auto">
                 <div>
-                  <h2 className="text-h2 font-bold text-[#37322F] dark:text-[#F5F5F4]">
+                  <h2 className="text-h2 font-bold text-[#101723] dark:text-[#D7DFE5]">
                     Notifications
                   </h2>
-                  <p className="text-[#605A57] dark:text-[#A8A29E] mt-1">
+                  <p className="text-[#566273] dark:text-[#9BAABD] mt-1">
                     Stay updated on new leads, unanswered queries, and recent feedback across your chatbots.
                   </p>
                 </div>
 
-                <div className="bg-white dark:bg-[#1C1917] rounded-xl border border-[#E0DEDB] dark:border-[#44403C] shadow-sm overflow-hidden">
+                <div className="bg-[#F9FCFF] dark:bg-[#141D2B] rounded-xl border border-[#D8DFE9] dark:border-[#2B3646] shadow-sm overflow-hidden">
                    {loadingNotifications ? (
                        <div className="flex justify-center items-center h-64">
-                          <LoaderCircle className="animate-spin text-[#37322F] dark:text-[#F5F5F4]" size={32} />
+                          <LoaderCircle className="animate-spin text-[#101723] dark:text-[#D7DFE5]" size={32} />
                        </div>
                    ) : notifications.length === 0 ? (
                        <div className="flex flex-col items-center justify-center p-12 text-center">
-                          <div className="w-16 h-16 bg-[#FAFAF9] dark:bg-[#292524] rounded-full flex items-center justify-center mb-6 shadow-sm border border-[#E0DEDB] dark:border-[#44403C]">
-                              <Clock className="w-8 h-8 text-[#605A57] dark:text-[#A8A29E]" />
+                          <div className="w-16 h-16 bg-[#F3F7FC] dark:bg-[#1A2533] rounded-full flex items-center justify-center mb-6 shadow-sm border border-[#D8DFE9] dark:border-[#2B3646]">
+                              <Clock className="w-8 h-8 text-[#566273] dark:text-[#9BAABD]" />
                           </div>
-                          <h3 className="text-lg font-medium text-[#37322F] dark:text-[#F5F5F4] mb-2">No new notifications</h3>
-                          <p className="text-[#605A57] dark:text-[#A8A29E] max-w-sm">
+                          <h3 className="text-lg font-medium text-[#101723] dark:text-[#D7DFE5] mb-2">No new notifications</h3>
+                          <p className="text-[#566273] dark:text-[#9BAABD] max-w-sm">
                              When your chatbots capture leads or face unanswered queries, they will appear here.
                           </p>
                        </div>
                    ) : (
                        <div className="flex flex-col">
-                           <ul className="divide-y divide-[#E0DEDB] dark:divide-[#44403C]">
+                           <ul className="divide-y divide-[#D8DFE9] dark:divide-[#2B3646]">
                               {currentNotifications.map((item) => (
-                                  <li key={item.id} className="p-4 hover:bg-[#FAFAF9] dark:hover:bg-[#292524] transition-colors flex items-start sm:items-center gap-4">
+                                  <li key={item.id} className="p-4 hover:bg-[#F3F7FC] dark:hover:bg-[#1A2533] transition-colors flex items-start sm:items-center gap-4">
                                       <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center border ${
                                          item.type === "lead" ? "bg-emerald-50 border-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:border-emerald-800 dark:text-emerald-400" :
                                          item.type === "unanswered" ? "bg-rose-50 border-rose-100 text-rose-600 dark:bg-rose-900/30 dark:border-rose-800 dark:text-rose-400" :
@@ -1661,14 +1663,14 @@ const Dashboard: React.FC<DashboardProps> = ({ toggleSidebar, testMode }) => {
                                       </div>
                                       <div className="flex-1 min-w-0 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-4">
                                          <div>
-                                            <p className="text-sm font-medium text-[#37322F] dark:text-[#F5F5F4] truncate">
-                                                {item.title} <span className="font-normal text-[#605A57] dark:text-[#A8A29E] mx-1">•</span> <span className="text-xs font-normal text-[#605A57] dark:text-[#A8A29E]">{item.chatbotName}</span>
+                                            <p className="text-sm font-medium text-[#101723] dark:text-[#D7DFE5] truncate">
+                                                {item.title} <span className="font-normal text-[#566273] dark:text-[#9BAABD] mx-1">•</span> <span className="text-xs font-normal text-[#566273] dark:text-[#9BAABD]">{item.chatbotName}</span>
                                             </p>
-                                            <p className="text-sm text-[#605A57] dark:text-[#A8A29E] truncate">
+                                            <p className="text-sm text-[#566273] dark:text-[#9BAABD] truncate">
                                                 {item.description}
                                             </p>
                                          </div>
-                                         <div className="text-xs text-[#A8A29E] dark:text-[#78716C] whitespace-nowrap flex-shrink-0">
+                                         <div className="text-xs text-[#647184] dark:text-[#9BAABD] whitespace-nowrap flex-shrink-0">
                                              {item.timestamp.getTime() === 0 ? "No date" : format(item.timestamp, "MMM d, yyyy 'at' h:mm a")}
                                          </div>
                                       </div>
@@ -1678,12 +1680,12 @@ const Dashboard: React.FC<DashboardProps> = ({ toggleSidebar, testMode }) => {
                            
                            {/* Pagination Controls */}
                            {notifications.length > notificationsPerPage && (
-                               <div className="p-4 border-t border-[#E0DEDB] dark:border-[#44403C] bg-[#FAFAF9] dark:bg-[#292524] flex justify-center">
+                               <div className="p-4 border-t border-[#D8DFE9] dark:border-[#2B3646] bg-[#F3F7FC] dark:bg-[#1A2533] flex justify-center">
                                    <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
                                        <button
                                            onClick={() => paginateNotifications(notificationsCurrentPage - 1)}
                                            disabled={notificationsCurrentPage === 1}
-                                           className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-[#E0DEDB] bg-white text-sm font-medium text-[#605A57] hover:bg-[#FAFAF9] disabled:opacity-50 disabled:cursor-not-allowed dark:bg-[#1C1917] dark:border-[#44403C] dark:text-[#A8A29E] dark:hover:bg-[#292524]"
+                                           className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-[#D8DFE9] bg-[#F9FCFF] text-sm font-medium text-[#566273] hover:bg-[#F3F7FC] disabled:opacity-50 disabled:cursor-not-allowed dark:bg-[#141D2B] dark:border-[#2B3646] dark:text-[#9BAABD] dark:hover:bg-[#1A2533]"
                                        >
                                            <span className="sr-only">Previous</span>
                                            <ChevronLeft className="h-5 w-5" aria-hidden="true" />
@@ -1703,8 +1705,8 @@ const Dashboard: React.FC<DashboardProps> = ({ toggleSidebar, testMode }) => {
                                                        onClick={() => paginateNotifications(pageNum)}
                                                        className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
                                                        notificationsCurrentPage === pageNum
-                                                           ? "z-10 bg-[#37322F] border-[#37322F] text-white dark:bg-[#F5F5F4] dark:border-[#F5F5F4] dark:text-[#1C1917]"
-                                                           : "bg-white border-[#E0DEDB] text-[#605A57] hover:bg-[#FAFAF9] dark:bg-[#1C1917] dark:border-[#44403C] dark:text-[#A8A29E] dark:hover:bg-[#292524]"
+                                                           ? "z-10 bg-[#101723] border-[#101723] text-white dark:bg-[#D7DFE5] dark:border-[#D7DFE5] dark:text-[#141D2B]"
+                                                           : "bg-[#F9FCFF] border-[#D8DFE9] text-[#566273] hover:bg-[#F3F7FC] dark:bg-[#141D2B] dark:border-[#2B3646] dark:text-[#9BAABD] dark:hover:bg-[#1A2533]"
                                                        }`}
                                                    >
                                                        {pageNum}
@@ -1714,14 +1716,14 @@ const Dashboard: React.FC<DashboardProps> = ({ toggleSidebar, testMode }) => {
                                                (pageNum === notificationsCurrentPage - 2 && pageNum > 1) ||
                                                (pageNum === notificationsCurrentPage + 2 && pageNum < totalPages)
                                            ) {
-                                              return <span key={index} className="relative inline-flex items-center px-4 py-2 border border-[#E0DEDB] bg-white text-sm font-medium text-[#605A57] dark:bg-[#1C1917] dark:border-[#44403C] dark:text-[#A8A29E]">...</span>;
+                                              return <span key={index} className="relative inline-flex items-center px-4 py-2 border border-[#D8DFE9] bg-[#F9FCFF] text-sm font-medium text-[#566273] dark:bg-[#141D2B] dark:border-[#2B3646] dark:text-[#9BAABD]">...</span>;
                                            }
                                            return null;
                                        })}
                                        <button
                                            onClick={() => paginateNotifications(notificationsCurrentPage + 1)}
                                            disabled={notificationsCurrentPage === Math.ceil(notifications.length / notificationsPerPage)}
-                                           className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-[#E0DEDB] bg-white text-sm font-medium text-[#605A57] hover:bg-[#FAFAF9] disabled:opacity-50 disabled:cursor-not-allowed dark:bg-[#1C1917] dark:border-[#44403C] dark:text-[#A8A29E] dark:hover:bg-[#292524]"
+                                           className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-[#D8DFE9] bg-[#F9FCFF] text-sm font-medium text-[#566273] hover:bg-[#F3F7FC] disabled:opacity-50 disabled:cursor-not-allowed dark:bg-[#141D2B] dark:border-[#2B3646] dark:text-[#9BAABD] dark:hover:bg-[#1A2533]"
                                        >
                                            <span className="sr-only">Next</span>
                                            <ChevronRight className="h-5 w-5" aria-hidden="true" />
@@ -1745,7 +1747,7 @@ const Dashboard: React.FC<DashboardProps> = ({ toggleSidebar, testMode }) => {
         cancelText="Cancel"
         confirmButtonClass="bg-red-600 text-white hover:bg-red-700 shadow-md dark:bg-red-500 dark:hover:bg-red-600 focus:ring-red-500 dark:focus:ring-red-400"
       >
-        <p className="text-[#605A57] dark:text-gray-300">
+        <p className="text-[#566273] dark:text-[#D7DFE5]">
           Are you sure you want to delete this chatbot? This action cannot be
           undone.
         </p>
@@ -1758,17 +1760,17 @@ const Dashboard: React.FC<DashboardProps> = ({ toggleSidebar, testMode }) => {
         confirmText="Copy to Clipboard"
         cancelText="Close"
         onConfirm={copyEmbedCode}
-        confirmButtonClass="bg-[#37322F] text-white hover:bg-[#2a2522] shadow-md dark:bg-[#F5F5F4] dark:text-[#1C1917] dark:hover:bg-[#E7E5E4] focus:ring-[#37322F] dark:focus:ring-[#F5F5F4]"
+        confirmButtonClass="bg-[#101723] text-white hover:bg-[#243040] shadow-md dark:bg-[#D7DFE5] dark:text-[#141D2B] dark:hover:bg-[#E7EDF6] focus:ring-[#101723] dark:focus:ring-[#D7DFE5]"
       >
-        <p className="text-sm text-[#605A57] dark:text-gray-400 mb-4">
+        <p className="text-sm text-[#566273] dark:text-[#87909D] mb-4">
           Copy and paste this code into your website to embed the chatbot.
         </p>
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-[#FAFAF9] border border-[#E0DEDB] dark:bg-[#44403C] dark:border-[#57534E] p-3 rounded-md overflow-x-auto"
+          className="bg-[#F3F7FC] border border-[#D8DFE9] dark:bg-[#273444] dark:border-[#39485B] p-3 rounded-md overflow-x-auto"
         >
-          <pre className="text-sm text-[#37322F] dark:text-[#F5F5F4] whitespace-pre-wrap font-mono">
+          <pre className="text-sm text-[#101723] dark:text-[#D7DFE5] whitespace-pre-wrap font-mono">
             {selectedChatbotId && generateEmbedCode(selectedChatbotId)}
           </pre>
         </motion.div>

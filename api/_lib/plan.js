@@ -1,4 +1,5 @@
 import { adminDb } from "./firebaseAdmin.js";
+import { PRO_AI_REPLY_LIMIT } from "./aiUsage.js";
 
 function hasPaidAccessUntilPeriodEnd(subscriptionStatus, currentPeriodEnd) {
   if (!["cancelled", "canceled"].includes(String(subscriptionStatus || "").toLowerCase())) {
@@ -36,6 +37,10 @@ function buildAccessProfile(userData = {}) {
     plan,
     subscriptionStatus,
     aiChatbotLimit: userData.aiChatbotLimit ?? defaultLimit,
+    // Monthly AI replies across all chatbots; Enterprise is uncapped unless set.
+    aiReplyLimit:
+      userData.aiReplyLimit ??
+      (plan === "enterprise" ? Number.MAX_SAFE_INTEGER : plan === "pro" ? PRO_AI_REPLY_LIMIT : 0),
     isSubscriptionActive:
       plan === "free" ||
       ["active", "trialing", "on_trial"].includes(subscriptionStatus) ||
@@ -141,10 +146,11 @@ export async function assertChatbotAiAvailable(chatbotId) {
     forbidden("AI is not enabled for this chatbot.");
   }
 
-  await assertCanUseAiForOwner(chatbotData.user_id);
+  const ownerProfile = await assertCanUseAiForOwner(chatbotData.user_id);
 
   return {
     chatbotId: chatbotSnap.id,
     chatbotData,
+    ownerProfile,
   };
 }
