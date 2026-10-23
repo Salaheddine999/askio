@@ -8,8 +8,9 @@ import {
   reauthenticateWithCredential,
   GoogleAuthProvider,
   reauthenticateWithPopup,
+  signOut,
 } from "firebase/auth";
-import { doc, getDoc, updateDoc, deleteDoc } from "firebase/firestore";
+import { doc, getDoc, updateDoc } from "firebase/firestore";
 import {
   Edit2,
   Save,
@@ -36,7 +37,7 @@ import { Helmet } from "react-helmet-async";
 import { FormPageSkeleton } from "../components/Skeleton";
 import { redirectToBillingPortal, redirectToProCheckout } from "../utils/billing";
 
-const Settings: React.FC<{ toggleSidebar: () => void }> = ({}) => {
+const Settings: React.FC<{ toggleSidebar: () => void }> = () => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
@@ -159,14 +160,23 @@ const Settings: React.FC<{ toggleSidebar: () => void }> = ({}) => {
           );
           await reauthenticateWithCredential(user, credential);
         }
-        await deleteDoc(doc(db, "users", user.uid));
-        await user.delete();
-        toast.success("Account deleted successfully");
+        // The server removes every record tied to the account (chatbots,
+        // visitor data, usage, integrations) and then the login itself.
+        const token = await user.getIdToken(true);
+        const response = await fetch("/api/account/delete", {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const payload = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(payload.error || "Failed to delete account.");
+
+        await signOut(auth).catch(() => undefined);
+        toast.success("Your account and all its data have been deleted");
         navigate("/");
       }
     } catch (error) {
       console.error("Error deleting account:", error);
-      toast.error("Failed to delete account. Please try again.");
+      toast.error(error instanceof Error && error.message ? error.message : "Failed to delete account. Please try again.");
     }
   };
 
@@ -583,8 +593,9 @@ const Settings: React.FC<{ toggleSidebar: () => void }> = ({}) => {
         confirmButtonClass="bg-red-600 text-white hover:bg-red-700 shadow-md"
       >
         <p className="mb-4 text-[#566273] dark:text-[#D7DFE5]">
-          Are you sure you want to delete your account? This action cannot be
-          undone.
+          This permanently deletes your account, your chatbots and everything they
+          collected (leads, questions, feedback and analytics), and cancels any active
+          subscription. Chatbots embedded on your sites will stop working. This cannot be undone.
         </p>
         {!isGoogleAccount && (
           <Input

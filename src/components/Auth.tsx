@@ -6,6 +6,7 @@ import {
   signInWithEmailAndPassword,
   GoogleAuthProvider,
   signInWithPopup,
+  sendPasswordResetEmail,
 } from "firebase/auth";
 import { doc, setDoc, getDoc } from "firebase/firestore";
 import { toast } from "react-hot-toast";
@@ -18,7 +19,8 @@ const Auth: React.FC = () => {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [mode, setMode] = useState<"login" | "register">("login");
+  const [mode, setMode] = useState<"login" | "register" | "reset">("login");
+  const [resetSent, setResetSent] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -32,6 +34,47 @@ const Auth: React.FC = () => {
     }
 
     navigate("/dashboard");
+  };
+
+  const switchMode = (next: "login" | "register" | "reset") => {
+    setMode(next);
+    setError(null);
+    setResetSent(false);
+  };
+
+  // Firebase sends the reset email. The result looks the same whether or not the
+  // address has an account, so this form can't be used to find out who's signed up.
+  const handleReset = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError(null);
+    try {
+      try {
+        await sendPasswordResetEmail(auth, email, { url: `${window.location.origin}/auth` });
+      } catch (err: unknown) {
+        const code = (err as { code?: string }).code || "";
+        // The return link needs an authorised domain; without it, send a plain reset email.
+        if (code === "auth/unauthorized-continue-uri" || code === "auth/invalid-continue-uri") {
+          await sendPasswordResetEmail(auth, email);
+        } else {
+          throw err;
+        }
+      }
+      setResetSent(true);
+    } catch (err: unknown) {
+      const code = (err as { code?: string }).code || "";
+      if (code === "auth/user-not-found") {
+        setResetSent(true);
+      } else if (code === "auth/invalid-email") {
+        setError("Please enter a valid email address.");
+      } else if (code === "auth/too-many-requests") {
+        setError("Too many attempts. Please wait a moment and try again.");
+      } else {
+        setError("We couldn't send the email. Please try again.");
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleAuth = async (e: React.FormEvent) => {
@@ -125,18 +168,20 @@ const Auth: React.FC = () => {
             <AnimatePresence mode="wait">
               <motion.div
                 key={mode}
-                initial={{ opacity: 0, x: mode === "login" ? -8 : 8 }}
+                initial={{ opacity: 0, x: mode === "register" ? 8 : -8 }}
                 animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: mode === "login" ? 8 : -8 }}
+                exit={{ opacity: 0, x: mode === "register" ? -8 : 8 }}
                 transition={{ duration: 0.15 }}
               >
                 <h2 className="text-xl font-serif text-[#101723] dark:text-[#D7DFE5] tracking-tight">
-                  {mode === "login" ? "Welcome back" : "Create account"}
+                  {mode === "login" ? "Welcome back" : mode === "register" ? "Create account" : "Reset your password"}
                 </h2>
                 <p className="text-[13px] text-[#647184] dark:text-[#9BAABD] mt-1">
                   {mode === "login"
                     ? "Sign in to your dashboard"
-                    : "Start building chatbots for free"}
+                    : mode === "register"
+                      ? "Start building chatbots for free"
+                      : "We'll email you a link to choose a new one"}
                 </p>
               </motion.div>
             </AnimatePresence>
@@ -172,6 +217,8 @@ const Auth: React.FC = () => {
               )}
             </AnimatePresence>
 
+            {mode !== "reset" && (
+              <>
             {/* Google OAuth */}
             <button
               onClick={handleOAuth}
@@ -212,9 +259,31 @@ const Auth: React.FC = () => {
                 </span>
               </div>
             </div>
+              </>
+            )}
 
-            {/* Form */}
-            <form onSubmit={handleAuth} className="space-y-3">
+            {mode === "reset" && resetSent ? (
+              <div className="text-center">
+                <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-full bg-emerald-50 text-emerald-600 dark:bg-emerald-900/25 dark:text-emerald-400">
+                  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l9 6 9-6M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                  </svg>
+                </div>
+                <p className="text-[14px] font-medium text-[#101723] dark:text-[#D7DFE5]">Check your inbox</p>
+                <p className="mt-1 text-[13px] leading-relaxed text-[#647184] dark:text-[#9BAABD]">
+                  If an account exists for <span className="font-medium text-[#101723] dark:text-[#D7DFE5]">{email}</span>, you'll
+                  get a link to reset your password in a few minutes. Check your spam folder if you don't see it.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => switchMode("login")}
+                  className="mt-5 w-full rounded-xl border border-[#D8DFE9] bg-[#F9FCFF] px-4 py-2.5 text-[13px] font-medium text-[#101723] transition-colors hover:bg-[#F3F7FC] dark:border-[#2B3646] dark:bg-[#141D2B] dark:text-[#D7DFE5] dark:hover:bg-[#1A2533]"
+                >
+                  Back to sign in
+                </button>
+              </div>
+            ) : (
+            <form onSubmit={mode === "reset" ? handleReset : handleAuth} className="space-y-3">
               <div>
                 <label
                   htmlFor="email"
@@ -233,13 +302,25 @@ const Auth: React.FC = () => {
                 />
               </div>
 
+              {mode !== "reset" && (
               <div>
-                <label
-                  htmlFor="password"
-                  className="block text-[11px] font-semibold text-[#566273] dark:text-[#9BAABD] mb-1 uppercase tracking-wider"
-                >
-                  Password
-                </label>
+                <div className="mb-1 flex items-center justify-between">
+                  <label
+                    htmlFor="password"
+                    className="block text-[11px] font-semibold text-[#566273] dark:text-[#9BAABD] uppercase tracking-wider"
+                  >
+                    Password
+                  </label>
+                  {mode === "login" && (
+                    <button
+                      type="button"
+                      onClick={() => switchMode("reset")}
+                      className="text-[12px] font-medium text-[#566273] hover:text-[#101723] hover:underline dark:text-[#9BAABD] dark:hover:text-[#D7DFE5]"
+                    >
+                      Forgot password?
+                    </button>
+                  )}
+                </div>
                 <input
                   id="password"
                   type="password"
@@ -250,6 +331,7 @@ const Auth: React.FC = () => {
                   className="w-full px-3.5 py-2.5 border border-[#D8DFE9] dark:border-[#2B3646] rounded-xl focus:ring-2 focus:ring-[#101723]/15 dark:focus:ring-[#D7DFE5]/15 focus:border-[#101723] dark:focus:border-[#D7DFE5] transition-all duration-200 bg-[#F3F7FC] dark:bg-[#141D2B] text-[#101723] dark:text-[#D7DFE5] text-[13px] placeholder-[#647184] dark:placeholder-[#87909D] outline-none"
                 />
               </div>
+              )}
 
               <button
                 type="submit"
@@ -281,21 +363,53 @@ const Auth: React.FC = () => {
                   </span>
                 ) : (
                   <span>
-                    {mode === "login" ? "Sign In" : "Create Account"}
+                    {mode === "login" ? "Sign In" : mode === "register" ? "Create Account" : "Send reset link"}
                   </span>
                 )}
               </button>
             </form>
+            )}
+
+            {mode === "reset" && !resetSent && (
+              <p className="mt-4 text-center text-[11.5px] leading-relaxed text-[#647184] dark:text-[#9BAABD]">
+                Signed up with Google? Use &quot;Continue with Google&quot; on the sign-in screen instead.
+              </p>
+            )}
+
+            {/* Google sign-in can also create an account, so this shows on sign-in and sign-up. */}
+            {mode !== "reset" && (
+            <p className="mt-4 text-center text-[11.5px] leading-relaxed text-[#647184] dark:text-[#9BAABD]">
+              By continuing, you agree to our{" "}
+              <Link to="/terms" className="font-medium text-[#101723] underline underline-offset-2 hover:no-underline dark:text-[#D7DFE5]">
+                Terms of Service
+              </Link>{" "}
+              and{" "}
+              <Link to="/privacy" className="font-medium text-[#101723] underline underline-offset-2 hover:no-underline dark:text-[#D7DFE5]">
+                Privacy Policy
+              </Link>
+              .
+            </p>
+            )}
           </div>
 
           {/* Footer */}
           <div className="px-6 py-4 bg-[#F3F7FC] dark:bg-[#141D2B] border-t border-[rgba(16,23,35,0.06)] dark:border-[#2B3646]">
             <p className="text-center text-[13px] text-[#647184] dark:text-[#9BAABD]">
-              {mode === "login" ? (
+              {mode === "reset" ? (
+                <span>
+                  Remembered it?{" "}
+                  <button
+                    onClick={() => switchMode("login")}
+                    className="text-[#101723] dark:text-[#D7DFE5] font-semibold hover:underline"
+                  >
+                    Sign in
+                  </button>
+                </span>
+              ) : mode === "login" ? (
                 <span>
                   Don't have an account?{" "}
                   <button
-                    onClick={() => setMode("register")}
+                    onClick={() => switchMode("register")}
                     className="text-[#101723] dark:text-[#D7DFE5] font-semibold hover:underline"
                   >
                     Sign up
@@ -305,7 +419,7 @@ const Auth: React.FC = () => {
                 <span>
                   Already have an account?{" "}
                   <button
-                    onClick={() => setMode("login")}
+                    onClick={() => switchMode("login")}
                     className="text-[#101723] dark:text-[#D7DFE5] font-semibold hover:underline"
                   >
                     Sign in

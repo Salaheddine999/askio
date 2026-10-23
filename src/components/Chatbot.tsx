@@ -1,6 +1,6 @@
 import brandLogo from "../assets/logo.svg";
 import React, { useState, useEffect, useRef, useMemo } from "react";
-import { Send, X, ThumbsUp, ThumbsDown, MessageSquare } from "lucide-react";
+import { Send, X, ThumbsUp, ThumbsDown, MessageSquare, Sparkles, Bot } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Fuse from "fuse.js";
 import { db } from "../utils/firebase";
@@ -776,10 +776,19 @@ const Chatbot: React.FC<ChatbotProps> = ({
               <div className="absolute inset-0 rounded-full bg-emerald-400 animate-ping opacity-40" />
             </div>
           </div>
-          <div>
-            <h2 className="font-bold text-base leading-tight tracking-[-0.01em]">{title || "Askio Assistant"}</h2>
+          <div className="min-w-0">
+            <h2 className="truncate font-bold text-base leading-tight tracking-[-0.01em]">{title || "Askio Assistant"}</h2>
             <div className="flex items-center gap-1.5 mt-0.5">
-              <span className="text-[11px] text-white/60 font-medium">Online</span>
+              {/* Visitors should always know they aren't talking to a person (EU AI Act, art. 50).
+                  The green dot on the avatar already shows the chat is online. */}
+              <span className="flex items-center gap-1 text-[11px] font-medium text-white/75">
+                {aiEnabled ? (
+                  <Sparkles size={11} strokeWidth={2.25} className="shrink-0" aria-hidden="true" />
+                ) : (
+                  <Bot size={12} strokeWidth={2.25} className="shrink-0" aria-hidden="true" />
+                )}
+                {aiEnabled ? "AI assistant" : "Automated assistant"}
+              </span>
               <span className="text-white/30">·</span>
               <span className="text-[11px] text-white/50" aria-live="polite">{statusText}</span>
             </div>

@@ -375,116 +375,114 @@ function BrandShowcasePreview() {
         </AnimatePresence>
       </div>
 
-      {/* Floating editor toolbar */}
-      <AnimatePresence>
-        {editing ? (
-          <motion.div
-            key="toolbar"
-            initial={{ opacity: 0, y: -8, scale: 0.96 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -8, scale: 0.96 }}
-            transition={{ duration: 0.25, ease: "easeOut" }}
-            className="absolute right-3 top-[42px] z-20"
-          >
-            <div className="flex items-center gap-0.5 rounded-full bg-[#101723] p-1 pl-2 shadow-[0_10px_24px_-10px_rgba(16,23,35,0.6)] ring-1 ring-white/10 dark:bg-[#0B111B]">
-              <div role="radiogroup" aria-label="Widget colour" className="flex items-center gap-1 pr-1">
-                {EDIT_COLORS.map((c, i) => {
-                  const selected = i === color;
-                  return (
-                    <button
-                      key={c.value}
-                      ref={(el) => {
-                        swatchRefs.current[i] = el;
-                      }}
-                      type="button"
-                      role="radio"
-                      aria-checked={selected}
-                      aria-label={c.name}
-                      onClick={() => {
-                        takeOver();
-                        setTool("color");
-                        setColor(i);
-                      }}
-                      className="relative flex h-5 w-5 items-center justify-center rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-white/60"
-                    >
-                      {selected ? (
-                        <motion.span layoutId="edit-swatch" transition={editSpring} className="absolute inset-0 rounded-full ring-[1.5px] ring-white" />
-                      ) : null}
-                      <span
-                        className="h-3 w-3 rounded-full ring-1 ring-white/25"
-                        style={{ backgroundColor: c.value === "#101723" ? "#3A4659" : c.value }}
-                      />
-                    </button>
-                  );
-                })}
-              </div>
-              <span className="mx-0.5 h-4 w-px bg-white/15" aria-hidden="true" />
-              <button
-                ref={greetingButtonRef}
-                type="button"
-                aria-label="Next greeting"
-                onClick={() => {
-                  takeOver();
-                  setTool("text");
-                  setGreeting((g) => (g + 1) % EDIT_GREETINGS.length);
-                }}
-                className={toolButton(tool === "text")}
-              >
-                {tool === "text" ? (
-                  <motion.span layoutId="edit-tool" transition={editSpring} className="absolute inset-0 rounded-md bg-white/15" />
-                ) : null}
-                <Type className="relative h-3 w-3" />
-              </button>
-              <span className="mx-0.5 h-4 w-px bg-white/15" aria-hidden="true" />
-              <div role="radiogroup" aria-label="Widget position" className="flex items-center">
-                {(["left", "right"] as const).map((s) => {
-                  const SideIcon = s === "left" ? PanelLeft : PanelRight;
-                  return (
-                    <button
-                      key={s}
-                      ref={(el) => {
-                        sideRefs.current[s] = el;
-                      }}
-                      type="button"
-                      role="radio"
-                      aria-checked={side === s}
-                      aria-label={s === "left" ? "Bottom left" : "Bottom right"}
-                      onClick={() => {
-                        takeOver();
-                        setTool("side");
-                        setSide(s);
-                      }}
-                      className={toolButton(side === s)}
-                    >
-                      {side === s ? (
-                        <motion.span layoutId="edit-side" transition={editSpring} className="absolute inset-0 rounded-md bg-white/15" />
-                      ) : null}
-                      <SideIcon className="relative h-3 w-3" />
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          </motion.div>
-        ) : null}
-      </AnimatePresence>
-
       {/* The chat widget */}
-      <div
-        aria-hidden="true"
-        className={`absolute inset-x-3 bottom-3 z-10 flex flex-col gap-2 ${onLeft ? "items-start" : "items-end"}`}
-      >
+      <div className={`absolute inset-x-3 bottom-2 z-10 flex flex-col gap-2 ${onLeft ? "items-start" : "items-end"}`}>
+        {/* Editor toolbar: attached above the widget, so it keeps its distance and follows it across */}
+        <AnimatePresence>
+          {editing ? (
+            <motion.div
+              key="toolbar"
+              initial={{ opacity: 0, y: -8, scale: 0.96 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -8, scale: 0.96 }}
+              layout
+              transition={{ duration: 0.25, ease: "easeOut", layout: editSpring }}
+              className="relative z-20"
+            >
+              <div className="flex items-center gap-0.5 rounded-full bg-[#101723] p-1 pl-2 shadow-[0_10px_24px_-10px_rgba(16,23,35,0.6)] ring-1 ring-white/10 dark:bg-[#0B111B]">
+                <div role="radiogroup" aria-label="Widget colour" className="flex items-center gap-1 pr-1">
+                  {EDIT_COLORS.map((c, i) => {
+                    const selected = i === color;
+                    return (
+                      <button
+                        key={c.value}
+                        ref={(el) => {
+                          swatchRefs.current[i] = el;
+                        }}
+                        type="button"
+                        role="radio"
+                        aria-checked={selected}
+                        aria-label={c.name}
+                        onClick={() => {
+                          takeOver();
+                          setTool("color");
+                          setColor(i);
+                        }}
+                        className="relative flex h-5 w-5 items-center justify-center rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-white/60"
+                      >
+                        {selected ? (
+                          <motion.span layoutId="edit-swatch" transition={editSpring} className="absolute inset-0 rounded-full ring-[1.5px] ring-white" />
+                        ) : null}
+                        <span
+                          className="h-3 w-3 rounded-full ring-1 ring-white/25"
+                          style={{ backgroundColor: c.value === "#101723" ? "#3A4659" : c.value }}
+                        />
+                      </button>
+                    );
+                  })}
+                </div>
+                <span className="mx-0.5 h-4 w-px bg-white/15" aria-hidden="true" />
+                <button
+                  ref={greetingButtonRef}
+                  type="button"
+                  aria-label="Next greeting"
+                  onClick={() => {
+                    takeOver();
+                    setTool("text");
+                    setGreeting((g) => (g + 1) % EDIT_GREETINGS.length);
+                  }}
+                  className={toolButton(tool === "text")}
+                >
+                  {tool === "text" ? (
+                    <motion.span layoutId="edit-tool" transition={editSpring} className="absolute inset-0 rounded-md bg-white/15" />
+                  ) : null}
+                  <Type className="relative h-3 w-3" />
+                </button>
+                <span className="mx-0.5 h-4 w-px bg-white/15" aria-hidden="true" />
+                <div role="radiogroup" aria-label="Widget position" className="flex items-center">
+                  {(["left", "right"] as const).map((s) => {
+                    const SideIcon = s === "left" ? PanelLeft : PanelRight;
+                    return (
+                      <button
+                        key={s}
+                        ref={(el) => {
+                          sideRefs.current[s] = el;
+                        }}
+                        type="button"
+                        role="radio"
+                        aria-checked={side === s}
+                        aria-label={s === "left" ? "Bottom left" : "Bottom right"}
+                        onClick={() => {
+                          takeOver();
+                          setTool("side");
+                          setSide(s);
+                        }}
+                        className={toolButton(side === s)}
+                      >
+                        {side === s ? (
+                          <motion.span layoutId="edit-side" transition={editSpring} className="absolute inset-0 rounded-md bg-white/15" />
+                        ) : null}
+                        <SideIcon className="relative h-3 w-3" />
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </motion.div>
+          ) : null}
+        </AnimatePresence>
         <AnimatePresence>
           {widgetOpen ? (
             <motion.div
               key="widget"
+              aria-hidden="true"
               layout
               initial={{ opacity: 0, scale: 0.85, y: 12 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 8 }}
               transition={editSpring}
               style={{ transformOrigin: onLeft ? "bottom left" : "bottom right" }}
-              className="relative w-[62%] max-w-[210px] rounded-xl border border-black/5 bg-white shadow-[0_16px_34px_-14px_rgba(16,23,35,0.45)]"
+              className="relative w-[78%] max-w-[210px] rounded-xl border border-black/5 bg-white shadow-[0_16px_34px_-14px_rgba(16,23,35,0.45)]"
             >
               {/* Dashed outline while the editor has the widget selected */}
               <AnimatePresence>
@@ -525,7 +523,7 @@ function BrandShowcasePreview() {
                     <span className="ml-px inline-block h-2.5 w-px translate-y-0.5 animate-pulse bg-[#101723]" />
                   ) : null}
                 </p>
-                <div className="flex min-h-[44px] flex-col items-start gap-1">
+                <div className="flex flex-wrap gap-1">
                   {SITE_FACTS.map((fact, i) =>
                     answers > i ? (
                       <motion.span
@@ -555,7 +553,8 @@ function BrandShowcasePreview() {
         <motion.span
           layout
           transition={editSpring}
-          className="relative flex h-8 w-8 items-center justify-center overflow-hidden rounded-full text-white shadow-[0_8px_18px_-6px_rgba(16,23,35,0.45)] ring-1 ring-black/5 dark:ring-white/20"
+          aria-hidden="true"
+          className="relative mt-1 flex h-8 w-8 items-center justify-center overflow-hidden rounded-full text-white shadow-[0_8px_18px_-6px_rgba(16,23,35,0.45)] ring-1 ring-black/5 dark:ring-white/20"
         >
           <ColorSweep color={accent} />
           <AnimatePresence mode="wait" initial={false}>
