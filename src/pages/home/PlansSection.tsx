@@ -146,7 +146,7 @@ export default function PlansSection() {
       id="plans"
       className="border-t border-b border-[rgba(16,23,35,0.12)] dark:border-[#2B3646]"
     >
-      <div className="py-16 sm:py-20 flex flex-col items-center text-center px-4">
+      <div className="pt-16 pb-8 sm:pt-20 sm:pb-10 flex flex-col items-center text-center px-4">
         <Badge text="Plans" />
         <h2 className="mt-5 text-[clamp(2rem,4vw,3rem)] leading-[1.1] font-serif tracking-tight [text-wrap:balance] text-[#101723] dark:text-[#D7DFE5]">
           Start free. Add AI when you need it.
@@ -154,7 +154,7 @@ export default function PlansSection() {
         <p className="mt-3 text-[#566273] dark:text-[#9BAABD] text-body max-w-xl">
           Starter uses the answers you write. Pro adds AI tools to help you build and customize faster.
         </p>
-        <div className="mt-8">
+        <div className="mt-7">
           <BillingToggle value={billingInterval} onChange={setBillingInterval} layoutId="home-billing-toggle" />
         </div>
       </div>
