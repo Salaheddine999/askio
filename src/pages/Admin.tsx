@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { format, formatDistanceToNowStrict } from "date-fns";
@@ -7,7 +7,7 @@ import { Bot, Ban, RefreshCw, ShieldCheck, Sparkles, UserPlus, Users } from "luc
 import StatsCard from "../components/StatsCard";
 import { PageSkeleton, Skeleton } from "../components/Skeleton";
 import { useIsAdmin } from "../hooks/useIsAdmin";
-import { EmptyState, SearchInput, focusRing, secondaryButton, surface } from "./dashboard/ui";
+import { EmptyState, Pagination, SearchInput, focusRing, secondaryButton, surface } from "./dashboard/ui";
 import {
   AdminUser,
   LogEntry,
@@ -16,7 +16,10 @@ import {
   fetchLog,
   fetchOverview,
   fetchTopUsage,
-  fetchUsers,
+  PAGE_SIZE,
+  countUsers,
+  fetchUsersAfter,
+  toAdminUser,
 } from "./admin/data";
 import AccountPanel from "./admin/AccountPanel";
 import { PlanBadge, UsageBar } from "./admin/parts";
@@ -50,12 +53,43 @@ const Admin: React.FC = () => {
   const [usage, setUsage] = useState<UsageRow[] | null>(null);
   const [log, setLog] = useState<LogEntry[] | null>(null);
   const [users, setUsers] = useState<AdminUser[] | null>(null);
-  const [cursor, setCursor] = useState<QueryDocumentSnapshot | null>(null);
-  const [hasMore, setHasMore] = useState(false);
-  const [loadingMore, setLoadingMore] = useState(false);
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState<number | null>(null);
+  const [pageLoading, setPageLoading] = useState(false);
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  const accountsRef = useRef<HTMLDivElement>(null);
+
+  // Firestore can't skip to page N, so remember where each loaded page ends
+  // and start the next fetch after the furthest one known. Reset on search.
+  const pageEnds = useRef<(QueryDocumentSnapshot | null)[]>([]);
+  const pageCache = useRef(new Map<number, AdminUser[]>());
+  const latestRequest = useRef(0);
+
+  const showPage = useCallback(async (term: string, target: number, fresh = false) => {
+    if (fresh) {
+      pageEnds.current = [];
+      pageCache.current = new Map();
+    }
+    const request = ++latestRequest.current;
+    const cached = pageCache.current.get(target);
+    if (cached) {
+      setUsers(cached);
+      setPage(target);
+      return;
+    }
+    const known = Math.min(pageEnds.current.length, target - 1);
+    const docs = await fetchUsersAfter(term, known > 0 ? pageEnds.current[known - 1] : null, (target - known) * PAGE_SIZE);
+    if (request !== latestRequest.current) return;
+    for (let p = known + 1; p <= target; p++) {
+      const slice = docs.slice((p - known - 1) * PAGE_SIZE, (p - known) * PAGE_SIZE);
+      pageCache.current.set(p, slice.map((d) => toAdminUser(d.id, d.data())));
+      pageEnds.current[p - 1] = slice[slice.length - 1] ?? null;
+    }
+    setUsers(pageCache.current.get(target) ?? []);
+    setPage(target);
+  }, []);
 
   const loadSummary = useCallback(async () => {
     const [o, u, l] = await Promise.allSettled([fetchOverview(), fetchTopUsage(), fetchLog()]);
@@ -69,17 +103,14 @@ const Admin: React.FC = () => {
     if (isAdmin) void loadSummary();
   }, [isAdmin, loadSummary]);
 
-  // Searches as you type, after a short pause.
+  // Searches as you type, after a short pause, back on page 1.
   useEffect(() => {
     if (!isAdmin) return;
     let cancelled = false;
     const timer = window.setTimeout(async () => {
       try {
-        const page = await fetchUsers(search);
-        if (cancelled) return;
-        setUsers(page.users);
-        setCursor(page.last);
-        setHasMore(page.hasMore);
+        const [count] = await Promise.all([countUsers(search), showPage(search, 1, true)]);
+        if (!cancelled) setTotal(count);
       } catch (error) {
         console.error("Failed to load accounts:", error);
         if (!cancelled) setUsers([]);
@@ -89,35 +120,42 @@ const Admin: React.FC = () => {
       cancelled = true;
       window.clearTimeout(timer);
     };
-  }, [isAdmin, search]);
+  }, [isAdmin, search, showPage]);
 
-  const loadMore = async () => {
-    setLoadingMore(true);
+  const goToPage = async (target: number) => {
+    setPageLoading(true);
     try {
-      const page = await fetchUsers(search, cursor);
-      setUsers((prev) => [...(prev || []), ...page.users]);
-      setCursor(page.last);
-      setHasMore(page.hasMore);
+      await showPage(search, target);
+      accountsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    } catch (error) {
+      console.error("Failed to load accounts:", error);
     } finally {
-      setLoadingMore(false);
+      setPageLoading(false);
     }
+  };
+
+  const reloadAccounts = async () => {
+    const [count] = await Promise.all([countUsers(search), showPage(search, page, true)]);
+    setTotal(count);
   };
 
   const refresh = async () => {
     setRefreshing(true);
     try {
-      await loadSummary();
-      const page = await fetchUsers(search);
-      setUsers(page.users);
-      setCursor(page.last);
-      setHasMore(page.hasMore);
+      await Promise.all([loadSummary(), reloadAccounts()]);
     } finally {
       setRefreshing(false);
     }
   };
 
   const handleChanged = (uid: string, user: AdminUser | null) => {
-    setUsers((prev) => (prev || []).flatMap((u) => (u.uid !== uid ? [u] : user ? [user] : [])));
+    if (user) {
+      setUsers((prev) => (prev || []).map((u) => (u.uid === uid ? user : u)));
+      pageCache.current.forEach((list, p) => pageCache.current.set(p, list.map((u) => (u.uid === uid ? user : u))));
+    } else {
+      // A deletion shifts every later page, so reload from here.
+      void reloadAccounts().catch(() => undefined);
+    }
     setUsage((prev) => (prev || []).map((row) => (row.uid === uid ? { ...row, user } : row)));
     void fetchLog().then(setLog, () => undefined);
     void fetchOverview().then(setOverview, () => undefined);
@@ -258,65 +296,70 @@ const Admin: React.FC = () => {
           </Card>
         </div>
 
-        <Card
-          title="Accounts"
-          description={search ? "Matching emails that start with your search." : "Newest first. Click one for details and actions."}
-          action={<SearchInput value={search} onChange={setSearch} placeholder="Search by email" />}
-        >
-          {users === null ? (
-            <div className="space-y-3 p-6">
-              {[0, 1, 2, 3, 4].map((i) => (
-                <Skeleton key={i} className="h-8 w-full" />
-              ))}
-            </div>
-          ) : users.length === 0 ? (
-            <EmptyState
-              compact
-              icon={Users}
-              title={search ? "No matching accounts" : "No accounts yet"}
-              description={search ? "Emails are matched from the start, e.g. “sara@”." : "New sign-ups will show up here."}
-            />
-          ) : (
-            <>
-              <div className="hidden grid-cols-[minmax(0,1fr)_200px_120px] gap-4 border-b border-[#E7EDF6] px-6 py-2 text-caption font-medium uppercase tracking-wider text-[#87909D] md:grid dark:border-[#2B3646]">
-                <span>Email</span>
-                <span>Plan</span>
-                <span className="text-right">Joined</span>
-              </div>
-              <ul className="divide-y divide-[#E7EDF6] dark:divide-[#2B3646]">
-                {users.map((u) => (
-                  <li key={u.uid}>
-                    <button
-                      type="button"
-                      onClick={() => setSelected(u.uid)}
-                      className={`grid w-full grid-cols-1 gap-1.5 px-5 py-3 text-left transition-colors hover:bg-[#F3F7FC] sm:px-6 md:grid-cols-[minmax(0,1fr)_200px_120px] md:items-center md:gap-4 dark:hover:bg-[#141D2B] ${focusRing}`}
-                    >
-                      <span className="min-w-0">
-                        <span className="block truncate text-body-sm font-medium text-[#101723] dark:text-[#D7DFE5]">
-                          {u.email || u.uid}
-                        </span>
-                        {u.displayName && (
-                          <span className="block truncate text-caption text-[#647184] dark:text-[#87909D]">{u.displayName}</span>
-                        )}
-                      </span>
-                      <PlanBadge user={u} />
-                      <span className="text-caption text-[#647184] md:text-right dark:text-[#87909D]">
-                        {u.createdAt ? format(u.createdAt, "MMM d, yyyy") : "—"}
-                      </span>
-                    </button>
-                  </li>
+        <div ref={accountsRef} className={`scroll-mt-6 transition-opacity ${pageLoading ? "pointer-events-none opacity-60" : ""}`}>
+          <Card
+            title="Accounts"
+            description={search ? "Matching emails that start with your search." : "Newest first. Click one for details and actions."}
+            action={<SearchInput value={search} onChange={setSearch} placeholder="Search by email" />}
+          >
+            {users === null ? (
+              <div className="space-y-3 p-6">
+                {[0, 1, 2, 3, 4].map((i) => (
+                  <Skeleton key={i} className="h-8 w-full" />
                 ))}
-              </ul>
-              {hasMore && (
-                <div className="border-t border-[#E7EDF6] px-6 py-3 text-center dark:border-[#2B3646]">
-                  <button type="button" onClick={loadMore} disabled={loadingMore} className={secondaryButton}>
-                    {loadingMore ? "Loading…" : "Load more"}
-                  </button>
+              </div>
+            ) : users.length === 0 ? (
+              <EmptyState
+                compact
+                icon={Users}
+                title={search ? "No matching accounts" : "No accounts yet"}
+                description={search ? "Emails are matched from the start, e.g. “sara@”." : "New sign-ups will show up here."}
+              />
+            ) : (
+              <>
+                <div className="hidden grid-cols-[minmax(0,1fr)_200px_120px] gap-4 border-b border-[#E7EDF6] px-6 py-2 text-caption font-medium uppercase tracking-wider text-[#87909D] md:grid dark:border-[#2B3646]">
+                  <span>Email</span>
+                  <span>Plan</span>
+                  <span className="text-right">Joined</span>
                 </div>
-              )}
-            </>
-          )}
-        </Card>
+                <ul className="divide-y divide-[#E7EDF6] dark:divide-[#2B3646]">
+                  {users.map((u) => (
+                    <li key={u.uid}>
+                      <button
+                        type="button"
+                        onClick={() => setSelected(u.uid)}
+                        className={`grid w-full grid-cols-1 gap-1.5 px-5 py-3 text-left transition-colors hover:bg-[#F3F7FC] sm:px-6 md:grid-cols-[minmax(0,1fr)_200px_120px] md:items-center md:gap-4 dark:hover:bg-[#141D2B] ${focusRing}`}
+                      >
+                        <span className="min-w-0">
+                          <span className="block truncate text-body-sm font-medium text-[#101723] dark:text-[#D7DFE5]">
+                            {u.email || u.uid}
+                          </span>
+                          {u.displayName && (
+                            <span className="block truncate text-caption text-[#647184] dark:text-[#87909D]">{u.displayName}</span>
+                          )}
+                        </span>
+                        <PlanBadge user={u} />
+                        <span className="text-caption text-[#647184] md:text-right dark:text-[#87909D]">
+                          {u.createdAt ? format(u.createdAt, "MMM d, yyyy") : "—"}
+                        </span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+                {total !== null && total > PAGE_SIZE && (
+                  <div className="border-t border-[#E7EDF6] px-5 py-3 sm:px-6 dark:border-[#2B3646]">
+                    <Pagination
+                      page={page}
+                      totalPages={Math.ceil(total / PAGE_SIZE)}
+                      onChange={(p) => void goToPage(p)}
+                      summary={`Showing ${((page - 1) * PAGE_SIZE + 1).toLocaleString()}–${Math.min(page * PAGE_SIZE, total).toLocaleString()} of ${total.toLocaleString()}`}
+                    />
+                  </div>
+                )}
+              </>
+            )}
+          </Card>
+        </div>
       </div>
 
       <AccountPanel uid={selected} onClose={() => setSelected(null)} onChanged={handleChanged} />

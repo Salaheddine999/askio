@@ -165,21 +165,26 @@ export async function fetchTopUsage(max = 8): Promise<UsageRow[]> {
 }
 
 /**
- * A page of accounts, newest first, or matching an email prefix when searching.
+ * Accounts newest first, or matching an email prefix when searching.
  * Accounts created before sign-up dates were recorded only show up in search.
  */
-export async function fetchUsers(search: string, after?: QueryDocumentSnapshot | null) {
+function usersQuery(search: string) {
   const users = collection(db, "users");
   const term = search.trim().toLowerCase();
-  const base = term
-    ? query(users, where("email", ">=", term), where("email", "<=", `${term}`), orderBy("email"))
+  return term
+    ? query(users, where("email", ">=", term), where("email", "<=", `${term}\uf8ff`), orderBy("email"))
     : query(users, orderBy("createdAt", "desc"));
-  const snap = await getDocs(after ? query(base, startAfter(after), limit(PAGE_SIZE)) : query(base, limit(PAGE_SIZE)));
-  return {
-    users: snap.docs.map((d) => toAdminUser(d.id, d.data())),
-    last: snap.docs[snap.docs.length - 1] ?? null,
-    hasMore: snap.size === PAGE_SIZE,
-  };
+}
+
+export async function countUsers(search: string) {
+  return (await getCountFromServer(usersQuery(search))).data().count;
+}
+
+/** Up to `max` accounts after a cursor (the last account of an earlier page). */
+export async function fetchUsersAfter(search: string, after: QueryDocumentSnapshot | null, max: number) {
+  const base = usersQuery(search);
+  const snap = await getDocs(after ? query(base, startAfter(after), limit(max)) : query(base, limit(max)));
+  return snap.docs;
 }
 
 export async function fetchAccountDetail(uid: string) {
