@@ -4,7 +4,8 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        serif: ['"Wallop Preview"', 'Inter', 'sans-serif'],
+        // Headings. Plus Jakarta Sans is free (SIL Open Font License), from Google Fonts.
+        serif: ['"Plus Jakarta Sans"', 'Inter', 'sans-serif'],
         sans: ['Inter', 'system-ui', 'sans-serif'],
       },
       fontSize: {

@@ -1,22 +1,6 @@
-/* Wallop trial is for internal evaluation. Replace with licensed web fonts before publishing. */
-@font-face {
-  font-family: 'Wallop Preview';
-  src: url('./assets/fonts/wallop-trial/Wallop-TRIAL-Medium.woff2') format('woff2');
-  font-style: normal;
-  font-weight: 500;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'Wallop Preview';
-  src: url('./assets/fonts/wallop-trial/Wallop-TRIAL-MediumItalic.woff2') format('woff2');
-  font-style: italic;
-  font-weight: 500;
-  font-display: swap;
-}
-
+/* Headings use Plus Jakarta Sans (SIL Open Font License), loaded from Google Fonts in index.html. */
 .font-serif {
-  font-family: 'Wallop Preview', 'Inter', sans-serif;
+  font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
   font-weight: 500;
   font-synthesis: none;
 }
