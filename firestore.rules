@@ -20,6 +20,7 @@ service cloud.firestore {
     }
 
     // Suspension is set by an admin through the server; owners can't change it.
+    // A suspended owner can still sign in and read their data, but not change it.
     function notSuspended() {
       return !exists(/databases/$(database)/documents/users/$(request.auth.uid))
         || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('suspended', false) != true;
@@ -62,7 +63,7 @@ service cloud.firestore {
         && suspensionUnchanged()
         && notSuspended();
 
-      allow delete: if ownsExistingChatbot();
+      allow delete: if ownsExistingChatbot() && notSuspended();
     }
 
     // Leads, analytics and unanswered questions are written by anonymous
@@ -118,7 +119,8 @@ service cloud.firestore {
         && request.resource.data.email.matches('^[^@ ]+@[^@ ]+[.][^@ ]+$')
         && stampedNow()
         && validToken();
-      allow read, update, delete: if ownsRecord();
+      allow read: if ownsRecord();
+      allow update, delete: if ownsRecord() && notSuspended();
     }
 
     match /analytics_events/{eventId} {
@@ -129,7 +131,8 @@ service cloud.firestore {
         && optionalTextUpTo('userQuery', 2000)
         && stampedNow()
         && validToken();
-      allow read, update, delete: if ownsRecord();
+      allow read: if ownsRecord();
+      allow update, delete: if ownsRecord() && notSuspended();
     }
 
     match /unanswered_queries/{queryId} {
@@ -138,7 +141,8 @@ service cloud.firestore {
         && textUpTo('query', 2000)
         && stampedNow()
         && validToken();
-      allow read, update, delete: if ownsRecord();
+      allow read: if ownsRecord();
+      allow update, delete: if ownsRecord() && notSuspended();
     }
 
     match /feedback/{feedbackId} {

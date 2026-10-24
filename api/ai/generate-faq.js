@@ -1,7 +1,7 @@
 import { requireUser } from "../_lib/auth.js";
 import { generateFaqsFromUrl } from "../_lib/ai.js";
 import { adminDb } from "../_lib/firebaseAdmin.js";
-import { assertCanUseAiForOwner, getOwnedChatbot } from "../_lib/plan.js";
+import { assertCanUseAiForOwner, assertNotSuspended, getOwnedChatbot } from "../_lib/plan.js";
 
 function sendError(res, error) {
   const statusCode = error.statusCode || 500;
@@ -49,7 +49,8 @@ export default async function handler(req, res) {
     }
 
     const { chatbotRef, chatbotData } = await getOwnedChatbot(decodedToken.uid, chatbotId);
-    await assertCanUseAiForOwner(decodedToken.uid);
+    const ownerProfile = await assertCanUseAiForOwner(decodedToken.uid);
+    assertNotSuspended(ownerProfile.userData);
 
     if (!chatbotData.aiEnabled) {
       return res.status(403).json({

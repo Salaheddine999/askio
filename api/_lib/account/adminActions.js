@@ -61,15 +61,15 @@ async function logAction(admin, action, uid, email, details = {}) {
   });
 }
 
+// A suspended owner can still sign in, see why, contact us, manage billing and
+// delete their account; everything else is refused by the server and the
+// Firestore rules, and their chatbots stop showing on their sites.
 async function suspend(admin, body) {
   const { authUser, userRef, userData } = await targetAccount(admin, body.uid);
-  const reason = String(body.reason || "").trim().slice(0, 500) || null;
+  // The Terms promise to tell them why, so the reason is shown to them.
+  const reason = String(body.reason || "").trim().slice(0, 500);
+  if (reason.length < 10) throw httpError(400, "Write the reason they'll see (at least 10 characters).");
 
-  // Disabling the login also ends their sessions at the next token check.
-  if (authUser) {
-    await adminAuth.updateUser(body.uid, { disabled: true });
-    await adminAuth.revokeRefreshTokens(body.uid);
-  }
   await userRef.set(
     { suspended: true, suspendedAt: FieldValue.serverTimestamp(), suspendedReason: reason },
     { merge: true }
@@ -84,7 +84,8 @@ async function suspend(admin, body) {
 async function unsuspend(admin, body) {
   const { authUser, userRef, userData } = await targetAccount(admin, body.uid);
 
-  if (authUser) await adminAuth.updateUser(body.uid, { disabled: false });
+  // Older suspensions also disabled the login; make sure it's back on.
+  if (authUser?.disabled) await adminAuth.updateUser(body.uid, { disabled: false });
   await userRef.set(
     { suspended: false, suspendedAt: FieldValue.delete(), suspendedReason: FieldValue.delete() },
     { merge: true }

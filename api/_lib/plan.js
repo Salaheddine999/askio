@@ -70,6 +70,13 @@ export async function getUserAccessProfile(uid) {
   };
 }
 
+/** Refuses changes from a suspended account; it can still read, pay and delete itself. */
+export function assertNotSuspended(userData) {
+  if (userData?.suspended === true) {
+    forbidden("Your account is suspended. Contact us if you think this is a mistake.");
+  }
+}
+
 export async function assertCanUseAiForOwner(uid) {
   const profile = await getUserAccessProfile(uid);
 

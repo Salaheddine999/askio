@@ -38,6 +38,8 @@ import { FormPageSkeleton } from "../components/Skeleton";
 import { redirectToBillingPortal, redirectToProCheckout } from "../utils/billing";
 import { PRO_AI_REPLY_LIMIT, PRO_PRICE } from "../utils/pricing";
 import { focusRing, primaryButton, secondaryButton, surface } from "./dashboard/ui";
+import type { Suspension } from "../hooks/useSuspension";
+import { reviewEmailHref } from "../utils/support";
 
 type Plan = "free" | "pro" | "enterprise";
 
@@ -87,9 +89,11 @@ interface SettingsProps {
   toggleSidebar: () => void;
   darkMode: boolean;
   setDarkMode: (dark: boolean) => void;
+  /** Set while the account is suspended: upgrading is off, billing and deletion stay. */
+  suspension?: Suspension | null;
 }
 
-const Settings: React.FC<SettingsProps> = ({ darkMode, setDarkMode }) => {
+const Settings: React.FC<SettingsProps> = ({ darkMode, setDarkMode, suspension }) => {
   const navigate = useNavigate();
   const deleteAccountModal = useModal();
   const [user, setUser] = useState<User | null>(null);
@@ -284,6 +288,21 @@ const Settings: React.FC<SettingsProps> = ({ darkMode, setDarkMode }) => {
           <p className="mt-1 text-body-sm text-[#566273] dark:text-[#9BAABD]">Your account, plan and preferences.</p>
         </header>
 
+        {suspension && (
+          <div
+            role="status"
+            className="flex flex-col gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 sm:flex-row sm:items-center sm:justify-between dark:border-amber-900/60 dark:bg-amber-950/30"
+          >
+            <p className="text-body-sm text-amber-900 dark:text-amber-200">
+              <span className="font-medium">Your account is suspended.</span> You can still manage billing or delete
+              your account here. Everything else is paused.
+            </p>
+            <a href={reviewEmailHref(email)} className={`${secondaryButton} shrink-0 self-start sm:self-auto`}>
+              Contact us
+            </a>
+          </div>
+        )}
+
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-[200px_minmax(0,1fr)]">
           <nav aria-label="Settings sections" className="hidden lg:block">
             <div className="sticky top-6 space-y-0.5">
@@ -368,7 +387,7 @@ const Settings: React.FC<SettingsProps> = ({ darkMode, setDarkMode }) => {
                   </p>
                 </div>
                 <div className="flex shrink-0 gap-2">
-                  {!isPaid && (
+                  {!isPaid && !suspension && (
                     <button
                       type="button"
                       disabled={billingActionLoading}

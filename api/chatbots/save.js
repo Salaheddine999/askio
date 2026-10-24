@@ -1,7 +1,7 @@
 import { FieldValue } from "firebase-admin/firestore";
 import { requireUser } from "../_lib/auth.js";
 import { adminDb } from "../_lib/firebaseAdmin.js";
-import { getUserAccessProfile } from "../_lib/plan.js";
+import { assertNotSuspended, getUserAccessProfile } from "../_lib/plan.js";
 
 function sendError(res, error) {
   const statusCode = error.statusCode || 500;
@@ -45,6 +45,7 @@ function normalizeChatbotPayload(payload, uid) {
 
 async function saveChatbotConfigTransactional({ uid, chatbotId, normalized }) {
   const profile = await getUserAccessProfile(uid);
+  assertNotSuspended(profile.userData);
   const targetRef = chatbotId
     ? adminDb.collection("chatbot_configs").doc(chatbotId)
     : adminDb.collection("chatbot_configs").doc();

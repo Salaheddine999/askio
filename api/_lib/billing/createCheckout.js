@@ -1,4 +1,6 @@
 import { requireUser } from "../auth.js";
+import { adminDb } from "../firebaseAdmin.js";
+import { assertNotSuspended } from "../plan.js";
 import { buildCheckoutUrl, getLemonSqueezyConfig } from "../lemonsqueezy.js";
 import { sendError } from "../response.js";
 
@@ -10,6 +12,7 @@ export default async function handler(req, res) {
 
   try {
     const decodedToken = await requireUser(req);
+    assertNotSuspended((await adminDb.collection("users").doc(decodedToken.uid).get()).data());
     const { proCheckoutUrl, proYearlyCheckoutUrl } = getLemonSqueezyConfig();
     const { email = decodedToken.email || "", name = "", interval = "monthly" } = req.body || {};
     const yearly = interval === "yearly";

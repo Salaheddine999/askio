@@ -5,11 +5,13 @@ import {
   Route,
   Routes,
   Navigate,
+  useLocation,
 } from "react-router-dom";
 import { auth } from "./utils/firebase";
 import { onAuthStateChanged, User } from "firebase/auth";
 import { Toaster } from "react-hot-toast";
 import { HelmetProvider } from "react-helmet-async";
+import { useSuspension, type Suspension } from "./hooks/useSuspension";
 
 // Every page is its own chunk, so visitors only download the page they open.
 // That keeps the homepage light, and the chat widget (/chatbot/:id), which
@@ -41,6 +43,7 @@ const Settings = lazy(pages.settings);
 const Analytics = lazy(pages.analytics);
 const Integrations = lazy(pages.integrations);
 const Admin = lazy(pages.admin);
+const SuspendedNotice = lazy(() => import("./components/SuspendedNotice"));
 const Plans = lazy(pages.plans);
 const PrivacyPolicy = lazy(pages.privacy);
 const TermsOfService = lazy(pages.terms);
@@ -97,6 +100,18 @@ function RouteFallback() {
   );
 }
 
+/**
+ * A suspended account can still sign in, but only Settings (billing, account
+ * deletion) opens; every other app page shows why and how to contact us.
+ */
+function SuspensionGate({ suspension, children }: { suspension: Suspension | null; children: React.ReactNode }) {
+  const { pathname } = useLocation();
+  if (suspension && isAppRoute(pathname) && pathname !== "/settings") {
+    return <SuspendedNotice suspension={suspension} />;
+  }
+  return <>{children}</>;
+}
+
 const App: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
@@ -107,6 +122,7 @@ const App: React.FC = () => {
   );
   const [testMode, setTestMode] = useState(false);
   const [wasSignedIn] = useState(() => readStorage(SIGNED_IN_KEY) === "1");
+  const suspension = useSuspension(user);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -198,6 +214,7 @@ const App: React.FC = () => {
             }`}
           >
             <Suspense fallback={<RouteFallback />}>
+            <SuspensionGate suspension={suspension}>
             <Routes>
               <Route
                 path="/"
@@ -240,7 +257,12 @@ const App: React.FC = () => {
                 path="/settings"
                 element={
                   user ? (
-                    <Settings toggleSidebar={toggleSidebar} darkMode={darkMode} setDarkMode={setDarkMode} />
+                    <Settings
+                      toggleSidebar={toggleSidebar}
+                      darkMode={darkMode}
+                      setDarkMode={setDarkMode}
+                      suspension={suspension}
+                    />
                   ) : (
                     <Navigate to="/auth" />
                   )
@@ -262,6 +284,7 @@ const App: React.FC = () => {
               <Route path="/privacy" element={<PrivacyPolicy />} />
               <Route path="/terms" element={<TermsOfService />} />
             </Routes>
+            </SuspensionGate>
             </Suspense>
             <Toaster
               position="top-center"

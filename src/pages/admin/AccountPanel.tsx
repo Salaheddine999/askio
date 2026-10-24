@@ -142,7 +142,8 @@ const AccountPanel: React.FC<Props> = ({ uid, onClose, onChanged }) => {
               <div className="space-y-6">
                 {user.suspended && (
                   <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-body-sm text-red-800 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-200">
-                    Suspended. They can't sign in and their chatbots are hidden.
+                    Suspended. They can sign in to see why and contact you, but their chatbots are hidden and changes
+                    are paused.
                     {user.suspendedReason && <span className="mt-1 block text-caption opacity-80">“{user.suspendedReason}”</span>}
                   </div>
                 )}
@@ -208,15 +209,20 @@ const AccountPanel: React.FC<Props> = ({ uid, onClose, onChanged }) => {
                 {confirm === "suspend" && (
                   <div className="space-y-3 rounded-xl border border-[#D8DFE9] p-4 dark:border-[#2B3646]">
                     <p className="text-body-sm text-[#101723] dark:text-[#D7DFE5]">
-                      They'll be signed out, can't sign back in, and their chatbots stop showing on their sites.
-                      Their data and billing stay as they are; cancel or refund in Lemon Squeezy if needed.
+                      Their chatbots stop showing on their sites and they can't make changes. They can still sign in,
+                      where they'll see the reason below and how to contact you, and manage billing or delete their
+                      account. Billing isn't touched; cancel or refund in Lemon Squeezy if needed.
+                    </p>
+                    <p className="text-label text-[#101723] dark:text-[#D7DFE5]">
+                      Reason <span className="font-normal text-[#87909D]">· shown to them</span>
                     </p>
                     <textarea
-                      rows={2}
+                      rows={3}
                       value={reason}
                       onChange={(e) => setReason(e.target.value)}
                       maxLength={500}
-                      placeholder="Reason, for your log (optional)"
+                      placeholder="e.g. Your chatbot was sharing links to a fake login page, which breaks our Terms."
+                      aria-label="Reason, shown to them"
                       className={`${inputClass} resize-none py-2`}
                     />
                     <div className="flex justify-end gap-2">
@@ -225,7 +231,7 @@ const AccountPanel: React.FC<Props> = ({ uid, onClose, onChanged }) => {
                       </button>
                       <button
                         type="button"
-                        disabled={busy}
+                        disabled={busy || reason.trim().length < 10}
                         onClick={() => run("admin-suspend")}
                         className={`${primaryButton} !bg-red-600 hover:!bg-red-700 !text-white`}
                       >
