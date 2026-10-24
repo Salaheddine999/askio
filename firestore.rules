@@ -13,9 +13,25 @@ service cloud.firestore {
       return signedIn() && resource.data.user_id == request.auth.uid;
     }
 
+    // Askio's operator, marked by a custom claim set with scripts/set-admin.mjs.
+    // Admins get read-only access here; every admin action goes through the server.
+    function isAdmin() {
+      return signedIn() && request.auth.token.admin == true;
+    }
+
+    // Suspension is set by an admin through the server; owners can't change it.
+    function notSuspended() {
+      return !exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('suspended', false) != true;
+    }
+
+    function suspensionUnchanged() {
+      return request.resource.data.get('suspended', false) == resource.data.get('suspended', false);
+    }
+
     match /users/{userId} {
-      allow read: if ownsUserDoc(userId);
-      allow create: if ownsUserDoc(userId);
+      allow read: if ownsUserDoc(userId) || isAdmin();
+      allow create: if ownsUserDoc(userId) && !('suspended' in request.resource.data);
 
       // Billing and limit fields are set by the server only.
       allow update: if ownsUserDoc(userId)
@@ -23,9 +39,12 @@ service cloud.firestore {
         && request.resource.data.subscriptionStatus == resource.data.subscriptionStatus
         && request.resource.data.aiChatbotLimit == resource.data.aiChatbotLimit
         && request.resource.data.isPro == resource.data.isPro
-        && request.resource.data.get('aiReplyLimit', null) == resource.data.get('aiReplyLimit', null);
+        && request.resource.data.get('aiReplyLimit', null) == resource.data.get('aiReplyLimit', null)
+        && suspensionUnchanged()
+        && request.resource.data.get('suspendedReason', null) == resource.data.get('suspendedReason', null);
 
-      allow delete: if ownsUserDoc(userId);
+      // Deleting the profile would drop a suspension, so suspended owners can't.
+      allow delete: if ownsUserDoc(userId) && resource.data.get('suspended', false) != true;
     }
 
     match /chatbot_configs/{configId} {
@@ -33,11 +52,15 @@ service cloud.firestore {
 
       allow create: if signedIn()
         && request.resource.data.user_id == request.auth.uid
-        && request.resource.data.aiEnabled == false;
+        && request.resource.data.aiEnabled == false
+        && request.resource.data.get('suspended', false) == false
+        && notSuspended();
 
       allow update: if ownsExistingChatbot()
         && request.resource.data.user_id == resource.data.user_id
-        && request.resource.data.aiEnabled == resource.data.aiEnabled;
+        && request.resource.data.aiEnabled == resource.data.aiEnabled
+        && suspensionUnchanged()
+        && notSuspended();
 
       allow delete: if ownsExistingChatbot();
     }
@@ -55,7 +78,8 @@ service cloud.firestore {
     function validVisitorRecord() {
       return request.resource.data.chatbotId is string
         && exists(chatbotPath(request.resource.data.chatbotId))
-        && request.resource.data.ownerId == get(chatbotPath(request.resource.data.chatbotId)).data.user_id;
+        && request.resource.data.ownerId == get(chatbotPath(request.resource.data.chatbotId)).data.user_id
+        && get(chatbotPath(request.resource.data.chatbotId)).data.get('suspended', false) != true;
     }
 
     function ownsRecord() {
@@ -137,7 +161,13 @@ service cloud.firestore {
     // Monthly AI reply counts, keyed "{uid}_{YYYY-MM}". Only the server writes
     // them; owners can read their own, including a month with no replies yet.
     match /ai_usage/{usageId} {
-      allow read: if signedIn() && usageId.matches(request.auth.uid + '_[0-9]{4}-[0-9]{2}');
+      allow read: if (signedIn() && usageId.matches(request.auth.uid + '_[0-9]{4}-[0-9]{2}')) || isAdmin();
+      allow write: if false;
+    }
+
+    // A record of every admin action, written by the server.
+    match /admin_log/{entryId} {
+      allow read: if isAdmin();
       allow write: if false;
     }
 

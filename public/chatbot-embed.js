@@ -127,7 +127,7 @@
 
       window.addEventListener("message", function (event) {
         if (event.data.type === "chatbotReady") {
-          if (event.data.config.isActive === false) {
+          if (event.data.config.isActive === false || event.data.config.suspended === true) {
              iframe.style.display = "none";
              return;
           }

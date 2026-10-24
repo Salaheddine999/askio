@@ -11,7 +11,9 @@ export async function requireUser(req) {
   }
 
   try {
-    return await adminAuth.verifyIdToken(token);
+    // checkRevoked also rejects disabled (suspended) accounts and sessions
+    // ended by revokeRefreshTokens, instead of honouring them until they expire.
+    return await adminAuth.verifyIdToken(token, true);
   } catch {
     const error = new Error("Invalid authentication token.");
     error.statusCode = 401;

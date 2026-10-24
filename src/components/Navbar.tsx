@@ -21,7 +21,9 @@ import {
   Menu as MenuIcon,
   X,
   LucideIcon,
+  ShieldCheck,
 } from "lucide-react";
+import { useIsAdmin } from "../hooks/useIsAdmin";
 
 interface NavbarProps {
   darkMode: boolean;
@@ -111,6 +113,13 @@ const Navbar: React.FC<NavbarProps> = ({
   };
 
   const user = auth.currentUser;
+  const isAdmin = useIsAdmin();
+  // The Admin link is only shown to admins; /admin itself checks on the server.
+  const navGroups = isAdmin
+    ? NAV_GROUPS.map((g) =>
+        g.title === "Account" ? { ...g, items: [...g.items, { title: "Admin", href: "/admin", icon: ShieldCheck }] } : g
+      )
+    : NAV_GROUPS;
   const hideWhenCollapsed = collapsed ? "lg:hidden" : "";
 
   const menuItem = (active: boolean) =>
@@ -220,7 +229,7 @@ const Navbar: React.FC<NavbarProps> = ({
 
         {/* Navigation */}
         <div className="flex-1 space-y-5 overflow-y-auto px-3 py-3">
-          {NAV_GROUPS.map((group) => (
+          {navGroups.map((group) => (
             <div key={group.title}>
               <h2
                 className={`mb-1.5 px-2.5 text-[11px] font-medium uppercase tracking-wider text-[#87909D] dark:text-[#647184] ${hideWhenCollapsed}`}

@@ -60,7 +60,7 @@ const ChatbotEmbed: React.FC = () => {
   if (error) return <div>Error: {error}</div>;
   if (!config) return <div>No configuration found</div>;
 
-  if (config.isActive === false) return null;
+  if (config.isActive === false || config.suspended === true) return null;
 
   return (
     <div style={{ width: "100%", height: "100%", background: "transparent" }}>

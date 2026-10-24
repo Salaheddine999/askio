@@ -39,6 +39,14 @@
         { "fieldPath": "ownerId", "order": "ASCENDING" },
         { "fieldPath": "timestamp", "order": "DESCENDING" }
       ]
+    },
+    {
+      "collectionGroup": "ai_usage",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "month", "order": "ASCENDING" },
+        { "fieldPath": "replies", "order": "DESCENDING" }
+      ]
     }
   ],
   "fieldOverrides": []

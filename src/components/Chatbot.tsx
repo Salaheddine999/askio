@@ -48,6 +48,8 @@ export interface ChatbotProps {
   aiEnabled?: boolean;
   launcherStyle?: LauncherStyle;
   greetingBubble?: boolean;
+  /** Set by an admin when the owner's account is suspended; the widget stays hidden. */
+  suspended?: boolean;
   /** The chatbot owner's uid, from the saved config. */
   user_id?: string;
 }

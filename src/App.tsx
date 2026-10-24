@@ -24,6 +24,7 @@ const pages = {
   settings: () => import("./pages/Settings"),
   analytics: () => import("./pages/Analytics"),
   integrations: () => import("./pages/Integrations"),
+  admin: () => import("./pages/Admin"),
   plans: () => import("./pages/Plans"),
   privacy: () => import("./pages/PrivacyPolicy"),
   terms: () => import("./pages/TermsOfService"),
@@ -39,6 +40,7 @@ const Documentation = lazy(pages.docs);
 const Settings = lazy(pages.settings);
 const Analytics = lazy(pages.analytics);
 const Integrations = lazy(pages.integrations);
+const Admin = lazy(pages.admin);
 const Plans = lazy(pages.plans);
 const PrivacyPolicy = lazy(pages.privacy);
 const TermsOfService = lazy(pages.terms);
@@ -252,6 +254,7 @@ const App: React.FC = () => {
                 path="/integrations"
                 element={user ? <Integrations testMode={testMode} /> : <Navigate to="/auth" />}
               />
+              <Route path="/admin" element={user ? <Admin /> : <Navigate to="/auth" />} />
               <Route
                 path="/plans"
                 element={<Plans />}

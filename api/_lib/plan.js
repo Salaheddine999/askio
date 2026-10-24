@@ -142,6 +142,9 @@ export async function assertChatbotAiAvailable(chatbotId) {
   }
 
   const chatbotData = chatbotSnap.data();
+  if (chatbotData.suspended === true) {
+    forbidden("This chatbot is suspended.");
+  }
   if (!chatbotData.aiEnabled) {
     forbidden("AI is not enabled for this chatbot.");
   }

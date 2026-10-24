@@ -47,6 +47,8 @@ const ChatbotIframeContent: React.FC = () => {
     return <div>Loading...</div>;
   }
 
+  if (config.suspended === true) return null;
+
   return <Chatbot {...config} />;
 };
 
