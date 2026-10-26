@@ -106,6 +106,8 @@ const Auth: React.FC = () => {
           plan: "free",
           subscriptionStatus: "inactive",
           aiChatbotLimit: 0,
+          // New accounts keep the language they signed up in, on every device.
+          language: t.lang,
         });
         toast.success(t("registered"));
         await handlePostAuthRedirect(true);
@@ -143,6 +145,8 @@ const Auth: React.FC = () => {
           plan: "free",
           subscriptionStatus: "inactive",
           aiChatbotLimit: 0,
+          // New accounts keep the language they signed up in, on every device.
+          language: t.lang,
         });
       }
       await handlePostAuthRedirect(isNewAccount);

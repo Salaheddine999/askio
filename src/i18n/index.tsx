@@ -1,6 +1,8 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import type { Locale } from "date-fns";
 import { de, enUS, es, fr, nl } from "date-fns/locale";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "../utils/firebase";
 
 // A small translation setup. Each area of the app keeps its text in one
 // messages file with every language side by side (see defineMessages), and
@@ -67,6 +69,17 @@ export const dateLocale = (lang: Lang) => DATE_LOCALES[lang];
 
 const STORAGE_KEY = "askio_lang";
 
+function remember(lang: Lang) {
+  try {
+    localStorage.setItem(STORAGE_KEY, lang);
+  } catch {
+    // Not remembered in this browser; the account still has it.
+  }
+}
+
+// Synced with the account (see accountLanguage.ts), loaded only when signed in.
+const accountLanguage = () => import("./accountLanguage");
+
 function detectLanguage(): Lang {
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
@@ -95,12 +108,31 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     document.documentElement.lang = lang;
   }, [lang]);
 
+  // On sign-in, the language saved on the account wins over this browser's.
+  useEffect(
+    () =>
+      onAuthStateChanged(auth, (user) => {
+        if (!user) return;
+        accountLanguage()
+          .then((m) => m.readAccountLanguage(user.uid))
+          .then((saved) => {
+            if (!saved) return;
+            setLangState(saved);
+            remember(saved);
+          })
+          .catch((error) => console.warn("Couldn't read the account language:", error));
+      }),
+    []
+  );
+
   const setLang = useCallback((next: Lang) => {
     setLangState(next);
-    try {
-      localStorage.setItem(STORAGE_KEY, next);
-    } catch {
-      // Not remembered across visits; it still applies now.
+    remember(next);
+    const user = auth.currentUser;
+    if (user) {
+      accountLanguage()
+        .then((m) => m.saveAccountLanguage(user.uid, next))
+        .catch((error) => console.warn("Couldn't save the account language:", error));
     }
   }, []);
 
