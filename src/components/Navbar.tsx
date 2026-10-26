@@ -1,4 +1,4 @@
-import brandLogo from "../assets/logo.svg";
+import BrandLogo from "./BrandLogo";
 import React, { Fragment, useEffect } from "react";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import { Menu, Transition } from "@headlessui/react";
@@ -148,9 +148,8 @@ const Navbar: React.FC<NavbarProps> = ({
         >
           <MenuIcon size={20} />
         </button>
-        <Link to="/dashboard" className="flex items-center gap-1.5">
-          <img src={brandLogo} alt="" className="h-6 w-6 dark:brightness-0 dark:invert" />
-          <span className="text-body font-semibold tracking-tight text-[#101723] dark:text-[#D7DFE5]">Askio</span>
+        <Link to="/dashboard" className={`flex items-center rounded-lg ${focusRing}`}>
+          <BrandLogo size={18} className="text-[#101723] dark:text-[#D7DFE5]" />
         </Link>
         {testMode && (
           <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-medium text-amber-800 dark:bg-amber-900/30 dark:text-amber-200">
@@ -188,13 +187,8 @@ const Navbar: React.FC<NavbarProps> = ({
       >
         {/* Brand */}
         <div className={`flex h-16 shrink-0 items-center px-4 ${collapsed ? "lg:justify-center lg:px-0" : ""}`}>
-          <Link to="/dashboard" className={`flex items-center gap-2 rounded-lg ${focusRing}`} title="Askio">
-            <img src={brandLogo} alt="Askio" className="h-7 w-7 shrink-0 dark:brightness-0 dark:invert" />
-            <span
-              className={`text-body-lg font-semibold tracking-tight text-[#101723] dark:text-[#D7DFE5] ${hideWhenCollapsed}`}
-            >
-              Askio
-            </span>
+          <Link to="/dashboard" className={`flex items-center rounded-lg ${focusRing}`} title="Askio">
+            <BrandLogo size={20} className="text-[#101723] dark:text-[#D7DFE5]" wordClassName={hideWhenCollapsed} />
           </Link>
           <button
             onClick={toggleSidebar}

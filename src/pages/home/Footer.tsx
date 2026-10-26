@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { FaGithub } from "react-icons/fa";
 import { ArrowUpRight } from "lucide-react";
-import logoHome from "../../assets/logo.svg";
+import BrandLogo, { BrandWordmark } from "../../components/BrandLogo";
 
 const GITHUB_URL = "https://github.com/Salaheddine999/askio";
 
@@ -65,8 +65,7 @@ export default function Footer() {
       <div className="grid gap-10 px-4 pt-12 pb-10 sm:px-8 md:grid-cols-[1.2fr_2fr] md:gap-16 md:pt-14 lg:px-12">
         <div className="flex flex-col items-start gap-5">
           <Link to="/" className="flex items-center gap-2 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#87909D]">
-            <img src={logoHome} alt="" className="h-7 w-7 dark:brightness-0 dark:invert" />
-            <span className="font-sans text-xl font-semibold text-[#101723] dark:text-[#D7DFE5]">Askio</span>
+            <BrandLogo size={22} className="text-[#101723] dark:text-[#D7DFE5]" />
           </Link>
           <p className="max-w-[300px] text-sm leading-relaxed text-[#566273] dark:text-[#9BAABD]">
             Turn your FAQs into a chatbot that looks like your brand and answers visitors around the clock.
@@ -110,9 +109,20 @@ export default function Footer() {
 
       {/* Oversized wordmark closing the page */}
       <div className="relative h-[clamp(5rem,18vw,12rem)] overflow-hidden border-t border-[rgba(16,23,35,0.12)] dark:border-[#2B3646]" aria-hidden="true">
-        <span className="absolute inset-x-0 top-[0.06em] select-none text-center font-serif text-[clamp(6rem,24vw,16rem)] font-semibold leading-none tracking-[-0.04em] text-transparent bg-clip-text bg-gradient-to-b from-[rgba(16,23,35,0.10)] to-[rgba(16,23,35,0)] dark:from-[rgba(215,223,229,0.10)] dark:to-[rgba(215,223,229,0)]">
-          Askio
-        </span>
+        {/* The logo's lettering, sized in em so it scales with the strip; the
+            bottom third runs off the edge. */}
+        <div className="absolute inset-0 text-[clamp(6rem,24vw,16rem)] text-[#101723] dark:text-[#D7DFE5]">
+          <BrandWordmark
+            className="absolute left-1/2 top-[0.206em] h-[0.787em] w-[2.577em] -translate-x-1/2 select-none"
+            fill="url(#footer-wordmark-fade)"
+            defs={
+              <linearGradient id="footer-wordmark-fade" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stopColor="currentColor" stopOpacity="0.085" />
+                <stop offset="1" stopColor="currentColor" stopOpacity="0.01" />
+              </linearGradient>
+            }
+          />
+        </div>
       </div>
     </footer>
   );

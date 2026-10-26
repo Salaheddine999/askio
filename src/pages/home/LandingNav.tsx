@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Menu, X } from "lucide-react";
 import { Link } from "react-router-dom";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import logoHome from "../../assets/logo.svg";
+import BrandLogo from "../../components/BrandLogo";
 
 export default function LandingNav() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -49,9 +49,8 @@ export default function LandingNav() {
         }`}
       >
         <div className="flex items-center justify-self-start">
-          <Link to="/" className={`flex items-center gap-2 rounded-full ${focusRing}`} aria-label="Askio home">
-            <img src={logoHome} alt="" className="w-6 h-6 dark:brightness-0 dark:invert" />
-            <span className="text-[#101723] dark:text-[#D7DFE5] text-body font-medium tracking-[-0.02em]">Askio</span>
+          <Link to="/" className={`flex items-center rounded-full ${focusRing}`} aria-label="Askio home">
+            <BrandLogo size={18} label="" className="text-[#101723] dark:text-[#D7DFE5]" />
           </Link>
         </div>
         <div className="hidden md:flex items-center justify-center gap-0.5 justify-self-center">

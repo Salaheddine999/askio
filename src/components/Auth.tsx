@@ -1,4 +1,4 @@
-import brandLogo from "../assets/logo.svg";
+import BrandLogo from "./BrandLogo";
 import React, { useState } from "react";
 import { auth } from "../utils/firebase";
 import { db } from "../utils/db";
@@ -164,11 +164,8 @@ const Auth: React.FC = () => {
         className="w-full max-w-[380px]"
       >
         {/* Brand */}
-        <Link to="/" className="flex items-center justify-center gap-2 mb-8">
-          <img src={brandLogo} alt="Askio" className="w-7 h-7 dark:brightness-0 dark:invert" />
-          <span className="text-lg font-medium font-sans text-[#101723] dark:text-[#D7DFE5] tracking-tight">
-            Askio
-          </span>
+        <Link to="/" className="mb-8 flex items-center justify-center">
+          <BrandLogo size={24} className="text-[#101723] dark:text-[#D7DFE5]" />
         </Link>
 
         {/* Card */}
