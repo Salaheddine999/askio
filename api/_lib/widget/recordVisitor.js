@@ -1,6 +1,7 @@
 import { FieldValue } from "firebase-admin/firestore";
 import { adminDb } from "../firebaseAdmin.js";
 import { takeRateLimit, visitorKey } from "../rateLimit.js";
+import { getUserAccessProfile } from "../plan.js";
 
 // Visitor records written by the chat widget: leads, analytics events,
 // unanswered questions and ratings. Visitors are anonymous, so these used to
@@ -17,7 +18,13 @@ const LIMITS = {
   event: [40, 600],
   unanswered: [20, 300],
   feedback: [5, 60],
+  message: [40, 1200],
 };
+
+const SESSION_ID = /^[A-Za-z0-9_-]{8,64}$/;
+/** A conversation stops growing here, well under Firestore's 1 MB document limit. */
+const MAX_MESSAGES = 200;
+const MAX_MESSAGE_CHARS = 2000;
 
 const COLLECTIONS = {
   lead: "leads",
@@ -69,12 +76,71 @@ function fieldsFor(kind, body) {
     }
     case "unanswered":
       return { query: text(body.query, 2000, { required: true }), anonymousToken: token(body.anonymousToken) };
+    case "message":
+      if (!["visitor", "bot"].includes(body.role)) throw badRequest("Invalid message.");
+      if (typeof body.sessionId !== "string" || !SESSION_ID.test(body.sessionId)) throw badRequest("Invalid session.");
+      return {
+        role: body.role,
+        text: text(body.text, MAX_MESSAGE_CHARS, { required: true }),
+        sessionId: body.sessionId,
+        anonymousToken: token(body.anonymousToken),
+      };
     case "feedback":
       if (typeof body.isPositive !== "boolean") throw badRequest("Invalid rating.");
       return { isPositive: body.isPositive, anonymousToken: token(body.anonymousToken, { required: true }) };
     default:
       throw badRequest("Unknown record type.");
   }
+}
+
+/**
+ * Appends one message to the visitor's conversation, kept only when the owner
+ * turned on conversation history for this chatbot and is on an active paid
+ * plan. Otherwise it's silently dropped: the widget doesn't need to know.
+ */
+async function appendMessage(chatbotId, chatbot, { role, text: messageText, sessionId, anonymousToken }) {
+  if (chatbot.saveConversations !== true) return;
+  const { access } = await getUserAccessProfile(chatbot.user_id);
+  if (access.plan === "free" || !access.isSubscriptionActive) return;
+
+  const ref = adminDb.collection("conversations").doc(`${chatbotId}_${sessionId}`);
+  await adminDb.runTransaction(async (transaction) => {
+    const snap = await transaction.get(ref);
+    const count = snap.exists ? Number(snap.data().messageCount) || 0 : 0;
+    if (count >= MAX_MESSAGES) return;
+    const message = { role, text: messageText, at: Date.now() };
+    if (!snap.exists) {
+      transaction.set(ref, {
+        chatbotId,
+        ownerId: chatbot.user_id,
+        anonymousToken: anonymousToken || null,
+        startedAt: FieldValue.serverTimestamp(),
+        lastMessageAt: FieldValue.serverTimestamp(),
+        messageCount: 1,
+        visitorMessages: role === "visitor" ? 1 : 0,
+        preview: role === "visitor" ? messageText.slice(0, 200) : null,
+        messages: [message],
+      });
+      return;
+    }
+    const update = {
+      lastMessageAt: FieldValue.serverTimestamp(),
+      messageCount: FieldValue.increment(1),
+      messages: FieldValue.arrayUnion(message),
+    };
+    if (role === "visitor") {
+      update.visitorMessages = FieldValue.increment(1);
+      if (!snap.data().preview) update.preview = messageText.slice(0, 200);
+    }
+    transaction.update(ref, update);
+  });
+}
+
+/** Marks a saved conversation as having left this email, if there is one. */
+async function tagConversationLead(chatbotId, sessionId, email) {
+  if (typeof sessionId !== "string" || !SESSION_ID.test(sessionId)) return;
+  const ref = adminDb.collection("conversations").doc(`${chatbotId}_${sessionId}`);
+  await ref.update({ leadEmail: email }).catch(() => undefined);
 }
 
 /** POST /api/ai/record with { kind, chatbotId, ...fields }. */
@@ -108,6 +174,11 @@ export default async function recordVisitor(req, res) {
       return res.status(404).json({ error: "Chatbot not found." });
     }
 
+    if (kind === "message") {
+      await appendMessage(chatbotId, chatbot, fields);
+      return res.status(201).json({ ok: true });
+    }
+
     const record = {
       chatbotId,
       ownerId: chatbot.user_id,
@@ -129,6 +200,7 @@ export default async function recordVisitor(req, res) {
     } else {
       await collection.add(record);
     }
+    if (kind === "lead") await tagConversationLead(chatbotId, body.sessionId, fields.email);
 
     return res.status(201).json({ ok: true });
   } catch (error) {

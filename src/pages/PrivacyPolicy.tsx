@@ -104,6 +104,11 @@ export default function PrivacyPolicy() {
             business can add answers.
           </li>
           <li>
+            <Term>Conversations:</Term> if the business turns on conversation history (a Pro feature), the whole
+            conversation, meaning the visitor's messages and the chatbot's replies, is saved so the business can read it
+            and improve its answers. While it's on, the chat tells visitors that chats are saved.
+          </li>
+          <li>
             <Term>Email address:</Term> if the business turns on lead capture and the visitor chooses to enter it.
           </li>
           <li>
@@ -183,7 +188,9 @@ export default function PrivacyPolicy() {
           </li>
           <li>
             <Term>In chatbots on customers' websites:</Term> the anonymous browser ID described in section 3, whether the
-            visitor has already given feedback, and whether the greeting bubble has been shown, so it isn't repeated.
+            visitor has already given feedback, and whether the greeting bubble has been shown, so it isn't repeated. When
+            the business saves conversations, a random conversation ID is kept in the browser's session storage, which is
+            cleared when the tab is closed.
           </li>
         </List>
         <p>
@@ -226,6 +233,10 @@ export default function PrivacyPolicy() {
           <li>
             <Term>Visitor data</Term> (questions, leads, feedback and analytics) is kept while the business's account is
             open, unless the business asks us to delete it sooner.
+          </li>
+          <li>
+            <Term>Saved conversations</Term> are deleted automatically 90 days after their last message. The business
+            can delete any of them sooner.
           </li>
           <li>
             <Term>Rate-limiting records</Term> (hashed IP addresses) are only needed for a few minutes.{" "}

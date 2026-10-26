@@ -37,6 +37,7 @@ function normalizeChatbotPayload(payload, uid) {
     faqData: normalizeFaqData(payload.faqData),
     liveChatLink: String(payload.liveChatLink || "").trim(),
     enableLeadCapture: payload.enableLeadCapture === true,
+    saveConversations: payload.saveConversations === true,
     aiEnabled,
     aiTone: aiEnabled ? String(payload.aiTone || "").trim() : "",
     user_id: uid,
@@ -66,6 +67,11 @@ async function saveChatbotConfigTransactional({ uid, chatbotId, normalized }) {
         error.statusCode = 403;
         throw error;
       }
+    }
+
+    // Conversation history is a paid feature; it quietly stays off otherwise.
+    if (normalized.saveConversations && (profile.access.plan === "free" || !profile.access.isSubscriptionActive)) {
+      normalized.saveConversations = false;
     }
 
     if (normalized.aiEnabled) {
@@ -140,6 +146,7 @@ export default async function handler(req, res) {
     return res.status(200).json({
       chatbotId: savedChatbotId,
       aiEnabled: normalized.aiEnabled,
+      saveConversations: normalized.saveConversations,
     });
   } catch (error) {
     console.error("Failed to save chatbot config:", error);

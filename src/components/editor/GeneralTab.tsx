@@ -1,6 +1,6 @@
 import React, { useRef } from "react";
 import { Link } from "react-router-dom";
-import { Sparkles } from "lucide-react";
+import { MessagesSquare, Sparkles } from "lucide-react";
 import { focusRing, primaryButton } from "../../pages/dashboard/ui";
 import { Field, Panel, PanelBody, Row, Switch, inputClass, invalidInput } from "./controls";
 import { ChatbotConfig, ConfigChange, LIMITS, Plan } from "./types";
@@ -282,6 +282,33 @@ const GeneralTab: React.FC<Props> = ({ config, onChange, errors, onLinkBlur, can
                 <p className="mt-0.5 text-caption text-[#647184] dark:text-[#87909D]">
                   {t("aiProText")}
                 </p>
+              </div>
+            </div>
+            <Link to="/plans" className={`${primaryButton} shrink-0 self-start sm:self-auto`}>
+              {t("seePro")}
+            </Link>
+          </div>
+        )}
+      </Panel>
+
+      <Panel title={t("historyTitle")} description={t("historyDesc")}>
+        {canUseAi ? (
+          <Row label={t("saveConversations")} hint={t("saveConversationsHint")}>
+            <Switch
+              checked={config.saveConversations === true}
+              onChange={(v) => onChange("saveConversations", v)}
+              label={t("saveConversations")}
+            />
+          </Row>
+        ) : (
+          <div className="flex flex-col gap-4 px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+            <div className="flex min-w-0 items-start gap-3">
+              <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-[#D8DFE9] bg-[#F3F7FC] text-[#566273] dark:border-[#2B3646] dark:bg-[#141D2B] dark:text-[#9BAABD]">
+                <MessagesSquare size={15} />
+              </span>
+              <div>
+                <p className="text-body-sm font-medium text-[#101723] dark:text-[#D7DFE5]">{t("historyProTitle")}</p>
+                <p className="mt-0.5 text-caption text-[#647184] dark:text-[#87909D]">{t("historyProText")}</p>
               </div>
             </div>
             <Link to="/plans" className={`${primaryButton} shrink-0 self-start sm:self-auto`}>

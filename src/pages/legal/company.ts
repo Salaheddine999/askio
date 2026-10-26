@@ -7,7 +7,7 @@ export const COMPANY = {
   contactEmail: "abw.salaheddine@gmail.com",
   country: "Morocco",
   courts: "the competent courts of Morocco",
-  effectiveDate: "October 23, 2026",
+  effectiveDate: "October 26, 2026",
 };
 
 // Facts to confirm before launch; each stays highlighted until set to true.

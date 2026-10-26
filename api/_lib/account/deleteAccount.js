@@ -60,7 +60,7 @@ export async function deleteAccountData(uid) {
   const chatbotIds = chatbotSnap.docs.map((d) => d.id);
 
   // Visitor data: matched by owner, and by chatbot for older entries saved without one.
-  for (const name of ["leads", "unanswered_queries", "analytics_events", "feedback"]) {
+  for (const name of ["leads", "unanswered_queries", "analytics_events", "feedback", "conversations"]) {
     await deleteMatching(adminDb.collection(name).where("ownerId", "==", uid));
     await deleteByChatbots(name, chatbotIds);
   }

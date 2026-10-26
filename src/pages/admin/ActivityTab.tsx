@@ -4,7 +4,7 @@ import { Ban, RotateCcw, ShieldCheck, Trash2 } from "lucide-react";
 import { EmptyState } from "../dashboard/ui";
 import { LogEntry, LogFilter, logQuery, toLogEntry } from "./data";
 import { Card, FilterChips, Pager, RowsLoading } from "./parts";
-import { rangeSummary, usePaged } from "./usePaged";
+import { rangeSummary, usePaged } from "../../hooks/usePaged";
 
 const ACTIONS: Record<string, { label: string; icon: typeof Ban; tone: string }> = {
   suspend: { label: "Suspended", icon: Ban, tone: "bg-amber-50 text-amber-600 dark:bg-amber-950/40 dark:text-amber-300" },

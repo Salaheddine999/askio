@@ -22,6 +22,7 @@ import {
   X,
   LucideIcon,
   ShieldCheck,
+  MessagesSquare,
 } from "lucide-react";
 import { useIsAdmin } from "../hooks/useIsAdmin";
 import { useT } from "../i18n";
@@ -37,7 +38,7 @@ interface NavbarProps {
   toggleTestMode: () => void;
 }
 
-type NavKey = "workspace" | "resources" | "account" | "dashboard" | "analytics" | "integrations" | "documentation" | "settings" | "admin";
+type NavKey = "workspace" | "resources" | "account" | "dashboard" | "analytics" | "conversations" | "integrations" | "documentation" | "settings" | "admin";
 
 // Titles are keys into navMessages.
 const NAV_GROUPS: { title: NavKey; items: { title: NavKey; href: string; icon: LucideIcon }[] }[] = [
@@ -46,6 +47,7 @@ const NAV_GROUPS: { title: NavKey; items: { title: NavKey; href: string; icon: L
     items: [
       { title: "dashboard", href: "/dashboard", icon: LayoutDashboard },
       { title: "analytics", href: "/analytics", icon: BarChart2 },
+      { title: "conversations", href: "/conversations", icon: MessagesSquare },
       { title: "integrations", href: "/integrations", icon: Blocks },
     ],
   },

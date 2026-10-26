@@ -51,6 +51,8 @@ export interface ChatbotProps {
   greetingBubble?: boolean;
   /** Set by an admin when the owner's account is suspended; the widget stays hidden. */
   suspended?: boolean;
+  /** The owner saves conversations (Pro): messages are sent to be stored, and visitors are told. */
+  saveConversations?: boolean;
   /** The language of the widget's own text, for visitors. English by default. */
   language?: Lang;
   /** The chatbot owner's uid, from the saved config. */
@@ -75,17 +77,61 @@ const Chatbot: React.FC<ChatbotProps> = ({
   greetingBubble = false,
   isPreview = false,
   language,
+  saveConversations = false,
 }) => {
   const t = useMemo(() => makeT(widgetMessages, isLang(language) ? language : "en"), [language]);
   const contactHref = normalizeContactLink(liveChatLink);
 
   // Leads, analytics and ratings go through the server, which checks and
   // rate-limits them. The owner's own preview isn't a visitor: it records nothing.
-  const record = async (kind: "lead" | "event" | "unanswered" | "feedback", fields: Record<string, unknown>) => {
+  const record = async (kind: "lead" | "event" | "unanswered" | "feedback" | "message", fields: Record<string, unknown>) => {
     if (!id || isPreview) return;
     await apiRequest("/api/ai/record", { body: { kind, chatbotId: id, ...fields } });
   };
   const [messages, setMessages] = useState<Message[]>([]);
+
+  // One conversation per chatbot per browser tab, so moving between pages of
+  // the owner's site continues the same saved conversation.
+  const sessionId = useMemo(() => {
+    const key = `askio-chat-session:${id}`;
+    try {
+      const existing = sessionStorage.getItem(key);
+      if (existing) return existing;
+      const created = Array.from(crypto.getRandomValues(new Uint8Array(12)), (b) => b.toString(36).padStart(2, "0")).join("");
+      sessionStorage.setItem(key, created);
+      return created;
+    } catch {
+      return Math.random().toString(36).slice(2, 14).padEnd(12, "0");
+    }
+  }, [id]);
+
+  // Send each new message once, in order, when the owner saves conversations.
+  // The welcome message (index 0) isn't saved; it's the same for everyone.
+  const savedCount = useRef(1);
+  const saveQueue = useRef<Promise<unknown>>(Promise.resolve());
+  useEffect(() => {
+    if (messages.length < savedCount.current) savedCount.current = Math.min(messages.length, 1);
+    if (!saveConversations || !id || isPreview) {
+      savedCount.current = Math.max(messages.length, 1);
+      return;
+    }
+    const fresh = messages.slice(savedCount.current);
+    savedCount.current = Math.max(messages.length, 1);
+    for (const message of fresh) {
+      if (!message.text) continue;
+      saveQueue.current = saveQueue.current
+        .then(() =>
+          record("message", {
+            role: message.sender === "user" ? "visitor" : "bot",
+            text: message.text,
+            sessionId,
+            anonymousToken,
+          })
+        )
+        .catch(() => undefined);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [messages]);
   const [input, setInput] = useState("");
   const [isOpen, setIsOpen] = useState(!isEmbedded);
   const [suggestions, setSuggestions] = useState<string[]>([]);
@@ -203,7 +249,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
 
     try {
       if (id) {
-        await record("lead", { email: leadEmail.trim(), anonymousToken });
+        await record("lead", { email: leadEmail.trim(), anonymousToken, sessionId });
       }
       setIsTyping(false);
       setMessages((prev) => [
@@ -970,6 +1016,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
 
       {/* Footer */}
       <div className="py-2 border-t border-[#D8DFE9]/60 dark:border-[#2B3646]/60 text-center text-[10px] text-[#647184] dark:text-[#9BAABD] bg-[#F3F7FC] dark:bg-[#141D2B] rounded-b-xl">
+        {saveConversations && <p className="mb-0.5 px-4">{t("chatSaved")}</p>}
         {t("poweredBy")}{" "}
         <a
           href="https://getaskio.xyz/"

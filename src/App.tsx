@@ -30,6 +30,7 @@ const pages = {
   integrations: () => import("./pages/Integrations"),
   admin: () => import("./pages/Admin"),
   onboarding: () => import("./pages/Onboarding"),
+  conversations: () => import("./pages/Conversations"),
   plans: () => import("./pages/Plans"),
   privacy: () => import("./pages/PrivacyPolicy"),
   terms: () => import("./pages/TermsOfService"),
@@ -47,6 +48,7 @@ const Analytics = lazyPage(pages.analytics);
 const Integrations = lazyPage(pages.integrations);
 const Admin = lazyPage(pages.admin);
 const Onboarding = lazyPage(pages.onboarding);
+const Conversations = lazyPage(pages.conversations);
 const SuspendedNotice = lazyPage(() => import("./components/SuspendedNotice"));
 const Plans = lazyPage(pages.plans);
 const PrivacyPolicy = lazyPage(pages.privacy);
@@ -292,6 +294,10 @@ const App: React.FC = () => {
               />
               <Route path="/admin" element={user ? <Admin /> : <Navigate to="/auth" />} />
               <Route path="/start" element={user ? <Onboarding /> : <Navigate to="/auth" />} />
+              <Route
+                path="/conversations"
+                element={user ? <Conversations testMode={testMode} /> : <Navigate to="/auth" />}
+              />
               <Route
                 path="/plans"
                 element={<Plans />}

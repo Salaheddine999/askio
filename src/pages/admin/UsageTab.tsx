@@ -3,7 +3,7 @@ import { Sparkles } from "lucide-react";
 import { EmptyState, focusRing } from "../dashboard/ui";
 import { UsageRow, toUsageRow, usageMonth, usageQuery } from "./data";
 import { Card, FilterChips, Pager, PlanBadge, RowsLoading, UsageBar } from "./parts";
-import { PAGE_SIZE, rangeSummary, usePaged } from "./usePaged";
+import { PAGE_SIZE, rangeSummary, usePaged } from "../../hooks/usePaged";
 
 const monthLabel = (month: string) =>
   new Date(`${month}-01T00:00:00Z`).toLocaleDateString("en-US", { month: "long", year: "numeric", timeZone: "UTC" });

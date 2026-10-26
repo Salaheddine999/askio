@@ -4,7 +4,7 @@ import { Users } from "lucide-react";
 import { EmptyState, SearchInput, focusRing } from "../dashboard/ui";
 import { AccountFilter, AdminUser, accountsQuery, toAccount } from "./data";
 import { Card, FilterChips, Pager, PlanBadge, RowsLoading } from "./parts";
-import { rangeSummary, usePaged } from "./usePaged";
+import { rangeSummary, usePaged } from "../../hooks/usePaged";
 
 const FILTERS: { value: AccountFilter; label: string }[] = [
   { value: "all", label: "All" },
