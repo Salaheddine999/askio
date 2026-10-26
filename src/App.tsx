@@ -1,4 +1,4 @@
-import React, { Suspense, lazy, useState, useEffect } from "react";
+import React, { Suspense, useState, useEffect } from "react";
 import { PageSkeleton, Skeleton } from "./components/Skeleton";
 import {
   BrowserRouter as Router,
@@ -12,6 +12,8 @@ import { onAuthStateChanged, User } from "firebase/auth";
 import { Toaster } from "react-hot-toast";
 import { HelmetProvider } from "react-helmet-async";
 import { useSuspension, type Suspension } from "./hooks/useSuspension";
+import { lazyPage } from "./utils/lazyPage";
+import AppErrorBoundary from "./components/AppErrorBoundary";
 
 // Every page is its own chunk, so visitors only download the page they open.
 // That keeps the homepage light, and the chat widget (/chatbot/:id), which
@@ -34,22 +36,22 @@ const pages = {
   navbar: () => import("./components/Navbar"),
 };
 
-const Home = lazy(pages.home);
-const Auth = lazy(pages.auth);
-const Dashboard = lazy(pages.dashboard);
-const EditChatbot = lazy(pages.editor);
-const ChatbotEmbed = lazy(pages.embed);
-const Documentation = lazy(pages.docs);
-const Settings = lazy(pages.settings);
-const Analytics = lazy(pages.analytics);
-const Integrations = lazy(pages.integrations);
-const Admin = lazy(pages.admin);
-const Onboarding = lazy(pages.onboarding);
-const SuspendedNotice = lazy(() => import("./components/SuspendedNotice"));
-const Plans = lazy(pages.plans);
-const PrivacyPolicy = lazy(pages.privacy);
-const TermsOfService = lazy(pages.terms);
-const Navbar = lazy(pages.navbar);
+const Home = lazyPage(pages.home);
+const Auth = lazyPage(pages.auth);
+const Dashboard = lazyPage(pages.dashboard);
+const EditChatbot = lazyPage(pages.editor);
+const ChatbotEmbed = lazyPage(pages.embed);
+const Documentation = lazyPage(pages.docs);
+const Settings = lazyPage(pages.settings);
+const Analytics = lazyPage(pages.analytics);
+const Integrations = lazyPage(pages.integrations);
+const Admin = lazyPage(pages.admin);
+const Onboarding = lazyPage(pages.onboarding);
+const SuspendedNotice = lazyPage(() => import("./components/SuspendedNotice"));
+const Plans = lazyPage(pages.plans);
+const PrivacyPolicy = lazyPage(pages.privacy);
+const TermsOfService = lazyPage(pages.terms);
+const Navbar = lazyPage(pages.navbar);
 
 // Start downloading the current page's chunk right away, in parallel with
 // React starting up, instead of waiting until the router asks for it.
@@ -107,6 +109,12 @@ function RouteFallback() {
  * A suspended account can still sign in, but only Settings (billing, account
  * deletion) opens; every other app page shows why and how to contact us.
  */
+/** Error screen around the routes; it resets when the route changes. */
+function RouteErrorBoundary({ children }: { children: React.ReactNode }) {
+  const { pathname } = useLocation();
+  return <AppErrorBoundary resetKey={pathname}>{children}</AppErrorBoundary>;
+}
+
 function SuspensionGate({ suspension, children }: { suspension: Suspension | null; children: React.ReactNode }) {
   const { pathname } = useLocation();
   if (suspension && isAppRoute(pathname) && pathname !== "/settings") {
@@ -199,6 +207,7 @@ const App: React.FC = () => {
       <Router>
         <div className={`min-h-screen ${darkMode ? "dark" : ""} flex`}>
           {user && (
+            <AppErrorBoundary resetKey="navbar" fallback={null}>
             <Suspense fallback={null}>
             <Navbar
               darkMode={darkMode}
@@ -210,12 +219,14 @@ const App: React.FC = () => {
               toggleTestMode={toggleTestMode}
             />
             </Suspense>
+            </AppErrorBoundary>
           )}
           <div
             className={`flex-1 min-w-0 transition-all duration-300 ${
               user ? `pt-14 lg:pt-0 ${sidebarOpen ? "lg:ml-64" : "lg:ml-[72px]"}` : ""
             }`}
           >
+            <RouteErrorBoundary>
             <Suspense fallback={<RouteFallback />}>
             <SuspensionGate suspension={suspension}>
             <Routes>
@@ -290,6 +301,7 @@ const App: React.FC = () => {
             </Routes>
             </SuspensionGate>
             </Suspense>
+            </RouteErrorBoundary>
             <Toaster
               position="top-center"
               toastOptions={{
