@@ -126,25 +126,6 @@ const AiFaqGenerator: React.FC<AiFaqGeneratorProps> = ({
       console.error("Scraping error:", error);
 
       if (
-        import.meta.env.DEV &&
-        error instanceof Error &&
-        /timed too long|gateway timeout|504/i.test(error.message)
-      ) {
-        try {
-          const { generateFaqsFromUrl } = await import("../utils/ai");
-          const fallbackFaqs = await generateFaqsFromUrl(
-            normalizedUrl,
-            isDeepCrawl,
-            aiTone
-          );
-          openGeneratedFaqs(fallbackFaqs);
-          return;
-        } catch (fallbackError) {
-          console.error("Client-side FAQ fallback failed:", fallbackError);
-        }
-      }
-
-      if (
         !canUseAi &&
         error instanceof Error &&
         /pro|enterprise|limit|enable ai|subscription/i.test(error.message)
