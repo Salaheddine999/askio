@@ -4,7 +4,8 @@ import { Sparkles } from "lucide-react";
 import { focusRing, primaryButton } from "../../pages/dashboard/ui";
 import { Field, Panel, PanelBody, Row, Switch, inputClass, invalidInput } from "./controls";
 import { ChatbotConfig, ConfigChange, LIMITS, Plan } from "./types";
-import { LANGUAGES, isLang, makeT, useT, type Lang } from "../../i18n";
+import { isLang, makeT, useT } from "../../i18n";
+import LanguageSelect from "../LanguageSelect";
 import { widgetMessages } from "../../i18n/widget";
 import { editorMessages } from "../../i18n/messages/editor";
 
@@ -109,12 +110,11 @@ const GeneralTab: React.FC<Props> = ({ config, onChange, errors, onLinkBlur, can
             htmlFor="bot-language"
             hint={t("languageHint")}
           >
-            <select
+            <LanguageSelect
               id="bot-language"
-              className={`${inputClass} h-10 sm:max-w-xs`}
               value={isLang(config.language) ? config.language : "en"}
-              onChange={(e) => {
-                const next = e.target.value as Lang;
+              className="sm:max-w-xs"
+              onChange={(next) => {
                 const before = makeT(widgetMessages, isLang(config.language) ? config.language : "en");
                 const after = makeT(widgetMessages, next);
                 onChange("language", next);
@@ -122,13 +122,7 @@ const GeneralTab: React.FC<Props> = ({ config, onChange, errors, onLinkBlur, can
                 if (config.initialMessage === before("defaultWelcome")) onChange("initialMessage", after("defaultWelcome"));
                 if (config.placeholder === before("defaultPlaceholder")) onChange("placeholder", after("defaultPlaceholder"));
               }}
-            >
-              {LANGUAGES.map((l) => (
-                <option key={l.code} value={l.code}>
-                  {l.label}
-                </option>
-              ))}
-            </select>
+            />
           </Field>
           <Field
             label={t("welcomeMessage")}

@@ -39,7 +39,8 @@ import { redirectToBillingPortal, redirectToProCheckout } from "../utils/billing
 import { PRO_AI_REPLY_LIMIT, PRO_PRICE } from "../utils/pricing";
 import { focusRing, primaryButton, secondaryButton, surface } from "./dashboard/ui";
 import type { Suspension } from "../hooks/useSuspension";
-import { LANGUAGES, useLanguage, useT, type Lang } from "../i18n";
+import { useLanguage, useT } from "../i18n";
+import LanguageSelect from "../components/LanguageSelect";
 import { settingsMessages } from "../i18n/messages/settings";
 import { reviewEmailHref } from "../utils/support";
 
@@ -430,18 +431,7 @@ const Settings: React.FC<SettingsProps> = ({ darkMode, setDarkMode, suspension }
             {/* Appearance */}
             <Section id="appearance" title={t("sectionAppearance")} description={t("appearanceDescription")}>
               <Row label={t("language")} hint={t("languageHint")}>
-                <select
-                  aria-label={t("language")}
-                  value={lang}
-                  onChange={(e) => setLang(e.target.value as Lang)}
-                  className={`${inputClass} h-9 w-44`}
-                >
-                  {LANGUAGES.map((l) => (
-                    <option key={l.code} value={l.code}>
-                      {l.label}
-                    </option>
-                  ))}
-                </select>
+                <LanguageSelect value={lang} onChange={setLang} label={t("language")} size="sm" className="w-48" />
               </Row>
               <Row label={t("theme")} hint={t("themeHint")}>
                 <div
