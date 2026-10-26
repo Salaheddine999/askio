@@ -125,10 +125,22 @@ pull request, run `npm test` and `npx tsc -b`.
 ## License
 
 Askio is free software under the
-[GNU Affero General Public License v3.0](LICENSE) (AGPL-3.0).
+[GNU Affero General Public License v3.0](LICENSE) (AGPL-3.0), with
+[additional terms](ADDITIONAL_TERMS.md) allowed by section 7 of that license.
 
-You may use, change and share it. If you run a modified version as a service
-that other people use, you must make your changed source code available to
-those users under the same license.
+You may use, change and share it. In short:
 
-Copyright © 2024–2026 Askio.
+- **Share your changes.** If you run a modified version as a service that
+  other people use, you must make your changed source code available to them
+  under the same license.
+- **Keep the credit.** Every copy must show "Based on Askio" with a link to
+  https://getaskio.xyz in the chat widget and in the dashboard or website.
+- **Use your own name.** The license gives no rights to the Askio name, the
+  Askio logo or Kio. A modified version you offer to others needs its own
+  name and logo, and must not claim to be Askio or to be made by its authors.
+
+[ADDITIONAL_TERMS.md](ADDITIONAL_TERMS.md) has the full wording.
+
+Copyright © 2024–2026 Salaheddine
+([github.com/Salaheddine999](https://github.com/Salaheddine999)), operating as
+Askio.
