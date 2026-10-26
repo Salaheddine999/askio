@@ -3,7 +3,8 @@ import { AlertTriangle, RotateCcw } from "lucide-react";
 import { useT } from "../i18n";
 import { commonMessages } from "../i18n/messages/common";
 import { isChunkLoadError, reloadForNewVersion } from "../utils/lazyPage";
-import { primaryButton, secondaryButton, surface } from "../pages/dashboard/ui";
+import { reportClientError } from "../utils/monitoring";
+import { primaryButton, secondaryButton, surface } from "../pages/dashboard/styles";
 
 const ErrorScreen: React.FC = () => {
   const t = useT(commonMessages);
@@ -48,6 +49,7 @@ export default class AppErrorBoundary extends React.Component<
   componentDidCatch(error: unknown) {
     console.error("Page failed:", error);
     if (isChunkLoadError(error)) reloadForNewVersion();
+    else reportClientError(error, { boundary: this.props.resetKey === "navbar" ? "sidebar" : "page" });
   }
 
   componentDidUpdate(previous: { resetKey: string }) {

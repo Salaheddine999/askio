@@ -1,4 +1,5 @@
-export default function handler(req, res) {
+import { withMonitoring } from "../_lib/monitoring.js";
+function handler(req, res) {
   const chatbotId = req.query.id;
 
   if (!chatbotId) {
@@ -32,3 +33,5 @@ export default function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.status(200).send(script);
 }
+
+export default withMonitoring("shopify/script", handler);

@@ -213,6 +213,11 @@ export default function PrivacyPolicy() {
             invoices and sales tax. It processes your billing information under its own privacy policy.
           </li>
           <li>
+            <Term>Sentry:</Term> error reports, so we can find and fix problems. A report describes the error, the page and
+            the browser, and for signed-in customers, an account ID. It doesn't include messages, email addresses or IP
+            addresses.
+          </li>
+          <li>
             <Term>Shopify:</Term> only if you connect a store.
           </li>
         </List>

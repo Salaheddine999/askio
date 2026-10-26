@@ -1,4 +1,5 @@
 import { generateChatResponse } from "../ai.js";
+import { sendError } from "../response.js";
 import { assertChatbotAiAvailable } from "../plan.js";
 import { getMonthlyAiReplies, recordAiReply } from "../aiUsage.js";
 import { takeRateLimit, visitorKey } from "../rateLimit.js";
@@ -10,10 +11,6 @@ const MAX_HISTORY_CHARS = 500;
 const VISITOR_PER_MINUTE = 12;
 const CHATBOT_PER_MINUTE = 60;
 
-function sendError(res, error) {
-  const statusCode = error.statusCode || 500;
-  return res.status(statusCode).json({ error: error.message || "Request failed." });
-}
 
 // Only the last few messages matter for context, and each is trimmed, so a
 // long or crafted conversation can't inflate the prompt.

@@ -14,7 +14,7 @@ function hasPaidAccessUntilPeriodEnd(subscriptionStatus, currentPeriodEnd) {
   return !Number.isNaN(endDate.getTime()) && endDate.getTime() > Date.now();
 }
 
-function buildAccessProfile(userData = {}) {
+export function buildAccessProfile(userData = {}) {
   const legacyPlan = userData.isPro ? "pro" : "free";
   const storedPlan = userData.plan || legacyPlan;
   const subscriptionStatus =

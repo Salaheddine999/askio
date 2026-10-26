@@ -1,5 +1,6 @@
 import deleteOwnAccount from "../_lib/account/deleteAccount.js";
 import adminAction from "../_lib/account/adminActions.js";
+import { withMonitoring } from "../_lib/monitoring.js";
 
 // Account endpoints share one function to stay within Vercel's function limit:
 //   POST /api/account/delete            the signed-in user deletes their own account
@@ -13,8 +14,10 @@ const HANDLERS = {
   "admin-delete": (req, res) => adminAction(req, res, "delete"),
 };
 
-export default function handler(req, res) {
+function handler(req, res) {
   const route = HANDLERS[req.query.action];
   if (!route) return res.status(404).json({ error: "Not found." });
   return route(req, res);
 }
+
+export default withMonitoring("account", handler);

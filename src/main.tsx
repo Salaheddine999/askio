@@ -3,6 +3,9 @@ import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import { LanguageProvider } from "./i18n";
 import { reloadForNewVersion } from "./utils/lazyPage";
+import { startMonitoring } from "./utils/monitoring";
+
+startMonitoring();
 
 // Vite reports a page's code or styles failing to preload here, typically
 // after a deploy replaced them. Reload once to get the new version.

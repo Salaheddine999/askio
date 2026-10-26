@@ -1,12 +1,10 @@
 import { FieldValue } from "firebase-admin/firestore";
+import { sendError } from "../_lib/response.js";
 import { requireUser } from "../_lib/auth.js";
 import { adminDb } from "../_lib/firebaseAdmin.js";
 import { assertNotSuspended, getUserAccessProfile } from "../_lib/plan.js";
+import { withMonitoring } from "../_lib/monitoring.js";
 
-function sendError(res, error) {
-  const statusCode = error.statusCode || 500;
-  return res.status(statusCode).json({ error: error.message || "Request failed." });
-}
 
 function normalizeFaqData(faqData) {
   if (!Array.isArray(faqData)) return [];
@@ -121,7 +119,7 @@ async function saveChatbotConfigTransactional({ uid, chatbotId, normalized }) {
   return targetRef.id;
 }
 
-export default async function handler(req, res) {
+async function handler(req, res) {
   if (req.method !== "POST") {
     res.setHeader("Allow", "POST");
     return res.status(405).json({ error: "Method not allowed." });
@@ -153,3 +151,5 @@ export default async function handler(req, res) {
     return sendError(res, error);
   }
 }
+
+export default withMonitoring("chatbots/save", handler);

@@ -1,6 +1,7 @@
 import crypto from 'crypto';
+import { reportError, withMonitoring } from "../_lib/monitoring.js";
 
-export default async function handler(req, res) {
+async function handler(req, res) {
   try {
     const { shop, code, state, hmac } = req.query;
 
@@ -122,6 +123,9 @@ export default async function handler(req, res) {
     res.redirect(302, successUrl);
   } catch (error) {
     console.error('Callback error:', error);
+    reportError(error, { route: "shopify/callback" });
     return res.status(500).json({ error: 'Internal server error', details: error.message });
   }
 }
+
+export default withMonitoring("shopify/callback", handler);

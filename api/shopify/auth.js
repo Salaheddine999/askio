@@ -1,6 +1,7 @@
 import crypto from 'crypto';
+import { reportError, withMonitoring } from "../_lib/monitoring.js";
 
-export default function handler(req, res) {
+function handler(req, res) {
   try {
     const { shop, chatbotId } = req.query;
 
@@ -59,6 +60,9 @@ export default function handler(req, res) {
     res.redirect(302, installUrl);
   } catch (err) {
     console.error('Auth error:', err);
+    reportError(err, { route: "shopify/auth" });
     res.status(500).json({ error: 'Internal server error', details: err.message });
   }
 }
+
+export default withMonitoring("shopify/auth", handler);

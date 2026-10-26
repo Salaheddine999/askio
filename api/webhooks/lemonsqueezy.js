@@ -5,6 +5,7 @@ import {
   verifyWebhookSignature,
 } from "../_lib/lemonsqueezy.js";
 import { readRawBody } from "../_lib/rawBody.js";
+import { reportError, withMonitoring } from "../_lib/monitoring.js";
 
 export const config = {
   api: {
@@ -12,7 +13,7 @@ export const config = {
   },
 };
 
-function mapPlanStatus(lsStatus = "") {
+export function mapPlanStatus(lsStatus = "") {
   const normalized = String(lsStatus || "").toLowerCase();
 
   if (["active", "on_trial", "cancelled"].includes(normalized)) {
@@ -111,7 +112,7 @@ async function handleSubscriptionEvent(payload) {
   );
 }
 
-export default async function handler(req, res) {
+async function handler(req, res) {
   if (req.method !== "POST") {
     res.setHeader("Allow", "POST");
     return res.status(405).json({ error: "Method not allowed." });
@@ -142,6 +143,9 @@ export default async function handler(req, res) {
     return res.status(200).json({ ok: true });
   } catch (error) {
     console.error("Lemon Squeezy webhook error:", error);
+    reportError(error, { route: "webhooks/lemonsqueezy" });
     return res.status(500).json({ error: "Webhook handling failed." });
   }
 }
+
+export default withMonitoring("webhooks/lemonsqueezy", handler);

@@ -1,6 +1,7 @@
 import crypto from "node:crypto";
 import { adminDb } from "../../_lib/firebaseAdmin.js";
 import { readRawBody } from "../../_lib/rawBody.js";
+import { withMonitoring } from "../../_lib/monitoring.js";
 
 // The signature covers the exact bytes Shopify sent, so read the body raw.
 export const config = {
@@ -27,7 +28,7 @@ function isSignedByShopify(rawBody, signature, secret) {
 // Askio never stores data about a store's customers, so the customer requests
 // only need acknowledging. shop-redact (sent 48 hours after uninstall) deletes
 // the store's connection record.
-export default async function handler(req, res) {
+async function handler(req, res) {
   if (req.method !== "POST") {
     res.setHeader("Allow", "POST");
     return res.status(405).json({ error: "Method not allowed." });
@@ -72,3 +73,5 @@ export default async function handler(req, res) {
 
   return res.status(404).json({ error: "Unknown webhook topic." });
 }
+
+export default withMonitoring("shopify/webhooks", handler);

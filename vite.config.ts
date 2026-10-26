@@ -1,5 +1,6 @@
 import { defineConfig, loadEnv } from "vite";
 import react from "@vitejs/plugin-react";
+import { sentryVitePlugin } from "@sentry/vite-plugin";
 import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
 
@@ -9,11 +10,34 @@ const rootDir = dirname(fileURLToPath(import.meta.url));
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, rootDir, "");
   const apiProxyTarget = env.VITE_API_PROXY_TARGET || "https://askio.vercel.app";
+  // Source maps go to Sentry only on builds that have an auth token (set on
+  // Vercel), and are deleted afterwards so they're never served publicly.
+  const sentryToken = process.env.SENTRY_AUTH_TOKEN || env.SENTRY_AUTH_TOKEN;
+  const uploadSourceMaps = Boolean(sentryToken && (process.env.SENTRY_PROJECT || env.SENTRY_PROJECT));
 
   return {
     root: rootDir,
     cacheDir: resolve(rootDir, "node_modules/.vite"),
-    plugins: [react()],
+    plugins: [
+      react(),
+      ...(uploadSourceMaps
+        ? [
+            sentryVitePlugin({
+              org: process.env.SENTRY_ORG || env.SENTRY_ORG || "eddy-tech",
+              project: process.env.SENTRY_PROJECT || env.SENTRY_PROJECT,
+              authToken: sentryToken,
+              release: { name: process.env.VERCEL_GIT_COMMIT_SHA },
+              sourcemaps: { filesToDeleteAfterUpload: ["./dist/**/*.map"] },
+              telemetry: false,
+            }),
+          ]
+        : []),
+    ],
+    build: { sourcemap: uploadSourceMaps ? "hidden" : false },
+    define: {
+      // Lets the browser tag reports with the same release as the uploaded maps.
+      "import.meta.env.VITE_SENTRY_RELEASE": JSON.stringify(process.env.VERCEL_GIT_COMMIT_SHA || ""),
+    },
     server: {
       proxy: {
         "/api": {

@@ -9,8 +9,9 @@ export function normalizeContactLink(value: string | undefined | null): string |
   const raw = (value || "").trim();
   if (!raw) return null;
 
-  if (EMAIL.test(raw)) return `mailto:${raw}`;
+  // Check for mailto: first: "mailto:a@b.co" also looks like a bare email.
   if (/^mailto:/i.test(raw)) return EMAIL.test(raw.slice(7)) ? raw : null;
+  if (EMAIL.test(raw)) return `mailto:${raw}`;
   if (/^tel:\+?[\d\s().-]{5,}$/i.test(raw)) return raw.replace(/\s+/g, "");
 
   const withProtocol = /^[a-z][a-z\d+.-]*:/i.test(raw) ? raw : `https://${raw}`;

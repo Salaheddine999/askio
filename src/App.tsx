@@ -13,6 +13,7 @@ import { Toaster } from "react-hot-toast";
 import { HelmetProvider } from "react-helmet-async";
 import { useSuspension, type Suspension } from "./hooks/useSuspension";
 import { lazyPage } from "./utils/lazyPage";
+import { setMonitoringUser } from "./utils/monitoring";
 import AppErrorBoundary from "./components/AppErrorBoundary";
 
 // Every page is its own chunk, so visitors only download the page they open.
@@ -141,6 +142,7 @@ const App: React.FC = () => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
       setAuthLoading(false);
+      setMonitoringUser(currentUser?.uid ?? null);
       writeStorage(SIGNED_IN_KEY, currentUser ? "1" : "0");
     });
 

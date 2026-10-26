@@ -1,5 +1,6 @@
 import createCheckout from "../_lib/billing/createCheckout.js";
 import customerPortal from "../_lib/billing/customerPortal.js";
+import { withMonitoring } from "../_lib/monitoring.js";
 
 // Billing endpoints share one function to stay within Vercel's function limit:
 //   POST /api/billing/create-checkout
@@ -9,8 +10,10 @@ const HANDLERS = {
   "customer-portal": customerPortal,
 };
 
-export default function handler(req, res) {
+function handler(req, res) {
   const route = HANDLERS[req.query.action];
   if (!route) return res.status(404).json({ error: "Not found." });
   return route(req, res);
 }
+
+export default withMonitoring("billing", handler);
