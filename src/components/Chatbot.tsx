@@ -92,6 +92,9 @@ const Chatbot: React.FC<ChatbotProps> = ({
     await apiRequest("/api/ai/record", { body: { kind, chatbotId: id, ...fields } });
   };
   const [messages, setMessages] = useState<Message[]>([]);
+  // Only the latest reply the bot couldn't answer offers a human, so several
+  // misses in a row don't repeat the button.
+  const lastFallbackIndex = messages.reduce((last, m, i) => (m.isFallback ? i : last), -1);
 
   // One conversation per chatbot per browser tab, so moving between pages of
   // the owner's site continues the same saved conversation.
@@ -855,7 +858,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
                 {message.text}
                 
                 {/* Fallback Live Chat Link */}
-                {message.isFallback && contactHref && (
+                {message.isFallback && index === lastFallbackIndex && contactHref && (
                   <div className="mt-2.5 flex justify-start">
                     <a
                       href={contactHref}
@@ -897,10 +900,19 @@ const Chatbot: React.FC<ChatbotProps> = ({
                         {t("sendEmail")}
                       </button>
                     </form>
-                    {liveChatLink && (
-                       <div className="mt-2 text-center text-[11px] text-[#647184]">
-                         Or <a href={liveChatLink.startsWith('http') ? liveChatLink : `https://${liveChatLink}`} target="_blank" rel="noopener noreferrer" className="underline hover:text-[#101723] dark:hover:text-[#D7DFE5]" onClick={(e) => e.stopPropagation()}>chat with us</a> directly.
-                       </div>
+                    {contactHref && (
+                      <div className="mt-2 text-center text-[11px] text-[#647184]">
+                        {t("preferToTalk")}{" "}
+                        <a
+                          href={contactHref}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="underline hover:text-[#101723] dark:hover:text-[#D7DFE5]"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          {t("chatWithHuman")}
+                        </a>
+                      </div>
                     )}
                   </div>
                 )}
