@@ -10,6 +10,7 @@ import bot1 from "../assets/chat1.svg";
 import { apiRequest } from "../utils/api";
 import { LiveOrb } from "./LiveOrb";
 import { headerOrbPropsFor, orbPropsFor, type LauncherStyle } from "../utils/orbColors";
+import { isOwnerBrowsing } from "../utils/ownerSession";
 import { normalizeContactLink } from "../utils/links";
 import { isLang, makeT, type Lang } from "../i18n";
 import { widgetMessages } from "../i18n/widget";
@@ -61,6 +62,7 @@ export interface ChatbotProps {
 
 const Chatbot: React.FC<ChatbotProps> = ({
   id,
+  user_id,
   title,
   primaryColor,
   secondaryColor,
@@ -83,9 +85,10 @@ const Chatbot: React.FC<ChatbotProps> = ({
   const contactHref = normalizeContactLink(liveChatLink);
 
   // Leads, analytics and ratings go through the server, which checks and
-  // rate-limits them. The owner's own preview isn't a visitor: it records nothing.
+  // rate-limits them. The owner isn't a visitor: their preview, and their own
+  // chats with the bot in a browser where they're signed in, record nothing.
   const record = async (kind: "lead" | "event" | "unanswered" | "feedback" | "message", fields: Record<string, unknown>) => {
-    if (!id || isPreview) return;
+    if (!id || isPreview || isOwnerBrowsing(user_id)) return;
     await apiRequest("/api/ai/record", { body: { kind, chatbotId: id, ...fields } });
   };
   const [messages, setMessages] = useState<Message[]>([]);
