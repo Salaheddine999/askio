@@ -33,6 +33,7 @@ interface ChatbotInfo {
   title: string;
   primaryColor?: string;
   secondaryColor?: string;
+  launcherStyle?: string;
   saveConversations: boolean;
 }
 
@@ -130,7 +131,7 @@ const ChatbotPicker: React.FC<{ chatbots: ChatbotInfo[]; value: string; onChange
         aria-label={t("chatbotFilter")}
         className={`inline-flex h-9 w-56 items-center gap-2 rounded-lg border border-[#D8DFE9] bg-[#F9FCFF] pl-2.5 pr-2.5 text-left text-[13px] font-medium text-[#101723] transition-colors hover:border-[#B8C3D1] dark:border-[#2B3646] dark:bg-[#1A2533] dark:text-[#D7DFE5] ${focusRing}`}
       >
-        {selected ? <BotAvatar color={selected.primaryColor} size={18} /> : <Bot size={15} className="shrink-0 text-[#647184]" />}
+        {selected ? <BotAvatar color={selected.primaryColor} launcherStyle={selected.launcherStyle} size={18} /> : <Bot size={15} className="shrink-0 text-[#647184]" />}
         <span className="min-w-0 flex-1 truncate">{selected ? selected.title || t("untitled") : t("allChatbots")}</span>
         <ChevronsUpDown size={14} className="ml-1 shrink-0 text-[#87909D]" />
       </ListboxButton>
@@ -146,7 +147,7 @@ const ChatbotPicker: React.FC<{ chatbots: ChatbotInfo[]; value: string; onChange
             value={bot.id}
             className="group flex cursor-pointer items-center gap-2.5 rounded-lg px-2 py-2 text-body-sm text-[#101723] data-[focus]:bg-[#F3F7FC] dark:text-[#D7DFE5] dark:data-[focus]:bg-[#273444]"
           >
-            {bot.id === "all" ? <Bot size={16} className="shrink-0 text-[#647184]" /> : <BotAvatar color={bot.primaryColor} size={20} />}
+            {bot.id === "all" ? <Bot size={16} className="shrink-0 text-[#647184]" /> : <BotAvatar color={bot.primaryColor} launcherStyle={bot.launcherStyle} size={20} />}
             <span className="min-w-0 flex-1 truncate group-data-[selected]:font-medium">{bot.title || t("untitled")}</span>
             <Check size={14} className="invisible shrink-0 group-data-[selected]:visible" />
           </ListboxOption>
@@ -184,7 +185,7 @@ const Transcript: React.FC<{
         >
           <ArrowLeft size={16} />
         </button>
-        <BotAvatar color={chatbot?.primaryColor} size={32} />
+        <BotAvatar color={chatbot?.primaryColor} launcherStyle={chatbot?.launcherStyle} size={32} />
         <div className="min-w-0 flex-1">
           <p className="truncate text-body-sm font-semibold text-[#101723] dark:text-[#E7EDF6]">{chatbot?.title || t("untitled")}</p>
           <p className="mt-0.5 text-caption text-[#647184] dark:text-[#87909D]">
@@ -279,7 +280,7 @@ const Conversations: React.FC<{ testMode?: boolean }> = ({ testMode = false }) =
   useEffect(() => {
     if (testMode) {
       setChatbots(
-        DUMMY_CHATBOTS.map((c) => ({ id: c.id, title: c.title, primaryColor: c.primaryColor, saveConversations: true }))
+        DUMMY_CHATBOTS.map((c) => ({ id: c.id, title: c.title, primaryColor: c.primaryColor, launcherStyle: c.launcherStyle, saveConversations: true }))
       );
       return;
     }
@@ -292,6 +293,7 @@ const Conversations: React.FC<{ testMode?: boolean }> = ({ testMode = false }) =
             title: d.data().title || d.data().name || "",
             primaryColor: d.data().primaryColor,
             secondaryColor: d.data().secondaryColor,
+            launcherStyle: d.data().launcherStyle,
             saveConversations: d.data().saveConversations === true,
           }))
         )
@@ -431,7 +433,7 @@ const Conversations: React.FC<{ testMode?: boolean }> = ({ testMode = false }) =
                       selected ? "bg-[#F3F7FC] dark:bg-[#141D2B]" : "hover:bg-[#F3F7FC]/70 dark:hover:bg-[#141D2B]/60"
                     }`}
                   >
-                    <BotAvatar color={bot?.primaryColor} size={28} />
+                    <BotAvatar color={bot?.primaryColor} launcherStyle={bot?.launcherStyle} size={28} />
                     <span className="min-w-0 flex-1">
                       <span className="flex items-baseline justify-between gap-2">
                         <span className="truncate text-caption font-medium text-[#566273] dark:text-[#9BAABD]">

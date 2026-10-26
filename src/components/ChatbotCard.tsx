@@ -29,6 +29,7 @@ interface ChatbotCardProps {
     isActive?: boolean;
     aiEnabled?: boolean;
     primaryColor?: string;
+    launcherStyle?: string;
     initialMessage?: string;
     faqData?: unknown[];
   };
@@ -114,7 +115,7 @@ const ChatbotCard: React.FC<ChatbotCardProps> = ({
       <tr className="group transition-colors hover:bg-[#F3F7FC] dark:hover:bg-[#1F2B3A]">
         <td className="py-3 pl-3 pr-2 sm:px-6">
           <button onClick={() => onEdit(chatbot.id)} className={`flex items-center gap-3 rounded text-left ${focusRing}`}>
-            <BotAvatar color={chatbot.primaryColor} size={34} muted={!isActive} />
+            <BotAvatar color={chatbot.primaryColor} launcherStyle={chatbot.launcherStyle} size={34} muted={!isActive} />
             <span className="min-w-0">
               <span className="block max-w-[8.5rem] truncate text-body-sm font-medium text-[#101723] sm:max-w-[16rem] dark:text-[#D7DFE5]">
                 {chatbot.title}
@@ -208,11 +209,11 @@ const ChatbotCard: React.FC<ChatbotCardProps> = ({
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.25, delay: index * 0.04, ease: "easeOut" }}
-      className="group relative flex flex-col rounded-2xl border border-[#D8DFE9] bg-[#F9FCFF] shadow-[0_1px_2px_rgba(16,23,35,0.04)] transition-[box-shadow,border-color] duration-200 hover:border-[#C9D3E0] hover:shadow-[0_10px_28px_-8px_rgba(16,23,35,0.16)] dark:border-[#2B3646] dark:bg-[#1A2533] dark:hover:border-[#39485B] dark:hover:shadow-[0_10px_28px_-8px_rgba(0,0,0,0.5)]"
+      className="group relative flex flex-col rounded-2xl border border-[#D8DFE9] bg-[#F9FCFF] shadow-[0_1px_2px_rgba(16,23,35,0.04)] transition-colors duration-200 hover:border-[#C9D3E0] dark:border-[#2B3646] dark:bg-[#1A2533] dark:hover:border-[#39485B]"
     >
       <div className="flex flex-1 flex-col p-4">
         <div className="flex items-start gap-3">
-          <BotAvatar color={chatbot.primaryColor} size={40} muted={!isActive} />
+          <BotAvatar color={chatbot.primaryColor} launcherStyle={chatbot.launcherStyle} size={40} muted={!isActive} />
           <div className="min-w-0 flex-1">
             <button
               onClick={() => onEdit(chatbot.id)}

@@ -64,6 +64,7 @@ interface ChatbotInfo {
   id: string;
   title: string;
   primaryColor?: string;
+  launcherStyle?: string;
 }
 
 type RangeId = "7d" | "30d" | "90d" | "all";
@@ -190,7 +191,7 @@ export default function Analytics({ testMode = false }: AnalyticsProps) {
   useEffect(() => {
     if (testMode) {
       const sample = sampleData();
-      setChatbots(DUMMY_CHATBOTS.map((c) => ({ id: c.id, title: c.title, primaryColor: c.primaryColor })));
+      setChatbots(DUMMY_CHATBOTS.map((c) => ({ id: c.id, title: c.title, primaryColor: c.primaryColor, launcherStyle: c.launcherStyle })));
       setEvents(sample.events);
       setUnanswered(sample.unanswered);
       setLeads(sample.leads);
@@ -208,6 +209,7 @@ export default function Analytics({ testMode = false }: AnalyticsProps) {
           id: d.id,
           title: d.data().title || "",
           primaryColor: d.data().primaryColor,
+          launcherStyle: d.data().launcherStyle,
         }));
         setChatbots(bots);
         if (bots.length === 0) return;
@@ -615,7 +617,7 @@ export default function Analytics({ testMode = false }: AnalyticsProps) {
                                 </td>
                                 <td className="hidden px-6 py-3 sm:table-cell">
                                   <span className="flex items-center gap-2 text-body-sm text-[#566273] dark:text-[#9BAABD]">
-                                    <BotAvatar color={bot?.primaryColor} size={20} />
+                                    <BotAvatar color={bot?.primaryColor} launcherStyle={bot?.launcherStyle} size={20} />
                                     {bot?.title || t("unknownChatbot")}
                                   </span>
                                 </td>
@@ -680,7 +682,7 @@ function ChatbotFilter({
       <ListboxButton
         className={`inline-flex h-9 w-48 items-center gap-2 rounded-lg border border-[#D8DFE9] bg-[#F9FCFF] px-2.5 text-left text-[13px] font-medium text-[#101723] transition-colors hover:border-[#B8C3D1] dark:border-[#2B3646] dark:bg-[#1A2533] dark:text-[#D7DFE5] ${focusRing}`}
       >
-        {selected ? <BotAvatar color={selected.primaryColor} size={18} /> : <Bot size={15} className="shrink-0 text-[#647184]" />}
+        {selected ? <BotAvatar color={selected.primaryColor} launcherStyle={selected.launcherStyle} size={18} /> : <Bot size={15} className="shrink-0 text-[#647184]" />}
         <span className="min-w-0 flex-1 truncate">{selected?.title || t("allChatbots")}</span>
         <ChevronsUpDown size={14} className="shrink-0 text-[#87909D]" />
       </ListboxButton>
@@ -697,7 +699,7 @@ function ChatbotFilter({
             value={bot.id}
             className="group flex cursor-pointer items-center gap-2.5 rounded-lg px-2 py-2 text-body-sm text-[#101723] data-[focus]:bg-[#F3F7FC] dark:text-[#D7DFE5] dark:data-[focus]:bg-[#273444]"
           >
-            {bot.id === "all" ? <Bot size={16} className="shrink-0 text-[#647184]" /> : <BotAvatar color={bot.primaryColor} size={20} />}
+            {bot.id === "all" ? <Bot size={16} className="shrink-0 text-[#647184]" /> : <BotAvatar color={bot.primaryColor} launcherStyle={bot.launcherStyle} size={20} />}
             <span className="min-w-0 flex-1 truncate group-data-[selected]:font-medium">{bot.title}</span>
             <Check size={14} className="invisible shrink-0 group-data-[selected]:visible" />
           </ListboxOption>

@@ -408,7 +408,7 @@ const EditChatbot: React.FC = () => {
                   {t("dashboard")}
                 </Link>
                 <div className="mt-2 flex min-w-0 items-center gap-3">
-                  <BotAvatar color={config.primaryColor} size={34} />
+                  <BotAvatar color={config.primaryColor} launcherStyle={config.launcherStyle} size={34} />
                   <h1 className="truncate font-serif text-h2 tracking-tight text-[#101723] sm:text-h1 dark:text-[#D7DFE5]">
                     {heading}
                   </h1>

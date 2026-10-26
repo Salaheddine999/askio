@@ -39,6 +39,7 @@ interface Chatbot {
   id: string;
   title: string;
   primaryColor?: string;
+  launcherStyle?: string;
   isActive?: boolean;
 }
 
@@ -199,6 +200,7 @@ export default function Integrations({ testMode = false }: IntegrationsProps) {
         id: d.id,
         title: d.data().title || "",
         primaryColor: d.data().primaryColor,
+        launcherStyle: d.data().launcherStyle,
         isActive: d.data().isActive,
       }));
       setChatbots(bots);
@@ -403,7 +405,7 @@ export default function Integrations({ testMode = false }: IntegrationsProps) {
                     </span>
                     {selectedBot && (
                       <span className="inline-flex items-center gap-1.5">
-                        <BotAvatar color={selectedBot.primaryColor} size={16} />
+                        <BotAvatar color={selectedBot.primaryColor} launcherStyle={selectedBot.launcherStyle} size={16} />
                         {selectedBot.title}
                       </span>
                     )}
@@ -604,7 +606,7 @@ function ChatbotPicker({
       <ListboxButton
         className={`flex h-11 w-full items-center gap-2.5 rounded-lg border border-[#D8DFE9] bg-[#F9FCFF] px-2.5 text-left transition-colors hover:border-[#B8C3D1] data-[open]:border-[#101723] dark:border-[#2B3646] dark:bg-[#141D2B] dark:hover:border-[#39485B] dark:data-[open]:border-[#9BAABD] ${focusRing}`}
       >
-        <BotAvatar color={selected?.primaryColor} size={26} muted={selected?.isActive === false} />
+        <BotAvatar color={selected?.primaryColor} launcherStyle={selected?.launcherStyle} size={26} muted={selected?.isActive === false} />
         <span className="min-w-0 flex-1 truncate text-body-sm font-medium text-[#101723] dark:text-[#D7DFE5]">
           {selected?.title || t("selectChatbot")}
         </span>
@@ -623,7 +625,7 @@ function ChatbotPicker({
             value={bot.id}
             className="group flex cursor-pointer items-center gap-2.5 rounded-lg px-2 py-2 text-body-sm data-[focus]:bg-[#F3F7FC] dark:data-[focus]:bg-[#273444]"
           >
-            <BotAvatar color={bot.primaryColor} size={22} muted={bot.isActive === false} />
+            <BotAvatar color={bot.primaryColor} launcherStyle={bot.launcherStyle} size={22} muted={bot.isActive === false} />
             <span className="min-w-0 flex-1 truncate text-[#101723] group-data-[selected]:font-medium dark:text-[#D7DFE5]">
               {bot.title}
             </span>

@@ -6,6 +6,8 @@ export interface Chatbot {
   aiEnabled?: boolean;
   /** Solid hex or a CSS linear-gradient, as saved by the editor. */
   primaryColor?: string;
+  /** The widget's launcher: the chat-bubble button ("classic", the default) or the Kio orb. */
+  launcherStyle?: "classic" | "orb";
   initialMessage?: string;
   faqData?: unknown[];
   createdAt: Date;
