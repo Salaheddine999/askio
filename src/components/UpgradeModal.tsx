@@ -2,6 +2,8 @@ import React from "react";
 import { X, Sparkles, CheckCircle2 } from "lucide-react";
 import Button from "./Button";
 import { redirectToProCheckout } from "../utils/billing";
+import { useT } from "../i18n";
+import { settingsMessages } from "../i18n/messages/settings";
 
 interface UpgradeModalProps {
   isOpen: boolean;
@@ -9,6 +11,7 @@ interface UpgradeModalProps {
 }
 
 const UpgradeModal: React.FC<UpgradeModalProps> = ({ isOpen, onClose }) => {
+  const t = useT(settingsMessages);
   if (!isOpen) return null;
 
   return (
@@ -26,7 +29,7 @@ const UpgradeModal: React.FC<UpgradeModalProps> = ({ isOpen, onClose }) => {
             <button
                 onClick={onClose}
                 className="absolute top-3 right-3 p-1.5 rounded-full bg-black/20 text-white hover:bg-black/40 transition-colors"
-                aria-label="Close"
+                aria-label={t("upgradeClose")}
             >
                 <X size={16} />
             </button>
@@ -34,24 +37,24 @@ const UpgradeModal: React.FC<UpgradeModalProps> = ({ isOpen, onClose }) => {
         
         <div className="p-6 text-center">
           <h2 className="text-xl font-bold text-[#101723] dark:text-[#D7DFE5] mb-2 font-serif">
-            Unlock AI Chatbots
+            {t("upgradeTitle")}
           </h2>
           <p className="text-[#566273] dark:text-[#9BAABD] text-sm mb-6">
-            Free plans can create unlimited manual chatbots. Upgrade to Pro to enable AI on up to 10 chatbots.
+            {t("upgradeBody")}
           </p>
 
           <div className="space-y-3 mb-8 text-left max-w-[240px] mx-auto">
             <div className="flex items-center gap-3 text-sm text-[#101723] dark:text-[#D7DFE5]">
                 <CheckCircle2 size={16} className="text-green-500 shrink-0" />
-                <span>AI on up to 10 chatbots</span>
+                <span>{t("upgradeFeatureChatbots")}</span>
             </div>
             <div className="flex items-center gap-3 text-sm text-[#101723] dark:text-[#D7DFE5]">
                 <CheckCircle2 size={16} className="text-green-500 shrink-0" />
-                <span>AI FAQ generation and AI responses</span>
+                <span>{t("upgradeFeatureFaq")}</span>
             </div>
             <div className="flex items-center gap-3 text-sm text-[#101723] dark:text-[#D7DFE5]">
                 <CheckCircle2 size={16} className="text-green-500 shrink-0" />
-                <span>Remove Askio branding</span>
+                <span>{t("upgradeFeatureBranding")}</span>
             </div>
           </div>
 
@@ -63,7 +66,7 @@ const UpgradeModal: React.FC<UpgradeModalProps> = ({ isOpen, onClose }) => {
             className="w-full bg-[#101723] hover:bg-[#243040] text-white dark:bg-[#D7DFE5] dark:text-[#141D2B] dark:hover:bg-[#E7EDF6] shadow-lg py-2.5 rounded-xl font-medium transition-all group"
           >
             <span className="flex items-center justify-center gap-2">
-                Upgrade to Pro
+                {t("upgradeToPro")}
                 <Sparkles size={16} className="group-hover:rotate-12 transition-transform" />
             </span>
           </Button>
@@ -72,7 +75,7 @@ const UpgradeModal: React.FC<UpgradeModalProps> = ({ isOpen, onClose }) => {
             onClick={onClose}
             className="mt-4 text-xs font-medium text-[#647184] hover:text-[#101723] dark:hover:text-white transition-colors"
           >
-              Maybe later
+              {t("upgradeLater")}
           </button>
         </div>
       </div>

@@ -4,6 +4,8 @@ import { MessageSquareText, Pencil, Plus, Search, Trash2 } from "lucide-react";
 import { EmptyState, focusRing, primaryButton, secondaryButton, surface } from "../../pages/dashboard/ui";
 import { Field, inputClass } from "./controls";
 import { LIMITS } from "./types";
+import { useT } from "../../i18n";
+import { editorMessages } from "../../i18n/messages/editor";
 
 type Faq = { question: string; answer: string };
 
@@ -25,6 +27,7 @@ const FaqEditor: React.FC<{
   onSave: (faq: Faq) => void;
   onCancel: () => void;
 }> = ({ initial, isNew, others, onSave, onCancel }) => {
+  const t = useT(editorMessages);
   const [draft, setDraft] = useState(initial);
   const questionRef = useRef<HTMLInputElement>(null);
   const answerRef = useRef<HTMLTextAreaElement>(null);
@@ -55,28 +58,28 @@ const FaqEditor: React.FC<{
       className="space-y-4 bg-[#F3F7FC] px-5 py-5 sm:px-6 dark:bg-[#141D2B]"
     >
       <Field
-        label="Question"
+        label={t("question")}
         htmlFor="faq-question"
-        hint={duplicate ? "You already have this question. Visitors will get the first answer." : "Phrase it the way a visitor would ask."}
+        hint={duplicate ? t("duplicateHint") : t("questionHint")}
         counter={{ value: draft.question.length, max: LIMITS.question }}
       >
         <input
           ref={questionRef}
           id="faq-question"
           className={`${inputClass} h-10`}
-          placeholder="e.g. How long does shipping take?"
+          placeholder={t("questionPlaceholder")}
           maxLength={LIMITS.question}
           value={draft.question}
           onChange={(e) => setDraft((d) => ({ ...d, question: e.target.value }))}
         />
       </Field>
-      <Field label="Answer" htmlFor="faq-answer" counter={{ value: draft.answer.length, max: LIMITS.answer }}>
+      <Field label={t("answer")} htmlFor="faq-answer" counter={{ value: draft.answer.length, max: LIMITS.answer }}>
         <textarea
           ref={answerRef}
           id="faq-answer"
           rows={4}
           className={`${inputClass} resize-y py-2.5 leading-relaxed`}
-          placeholder="e.g. Orders ship within 2 business days and arrive in 3–5 days."
+          placeholder={t("answerPlaceholder")}
           maxLength={LIMITS.answer}
           value={draft.answer}
           onChange={(e) => setDraft((d) => ({ ...d, answer: e.target.value }))}
@@ -87,10 +90,10 @@ const FaqEditor: React.FC<{
       </Field>
       <div className="flex items-center justify-end gap-2">
         <button type="button" onClick={onCancel} className={secondaryButton}>
-          Cancel
+          {t("cancel")}
         </button>
         <button type="submit" disabled={!canSave} className={primaryButton}>
-          {isNew ? "Add question" : "Save question"}
+          {isNew ? t("addQuestion") : t("saveQuestion")}
         </button>
       </div>
     </form>
@@ -98,6 +101,7 @@ const FaqEditor: React.FC<{
 };
 
 const FaqTab: React.FC<Props> = ({ faqs, onChange, aiGenerator, initialQuestion }) => {
+  const t = useT(editorMessages);
   const [editing, setEditing] = useState<number | "new" | null>(initialQuestion ? "new" : null);
   const [newDraft, setNewDraft] = useState<Faq>({ question: initialQuestion || "", answer: "" });
   const [query, setQuery] = useState("");
@@ -126,17 +130,17 @@ const FaqTab: React.FC<Props> = ({ faqs, onChange, aiGenerator, initialQuestion 
     onChange(faqs.filter((_, i) => i !== index));
     if (editing === index) setEditing(null);
     toast(
-      (t) => (
+      (toastItem) => (
         <span className="flex items-center gap-3 text-body-sm">
-          Question removed
+          {t("questionRemoved")}
           <button
             className="font-semibold underline underline-offset-2"
             onClick={() => {
               onChange(before);
-              toast.dismiss(t.id);
+              toast.dismiss(toastItem.id);
             }}
           >
-            Undo
+            {t("undo")}
           </button>
         </span>
       ),
@@ -149,7 +153,7 @@ const FaqTab: React.FC<Props> = ({ faqs, onChange, aiGenerator, initialQuestion 
       <div className="flex flex-col gap-4 border-b border-[#E7EDF6] px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6 dark:border-[#2B3646]">
         <div className="min-w-0">
           <h2 className="flex items-center gap-2 text-body font-semibold text-[#101723] dark:text-[#E7EDF6]">
-            Questions & answers
+            {t("qaTitle")}
             {faqs.length > 0 && (
               <span className="rounded-full bg-[#E7EDF6] px-2 py-0.5 text-caption font-medium tabular-nums text-[#566273] dark:bg-[#273444] dark:text-[#9BAABD]">
                 {faqs.length}
@@ -157,14 +161,14 @@ const FaqTab: React.FC<Props> = ({ faqs, onChange, aiGenerator, initialQuestion 
             )}
           </h2>
           <p className="mt-0.5 text-body-sm text-[#647184] dark:text-[#87909D]">
-            Your chatbot answers from these, matching what visitors ask.
+            {t("qaDesc")}
           </p>
         </div>
         <div className="flex shrink-0 flex-wrap items-center gap-2">
           {aiGenerator}
           <button type="button" onClick={startNew} disabled={editing === "new"} className={primaryButton}>
             <Plus size={16} />
-            Add question
+            {t("addQuestion")}
           </button>
         </div>
       </div>
@@ -180,8 +184,8 @@ const FaqTab: React.FC<Props> = ({ faqs, onChange, aiGenerator, initialQuestion 
               type="search"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder={`Search ${faqs.length} questions`}
-              aria-label="Search questions"
+              placeholder={t.plural("searchQuestions", faqs.length)}
+              aria-label={t("searchAria")}
               className={`${inputClass} h-9 pl-9`}
             />
           </div>
@@ -205,18 +209,18 @@ const FaqTab: React.FC<Props> = ({ faqs, onChange, aiGenerator, initialQuestion 
         <EmptyState
           compact
           icon={MessageSquareText}
-          title="No questions yet"
-          description="Add the questions your customers ask most, like shipping, returns or opening hours."
+          title={t("noQuestions")}
+          description={t("noQuestionsDesc")}
           action={
             <button type="button" onClick={startNew} className={secondaryButton}>
               <Plus size={16} />
-              Add your first question
+              {t("addFirstQuestion")}
             </button>
           }
         />
       ) : visible.length === 0 && faqs.length > 0 ? (
         <p className="px-6 py-10 text-center text-body-sm text-[#647184] dark:text-[#87909D]">
-          No questions match “{query.trim()}”.
+          {t("noMatch", { query: query.trim() })}
         </p>
       ) : (
         <ul className="divide-y divide-[#E7EDF6] dark:divide-[#2B3646]">
@@ -245,7 +249,7 @@ const FaqTab: React.FC<Props> = ({ faqs, onChange, aiGenerator, initialQuestion 
                   <button
                     type="button"
                     onClick={() => setEditing(index)}
-                    aria-label={`Edit “${faq.question}”`}
+                    aria-label={t("editQuestion", { question: faq.question })}
                     className={`flex h-8 w-8 items-center justify-center rounded-lg text-[#647184] transition-colors hover:bg-[#E7EDF6] hover:text-[#101723] dark:text-[#9BAABD] dark:hover:bg-[#273444] dark:hover:text-[#D7DFE5] ${focusRing}`}
                   >
                     <Pencil size={14} />
@@ -253,7 +257,7 @@ const FaqTab: React.FC<Props> = ({ faqs, onChange, aiGenerator, initialQuestion 
                   <button
                     type="button"
                     onClick={() => remove(index)}
-                    aria-label={`Delete “${faq.question}”`}
+                    aria-label={t("deleteQuestion", { question: faq.question })}
                     className={`flex h-8 w-8 items-center justify-center rounded-lg text-[#647184] transition-colors hover:bg-red-50 hover:text-red-600 dark:text-[#9BAABD] dark:hover:bg-red-950/30 dark:hover:text-red-400 ${focusRing}`}
                   >
                     <Trash2 size={14} />

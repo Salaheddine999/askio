@@ -2,6 +2,8 @@ import React from "react";
 import { Popover, PopoverButton, PopoverPanel } from "@headlessui/react";
 import { HexColorInput, HexColorPicker } from "react-colorful";
 import { focusRing, surface } from "../../pages/dashboard/ui";
+import { useT } from "../../i18n";
+import { editorMessages } from "../../i18n/messages/editor";
 
 // Form controls shared by the chatbot editor's tabs, in the Settings page's style.
 
@@ -153,36 +155,39 @@ export const ColorField: React.FC<{
   hint?: string;
   color: string;
   onChange: (color: string) => void;
-}> = ({ label, hint, color, onChange }) => (
-  <div className="min-w-0">
-    <p className="mb-1.5 text-label text-[#101723] dark:text-[#D7DFE5]">{label}</p>
-    <Popover>
-      <PopoverButton
-        className={`flex h-10 w-full items-center gap-2.5 rounded-lg border border-[#D8DFE9] bg-[#F9FCFF] pl-1.5 pr-3 text-left transition-colors hover:border-[#9BAABD] dark:border-[#2B3646] dark:bg-[#141D2B] dark:hover:border-[#566273] ${focusRing}`}
-      >
-        <span
-          className="h-7 w-7 shrink-0 rounded-md ring-1 ring-inset ring-black/10 dark:ring-white/10"
-          style={{ background: color }}
-        />
-        <span className="font-mono text-body-sm uppercase text-[#101723] dark:text-[#D7DFE5]">{color}</span>
-      </PopoverButton>
-      <PopoverPanel
-        anchor={{ to: "bottom start", gap: 6 }}
-        className="z-50 w-[232px] rounded-xl border border-[#D8DFE9] bg-[#F9FCFF] p-3 shadow-[0_12px_32px_-12px_rgba(16,23,35,0.35)] dark:border-[#2B3646] dark:bg-[#1A2533]"
-      >
-        <HexColorPicker color={color} onChange={onChange} style={{ width: "100%", height: 160 }} />
-        <div className="mt-3 flex items-center gap-2">
-          <span className="text-caption text-[#647184] dark:text-[#87909D]">Hex</span>
-          <HexColorInput
-            color={color}
-            onChange={onChange}
-            prefixed
-            aria-label={`${label} hex value`}
-            className={`${inputClass} h-8 font-mono uppercase`}
+}> = ({ label, hint, color, onChange }) => {
+  const t = useT(editorMessages);
+  return (
+    <div className="min-w-0">
+      <p className="mb-1.5 text-label text-[#101723] dark:text-[#D7DFE5]">{label}</p>
+      <Popover>
+        <PopoverButton
+          className={`flex h-10 w-full items-center gap-2.5 rounded-lg border border-[#D8DFE9] bg-[#F9FCFF] pl-1.5 pr-3 text-left transition-colors hover:border-[#9BAABD] dark:border-[#2B3646] dark:bg-[#141D2B] dark:hover:border-[#566273] ${focusRing}`}
+        >
+          <span
+            className="h-7 w-7 shrink-0 rounded-md ring-1 ring-inset ring-black/10 dark:ring-white/10"
+            style={{ background: color }}
           />
-        </div>
-      </PopoverPanel>
-    </Popover>
-    {hint && <p className="mt-1.5 text-caption text-[#647184] dark:text-[#87909D]">{hint}</p>}
-  </div>
-);
+          <span className="font-mono text-body-sm uppercase text-[#101723] dark:text-[#D7DFE5]">{color}</span>
+        </PopoverButton>
+        <PopoverPanel
+          anchor={{ to: "bottom start", gap: 6 }}
+          className="z-50 w-[232px] rounded-xl border border-[#D8DFE9] bg-[#F9FCFF] p-3 shadow-[0_12px_32px_-12px_rgba(16,23,35,0.35)] dark:border-[#2B3646] dark:bg-[#1A2533]"
+        >
+          <HexColorPicker color={color} onChange={onChange} style={{ width: "100%", height: 160 }} />
+          <div className="mt-3 flex items-center gap-2">
+            <span className="text-caption text-[#647184] dark:text-[#87909D]">{t("hex")}</span>
+            <HexColorInput
+              color={color}
+              onChange={onChange}
+              prefixed
+              aria-label={t("hexValue", { label })}
+              className={`${inputClass} h-8 font-mono uppercase`}
+            />
+          </div>
+        </PopoverPanel>
+      </Popover>
+      {hint && <p className="mt-1.5 text-caption text-[#647184] dark:text-[#87909D]">{hint}</p>}
+    </div>
+  );
+};

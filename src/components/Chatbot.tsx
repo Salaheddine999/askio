@@ -11,6 +11,8 @@ import { apiRequest } from "../utils/api";
 import { LiveOrb } from "./LiveOrb";
 import { headerOrbPropsFor, orbPropsFor, type LauncherStyle } from "../utils/orbColors";
 import { normalizeContactLink } from "../utils/links";
+import { isLang, makeT, type Lang } from "../i18n";
+import { widgetMessages } from "../i18n/widget";
 
 type Message = {
   text: string;
@@ -21,7 +23,6 @@ type Message = {
 
 /** How long the launcher waits before showing the greeting bubble. */
 const GREETING_DELAY_MS = 4000;
-const GREETING_TEXT = "Hi! 👋 Need a hand?";
 /** How long the orb looks at the bubble before following the pointer again. */
 const GREETING_GLANCE_MS = 1500;
 
@@ -50,6 +51,8 @@ export interface ChatbotProps {
   greetingBubble?: boolean;
   /** Set by an admin when the owner's account is suspended; the widget stays hidden. */
   suspended?: boolean;
+  /** The language of the widget's own text, for visitors. English by default. */
+  language?: Lang;
   /** The chatbot owner's uid, from the saved config. */
   user_id?: string;
 }
@@ -71,7 +74,9 @@ const Chatbot: React.FC<ChatbotProps> = ({
   launcherStyle = "classic",
   greetingBubble = false,
   isPreview = false,
+  language,
 }) => {
+  const t = useMemo(() => makeT(widgetMessages, isLang(language) ? language : "en"), [language]);
   const contactHref = normalizeContactLink(liveChatLink);
 
   // Leads, analytics and ratings go through the server, which checks and
@@ -188,7 +193,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
     if (!/^[^@ ]+@[^@ ]+[.][^@ ]+$/.test(leadEmail.trim())) {
       setMessages((prev) => [
         ...prev,
-        { text: "Please enter a valid email address.", sender: "bot" }
+        { text: t("invalidEmail"), sender: "bot" }
       ]);
       return;
     }
@@ -203,7 +208,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
       setIsTyping(false);
       setMessages((prev) => [
         ...prev,
-        { text: "Thank you! Our team will be in touch soon.", sender: "bot" }
+        { text: t("leadThanks"), sender: "bot" }
       ]);
     } catch (error) {
       console.error("Error submitting lead:", error);
@@ -211,7 +216,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
       setHasSubmittedLead(false);
       setMessages((prev) => [
         ...prev,
-        { text: "I'm sorry, there was a problem saving your email. Please try again later.", sender: "bot" }
+        { text: t("leadSaveError"), sender: "bot" }
       ]);
     }
   };
@@ -284,7 +289,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
               setMessages((prev) => [
                 ...prev,
                 {
-                  text: "Please leave your email below and our team will get back to you.",
+                  text: t("leadAsk"),
                   sender: "bot",
                   isLeadCapture: true,
                 },
@@ -325,7 +330,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
           setMessages((prev) => [
             ...prev,
             {
-              text: "I'm sorry, I don't have an answer for that. Please leave your email below and our team will get back to you.",
+              text: t("noAnswerLeadAsk"),
               sender: "bot",
               isLeadCapture: true,
             },
@@ -334,7 +339,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
           setMessages((prev) => [
             ...prev,
             {
-              text: "I'm sorry, I encountered an error. Here are some related questions:",
+              text: t("errorRelated"),
               sender: "bot",
               isFallback: true,
             },
@@ -372,7 +377,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
           setMessages((prev) => [
             ...prev,
             {
-              text: "I'm sorry, I don't have an answer for that. Please leave your email below and our team will get back to you.",
+              text: t("noAnswerLeadAsk"),
               sender: "bot",
               isLeadCapture: true,
             },
@@ -381,7 +386,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
           setMessages((prev) => [
             ...prev,
             {
-              text: "I'm sorry, I don't have an answer for that. Here are some related questions:",
+              text: t("noAnswerRelated"),
               sender: "bot",
               isFallback: true,
             },
@@ -588,13 +593,13 @@ const Chatbot: React.FC<ChatbotProps> = ({
   const handleFeedback = async (isPositive: boolean, e: React.MouseEvent) => {
     e.stopPropagation();
     if (hasFeedback) {
-      toast.error("You have already provided feedback for this chatbot.");
+      toast.error(t("alreadyRated"));
       return;
     }
 
     if (!id || !anonymousToken) {
       console.error("Chatbot ID or anonymous token is missing");
-      toast.error("Unable to submit feedback. Please try again later.");
+      toast.error(t("feedbackUnavailable"));
       return;
     }
 
@@ -603,7 +608,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
 
       localStorage.setItem(`feedback_${id}`, "true");
       setHasFeedback(true);
-      toast.success("Thank you for your feedback!");
+      toast.success(t("feedbackThanks"));
       setShowFeedback(false);
     } catch (error) {
       if (error instanceof Error && /already rated/i.test(error.message)) {
@@ -613,18 +618,14 @@ const Chatbot: React.FC<ChatbotProps> = ({
         return;
       }
       console.error("Error submitting feedback:", error);
-      if (error instanceof Error) {
-        toast.error(`Failed to submit feedback: ${error.message}`);
-      } else {
-        toast.error("Failed to submit feedback. Please try again.");
-      }
+      toast.error(t("feedbackFailed"));
     }
   };
 
   // With the orb launcher, the orb carries into the chat as the bot's face.
   const useOrb = launcherStyle === "orb";
   const orbMood = isTyping ? "thinking" : inputFocused && input.trim() ? "listening" : "idle";
-  const statusText = !useOrb ? "Ready to chat" : orbMood === "thinking" ? "Thinking…" : orbMood === "listening" ? "Listening…" : "Ready to chat";
+  const statusText = !useOrb ? t("readyToChat") : orbMood === "thinking" ? t("thinking") : orbMood === "listening" ? t("listening") : t("readyToChat");
 
   const isLeftPosition = position.endsWith("left");
   // The orb glances toward the bubble as it appears.
@@ -636,7 +637,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
   const launcherButton = launcherStyle === "orb" ? (
     <motion.button
       onClick={toggleChatbot}
-      aria-label="Open chat"
+      aria-label={t("openChat")}
       className={`relative w-16 h-16 flex items-center justify-center rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#87909D]`}
       style={{ filter: "drop-shadow(0 6px 12px rgba(16, 23, 35, 0.22))" }}
       whileHover={{ scale: 1.06 }}
@@ -647,7 +648,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
   ) : (
     <motion.button
       onClick={toggleChatbot}
-      aria-label="Open chat"
+      aria-label={t("openChat")}
       className={`relative w-16 h-16 flex items-center justify-center text-white rounded-full shadow-lg transition-all duration-300 overflow-hidden`}
       style={{
         background: isGradient
@@ -687,11 +688,11 @@ const Chatbot: React.FC<ChatbotProps> = ({
         }}
         className="whitespace-nowrap rounded-full py-2 pl-3.5 pr-1 text-[13px] font-medium text-[#101723] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#87909D]"
       >
-        {GREETING_TEXT}
+        {t("greeting")}
       </button>
       <button
         type="button"
-        aria-label="Dismiss greeting"
+        aria-label={t("dismissGreeting")}
         onClick={(e) => {
           e.stopPropagation();
           setShowGreeting(false);
@@ -760,7 +761,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
                 ) : (
                   <Bot size={12} strokeWidth={2.25} className="shrink-0" aria-hidden="true" />
                 )}
-                {aiEnabled ? "AI assistant" : "Automated assistant"}
+                {aiEnabled ? t("aiAssistant") : t("automatedAssistant")}
               </span>
               <span className="text-white/30">·</span>
               <span className="text-[11px] text-white/50" aria-live="polite">{statusText}</span>
@@ -771,6 +772,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
         {isEmbedded && (
           <button
             onClick={toggleChatbot}
+            aria-label={t("closeChat")}
             className="relative z-10 w-8 h-8 rounded-xl bg-[#F9FCFF]/10 hover:bg-[#F9FCFF]/20 border border-white/10 flex items-center justify-center transition-all duration-200 hover:scale-105"
           >
             <X size={15} strokeWidth={2.5} />
@@ -812,7 +814,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
                       className="inline-flex items-center justify-center bg-[#F9FCFF] dark:bg-[#273444] hover:bg-[#F3F7FC] dark:hover:bg-[#39485B] text-[#101723] dark:text-[#D7DFE5] text-[12px] font-medium py-1.5 px-3 rounded-md shadow-sm border border-[#D8DFE9] dark:border-[#39485B] transition-colors gap-1.5"
                     >
                       <MessageSquare size={14} className="text-emerald-500" />
-                      Chat with a human
+                      {t("chatWithHuman")}
                     </a>
                   </div>
                 )}
@@ -832,7 +834,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
                         type="email"
                         value={leadEmail}
                         onChange={(e) => setLeadEmail(e.target.value)}
-                        placeholder="your@email.com"
+                        placeholder={t("emailPlaceholder")}
                         className="w-full px-3 py-2 rounded-md bg-[#F9FCFF] dark:bg-[#1A2533] border border-[#D8DFE9] dark:border-[#39485B] text-[13px] text-[#101723] dark:text-[#D7DFE5] placeholder-[#647184] focus:outline-none focus:border-emerald-500 transition-colors"
                         required
                         onClick={(e) => e.stopPropagation()}
@@ -842,7 +844,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
                         className="w-full bg-emerald-500 hover:bg-emerald-600 text-white text-[12px] font-medium py-2 rounded-md transition-colors"
                         onClick={(e) => e.stopPropagation()}
                       >
-                        Send Email
+                        {t("sendEmail")}
                       </button>
                     </form>
                     {liveChatLink && (
@@ -928,6 +930,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.9 }}
             onClick={(e) => e.stopPropagation()}
+            aria-label={t("send")}
           >
             <Send size={15} className="-translate-x-[1px]" />
           </motion.button>
@@ -941,7 +944,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
             onClick={handleFeedbackClick}
             className="text-[11px] text-[#647184] dark:text-[#9BAABD] hover:text-[#101723] dark:hover:text-[#D7DFE5] transition-colors duration-200"
           >
-            Was this helpful? Give feedback
+            {t("wasHelpful")}
           </button>
         </div>
       )}
@@ -952,7 +955,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
             className="flex items-center gap-1 text-[12px] text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300 transition-colors duration-200"
           >
             <ThumbsUp size={14} />
-            <span>Helpful</span>
+            <span>{t("helpful")}</span>
           </button>
           <div className="w-px h-4 bg-[#D8DFE9] dark:bg-[#273444]"></div>
           <button
@@ -960,14 +963,14 @@ const Chatbot: React.FC<ChatbotProps> = ({
             className="flex items-center gap-1 text-[12px] text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300 transition-colors duration-200"
           >
             <ThumbsDown size={14} />
-            <span>Not helpful</span>
+            <span>{t("notHelpful")}</span>
           </button>
         </div>
       )}
 
       {/* Footer */}
       <div className="py-2 border-t border-[#D8DFE9]/60 dark:border-[#2B3646]/60 text-center text-[10px] text-[#647184] dark:text-[#9BAABD] bg-[#F3F7FC] dark:bg-[#141D2B] rounded-b-xl">
-        Powered by{" "}
+        {t("poweredBy")}{" "}
         <a
           href="https://getaskio.xyz/"
           target="_blank"

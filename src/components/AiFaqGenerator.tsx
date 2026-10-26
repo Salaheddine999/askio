@@ -12,6 +12,8 @@ import { primaryButton, secondaryButton } from "../pages/dashboard/ui";
 import { apiRequest } from "../utils/api";
 import UpgradeModal from "./UpgradeModal";
 import { useNavigate } from "react-router-dom";
+import { useT } from "../i18n";
+import { editorMessages } from "../i18n/messages/editor";
 
 interface FAQItem {
   question: string;
@@ -37,6 +39,7 @@ const AiFaqGenerator: React.FC<AiFaqGeneratorProps> = ({
   ensureChatbotSaved,
 }) => {
   const navigate = useNavigate();
+  const t = useT(editorMessages);
   const [showUrlModal, setShowUrlModal] = useState(false);
   const [scrapeUrl, setScrapeUrl] = useState("");
   const [isScraping, setIsScraping] = useState(false);
@@ -53,7 +56,7 @@ const AiFaqGenerator: React.FC<AiFaqGeneratorProps> = ({
 
     setPendingFaqs(faqsWithState);
     setShowReviewModal(true);
-    toast.success(`Found ${newFaqs.length} questions. Review them before adding.`);
+    toast.success(t.plural("foundQuestions", newFaqs.length));
     setShowUrlModal(false);
     setScrapeUrl("");
   };
@@ -81,19 +84,19 @@ const AiFaqGenerator: React.FC<AiFaqGeneratorProps> = ({
   const handleAiScrape = async () => {
     const user = auth.currentUser;
     if (!user) {
-      toast.error("You must be logged in to use this feature.");
+      toast.error(t("mustBeLoggedIn"));
       return;
     }
 
     if (!aiEnabled) {
-      toast.error("Enable AI for this chatbot before using AI FAQ generation.");
+      toast.error(t("enableAiFirst"));
       return;
     }
 
     const normalizedUrl = normalizeUrl(scrapeUrl);
 
     if (!normalizedUrl) {
-      toast.error("Please enter a valid URL");
+      toast.error(t("invalidUrl"));
       return;
     }
 
@@ -102,7 +105,7 @@ const AiFaqGenerator: React.FC<AiFaqGeneratorProps> = ({
       const resolvedChatbotId = chatbotId || (await ensureChatbotSaved?.());
 
       if (!resolvedChatbotId) {
-        toast.error("Please complete the required chatbot details before generating FAQs.");
+        toast.error(t("completeDetailsFirst"));
         return;
       }
 
@@ -149,7 +152,7 @@ const AiFaqGenerator: React.FC<AiFaqGeneratorProps> = ({
         setShowUpgradeModal(true);
       }
       toast.error(
-        (error instanceof Error ? error.message : null) || "Failed to generate FAQs from the provided URL."
+        (error instanceof Error ? error.message : null) || t("generateFailed")
       );
     } finally {
       setIsScraping(false);
@@ -164,21 +167,21 @@ const AiFaqGenerator: React.FC<AiFaqGeneratorProps> = ({
           type="button"
           onClick={() => {
             if (!aiEnabled) {
-              toast.error("Turn on “Answer with AI” in General to generate questions.");
+              toast.error(t("turnOnAiToGenerate"));
               return;
             }
             setShowUrlModal(true);
           }}
-          title={aiEnabled ? "Write questions & answers from your website" : "Turn on AI replies in General first"}
+          title={aiEnabled ? t("generateTooltip") : t("turnOnAiFirstTooltip")}
           className={secondaryButton}
         >
           <Sparkles size={15} />
-          Generate with AI
+          {t("generateWithAi")}
         </button>
       ) : (
         <button type="button" onClick={() => navigate("/plans")} className={secondaryButton}>
           <Sparkles size={15} />
-          Generate with AI
+          {t("generateWithAi")}
           <span className="rounded bg-[#E7EDF6] px-1.5 py-px text-[10px] font-semibold uppercase tracking-wide text-[#566273] dark:bg-[#273444] dark:text-[#9BAABD]">
             Pro
           </span>
@@ -289,11 +292,10 @@ const AiFaqGenerator: React.FC<AiFaqGeneratorProps> = ({
                     </div>
 
                     <h3 className="text-lg font-bold text-[#101723] dark:text-[#D7DFE5] mb-1.5 font-serif tracking-tight">
-                      Reading your website...
+                      {t("readingSite")}
                     </h3>
                     <p className="text-sm text-[#647184] dark:text-[#9BAABD] max-w-[280px] leading-relaxed">
-                      Our AI is scanning the page content and crafting relevant
-                      FAQs for your chatbot.
+                      {t("readingSiteDesc")}
                     </p>
                     <div className="flex gap-1.5 mt-5">
                       <motion.div
@@ -340,15 +342,16 @@ const AiFaqGenerator: React.FC<AiFaqGeneratorProps> = ({
                             className="text-[#101723] dark:text-[#D7DFE5]"
                           />
                           <h3 className="text-lg font-bold text-[#101723] dark:text-[#D7DFE5] font-serif tracking-tight">
-                            Generate with AI
+                            {t("generateWithAi")}
                           </h3>
                         </div>
                         <p className="text-xs text-[#647184] dark:text-[#9BAABD] leading-relaxed">
-                          Paste a page from your site and we'll write questions & answers from it.
+                          {t("generateDesc")}
                         </p>
                       </div>
                       <button
                         onClick={() => setShowUrlModal(false)}
+                        aria-label={t("close")}
                         className="text-[#647184] hover:text-[#101723] dark:hover:text-[#D7DFE5] p-1 rounded-md hover:bg-[#E7EDF6] dark:hover:bg-[#1A2533] transition-colors"
                       >
                         <X size={18} />
@@ -358,7 +361,7 @@ const AiFaqGenerator: React.FC<AiFaqGeneratorProps> = ({
                     <div className="space-y-4">
                       <div>
                         <label className="block text-xs font-semibold text-[#566273] dark:text-[#9BAABD] mb-1.5 uppercase tracking-wider">
-                          Website URL
+                          {t("websiteUrl")}
                         </label>
                         <input
                           type="url"
@@ -372,11 +375,10 @@ const AiFaqGenerator: React.FC<AiFaqGeneratorProps> = ({
                       <div className="flex items-center justify-between p-3 rounded-xl border border-[#D8DFE9] dark:border-[#2B3646] bg-[#F3F7FC] dark:bg-[#1A2533]">
                         <div>
                           <p className="text-sm font-semibold text-[#101723] dark:text-[#D7DFE5]">
-                            Deep Crawl
+                            {t("deepCrawl")}
                           </p>
                           <p className="text-xs text-[#647184] dark:text-[#9BAABD] mt-0.5">
-                            Scans a few linked pages like About, Pricing, and
-                            Contact for more complete FAQs.
+                            {t("deepCrawlDesc")}
                           </p>
                         </div>
                         <button
@@ -388,6 +390,7 @@ const AiFaqGenerator: React.FC<AiFaqGeneratorProps> = ({
                           }`}
                           role="switch"
                           aria-checked={isDeepCrawl}
+                          aria-label={t("deepCrawl")}
                         >
                           <span
                             className={`${
@@ -399,7 +402,7 @@ const AiFaqGenerator: React.FC<AiFaqGeneratorProps> = ({
 
                       <div className="flex gap-3 justify-end pt-2">
                         <button type="button" onClick={() => setShowUrlModal(false)} className={secondaryButton}>
-                          Cancel
+                          {t("cancel")}
                         </button>
                         <button
                           type="button"
@@ -407,7 +410,7 @@ const AiFaqGenerator: React.FC<AiFaqGeneratorProps> = ({
                           disabled={!scrapeUrl.trim()}
                           className={`${primaryButton} min-w-[110px]`}
                         >
-                          Generate
+                          {t("generate")}
                         </button>
                       </div>
                     </div>
@@ -442,17 +445,16 @@ const AiFaqGenerator: React.FC<AiFaqGeneratorProps> = ({
                       <Sparkles size={18} />
                     </div>
                     <h3 className="text-xl font-bold text-[#101723] dark:text-[#D7DFE5] font-serif tracking-tight">
-                      Review generated questions
+                      {t("reviewTitle")}
                     </h3>
                   </div>
                   <p className="text-sm text-[#647184] dark:text-[#9BAABD] leading-relaxed max-w-lg">
-                    We've extracted the core information from the website. You
-                    can edit any text or remove irrelevant questions before
-                    adding them.
+                    {t("reviewDesc")}
                   </p>
                 </div>
                 <button
                   onClick={() => setShowReviewModal(false)}
+                  aria-label={t("close")}
                   className="text-[#647184] hover:text-[#101723] dark:hover:text-[#D7DFE5] p-1 rounded-lg hover:bg-[#F3F7FC] dark:hover:bg-[#1A2533] transition-colors"
                 >
                   <X size={20} />
@@ -482,7 +484,8 @@ const AiFaqGenerator: React.FC<AiFaqGeneratorProps> = ({
                           )
                         }
                         className="absolute -right-3 -top-3 bg-[#F9FCFF] dark:bg-[#1A2533] border border-[#D8DFE9] dark:border-[#2B3646] text-[#647184] hover:text-red-500 p-2 rounded-full shadow-sm opacity-0 group-hover:opacity-100 transition-all hover:scale-110 hover:border-red-200 dark:hover:border-red-900/50 hover:bg-red-50 dark:hover:bg-red-900/20 z-10"
-                        title="Remove FAQ"
+                        title={t("removeFaq")}
+                        aria-label={t("removeFaq")}
                       >
                         <Trash2 size={16} />
                       </button>
@@ -491,7 +494,7 @@ const AiFaqGenerator: React.FC<AiFaqGeneratorProps> = ({
                         <div>
                           <label className="block text-[10px] font-bold text-[#647184] uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
                             <span className="w-4 h-px bg-[#D8DFE9] dark:bg-[#273444] inline-block"></span>
-                            Question
+                            {t("question")}
                           </label>
                           <input
                             type="text"
@@ -507,7 +510,7 @@ const AiFaqGenerator: React.FC<AiFaqGeneratorProps> = ({
                         <div>
                           <label className="block text-[10px] font-bold text-[#647184] uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
                             <span className="w-4 h-px bg-[#D8DFE9] dark:bg-[#273444] inline-block"></span>
-                            Answer
+                            {t("answer")}
                           </label>
                           <textarea
                             value={faq.answer}
@@ -535,11 +538,10 @@ const AiFaqGenerator: React.FC<AiFaqGeneratorProps> = ({
                       <Check size={32} />
                     </div>
                     <h4 className="text-lg font-bold text-[#101723] dark:text-[#D7DFE5] mb-1">
-                      You're all clear!
+                      {t("allClear")}
                     </h4>
                     <p className="text-sm text-[#647184] dark:text-[#9BAABD] max-w-[250px]">
-                      You've discarded all the generated questions. You can
-                      close this modal or generate again.
+                      {t("allClearDesc")}
                     </p>
                   </motion.div>
                 )}
@@ -547,7 +549,7 @@ const AiFaqGenerator: React.FC<AiFaqGeneratorProps> = ({
 
               <div className="p-4 border-t border-[#D8DFE9] dark:border-[#2B3646] flex justify-end gap-3 shrink-0 bg-[#F9FCFF] dark:bg-[#141D2B]">
                 <button type="button" onClick={() => setShowReviewModal(false)} className={secondaryButton}>
-                  Discard all
+                  {t("discardAll")}
                 </button>
                 <button
                   type="button"
@@ -558,12 +560,12 @@ const AiFaqGenerator: React.FC<AiFaqGeneratorProps> = ({
                     onFaqsApproved(cleanFaqs);
                     setShowReviewModal(false);
                     setPendingFaqs([]);
-                    toast.success("Added. Save to publish them.");
+                    toast.success(t("addedToast"));
                   }}
                   disabled={pendingFaqs.length === 0}
                   className={primaryButton}
                 >
-                  Add {pendingFaqs.length} {pendingFaqs.length === 1 ? "question" : "questions"}
+                  {t.plural("addQuestions", pendingFaqs.length)}
                 </button>
               </div>
             </motion.div>

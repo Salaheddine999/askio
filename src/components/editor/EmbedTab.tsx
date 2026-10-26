@@ -3,6 +3,8 @@ import { Link } from "react-router-dom";
 import { ArrowRight, Check, Code2, Copy, Info } from "lucide-react";
 import { EmptyState, focusRing, primaryButton } from "../../pages/dashboard/ui";
 import { Panel, PanelBody } from "./controls";
+import { useT } from "../../i18n";
+import { editorMessages } from "../../i18n/messages/editor";
 
 interface Props {
   chatbotId?: string;
@@ -21,6 +23,7 @@ function embedCodeFor(chatbotId: string) {
 }
 
 const CopyButton: React.FC<{ text: string; label: string; className?: string }> = ({ text, label, className = "" }) => {
+  const t = useT(editorMessages);
   const [copied, setCopied] = useState(false);
   const copy = async () => {
     try {
@@ -39,29 +42,30 @@ const CopyButton: React.FC<{ text: string; label: string; className?: string }> 
       className={`inline-flex h-8 items-center gap-1.5 rounded-lg px-2.5 text-caption font-medium transition-colors ${focusRing} ${className}`}
     >
       {copied ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
-      <span aria-live="polite">{copied ? "Copied" : "Copy"}</span>
+      <span aria-live="polite">{copied ? t("copied") : t("copy")}</span>
     </button>
   );
 };
 
 const STEPS = [
-  { title: "Copy the code", text: "It's unique to this chatbot." },
-  { title: "Paste it before </body>", text: "On every page where the chat should appear." },
-  { title: "Publish your site", text: "The chat shows up in the corner you picked." },
-];
+  { title: "step1Title", text: "step1Text" },
+  { title: "step2Title", text: "step2Text" },
+  { title: "step3Title", text: "step3Text" },
+] as const;
 
 const EmbedTab: React.FC<Props> = ({ chatbotId, hasChanges, saving, onSave }) => {
+  const t = useT(editorMessages);
   if (!chatbotId) {
     return (
-      <Panel title="Install" description="Add the chatbot to your website.">
+      <Panel title={t("tabInstall")} description={t("installDesc")}>
         <EmptyState
           compact
           icon={Code2}
-          title="Save to get your install code"
-          description="Your chatbot needs a name and a title, then it gets its own code to paste on your site."
+          title={t("saveForCode")}
+          description={t("saveForCodeDesc")}
           action={
             <button type="button" onClick={onSave} disabled={saving} className={primaryButton}>
-              {saving ? "Creating…" : "Create chatbot"}
+              {saving ? t("creating") : t("createChatbot")}
             </button>
           }
         />
@@ -77,12 +81,12 @@ const EmbedTab: React.FC<Props> = ({ chatbotId, hasChanges, saving, onSave }) =>
         <div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 dark:border-amber-900/60 dark:bg-amber-950/30">
           <Info size={16} className="mt-0.5 shrink-0 text-amber-600 dark:text-amber-400" />
           <p className="text-body-sm text-amber-900 dark:text-amber-200">
-            Your site shows the last saved version. Save to publish your latest changes; the code stays the same.
+            {t("unsavedNotice")}
           </p>
         </div>
       )}
 
-      <Panel title="Install on your website" description="One snippet. It works on any site where you can edit the HTML.">
+      <Panel title={t("installOnSite")} description={t("installOnSiteDesc")}>
         <PanelBody>
           <ol className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             {STEPS.map((s, i) => (
@@ -91,8 +95,8 @@ const EmbedTab: React.FC<Props> = ({ chatbotId, hasChanges, saving, onSave }) =>
                   {i + 1}
                 </span>
                 <div className="min-w-0">
-                  <p className="text-body-sm font-medium text-[#101723] dark:text-[#D7DFE5]">{s.title}</p>
-                  <p className="mt-0.5 text-caption text-[#647184] dark:text-[#87909D]">{s.text}</p>
+                  <p className="text-body-sm font-medium text-[#101723] dark:text-[#D7DFE5]">{t(s.title)}</p>
+                  <p className="mt-0.5 text-caption text-[#647184] dark:text-[#87909D]">{t(s.text)}</p>
                 </div>
               </li>
             ))}
@@ -103,7 +107,7 @@ const EmbedTab: React.FC<Props> = ({ chatbotId, hasChanges, saving, onSave }) =>
               <span className="text-caption font-medium text-[#9BAABD]">HTML</span>
               <CopyButton
                 text={code}
-                label="Copy install code"
+                label={t("copyInstallCode")}
                 className="text-[#D7DFE5] hover:bg-white/10 hover:text-white"
               />
             </div>
@@ -114,23 +118,23 @@ const EmbedTab: React.FC<Props> = ({ chatbotId, hasChanges, saving, onSave }) =>
         </PanelBody>
       </Panel>
 
-      <Panel title="Using a store or site builder?" description="Shopify and WordPress have their own install steps.">
+      <Panel title={t("builderTitle")} description={t("builderDesc")}>
         <div className="flex flex-col gap-3 px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
           <div className="min-w-0">
-            <p className="text-body-sm font-medium text-[#101723] dark:text-[#D7DFE5]">Chatbot ID</p>
+            <p className="text-body-sm font-medium text-[#101723] dark:text-[#D7DFE5]">{t("chatbotId")}</p>
             <p className="mt-0.5 truncate font-mono text-caption text-[#566273] dark:text-[#9BAABD]">{chatbotId}</p>
           </div>
           <div className="flex shrink-0 items-center gap-2">
             <CopyButton
               text={chatbotId}
-              label="Copy chatbot ID"
+              label={t("copyChatbotId")}
               className="border border-[#D8DFE9] text-[#566273] hover:bg-[#F3F7FC] hover:text-[#101723] dark:border-[#2B3646] dark:text-[#9BAABD] dark:hover:bg-[#273444] dark:hover:text-[#D7DFE5]"
             />
             <Link
               to="/integrations"
               className={`inline-flex h-8 items-center gap-1.5 rounded-lg px-2.5 text-caption font-medium text-[#101723] transition-colors hover:bg-[#E7EDF6] dark:text-[#D7DFE5] dark:hover:bg-[#273444] ${focusRing}`}
             >
-              Integrations
+              {t("integrations")}
               <ArrowRight size={14} />
             </Link>
           </div>

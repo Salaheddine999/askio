@@ -4,33 +4,26 @@ import { Sparkles } from "lucide-react";
 import { focusRing, primaryButton } from "../../pages/dashboard/ui";
 import { Field, Panel, PanelBody, Row, Switch, inputClass, invalidInput } from "./controls";
 import { ChatbotConfig, ConfigChange, LIMITS, Plan } from "./types";
+import { LANGUAGES, isLang, makeT, useT, type Lang } from "../../i18n";
+import { widgetMessages } from "../../i18n/widget";
+import { editorMessages } from "../../i18n/messages/editor";
+
+type EditorKey = keyof (typeof editorMessages)["en"];
 
 type Position = ChatbotConfig["position"];
 type Fallback = "suggest" | "email" | "handoff";
 
-const POSITIONS: { value: Position; label: string; dot: string }[] = [
-  { value: "top-left", label: "Top left", dot: "left-2 top-2" },
-  { value: "top-right", label: "Top right", dot: "right-2 top-2" },
-  { value: "bottom-left", label: "Bottom left", dot: "left-2 bottom-2" },
-  { value: "bottom-right", label: "Bottom right", dot: "right-2 bottom-2" },
+const POSITIONS: { value: Position; label: EditorKey; dot: string }[] = [
+  { value: "top-left", label: "topLeft", dot: "left-2 top-2" },
+  { value: "top-right", label: "topRight", dot: "right-2 top-2" },
+  { value: "bottom-left", label: "bottomLeft", dot: "left-2 bottom-2" },
+  { value: "bottom-right", label: "bottomRight", dot: "right-2 bottom-2" },
 ];
 
-const FALLBACKS: { value: Fallback; label: string; hint: string }[] = [
-  {
-    value: "suggest",
-    label: "Suggest related questions",
-    hint: "Offers the closest questions from your FAQ.",
-  },
-  {
-    value: "email",
-    label: "Ask for their email",
-    hint: "Shows an email form so you can follow up. Emails appear under Leads in Analytics.",
-  },
-  {
-    value: "handoff",
-    label: "Offer to talk to a human",
-    hint: "Suggests related questions and adds a “Chat with a human” button.",
-  },
+const FALLBACKS: { value: Fallback; label: EditorKey; hint: EditorKey }[] = [
+  { value: "suggest", label: "fallbackSuggest", hint: "fallbackSuggestHint" },
+  { value: "email", label: "fallbackEmail", hint: "fallbackEmailHint" },
+  { value: "handoff", label: "fallbackHandoff", hint: "fallbackHandoffHint" },
 ];
 
 export interface GeneralErrors {
@@ -49,6 +42,9 @@ interface Props {
 }
 
 const GeneralTab: React.FC<Props> = ({ config, onChange, errors, onLinkBlur, canUseAi, userPlan }) => {
+  const t = useT(editorMessages);
+  // Examples of the widget's own texts, in the language the widget is set to.
+  const widgetT = makeT(widgetMessages, isLang(config.language) ? config.language : "en");
   // Switching away from the handoff option clears the link; remember it so
   // switching back doesn't make the owner type it again.
   const lastLink = useRef(config.liveChatLink || "");
@@ -67,19 +63,19 @@ const GeneralTab: React.FC<Props> = ({ config, onChange, errors, onLinkBlur, can
 
   return (
     <div className="space-y-5">
-      <Panel title="Basics" description="How you and your visitors know this chatbot.">
+      <Panel title={t("basics")} description={t("basicsDesc")}>
         <PanelBody className="grid grid-cols-1 gap-5 sm:grid-cols-2">
           <Field
-            label="Name"
+            label={t("name")}
             htmlFor="bot-name"
-            hint="Only you see this, in your dashboard."
+            hint={t("nameHint")}
             error={errors.name}
             counter={{ value: config.name.length, max: LIMITS.name }}
           >
             <input
               id="bot-name"
               className={`${inputClass} h-10 ${errors.name ? invalidInput : ""}`}
-              placeholder="e.g. Store support"
+              placeholder={t("namePlaceholder")}
               maxLength={LIMITS.name}
               value={config.name}
               aria-invalid={!!errors.name}
@@ -87,16 +83,16 @@ const GeneralTab: React.FC<Props> = ({ config, onChange, errors, onLinkBlur, can
             />
           </Field>
           <Field
-            label="Title"
+            label={t("title")}
             htmlFor="bot-title"
-            hint="Shown to visitors at the top of the chat."
+            hint={t("titleHint")}
             error={errors.title}
             counter={{ value: config.title.length, max: LIMITS.title }}
           >
             <input
               id="bot-title"
               className={`${inputClass} h-10 ${errors.title ? invalidInput : ""}`}
-              placeholder="e.g. Ask us anything"
+              placeholder={t("titlePlaceholder")}
               maxLength={LIMITS.title}
               value={config.title}
               aria-invalid={!!errors.title}
@@ -106,10 +102,36 @@ const GeneralTab: React.FC<Props> = ({ config, onChange, errors, onLinkBlur, can
         </PanelBody>
       </Panel>
 
-      <Panel title="Conversation" description="The first thing visitors read when they open the chat.">
+      <Panel title={t("conversation")} description={t("conversationDesc")}>
         <PanelBody className="space-y-5">
           <Field
-            label="Welcome message"
+            label={t("language")}
+            htmlFor="bot-language"
+            hint={t("languageHint")}
+          >
+            <select
+              id="bot-language"
+              className={`${inputClass} h-10 sm:max-w-xs`}
+              value={isLang(config.language) ? config.language : "en"}
+              onChange={(e) => {
+                const next = e.target.value as Lang;
+                const before = makeT(widgetMessages, isLang(config.language) ? config.language : "en");
+                const after = makeT(widgetMessages, next);
+                onChange("language", next);
+                // Swap the default texts too, but never ones the owner wrote.
+                if (config.initialMessage === before("defaultWelcome")) onChange("initialMessage", after("defaultWelcome"));
+                if (config.placeholder === before("defaultPlaceholder")) onChange("placeholder", after("defaultPlaceholder"));
+              }}
+            >
+              {LANGUAGES.map((l) => (
+                <option key={l.code} value={l.code}>
+                  {l.label}
+                </option>
+              ))}
+            </select>
+          </Field>
+          <Field
+            label={t("welcomeMessage")}
             htmlFor="bot-welcome"
             counter={{ value: config.initialMessage.length, max: LIMITS.initialMessage }}
           >
@@ -117,22 +139,22 @@ const GeneralTab: React.FC<Props> = ({ config, onChange, errors, onLinkBlur, can
               id="bot-welcome"
               rows={2}
               className={`${inputClass} resize-y py-2.5 leading-relaxed`}
-              placeholder="Hello! How can I help you today?"
+              placeholder={widgetT("defaultWelcome")}
               maxLength={LIMITS.initialMessage}
               value={config.initialMessage}
               onChange={(e) => onChange("initialMessage", e.target.value)}
             />
           </Field>
           <Field
-            label="Message box placeholder"
+            label={t("placeholderLabel")}
             htmlFor="bot-placeholder"
-            hint="Faint text inside the box where visitors type."
+            hint={t("placeholderHint")}
             counter={{ value: config.placeholder.length, max: LIMITS.placeholder }}
           >
             <input
               id="bot-placeholder"
               className={`${inputClass} h-10`}
-              placeholder="Type your message..."
+              placeholder={widgetT("defaultPlaceholder")}
               maxLength={LIMITS.placeholder}
               value={config.placeholder}
               onChange={(e) => onChange("placeholder", e.target.value)}
@@ -141,9 +163,9 @@ const GeneralTab: React.FC<Props> = ({ config, onChange, errors, onLinkBlur, can
         </PanelBody>
       </Panel>
 
-      <Panel title="Position" description="Which corner of your site the chat sits in.">
+      <Panel title={t("position")} description={t("positionDesc")}>
         <PanelBody>
-          <div role="radiogroup" aria-label="Widget position" className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <div role="radiogroup" aria-label={t("positionAria")} className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             {POSITIONS.map((p) => {
               const selected = config.position === p.value;
               return (
@@ -174,7 +196,7 @@ const GeneralTab: React.FC<Props> = ({ config, onChange, errors, onLinkBlur, can
                       selected ? "text-[#101723] dark:text-[#E7EDF6]" : "text-[#566273] dark:text-[#9BAABD]"
                     }`}
                   >
-                    {p.label}
+                    {t(p.label)}
                   </span>
                 </button>
               );
@@ -183,9 +205,9 @@ const GeneralTab: React.FC<Props> = ({ config, onChange, errors, onLinkBlur, can
         </PanelBody>
       </Panel>
 
-      <Panel title="When it can't answer" description="What happens when a question isn't covered by your FAQ.">
+      <Panel title={t("fallbackTitle")} description={t("fallbackDesc")}>
         <PanelBody className="space-y-2">
-          <div role="radiogroup" aria-label="When the chatbot can't answer" className="space-y-2">
+          <div role="radiogroup" aria-label={t("fallbackAria")} className="space-y-2">
             {FALLBACKS.map((f) => {
               const selected = fallback === f.value;
               return (
@@ -211,8 +233,8 @@ const GeneralTab: React.FC<Props> = ({ config, onChange, errors, onLinkBlur, can
                     {selected && <span className="h-2 w-2 rounded-full bg-[#101723] dark:bg-[#D7DFE5]" />}
                   </span>
                   <span className="min-w-0">
-                    <span className="block text-body-sm font-medium text-[#101723] dark:text-[#D7DFE5]">{f.label}</span>
-                    <span className="mt-0.5 block text-caption text-[#647184] dark:text-[#87909D]">{f.hint}</span>
+                    <span className="block text-body-sm font-medium text-[#101723] dark:text-[#D7DFE5]">{t(f.label)}</span>
+                    <span className="mt-0.5 block text-caption text-[#647184] dark:text-[#87909D]">{t(f.hint, { button: widgetT("chatWithHuman") })}</span>
                   </span>
                 </button>
               );
@@ -221,9 +243,9 @@ const GeneralTab: React.FC<Props> = ({ config, onChange, errors, onLinkBlur, can
           {showLinkField && (
             <div className="pt-3">
               <Field
-                label="Link to a human"
+                label={t("handoffLabel")}
                 htmlFor="bot-handoff"
-                hint="A WhatsApp link, a contact page or an email address, like wa.me/212600000000 or help@yourstore.com."
+                hint={t("handoffHint")}
                 error={errors.liveChatLink}
               >
                 <input
@@ -243,20 +265,16 @@ const GeneralTab: React.FC<Props> = ({ config, onChange, errors, onLinkBlur, can
         </PanelBody>
       </Panel>
 
-      <Panel title="AI replies" description="Let AI answer what your FAQ doesn't cover, using your FAQ as its source.">
+      <Panel title={t("aiReplies")} description={t("aiRepliesDesc")}>
         {canUseAi ? (
           <Row
-            label="Answer with AI"
-            hint={
-              userPlan === "enterprise"
-                ? "Your plan sets how many chatbots can use AI."
-                : "Pro covers up to 10 chatbots with AI. Turn it off here to free one up."
-            }
+            label={t("answerWithAi")}
+            hint={userPlan === "enterprise" ? t("aiHintEnterprise") : t("aiHintPro")}
           >
             <Switch
               checked={config.aiEnabled === true}
               onChange={(v) => onChange("aiEnabled", v)}
-              label="Answer with AI"
+              label={t("answerWithAi")}
             />
           </Row>
         ) : (
@@ -266,14 +284,14 @@ const GeneralTab: React.FC<Props> = ({ config, onChange, errors, onLinkBlur, can
                 <Sparkles size={15} />
               </span>
               <div>
-                <p className="text-body-sm font-medium text-[#101723] dark:text-[#D7DFE5]">AI replies are part of Pro</p>
+                <p className="text-body-sm font-medium text-[#101723] dark:text-[#D7DFE5]">{t("aiProTitle")}</p>
                 <p className="mt-0.5 text-caption text-[#647184] dark:text-[#87909D]">
-                  Your chatbots answer from your FAQ on every plan. Pro adds AI on up to 10 of them.
+                  {t("aiProText")}
                 </p>
               </div>
             </div>
             <Link to="/plans" className={`${primaryButton} shrink-0 self-start sm:self-auto`}>
-              See Pro
+              {t("seePro")}
             </Link>
           </div>
         )}

@@ -6,6 +6,9 @@ import { orbPropsFor } from "../../utils/orbColors";
 import chatIcon from "../../assets/chat1.svg";
 import { ColorField, Panel, PanelBody, Row, Segmented, Switch } from "./controls";
 import { ChatbotConfig, ConfigChange } from "./types";
+import { isLang, makeT, useT } from "../../i18n";
+import { widgetMessages } from "../../i18n/widget";
+import { editorMessages } from "../../i18n/messages/editor";
 
 const PRESETS = [
   "#101723",
@@ -45,6 +48,9 @@ interface Props {
 }
 
 const AppearanceTab: React.FC<Props> = ({ config, onChange }) => {
+  const t = useT(editorMessages);
+  // The greeting is shown in the widget's language.
+  const greeting = makeT(widgetMessages, isLang(config.language) ? config.language : "en")("greeting");
   const gradient = parseGradient(config.primaryColor);
   const mode = gradient ? "gradient" : "solid";
   const launcher = config.launcherStyle ?? "classic";
@@ -74,12 +80,12 @@ const AppearanceTab: React.FC<Props> = ({ config, onChange }) => {
 
   return (
     <div className="space-y-5">
-      <Panel title="Launcher" description="The button visitors click to open the chat.">
+      <Panel title={t("launcher")} description={t("launcherDesc")}>
         <PanelBody>
-          <div role="radiogroup" aria-label="Launcher style" className="grid grid-cols-2 gap-3 sm:max-w-md">
+          <div role="radiogroup" aria-label={t("launcherAria")} className="grid grid-cols-2 gap-3 sm:max-w-md">
             {([
-              { value: "classic", label: "Classic", hint: "A chat bubble icon" },
-              { value: "orb", label: "Kio", hint: "An orb whose eyes follow the pointer" },
+              { value: "classic", label: t("classic"), hint: t("classicHint") },
+              { value: "orb", label: "Kio", hint: t("kioHint") },
             ] as const).map((option) => {
               const selected = launcher === option.value;
               return (
@@ -119,28 +125,28 @@ const AppearanceTab: React.FC<Props> = ({ config, onChange }) => {
           </div>
         </PanelBody>
         <Row
-          label="Greeting bubble"
-          hint="A short “Hi! 👋 Need a hand?” beside the launcher a few seconds after someone arrives. Shown once per visitor."
+          label={t("greetingBubble")}
+          hint={t("greetingBubbleHint", { greeting })}
         >
           <Switch
             checked={config.greetingBubble === true}
             onChange={(v) => onChange("greetingBubble", v)}
-            label="Greeting bubble"
+            label={t("greetingBubble")}
           />
         </Row>
       </Panel>
 
       <Panel
-        title="Colors"
-        description="Match the chat to your brand."
+        title={t("colors")}
+        description={t("colorsDesc")}
         action={
           <Segmented
-            label="Color style"
+            label={t("colorStyle")}
             value={mode}
             onChange={switchMode}
             options={[
-              { value: "solid", label: "Solid" },
-              { value: "gradient", label: "Gradient" },
+              { value: "solid", label: t("solid") },
+              { value: "gradient", label: t("gradient") },
             ]}
           />
         }
@@ -149,13 +155,13 @@ const AppearanceTab: React.FC<Props> = ({ config, onChange }) => {
           {gradient ? (
             <>
               <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-                <ColorField label="Start" color={gradient.start} onChange={(c) => setGradient({ start: c })} />
-                <ColorField label="End" color={gradient.end} onChange={(c) => setGradient({ end: c })} />
+                <ColorField label={t("start")} color={gradient.start} onChange={(c) => setGradient({ start: c })} />
+                <ColorField label={t("end")} color={gradient.end} onChange={(c) => setGradient({ end: c })} />
               </div>
               <div>
                 <div className="mb-1.5 flex items-center justify-between">
                   <label htmlFor="gradient-angle" className="text-label text-[#101723] dark:text-[#D7DFE5]">
-                    Angle
+                    {t("angle")}
                   </label>
                   <span className="font-mono text-caption tabular-nums text-[#566273] dark:text-[#9BAABD]">
                     {gradient.angle}°
@@ -177,27 +183,27 @@ const AppearanceTab: React.FC<Props> = ({ config, onChange }) => {
                 style={{ background: config.primaryColor }}
               />
               <p className="text-caption text-[#647184] dark:text-[#87909D]">
-                Used for the header, the launcher and your visitors’ messages.
+                {t("gradientHint")}
               </p>
             </>
           ) : (
             <>
               <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
                 <ColorField
-                  label="Primary"
-                  hint="The header and the launcher."
+                  label={t("primary")}
+                  hint={t("primaryHint")}
                   color={config.primaryColor}
                   onChange={(c) => onChange("primaryColor", c)}
                 />
                 <ColorField
-                  label="Secondary"
-                  hint="Your visitors’ messages and the send button."
+                  label={t("secondary")}
+                  hint={t("secondaryHint")}
                   color={config.secondaryColor}
                   onChange={(c) => onChange("secondaryColor", c)}
                 />
               </div>
               <div>
-                <p className="mb-2 text-label text-[#101723] dark:text-[#D7DFE5]">Presets</p>
+                <p className="mb-2 text-label text-[#101723] dark:text-[#D7DFE5]">{t("presets")}</p>
                 <div className="flex flex-wrap gap-2">
                   {PRESETS.map((color) => {
                     const active =
@@ -207,7 +213,7 @@ const AppearanceTab: React.FC<Props> = ({ config, onChange }) => {
                       <button
                         key={color}
                         type="button"
-                        aria-label={`Use ${color} for both colors`}
+                        aria-label={t("usePreset", { color })}
                         aria-pressed={active}
                         onClick={() => setColors(color, color)}
                         className={`flex h-8 w-8 items-center justify-center rounded-full ring-1 ring-inset ring-black/10 transition-transform hover:scale-110 dark:ring-white/10 ${focusRing} ${

@@ -20,6 +20,9 @@ import AppearanceTab from "./editor/AppearanceTab";
 import FaqTab from "./editor/FaqTab";
 import EmbedTab from "./editor/EmbedTab";
 import PreviewFrame from "./editor/PreviewFrame";
+import { makeT, useLanguage, useT, type Lang } from "../i18n";
+import { widgetMessages } from "../i18n/widget";
+import { editorMessages } from "../i18n/messages/editor";
 
 // Dynamic import: AI feature is optional (not included in open-source builds)
 const aiModules = import.meta.glob('./AiFaqGenerator.tsx');
@@ -63,16 +66,25 @@ const DEFAULT_CONFIG: ChatbotConfig = {
   enableLeadCapture: false,
   aiEnabled: false,
   aiTone: "",
+  language: "en",
 };
+
+/** A blank chatbot whose widget speaks the app's language. */
+function newChatbotConfig(lang: Lang): ChatbotConfig {
+  const w = makeT(widgetMessages, lang);
+  return { ...DEFAULT_CONFIG, language: lang, initialMessage: w("defaultWelcome"), placeholder: w("defaultPlaceholder") };
+}
 
 type TabKey = "general" | "appearance" | "faq" | "ai" | "embed";
 
-const TABS: { key: TabKey; label: string }[] = [
-  { key: "general", label: "General" },
-  { key: "appearance", label: "Appearance" },
-  { key: "faq", label: "Questions" },
-  ...(AiPersonaTab ? [{ key: "ai" as const, label: "AI persona" }] : []),
-  { key: "embed", label: "Install" },
+type EditorKey = keyof (typeof editorMessages)["en"];
+
+const TABS: { key: TabKey; label: EditorKey }[] = [
+  { key: "general", label: "tabGeneral" },
+  { key: "appearance", label: "tabAppearance" },
+  { key: "faq", label: "tabFaq" },
+  ...(AiPersonaTab ? [{ key: "ai" as const, label: "tabAi" as const }] : []),
+  { key: "embed", label: "tabInstall" },
 ];
 
 const CORNER: Record<ChatbotConfig["position"], string> = {
@@ -85,8 +97,8 @@ const CORNER: Record<ChatbotConfig["position"], string> = {
 const leadCaptureOn = (c: ChatbotConfig) =>
   c.enableLeadCapture === true || (c.enableLeadCapture as unknown as string) === "true";
 
-const EditorSkeleton: React.FC = () => (
-  <div className="space-y-6" aria-busy="true" aria-label="Loading">
+const EditorSkeleton: React.FC<{ label: string }> = ({ label }) => (
+  <div className="space-y-6" aria-busy="true" aria-label={label}>
     <div className="space-y-3">
       <Skeleton className="h-3.5 w-20" />
       <div className="flex items-center gap-3">
@@ -124,12 +136,15 @@ const EditChatbot: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
+  const t = useT(editorMessages);
+  const { lang } = useLanguage();
 
   // Analytics links here with a question nobody could get answered.
   const faqQuestion = (location.state as { faqQuestion?: string } | null)?.faqQuestion ?? null;
 
-  const [config, setConfig] = useState<ChatbotConfig>(DEFAULT_CONFIG);
-  const [savedJson, setSavedJson] = useState(() => JSON.stringify(DEFAULT_CONFIG));
+  // A new chatbot starts in the app's language, and that start is the saved baseline.
+  const [config, setConfig] = useState<ChatbotConfig>(() => (id ? DEFAULT_CONFIG : newChatbotConfig(lang)));
+  const [savedJson, setSavedJson] = useState(() => JSON.stringify(id ? DEFAULT_CONFIG : newChatbotConfig(lang)));
   const [loading, setLoading] = useState(Boolean(id));
   const [saving, setSaving] = useState(false);
   const [showErrors, setShowErrors] = useState(false);
@@ -143,7 +158,7 @@ const EditChatbot: React.FC = () => {
 
   const requestedTab = searchParams.get("tab") as TabKey | null;
   const activeTab: TabKey =
-    requestedTab && TABS.some((t) => t.key === requestedTab) ? requestedTab : faqQuestion ? "faq" : "general";
+    requestedTab && TABS.some((tab) => tab.key === requestedTab) ? requestedTab : faqQuestion ? "faq" : "general";
   const setActiveTab = useCallback(
     (tab: TabKey) =>
       setSearchParams(
@@ -165,8 +180,9 @@ const EditChatbot: React.FC = () => {
       // From an existing chatbot to "New chatbot": start over.
       if (loadedId.current) {
         loadedId.current = null;
-        setConfig(DEFAULT_CONFIG);
-        setSavedJson(JSON.stringify(DEFAULT_CONFIG));
+        const fresh = newChatbotConfig(lang);
+        setConfig(fresh);
+        setSavedJson(JSON.stringify(fresh));
         setShowErrors(false);
       }
       setLoading(false);
@@ -179,7 +195,7 @@ const EditChatbot: React.FC = () => {
     (async () => {
       try {
         const snap = await getDoc(doc(db, "chatbot_configs", id));
-        if (!snap.exists()) throw new Error("This chatbot doesn't exist or was deleted.");
+        if (!snap.exists()) throw new Error(t("notFound"));
         if (cancelled) return;
         const data = { ...DEFAULT_CONFIG, ...snap.data(), id } as ChatbotConfig;
         loadedId.current = id;
@@ -188,7 +204,7 @@ const EditChatbot: React.FC = () => {
         setShowErrors(false);
       } catch (error) {
         console.error("Error loading chatbot config:", error);
-        if (!cancelled) toast.error(`Couldn't load this chatbot. ${(error as Error).message}`);
+        if (!cancelled) toast.error(t("loadFailed", { error: (error as Error).message }));
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -196,7 +212,8 @@ const EditChatbot: React.FC = () => {
     return () => {
       cancelled = true;
     };
-  }, [id]);
+    // Only a change of chatbot reloads; switching the app language mid-edit shouldn't.
+  }, [id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     const currentUser = auth.currentUser;
@@ -235,11 +252,11 @@ const EditChatbot: React.FC = () => {
     !leadCaptureOn(config) && !!config.liveChatLink && normalizeContactLink(config.liveChatLink) === null;
 
   const errors: GeneralErrors = {
-    name: showErrors && !config.name.trim() ? "Give your chatbot a name." : null,
-    title: showErrors && !config.title.trim() ? "Add a title for the chat header." : null,
+    name: showErrors && !config.name.trim() ? t("errName") : null,
+    title: showErrors && !config.title.trim() ? t("errTitle") : null,
     liveChatLink:
       (showErrors || linkTouched) && linkInvalid
-        ? "Enter a web link like wa.me/212600000000 or an email address."
+        ? t("errLink")
         : null,
   };
 
@@ -260,13 +277,13 @@ const EditChatbot: React.FC = () => {
       setShowErrors(true);
       setActiveTab("general");
       toast.error(linkInvalid && config.name.trim() && config.title.trim()
-        ? "Check the link to a human before saving."
-        : "Add a name and a title before saving.");
+        ? t("checkLinkBeforeSaving")
+        : t("nameAndTitleBeforeSaving"));
       return null;
     }
     const user = auth.currentUser;
     if (!user) {
-      toast.error("You must be logged in to save the configuration.");
+      toast.error(t("mustBeLoggedInToSave"));
       return null;
     }
 
@@ -289,7 +306,7 @@ const EditChatbot: React.FC = () => {
       setSavedJson(JSON.stringify(next));
       setShowErrors(false);
       if (showSuccessToast) {
-        toast.success(chatbotId ? "Changes saved" : "Chatbot created");
+        toast.success(chatbotId ? t("changesSaved") : t("chatbotCreated"));
       }
       if (navigateAfterSave && result.chatbotId !== id) {
         navigate(`/configure/${result.chatbotId}${location.search}`, { replace: true });
@@ -298,7 +315,7 @@ const EditChatbot: React.FC = () => {
     } catch (error) {
       console.error("Error saving config:", error);
       toast.error(
-        error instanceof Error ? `Couldn't save: ${error.message}` : "Couldn't save your changes. Please try again."
+        error instanceof Error ? t("saveFailedWith", { error: error.message }) : t("saveFailed")
       );
       return null;
     } finally {
@@ -340,7 +357,7 @@ const EditChatbot: React.FC = () => {
     return () => window.removeEventListener("beforeunload", warn);
   }, [hasChanges]);
 
-  const heading = config.name.trim() || (id ? "Untitled chatbot" : "New chatbot");
+  const heading = config.name.trim() || (id ? t("untitledChatbot") : t("newChatbot"));
   const aiReady = canUseAi && config.aiEnabled === true;
 
   const aiGenerator = AiFaqGenerator ? (
@@ -364,16 +381,16 @@ const EditChatbot: React.FC = () => {
   return (
     <div className="min-h-screen bg-[#F3F7FC] font-sans text-[#101723] dark:bg-[#141D2B] dark:text-[#D7DFE5]">
       <Helmet>
-        <title>{id ? `${config.name || "Edit chatbot"} | Askio` : "New chatbot | Askio"}</title>
+        <title>{`${id ? config.name || t("editChatbot") : t("newChatbot")} | Askio`}</title>
         <meta
           name="description"
-          content={id ? `Edit and configure your ${config.name} chatbot` : "Create and configure a new chatbot for your website"}
+          content={id ? t("metaEdit", { name: config.name }) : t("metaNew")}
         />
       </Helmet>
 
       <div className="w-full px-4 py-6 sm:px-6 sm:py-8 lg:px-8 xl:px-10">
         {loading ? (
-          <EditorSkeleton />
+          <EditorSkeleton label={t("loading")} />
         ) : (
           <>
             <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
@@ -383,7 +400,7 @@ const EditChatbot: React.FC = () => {
                   className={`inline-flex items-center gap-1 rounded text-caption font-medium text-[#647184] transition-colors hover:text-[#101723] dark:text-[#87909D] dark:hover:text-[#D7DFE5] ${focusRing}`}
                 >
                   <ArrowLeft size={13} />
-                  Dashboard
+                  {t("dashboard")}
                 </Link>
                 <div className="mt-2 flex min-w-0 items-center gap-3">
                   <BotAvatar color={config.primaryColor} size={34} />
@@ -393,7 +410,7 @@ const EditChatbot: React.FC = () => {
                   {config.aiEnabled && (
                     <span className="hidden shrink-0 items-center gap-1 rounded-full border border-[#D8DFE9] bg-[#F9FCFF] px-2 py-0.5 text-caption font-medium text-[#566273] sm:inline-flex dark:border-[#2B3646] dark:bg-[#1A2533] dark:text-[#9BAABD]">
                       <Sparkles size={11} />
-                      AI
+                      {t("aiBadge")}
                     </span>
                   )}
                 </div>
@@ -405,13 +422,13 @@ const EditChatbot: React.FC = () => {
                 className={`${secondaryButton} self-start sm:self-auto xl:hidden`}
               >
                 {showPreview ? <EyeOff size={16} /> : <Eye size={16} />}
-                {showPreview ? "Hide preview" : "Preview"}
+                {showPreview ? t("hidePreview") : t("preview")}
               </button>
             </header>
 
             <nav
               role="tablist"
-              aria-label="Chatbot settings"
+              aria-label={t("settingsTabs")}
               className="scrollbar-hide -mx-4 mt-6 flex gap-1 overflow-x-auto border-b border-[#D8DFE9] px-4 sm:mx-0 sm:px-0 dark:border-[#2B3646]"
             >
               {TABS.map((tab) => {
@@ -430,14 +447,14 @@ const EditChatbot: React.FC = () => {
                         : "border-transparent text-[#647184] hover:text-[#101723] dark:text-[#87909D] dark:hover:text-[#D7DFE5]"
                     }`}
                   >
-                    {tab.label}
+                    {t(tab.label)}
                     {count > 0 && (
                       <span className="rounded-full bg-[#E7EDF6] px-1.5 text-[11px] font-medium tabular-nums text-[#566273] dark:bg-[#273444] dark:text-[#9BAABD]">
                         {count}
                       </span>
                     )}
                     {tab.key === "general" && showErrors && (errors.name || errors.title || errors.liveChatLink) && (
-                      <span className="h-1.5 w-1.5 rounded-full bg-red-500" aria-label="Needs attention" />
+                      <span className="h-1.5 w-1.5 rounded-full bg-red-500" aria-label={t("needsAttention")} />
                     )}
                   </button>
                 );
@@ -446,7 +463,7 @@ const EditChatbot: React.FC = () => {
 
             <div className="mt-6 grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_400px] xl:items-start">
               <div className="min-w-0">
-                <div role="tabpanel" aria-label={TABS.find((t) => t.key === activeTab)?.label}>
+                <div role="tabpanel" aria-label={t(TABS.find((tab) => tab.key === activeTab)?.label ?? "tabGeneral")}>
                   {activeTab === "general" && (
                     <GeneralTab
                       config={config}
@@ -480,12 +497,12 @@ const EditChatbot: React.FC = () => {
                         />
                       </Suspense>
                     ) : (
-                      <Panel title="AI persona" description="Give AI replies a voice that fits your brand.">
+                      <Panel title={t("tabAi")} description={t("personaDesc")}>
                         <div className="flex flex-col gap-4 px-5 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-6">
                           <p className="text-body-sm text-[#566273] dark:text-[#9BAABD]">
                             {canUseAi
-                              ? "This chatbot answers from your questions only. Turn on AI replies to choose how they sound."
-                              : "Personas shape how AI replies sound. AI replies are part of Pro."}
+                              ? t("personaTurnOnHint")
+                              : t("personaProHint")}
                           </p>
                           {canUseAi ? (
                             <button
@@ -494,11 +511,11 @@ const EditChatbot: React.FC = () => {
                               className={`${primaryButton} shrink-0 self-start sm:self-auto`}
                             >
                               <Sparkles size={15} />
-                              Turn on AI replies
+                              {t("turnOnAiReplies")}
                             </button>
                           ) : (
                             <Link to="/plans" className={`${primaryButton} shrink-0 self-start sm:self-auto`}>
-                              See Pro
+                              {t("seePro")}
                             </Link>
                           )}
                         </div>
@@ -518,13 +535,13 @@ const EditChatbot: React.FC = () => {
                       }`}
                     />
                     <span className="truncate">
-                      {!id ? "Not created yet" : hasChanges ? "Unsaved changes" : "All changes saved"}
+                      {!id ? t("notCreatedYet") : hasChanges ? t("unsavedChanges") : t("allChangesSaved")}
                     </span>
                   </p>
                   <div className="flex shrink-0 items-center gap-2">
                     {hasChanges && id && (
                       <button type="button" onClick={discardChanges} disabled={saving} className={secondaryButton}>
-                        Discard
+                        {t("discard")}
                       </button>
                     )}
                     <button
@@ -534,14 +551,14 @@ const EditChatbot: React.FC = () => {
                       title="Ctrl+S"
                       className={primaryButton}
                     >
-                      {saving ? "Saving…" : id ? "Save changes" : "Create chatbot"}
+                      {saving ? t("saving") : id ? t("saveChanges") : t("createChatbot")}
                     </button>
                   </div>
                 </div>
               </div>
 
               {wide && (
-                <aside className="sticky top-6" aria-label="Preview">
+                <aside className="sticky top-6" aria-label={t("preview")}>
                   <PreviewFrame config={config} />
                 </aside>
               )}

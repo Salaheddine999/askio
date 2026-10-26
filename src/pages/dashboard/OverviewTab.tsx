@@ -9,6 +9,9 @@ import ChatbotCard from "../../components/ChatbotCard";
 import { ListSkeleton, Skeleton, SkeletonCard, StatTilesSkeleton } from "../../components/Skeleton";
 import { ChatbotGridSkeleton, CreateChatbotLink, EmptyState, ErrorBanner, focusRing } from "./ui";
 import { Chatbot, ChatbotActions, EMPTY_FEEDBACK, FeedbackCounts, TrendData } from "./types";
+import { useT } from "../../i18n";
+import { dashboardMessages } from "../../i18n/messages/dashboard";
+import { commonMessages } from "../../i18n/messages/common";
 
 const FEATURED_CHATBOTS = 3;
 
@@ -37,8 +40,10 @@ const linkButton = `inline-flex shrink-0 items-center gap-1 rounded text-body-sm
 
 const BAR_HEIGHTS = [55, 80, 35, 65, 90, 45, 70, 30, 60, 75, 40, 85];
 
-const OverviewSkeleton: React.FC = () => (
-  <div className="space-y-6" aria-busy="true" aria-label="Loading overview">
+const OverviewSkeleton: React.FC = () => {
+  const t = useT(dashboardMessages);
+  return (
+  <div className="space-y-6" aria-busy="true" aria-label={t("loadingOverview")}>
     <StatTilesSkeleton />
     <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
       <SkeletonCard className="p-5 xl:col-span-2">
@@ -68,7 +73,8 @@ const OverviewSkeleton: React.FC = () => (
       <ChatbotGridSkeleton count={FEATURED_CHATBOTS} />
     </div>
   </div>
-);
+  );
+};
 
 const OverviewTab: React.FC<OverviewTabProps> = ({
   chatbots,
@@ -85,6 +91,8 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
   onViewNotifications,
   ...actions
 }) => {
+  const t = useT(dashboardMessages);
+  const tc = useT(commonMessages);
   const activeCount = chatbots.filter((c) => c.isActive ?? true).length;
 
   const featured = useMemo(
@@ -114,9 +122,9 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
         <div className="rounded-2xl border border-dashed border-[#C9D3E0] bg-[#F9FCFF]/60 dark:border-[#39485B] dark:bg-[#1A2533]/40">
           <EmptyState
             icon={Bot}
-            title="Create your first chatbot"
-            description="Add your FAQs, pick your colours and paste one snippet on your site. Your stats show up here as soon as visitors start chatting."
-            action={<CreateChatbotLink label="Create chatbot" to="/start" />}
+            title={t("firstChatbotTitle")}
+            description={t("firstChatbotDesc")}
+            action={<CreateChatbotLink label={t("createChatbot")} to="/start" />}
           />
         </div>
       </div>
@@ -127,30 +135,40 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
     <div className="space-y-6">
       <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
         <StatsCard
-          title="Chatbots"
-          value={chatbots.length}
-          description={`${activeCount} live · ${chatbots.length - activeCount} paused`}
+          title={t("statChatbots")}
+          value={chatbots.length.toLocaleString(t.lang)}
+          description={t("statChatbotsDesc", {
+            live: activeCount.toLocaleString(t.lang),
+            paused: (chatbots.length - activeCount).toLocaleString(t.lang),
+          })}
           icon={<Bot className={statIcon} />}
           {...trendProps(trends.chatbots)}
         />
         <StatsCard
-          title="Ratings received"
-          value={totalFeedback.toLocaleString()}
-          description="Thumbs up and down from visitors"
+          title={t("statRatings")}
+          value={totalFeedback.toLocaleString(t.lang)}
+          description={t("statRatingsDesc")}
           icon={<MessageSquare className={statIcon} />}
           {...trendProps(trends.feedback)}
         />
         <StatsCard
-          title="Satisfaction"
-          value={totalFeedback > 0 ? `${satisfactionRate.toFixed(0)}%` : "—"}
-          description="Share of positive ratings"
+          title={t("statSatisfaction")}
+          value={
+            totalFeedback > 0
+              ? (satisfactionRate / 100).toLocaleString(t.lang, { style: "percent", maximumFractionDigits: 0 })
+              : "—"
+          }
+          description={t("statSatisfactionDesc")}
           icon={<Smile className={statIcon} />}
           {...trendProps(trends.satisfaction)}
         />
         <StatsCard
-          title="Ratings per chatbot"
-          value={(totalFeedback / (chatbots.length || 1)).toFixed(1)}
-          description="Average across all chatbots"
+          title={t("statPerChatbot")}
+          value={(totalFeedback / (chatbots.length || 1)).toLocaleString(t.lang, {
+            minimumFractionDigits: 1,
+            maximumFractionDigits: 1,
+          })}
+          description={t("statPerChatbotDesc")}
           icon={<TrendingUp className={statIcon} />}
           {...trendProps(trends.avgFeedback)}
         />
@@ -171,11 +189,11 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
       <section className="space-y-4">
         <div className="flex items-end justify-between gap-4">
           <div>
-            <h2 className="font-serif text-h3 text-[#101723] dark:text-[#D7DFE5]">Your chatbots</h2>
-            <p className="mt-1 text-body-sm text-[#566273] dark:text-[#9BAABD]">The ones you worked on most recently.</p>
+            <h2 className="font-serif text-h3 text-[#101723] dark:text-[#D7DFE5]">{t("yourChatbots")}</h2>
+            <p className="mt-1 text-body-sm text-[#566273] dark:text-[#9BAABD]">{t("recentChatbots")}</p>
           </div>
           <button onClick={onViewChatbots} className={linkButton}>
-            View all {chatbots.length}
+            {t("viewAllCount", { count: chatbots.length.toLocaleString(t.lang) })}
             <ArrowRight size={14} />
           </button>
         </div>
@@ -202,8 +220,8 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
                 <Plus size={20} />
               </span>
               <span>
-                <span className="block text-body-sm font-medium text-[#101723] dark:text-[#D7DFE5]">New chatbot</span>
-                <span className="block text-caption text-[#647184] dark:text-[#87909D]">Set one up in a few minutes</span>
+                <span className="block text-body-sm font-medium text-[#101723] dark:text-[#D7DFE5]">{tc("newChatbot")}</span>
+                <span className="block text-caption text-[#647184] dark:text-[#87909D]">{t("newChatbotHint")}</span>
               </span>
             </Link>
           )}

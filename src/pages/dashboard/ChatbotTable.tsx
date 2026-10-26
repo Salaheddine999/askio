@@ -2,6 +2,9 @@ import React from "react";
 import { ArrowDown, ArrowUp } from "lucide-react";
 import ChatbotCard from "../../components/ChatbotCard";
 import { Chatbot, ChatbotActions, EMPTY_FEEDBACK, FeedbackCounts, SortKey, SortOrder } from "./types";
+import { useT } from "../../i18n";
+import { dashboardMessages } from "../../i18n/messages/dashboard";
+import { commonMessages } from "../../i18n/messages/common";
 
 interface ChatbotTableProps extends ChatbotActions {
   chatbots: Chatbot[];
@@ -23,6 +26,8 @@ const ChatbotTable: React.FC<ChatbotTableProps> = ({
   onDelete,
   onToggleActive,
 }) => {
+  const t = useT(dashboardMessages);
+  const tc = useT(commonMessages);
   const sortableHeader = (column: SortKey, label: string, className = "") => {
     if (!sort) {
       return (
@@ -62,16 +67,16 @@ const ChatbotTable: React.FC<ChatbotTableProps> = ({
       <table className="min-w-full">
         <thead className="border-b border-[#E7EDF6] bg-[#F3F7FC]/70 dark:border-[#2B3646] dark:bg-[#141D2B]/60">
           <tr>
-            {sortableHeader("title", "Name")}
+            {sortableHeader("title", tc("sortName"))}
             <th scope="col" className={`${headerCell} hidden sm:table-cell`}>
-              Satisfaction
+              {t("colSatisfaction")}
             </th>
             <th scope="col" className={`${headerCell} hidden lg:table-cell`}>
-              FAQs
+              {t("colFaqs")}
             </th>
-            {sortableHeader("lastUpdated", "Updated", "hidden xl:table-cell")}
+            {sortableHeader("lastUpdated", t("colUpdated"), "hidden xl:table-cell")}
             <th scope="col" className={headerCell}>
-              <span className="sr-only">Actions</span>
+              <span className="sr-only">{t("colActions")}</span>
             </th>
           </tr>
         </thead>

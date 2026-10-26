@@ -39,16 +39,20 @@ import { redirectToBillingPortal, redirectToProCheckout } from "../utils/billing
 import { PRO_AI_REPLY_LIMIT, PRO_PRICE } from "../utils/pricing";
 import { focusRing, primaryButton, secondaryButton, surface } from "./dashboard/ui";
 import type { Suspension } from "../hooks/useSuspension";
+import { LANGUAGES, useLanguage, useT, type Lang } from "../i18n";
+import { settingsMessages } from "../i18n/messages/settings";
 import { reviewEmailHref } from "../utils/support";
 
 type Plan = "free" | "pro" | "enterprise";
 
-const SECTIONS: { id: string; label: string; icon: LucideIcon }[] = [
-  { id: "profile", label: "Profile", icon: UserRound },
-  { id: "billing", label: "Plan & billing", icon: CreditCard },
-  { id: "appearance", label: "Appearance", icon: Monitor },
-  { id: "security", label: "Sign-in & security", icon: KeyRound },
-  { id: "danger", label: "Delete account", icon: Trash2 },
+type SettingsKey = keyof typeof settingsMessages.en;
+
+const SECTIONS: { id: string; label: SettingsKey; icon: LucideIcon }[] = [
+  { id: "profile", label: "sectionProfile", icon: UserRound },
+  { id: "billing", label: "sectionBilling", icon: CreditCard },
+  { id: "appearance", label: "sectionAppearance", icon: Monitor },
+  { id: "security", label: "sectionSecurity", icon: KeyRound },
+  { id: "danger", label: "sectionDanger", icon: Trash2 },
 ];
 
 const inputClass =
@@ -94,6 +98,8 @@ interface SettingsProps {
 }
 
 const Settings: React.FC<SettingsProps> = ({ darkMode, setDarkMode, suspension }) => {
+  const { lang, setLang } = useLanguage();
+  const t = useT(settingsMessages);
   const navigate = useNavigate();
   const deleteAccountModal = useModal();
   const [user, setUser] = useState<User | null>(null);
@@ -151,10 +157,10 @@ const Settings: React.FC<SettingsProps> = ({ darkMode, setDarkMode, suspension }
       await updateDoc(doc(db, "users", user.uid), { name: trimmed });
       setName(trimmed);
       setSavedName(trimmed);
-      toast.success("Name updated");
+      toast.success(t("nameUpdated"));
     } catch (error) {
       console.error("Error updating profile:", error);
-      toast.error("Couldn't update your name. Please try again.");
+      toast.error(t("nameUpdateFailed"));
     } finally {
       setSavingName(false);
     }
@@ -171,22 +177,22 @@ const Settings: React.FC<SettingsProps> = ({ darkMode, setDarkMode, suspension }
     e.preventDefault();
     if (!user?.email) return;
     if (newPassword.length < 6) {
-      toast.error("Your new password needs at least 6 characters.");
+      toast.error(t("passwordTooShort"));
       return;
     }
     if (newPassword !== confirmNewPassword) {
-      toast.error("The new passwords don't match.");
+      toast.error(t("passwordsDontMatch"));
       return;
     }
     setSavingPassword(true);
     try {
       await reauthenticateWithCredential(user, EmailAuthProvider.credential(user.email, currentPassword));
       await updatePassword(user, newPassword);
-      toast.success("Password changed");
+      toast.success(t("passwordChanged"));
       resetPasswordForm();
     } catch (error) {
       console.error("Error changing password:", error);
-      toast.error("Couldn't change your password. Check your current password and try again.");
+      toast.error(t("passwordChangeFailed"));
     } finally {
       setSavingPassword(false);
     }
@@ -196,10 +202,10 @@ const Settings: React.FC<SettingsProps> = ({ darkMode, setDarkMode, suspension }
     if (!email) return;
     try {
       await sendPasswordResetEmail(auth, email);
-      toast.success(`We sent a reset link to ${email}`);
+      toast.success(t("resetEmailSent", { email }));
     } catch (error) {
       console.error("Error sending reset email:", error);
-      toast.error("Couldn't send the reset email. Please try again.");
+      toast.error(t("resetEmailFailed"));
     }
   };
 
@@ -225,14 +231,14 @@ const Settings: React.FC<SettingsProps> = ({ darkMode, setDarkMode, suspension }
         headers: { Authorization: `Bearer ${token}` },
       });
       const payload = await response.json().catch(() => ({}));
-      if (!response.ok) throw new Error(payload.error || "Failed to delete account.");
+      if (!response.ok) throw new Error(payload.error || t("deleteFailed"));
 
       await signOut(auth).catch(() => undefined);
-      toast.success("Your account and all its data have been deleted");
+      toast.success(t("accountDeleted"));
       navigate("/");
     } catch (error) {
       console.error("Error deleting account:", error);
-      toast.error(error instanceof Error && error.message ? error.message : "Failed to delete account. Please try again.");
+      toast.error(error instanceof Error && error.message ? error.message : t("deleteFailedRetry"));
     } finally {
       setDeleting(false);
     }
@@ -261,7 +267,7 @@ const Settings: React.FC<SettingsProps> = ({ darkMode, setDarkMode, suspension }
   const periodEnd = currentPeriodEnd ? new Date(currentPeriodEnd) : null;
   const periodEndLabel =
     periodEnd && !Number.isNaN(periodEnd.getTime())
-      ? periodEnd.toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" })
+      ? periodEnd.toLocaleDateString(t.lang, { year: "numeric", month: "long", day: "numeric" })
       : null;
   const isPaid = userPlan !== "free";
   const cancelled = subscriptionStatus === "cancelled" || subscriptionStatus === "expired";
@@ -270,22 +276,26 @@ const Settings: React.FC<SettingsProps> = ({ darkMode, setDarkMode, suspension }
     : ["paused", "past_due", "unpaid", "cancelled"].includes(subscriptionStatus)
       ? "bg-amber-50 text-amber-700 ring-amber-600/20 dark:bg-amber-900/25 dark:text-amber-400"
       : "bg-[#E7EDF6] text-[#566273] ring-[#566273]/15 dark:bg-[#243040] dark:text-[#9BAABD]";
-  const statusLabel = String(subscriptionStatus || "inactive")
-    .replace(/_/g, " ")
-    .replace(/\b\w/g, (c) => c.toUpperCase());
-  const planLabel = userPlan === "pro" ? "Pro" : userPlan === "enterprise" ? "Enterprise" : "Free";
+  const statusKey = `status_${subscriptionStatus || "inactive"}`;
+  const statusLabel =
+    statusKey in settingsMessages.en
+      ? t(statusKey as SettingsKey)
+      : String(subscriptionStatus || "inactive")
+          .replace(/_/g, " ")
+          .replace(/\b\w/g, (c) => c.toUpperCase());
+  const planLabel = userPlan === "pro" ? "Pro" : userPlan === "enterprise" ? "Enterprise" : t("planFree");
 
   return (
     <div className="min-h-screen bg-[#F3F7FC] font-sans text-[#101723] dark:bg-[#141D2B]">
       <Helmet>
-        <title>Settings | Askio</title>
-        <meta name="description" content="Manage your Askio account, plan and preferences." />
+        <title>{t("metaTitle")}</title>
+        <meta name="description" content={t("metaDescription")} />
       </Helmet>
 
       <div className="w-full space-y-6 px-4 py-6 sm:px-6 sm:py-8 lg:px-8 xl:px-10">
         <header>
-          <h1 className="font-serif text-h2 tracking-tight text-[#101723] sm:text-h1 dark:text-[#D7DFE5]">Settings</h1>
-          <p className="mt-1 text-body-sm text-[#566273] dark:text-[#9BAABD]">Your account, plan and preferences.</p>
+          <h1 className="font-serif text-h2 tracking-tight text-[#101723] sm:text-h1 dark:text-[#D7DFE5]">{t("title")}</h1>
+          <p className="mt-1 text-body-sm text-[#566273] dark:text-[#9BAABD]">{t("subtitle")}</p>
         </header>
 
         {suspension && (
@@ -294,17 +304,16 @@ const Settings: React.FC<SettingsProps> = ({ darkMode, setDarkMode, suspension }
             className="flex flex-col gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 sm:flex-row sm:items-center sm:justify-between dark:border-amber-900/60 dark:bg-amber-950/30"
           >
             <p className="text-body-sm text-amber-900 dark:text-amber-200">
-              <span className="font-medium">Your account is suspended.</span> You can still manage billing or delete
-              your account here. Everything else is paused.
+              <span className="font-medium">{t("suspendedBold")}</span> {t("suspendedText")}
             </p>
             <a href={reviewEmailHref(email)} className={`${secondaryButton} shrink-0 self-start sm:self-auto`}>
-              Contact us
+              {t("contactUs")}
             </a>
           </div>
         )}
 
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-[200px_minmax(0,1fr)]">
-          <nav aria-label="Settings sections" className="hidden lg:block">
+          <nav aria-label={t("sectionsNav")} className="hidden lg:block">
             <div className="sticky top-6 space-y-0.5">
               {SECTIONS.map((s) => (
                 <a
@@ -317,7 +326,7 @@ const Settings: React.FC<SettingsProps> = ({ darkMode, setDarkMode, suspension }
                   }`}
                 >
                   <s.icon size={14} className="shrink-0 opacity-70" />
-                  {s.label}
+                  {t(s.label)}
                 </a>
               ))}
             </div>
@@ -325,7 +334,7 @@ const Settings: React.FC<SettingsProps> = ({ darkMode, setDarkMode, suspension }
 
           <div className="min-w-0 max-w-3xl space-y-5">
             {/* Profile */}
-            <Section id="profile" title="Profile" description="How you appear in Askio.">
+            <Section id="profile" title={t("sectionProfile")} description={t("profileDescription")}>
               <div className="flex items-center gap-4 px-5 py-5 sm:px-6">
                 {user?.photoURL ? (
                   <img src={user.photoURL} alt="" referrerPolicy="no-referrer" className="h-14 w-14 shrink-0 rounded-full object-cover ring-1 ring-black/5" />
@@ -335,7 +344,7 @@ const Settings: React.FC<SettingsProps> = ({ darkMode, setDarkMode, suspension }
                   </span>
                 )}
                 <div className="min-w-0">
-                  <p className="truncate text-body font-semibold text-[#101723] dark:text-[#E7EDF6]">{savedName || "No name set"}</p>
+                  <p className="truncate text-body font-semibold text-[#101723] dark:text-[#E7EDF6]">{savedName || t("noName")}</p>
                   <p className="truncate text-body-sm text-[#647184] dark:text-[#87909D]">{email}</p>
                 </div>
               </div>
@@ -347,27 +356,27 @@ const Settings: React.FC<SettingsProps> = ({ darkMode, setDarkMode, suspension }
                 }}
               >
                 <label className="min-w-0 flex-1">
-                  <span className="mb-1.5 block text-body-sm font-medium text-[#101723] dark:text-[#D7DFE5]">Full name</span>
-                  <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Your name" className={inputClass} />
+                  <span className="mb-1.5 block text-body-sm font-medium text-[#101723] dark:text-[#D7DFE5]">{t("fullName")}</span>
+                  <input value={name} onChange={(e) => setName(e.target.value)} placeholder={t("namePlaceholder")} className={inputClass} />
                 </label>
                 <div className="flex gap-2">
                   {name !== savedName && (
                     <button type="button" onClick={() => setName(savedName)} className={secondaryButton}>
-                      Cancel
+                      {t("cancel")}
                     </button>
                   )}
                   <button type="submit" disabled={name.trim() === savedName || savingName} className={primaryButton}>
-                    {savingName ? "Saving…" : "Save"}
+                    {savingName ? t("saving") : t("save")}
                   </button>
                 </div>
               </form>
-              <Row label="Email" hint="Used to sign in and for account emails.">
+              <Row label={t("email")} hint={t("emailHint")}>
                 <span className="text-body-sm text-[#566273] dark:text-[#9BAABD]">{email}</span>
               </Row>
             </Section>
 
             {/* Plan & billing */}
-            <Section id="billing" title="Plan & billing" description="Your subscription and AI usage. Payments are handled by Lemon Squeezy.">
+            <Section id="billing" title={t("sectionBilling")} description={t("billingDescription")}>
               <div className="flex flex-col gap-4 px-5 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-6">
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
@@ -378,12 +387,12 @@ const Settings: React.FC<SettingsProps> = ({ darkMode, setDarkMode, suspension }
                   </div>
                   <p className="mt-1 text-body-sm text-[#647184] dark:text-[#87909D]">
                     {!isPaid
-                      ? `Upgrade to Pro for AI replies (${PRO_AI_REPLY_LIMIT.toLocaleString()} a month), AI-generated FAQs and AI personas, from $${PRO_PRICE.monthly}/month.`
+                      ? t("upgradePitch", { limit: PRO_AI_REPLY_LIMIT.toLocaleString(t.lang), price: `$${PRO_PRICE.monthly}` })
                       : cancelled && periodEndLabel
-                        ? `Your subscription is cancelled. You keep ${planLabel} until ${periodEndLabel}.`
+                        ? t("cancelledUntil", { plan: planLabel, date: periodEndLabel })
                         : periodEndLabel
-                          ? `Renews on ${periodEndLabel}.`
-                          : "Thanks for supporting Askio."}
+                          ? t("renewsOn", { date: periodEndLabel })
+                          : t("thanks")}
                   </p>
                 </div>
                 <div className="flex shrink-0 gap-2">
@@ -391,22 +400,22 @@ const Settings: React.FC<SettingsProps> = ({ darkMode, setDarkMode, suspension }
                     <button
                       type="button"
                       disabled={billingActionLoading}
-                      onClick={() => runBillingAction(() => redirectToProCheckout(), "Couldn't open checkout right now.")}
+                      onClick={() => runBillingAction(() => redirectToProCheckout(), t("checkoutFailed"))}
                       className={primaryButton}
                     >
                       <Sparkles size={15} />
-                      {billingActionLoading ? "Opening…" : "Upgrade to Pro"}
+                      {billingActionLoading ? t("opening") : t("upgradeToPro")}
                     </button>
                   )}
                   {(isPaid || hasSubscription) && (
                     <button
                       type="button"
                       disabled={billingActionLoading}
-                      onClick={() => runBillingAction(() => redirectToBillingPortal(), "Couldn't open billing right now.")}
+                      onClick={() => runBillingAction(() => redirectToBillingPortal(), t("billingFailed"))}
                       className={secondaryButton}
                     >
                       <ExternalLink size={15} />
-                      {billingActionLoading ? "Opening…" : "Manage billing"}
+                      {billingActionLoading ? t("opening") : t("manageBilling")}
                     </button>
                   )}
                 </div>
@@ -419,33 +428,47 @@ const Settings: React.FC<SettingsProps> = ({ darkMode, setDarkMode, suspension }
             </Section>
 
             {/* Appearance */}
-            <Section id="appearance" title="Appearance" description="How Askio looks on this device.">
-              <Row label="Theme" hint="Saved in this browser.">
+            <Section id="appearance" title={t("sectionAppearance")} description={t("appearanceDescription")}>
+              <Row label={t("language")} hint={t("languageHint")}>
+                <select
+                  aria-label={t("language")}
+                  value={lang}
+                  onChange={(e) => setLang(e.target.value as Lang)}
+                  className={`${inputClass} h-9 w-44`}
+                >
+                  {LANGUAGES.map((l) => (
+                    <option key={l.code} value={l.code}>
+                      {l.label}
+                    </option>
+                  ))}
+                </select>
+              </Row>
+              <Row label={t("theme")} hint={t("themeHint")}>
                 <div
                   role="radiogroup"
-                  aria-label="Theme"
+                  aria-label={t("theme")}
                   className="inline-flex h-9 items-center rounded-lg border border-[#D8DFE9] bg-[#F3F7FC] p-0.5 dark:border-[#2B3646] dark:bg-[#141D2B]"
                 >
                   {[
-                    { dark: false, label: "Light", icon: Sun },
-                    { dark: true, label: "Dark", icon: Moon },
-                  ].map((t) => {
-                    const active = darkMode === t.dark;
+                    { dark: false, label: t("light"), icon: Sun },
+                    { dark: true, label: t("dark"), icon: Moon },
+                  ].map((option) => {
+                    const active = darkMode === option.dark;
                     return (
                       <button
-                        key={t.label}
+                        key={String(option.dark)}
                         type="button"
                         role="radio"
                         aria-checked={active}
-                        onClick={() => setDarkMode(t.dark)}
+                        onClick={() => setDarkMode(option.dark)}
                         className={`flex h-full items-center gap-1.5 rounded-md px-3 text-[13px] font-medium transition-colors ${focusRing} ${
                           active
                             ? "bg-[#F9FCFF] text-[#101723] shadow-sm dark:bg-[#273444] dark:text-[#D7DFE5]"
                             : "text-[#647184] hover:text-[#101723] dark:text-[#87909D] dark:hover:text-[#D7DFE5]"
                         }`}
                       >
-                        <t.icon size={14} />
-                        {t.label}
+                        <option.icon size={14} />
+                        {option.label}
                       </button>
                     );
                   })}
@@ -454,14 +477,14 @@ const Settings: React.FC<SettingsProps> = ({ darkMode, setDarkMode, suspension }
             </Section>
 
             {/* Sign-in & security */}
-            <Section id="security" title="Sign-in & security" description="How you sign in to Askio.">
+            <Section id="security" title={t("sectionSecurity")} description={t("securityDescription")}>
               <Row
-                label="Sign-in method"
-                hint={isGoogleAccount ? "You sign in with your Google account." : "You sign in with your email and a password."}
+                label={t("signInMethod")}
+                hint={isGoogleAccount ? t("signInGoogleHint") : t("signInEmailHint")}
               >
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-[#E7EDF6] px-2.5 py-1 text-caption font-medium text-[#243040] dark:bg-[#243040] dark:text-[#D7DFE5]">
                   <Check size={12} />
-                  {isGoogleAccount ? "Google" : "Email & password"}
+                  {isGoogleAccount ? "Google" : t("methodEmail")}
                 </span>
               </Row>
               {!isGoogleAccount && (
@@ -469,21 +492,21 @@ const Settings: React.FC<SettingsProps> = ({ darkMode, setDarkMode, suspension }
                   {!passwordOpen ? (
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                       <div>
-                        <p className="text-body-sm font-medium text-[#101723] dark:text-[#D7DFE5]">Password</p>
-                        <p className="mt-0.5 text-caption text-[#647184] dark:text-[#87909D]">Use at least 6 characters.</p>
+                        <p className="text-body-sm font-medium text-[#101723] dark:text-[#D7DFE5]">{t("password")}</p>
+                        <p className="mt-0.5 text-caption text-[#647184] dark:text-[#87909D]">{t("passwordHint")}</p>
                       </div>
                       <button type="button" onClick={() => setPasswordOpen(true)} className={secondaryButton}>
                         <KeyRound size={15} />
-                        Change password
+                        {t("changePassword")}
                       </button>
                     </div>
                   ) : (
                     <form onSubmit={handleChangePassword} className="space-y-3">
-                      <p className="text-body-sm font-medium text-[#101723] dark:text-[#D7DFE5]">Change password</p>
+                      <p className="text-body-sm font-medium text-[#101723] dark:text-[#D7DFE5]">{t("changePassword")}</p>
                       <input
                         type="password"
                         autoComplete="current-password"
-                        placeholder="Current password"
+                        placeholder={t("currentPassword")}
                         value={currentPassword}
                         onChange={(e) => setCurrentPassword(e.target.value)}
                         className={inputClass}
@@ -493,7 +516,7 @@ const Settings: React.FC<SettingsProps> = ({ darkMode, setDarkMode, suspension }
                         <input
                           type="password"
                           autoComplete="new-password"
-                          placeholder="New password"
+                          placeholder={t("newPassword")}
                           value={newPassword}
                           onChange={(e) => setNewPassword(e.target.value)}
                           className={inputClass}
@@ -502,7 +525,7 @@ const Settings: React.FC<SettingsProps> = ({ darkMode, setDarkMode, suspension }
                         <input
                           type="password"
                           autoComplete="new-password"
-                          placeholder="Confirm new password"
+                          placeholder={t("confirmNewPassword")}
                           value={confirmNewPassword}
                           onChange={(e) => setConfirmNewPassword(e.target.value)}
                           className={inputClass}
@@ -515,14 +538,14 @@ const Settings: React.FC<SettingsProps> = ({ darkMode, setDarkMode, suspension }
                           onClick={sendResetEmail}
                           className={`rounded text-caption font-medium text-[#566273] underline-offset-2 hover:text-[#101723] hover:underline dark:text-[#9BAABD] dark:hover:text-[#D7DFE5] ${focusRing}`}
                         >
-                          Forgot your current password? Email me a reset link
+                          {t("forgotCurrent")}
                         </button>
                         <div className="flex gap-2">
                           <button type="button" onClick={resetPasswordForm} className={secondaryButton}>
-                            Cancel
+                            {t("cancel")}
                           </button>
                           <button type="submit" disabled={savingPassword} className={primaryButton}>
-                            {savingPassword ? "Saving…" : "Update password"}
+                            {savingPassword ? t("saving") : t("updatePassword")}
                           </button>
                         </div>
                       </div>
@@ -530,19 +553,19 @@ const Settings: React.FC<SettingsProps> = ({ darkMode, setDarkMode, suspension }
                   )}
                 </div>
               )}
-              <Row label="Sign out" hint="Sign out of Askio in this browser.">
+              <Row label={t("signOut")} hint={t("signOutHint")}>
                 <button type="button" onClick={handleSignOut} className={secondaryButton}>
                   <LogOut size={15} />
-                  Sign out
+                  {t("signOut")}
                 </button>
               </Row>
             </Section>
 
             {/* Danger zone */}
-            <Section id="danger" title="Delete account" description="Permanently remove your account and everything in it." tone="danger">
+            <Section id="danger" title={t("sectionDanger")} description={t("dangerDescription")} tone="danger">
               <Row
-                label="Delete your account"
-                hint="Deletes your chatbots and all the leads, questions and analytics they collected, and cancels any subscription. This can't be undone."
+                label={t("deleteYourAccount")}
+                hint={t("deleteHint")}
               >
                 <button
                   type="button"
@@ -553,7 +576,7 @@ const Settings: React.FC<SettingsProps> = ({ darkMode, setDarkMode, suspension }
                   className={`inline-flex h-9 items-center gap-2 rounded-lg border border-red-200 bg-[#F9FCFF] px-3.5 text-button text-red-600 transition-colors hover:bg-red-50 dark:border-red-900/50 dark:bg-transparent dark:text-red-400 dark:hover:bg-red-950/30 ${focusRing}`}
                 >
                   <Trash2 size={15} />
-                  Delete account
+                  {t("deleteAccount")}
                 </button>
               </Row>
             </Section>
@@ -565,23 +588,22 @@ const Settings: React.FC<SettingsProps> = ({ darkMode, setDarkMode, suspension }
         isOpen={deleteAccountModal.isOpen}
         onClose={deleteAccountModal.closeModal}
         onConfirm={deleting ? undefined : deleteAccount}
-        title="Delete account"
-        confirmText={deleting ? "Deleting…" : "Delete permanently"}
-        cancelText="Cancel"
+        title={t("deleteAccount")}
+        confirmText={deleting ? t("deleting") : t("deletePermanently")}
+        cancelText={t("cancel")}
         confirmButtonClass="bg-red-600 text-white hover:bg-red-700 shadow-md"
       >
         <div className="flex gap-3 rounded-lg bg-red-50 p-3 text-body-sm text-red-800 dark:bg-red-950/30 dark:text-red-200">
           <AlertTriangle size={18} className="mt-0.5 shrink-0" />
           <p>
-            This permanently deletes your account, your chatbots and everything they collected (leads, questions, feedback
-            and analytics), and cancels any active subscription. Chatbots embedded on your sites will stop working.
+            {t("deleteWarning")}
           </p>
         </div>
         {isGoogleAccount ? (
-          <p className="mt-3 text-body-sm text-[#566273] dark:text-[#9BAABD]">You'll be asked to confirm with Google.</p>
+          <p className="mt-3 text-body-sm text-[#566273] dark:text-[#9BAABD]">{t("confirmWithGoogle")}</p>
         ) : (
           <label className="mt-3 block">
-            <span className="mb-1.5 block text-body-sm font-medium text-[#101723] dark:text-[#D7DFE5]">Enter your password to confirm</span>
+            <span className="mb-1.5 block text-body-sm font-medium text-[#101723] dark:text-[#D7DFE5]">{t("enterPasswordToConfirm")}</span>
             <input
               type="password"
               autoComplete="current-password"

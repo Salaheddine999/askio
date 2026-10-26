@@ -4,6 +4,8 @@ import { AlertTriangle, Sparkles } from "lucide-react";
 import { auth } from "../utils/firebase";
 import { db } from "../utils/db";
 import { AI_USAGE_WARNING_RATIO, PRO_AI_REPLY_LIMIT } from "../utils/pricing";
+import { useT, type Lang } from "../i18n";
+import { settingsMessages } from "../i18n/messages/settings";
 
 type Usage = { used: number; limit: number | null };
 
@@ -12,10 +14,10 @@ function usageMonth(date = new Date()) {
   return date.toISOString().slice(0, 7);
 }
 
-function resetDateLabel() {
+function resetDateLabel(lang: Lang) {
   const now = new Date();
   const next = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1));
-  return next.toLocaleDateString(undefined, { month: "long", day: "numeric", timeZone: "UTC" });
+  return next.toLocaleDateString(lang, { month: "long", day: "numeric", timeZone: "UTC" });
 }
 
 /**
@@ -23,6 +25,7 @@ function resetDateLabel() {
  * warns from 80% and explains what happens at the limit.
  */
 const AiUsageMeter: React.FC = () => {
+  const t = useT(settingsMessages);
   const [usage, setUsage] = useState<Usage | null>(null);
 
   useEffect(() => {
@@ -71,12 +74,12 @@ const AiUsageMeter: React.FC = () => {
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <h3 className="flex items-center gap-2 text-body-sm font-medium text-[#566273] dark:text-[#9BAABD]">
           <Sparkles className="h-4 w-4" />
-          AI replies this month
+          {t("usageTitle")}
         </h3>
         <p className="text-body-sm font-medium text-[#101723] dark:text-[#D7DFE5] tabular-nums">
-          {used.toLocaleString()}
+          {used.toLocaleString(t.lang)}
           <span className="text-[#647184] dark:text-[#9BAABD]">
-            {limit === null ? " · Unlimited" : ` / ${limit.toLocaleString()}`}
+            {limit === null ? ` · ${t("usageUnlimited")}` : ` / ${limit.toLocaleString(t.lang)}`}
           </span>
         </p>
       </div>
@@ -85,7 +88,7 @@ const AiUsageMeter: React.FC = () => {
         <div
           className="mt-3 h-2 w-full overflow-hidden rounded-full bg-[#E7EDF6] dark:bg-[#243040]"
           role="progressbar"
-          aria-label="AI replies used this month"
+          aria-label={t("usageAria")}
           aria-valuemin={0}
           aria-valuemax={limit}
           aria-valuenow={Math.min(used, limit)}
@@ -103,19 +106,19 @@ const AiUsageMeter: React.FC = () => {
           <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
           <span>
             {reached
-              ? `You've used all your AI replies for this month. Your chatbots now answer from your FAQs only, until AI replies reset on ${resetDateLabel()}.`
-              : `You've used ${Math.round(ratio * 100)}% of this month's AI replies. When they run out, your chatbots answer from your FAQs only until ${resetDateLabel()}.`}{" "}
+              ? t("usageReached", { date: resetDateLabel(t.lang) })
+              : t("usageWarning", { percent: Math.round(ratio * 100), date: resetDateLabel(t.lang) })}{" "}
             <a
               href="mailto:abw.salaheddine@gmail.com?subject=Askio%20AI%20reply%20limit"
               className="font-medium underline underline-offset-2"
             >
-              Need more?
+              {t("usageNeedMore")}
             </a>
           </span>
         </p>
       ) : (
         <p className="mt-3 text-caption text-[#647184] dark:text-[#9BAABD]">
-          {limit === null ? "Your plan has no monthly AI reply limit." : `Resets on ${resetDateLabel()}.`}
+          {limit === null ? t("usageNoLimit") : t("usageResetsOn", { date: resetDateLabel(t.lang) })}
         </p>
       )}
     </div>

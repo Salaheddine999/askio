@@ -1,6 +1,8 @@
 import React from "react";
 import { Download, FileSpreadsheet, HelpCircle, LoaderCircle, LucideIcon, UserPlus } from "lucide-react";
 import { SectionHeader, secondaryButton, surface } from "./ui";
+import { useT } from "../../i18n";
+import { dashboardMessages } from "../../i18n/messages/dashboard";
 
 interface ReportsTabProps {
   hasChatbots: boolean;
@@ -31,7 +33,9 @@ const ReportCard: React.FC<ReportCardProps> = ({
   onDownload,
   generating,
   disabled,
-}) => (
+}) => {
+  const t = useT(dashboardMessages);
+  return (
   <div className={`${surface} flex flex-col p-5`}>
     <span className={`flex h-10 w-10 items-center justify-center rounded-xl ring-1 ring-inset ${tone}`}>
       <Icon size={19} strokeWidth={1.75} />
@@ -56,10 +60,11 @@ const ReportCard: React.FC<ReportCardProps> = ({
       className={`${secondaryButton} mt-5 w-full text-[#101723] dark:text-[#D7DFE5]`}
     >
       {generating ? <LoaderCircle size={15} className="animate-spin" /> : <Download size={15} />}
-      {generating ? "Preparing…" : "Download CSV"}
+      {generating ? t("preparing") : t("downloadCsv")}
     </button>
   </div>
-);
+  );
+};
 
 const ReportsTab: React.FC<ReportsTabProps> = ({
   hasChatbots,
@@ -68,32 +73,30 @@ const ReportsTab: React.FC<ReportsTabProps> = ({
   onDownloadQueries,
   generatingLeads,
   generatingQueries,
-}) => (
+}) => {
+  const t = useT(dashboardMessages);
+  return (
   <div className="space-y-5">
     <SectionHeader
-      title="Reports"
-      description={
-        hasChatbots
-          ? "Export raw data from all your chatbots as CSV, ready for a spreadsheet."
-          : "Reports become available once you have a chatbot."
-      }
+      title={t("reportsTitle")}
+      description={hasChatbots ? t("reportsDesc") : t("reportsDescEmpty")}
     />
     <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
       <ReportCard
         icon={FileSpreadsheet}
         tone="bg-[#E7EDF6] text-[#243040] ring-[#D8DFE9] dark:bg-[#243040] dark:text-[#D7DFE5] dark:ring-[#39485B]"
-        title="Chatbot performance"
-        description="Every chatbot with its positive and negative ratings, plus when it was created and last updated."
-        columns={["name", "positive", "negative", "created", "updated"]}
+        title={t("perfTitle")}
+        description={t("perfDesc")}
+        columns={[t("chipName"), t("chipPositive"), t("chipNegative"), t("chipCreated"), t("chipUpdated")]}
         onDownload={onDownloadPerformance}
         disabled={!hasChatbots}
       />
       <ReportCard
         icon={UserPlus}
         tone="bg-emerald-50 text-emerald-600 ring-emerald-600/15 dark:bg-emerald-900/25 dark:text-emerald-400 dark:ring-emerald-400/20"
-        title="Captured leads"
-        description="Email addresses visitors left in your chatbots, with which chatbot collected them and when."
-        columns={["email", "chatbot", "timestamp"]}
+        title={t("leadsTitle")}
+        description={t("leadsDesc")}
+        columns={[t("chipEmail"), t("chipChatbot"), t("chipTimestamp")]}
         onDownload={onDownloadLeads}
         generating={generatingLeads}
         disabled={!hasChatbots}
@@ -101,15 +104,16 @@ const ReportsTab: React.FC<ReportsTabProps> = ({
       <ReportCard
         icon={HelpCircle}
         tone="bg-amber-50 text-amber-600 ring-amber-600/15 dark:bg-amber-900/25 dark:text-amber-400 dark:ring-amber-400/20"
-        title="Unanswered questions"
-        description="Questions your chatbots couldn't answer. Use them to add FAQs and close gaps in their knowledge."
-        columns={["question", "chatbot", "timestamp"]}
+        title={t("queriesTitle")}
+        description={t("queriesDesc")}
+        columns={[t("chipQuestion"), t("chipChatbot"), t("chipTimestamp")]}
         onDownload={onDownloadQueries}
         generating={generatingQueries}
         disabled={!hasChatbots}
       />
     </div>
   </div>
-);
+  );
+};
 
 export default ReportsTab;

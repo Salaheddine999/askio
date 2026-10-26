@@ -1,4 +1,6 @@
 import React from "react";
+import { useT } from "../i18n";
+import { commonMessages } from "../i18n/messages/common";
 
 /** A pulsing placeholder block. Size and shape come from `className`. */
 export const Skeleton: React.FC<{ className?: string; style?: React.CSSProperties }> = ({
@@ -50,8 +52,10 @@ export const ListSkeleton: React.FC<{ rows?: number; className?: string }> = ({ 
 );
 
 /** Generic page body: header, a row of tiles and two content panels. */
-export const PageSkeleton: React.FC<{ tiles?: number }> = ({ tiles = 3 }) => (
-  <div className="min-h-screen bg-[#F3F7FC] dark:bg-[#141D2B]" aria-busy="true" aria-label="Loading">
+export const PageSkeleton: React.FC<{ tiles?: number }> = ({ tiles = 3 }) => {
+  const t = useT(commonMessages);
+  return (
+  <div className="min-h-screen bg-[#F3F7FC] dark:bg-[#141D2B]" aria-busy="true" aria-label={t("loading")}>
     <div className="w-full space-y-6 px-4 py-6 sm:px-6 sm:py-8 lg:px-8 xl:px-10">
       <PageHeaderSkeleton />
       {tiles > 0 && (
@@ -77,11 +81,14 @@ export const PageSkeleton: React.FC<{ tiles?: number }> = ({ tiles = 3 }) => (
       </div>
     </div>
   </div>
-);
+  );
+};
 
 /** Settings-style skeleton: a narrow column of form sections. */
-export const FormPageSkeleton: React.FC = () => (
-  <div className="min-h-screen bg-[#F3F7FC] dark:bg-[#141D2B]" aria-busy="true" aria-label="Loading">
+export const FormPageSkeleton: React.FC = () => {
+  const t = useT(commonMessages);
+  return (
+  <div className="min-h-screen bg-[#F3F7FC] dark:bg-[#141D2B]" aria-busy="true" aria-label={t("loading")}>
     <div className="w-full max-w-[1000px] space-y-6 px-4 py-8 sm:px-6 lg:px-10 lg:py-12 xl:px-16">
       <Skeleton className="h-10 w-40" />
       {[0, 1, 2].map((i) => (
@@ -107,4 +114,5 @@ export const FormPageSkeleton: React.FC = () => (
       ))}
     </div>
   </div>
-);
+  );
+};

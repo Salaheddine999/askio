@@ -74,7 +74,8 @@ export default async function handler(req, res) {
       String(query).slice(0, MAX_QUERY_CHARS),
       trimHistory(history),
       Array.isArray(chatbotData.faqData) ? chatbotData.faqData : [],
-      chatbotData.aiTone || ""
+      chatbotData.aiTone || "",
+      chatbotData.language || "en"
     );
 
     // Only replies the visitor actually receives count toward the limit.

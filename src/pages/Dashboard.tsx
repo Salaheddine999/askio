@@ -30,6 +30,8 @@ import NotificationsTab from "./dashboard/NotificationsTab";
 import { secondaryButton } from "./dashboard/ui";
 import { downloadCsv, fetchOwnedByChatbots, fetchRecentOwned } from "./dashboard/data";
 import { Chatbot, FeedbackCounts, NotificationItem, TrendData } from "./dashboard/types";
+import { dateLocale, useT } from "../i18n";
+import { dashboardMessages } from "../i18n/messages/dashboard";
 
 type TabId = "overview" | "chatbots" | "reports" | "notifications";
 type Trends = Record<"chatbots" | "feedback" | "satisfaction" | "avgFeedback", TrendData>;
@@ -83,10 +85,18 @@ function computeTrends(chatbots: Chatbot[], feedback: { isPositive: boolean; dat
 
 const CHART_DAYS = 30;
 
-/** Daily positive/negative counts for the last CHART_DAYS days, oldest first. */
-function dailySeries(feedback: { isPositive: boolean; date: Date | null }[]): FeedbackSeries {
+/** The last CHART_DAYS days, oldest first. */
+const chartDays = () => {
   const today = startOfDay(new Date());
-  const days = Array.from({ length: CHART_DAYS }, (_, i) => subDays(today, CHART_DAYS - 1 - i));
+  return Array.from({ length: CHART_DAYS }, (_, i) => subDays(today, CHART_DAYS - 1 - i));
+};
+
+/**
+ * Daily positive/negative counts for the last CHART_DAYS days, oldest first.
+ * Labels are left empty; they're formatted in the viewer's language at render.
+ */
+function dailySeries(feedback: { isPositive: boolean; date: Date | null }[]): FeedbackSeries {
+  const days = chartDays();
   const index = new Map(days.map((d, i) => [d.getTime(), i]));
   const positive = new Array(CHART_DAYS).fill(0);
   const negative = new Array(CHART_DAYS).fill(0);
@@ -95,7 +105,7 @@ function dailySeries(feedback: { isPositive: boolean; date: Date | null }[]): Fe
     if (i === undefined) return;
     (isPositive ? positive : negative)[i]++;
   });
-  return { labels: days.map((d) => format(d, "MMM d")), positive, negative };
+  return { labels: [], positive, negative };
 }
 
 // Sample data for test mode: a gentle upward trend with some day-to-day noise.
@@ -106,9 +116,9 @@ function sampleDailySeries(): FeedbackSeries {
   return series;
 }
 
-function greeting(date = new Date()) {
+function greetingKey(date = new Date()) {
   const hour = date.getHours();
-  return hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
+  return hour < 12 ? "greetingMorning" : hour < 18 ? "greetingAfternoon" : "greetingEvening";
 }
 
 interface DashboardProps {
@@ -118,6 +128,8 @@ interface DashboardProps {
 }
 
 const Dashboard: React.FC<DashboardProps> = ({ testMode }) => {
+  const t = useT(dashboardMessages);
+  const locale = dateLocale(t.lang);
   const navigate = useNavigate();
   const [chatbots, setChatbots] = useState<Chatbot[]>([]);
   const [loading, setLoading] = useState(true);
@@ -177,11 +189,11 @@ const Dashboard: React.FC<DashboardProps> = ({ testMode }) => {
       );
     } catch (err) {
       console.error("Error fetching chatbots:", err);
-      setError(`We couldn't load your chatbots (${(err as Error).message}). Try again, or contact support if it keeps happening.`);
+      setError(t("loadError", { message: (err as Error).message }));
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     if (testMode) {
@@ -219,28 +231,28 @@ const Dashboard: React.FC<DashboardProps> = ({ testMode }) => {
         ...leads.map((l) => ({
           id: l.id,
           type: "lead" as const,
-          title: "New lead captured",
+          title: t("newLeadCaptured"),
           description: l.email,
           timestamp: l.timestamp,
-          chatbotName: names.get(l.chatbotId) || "Unknown chatbot",
+          chatbotName: names.get(l.chatbotId) || t("unknownChatbot"),
         })),
         ...queries.map((q) => ({
           id: q.id,
           type: "unanswered" as const,
-          title: "Unanswered question",
+          title: t("unansweredQuestion"),
           description: `“${q.query}”`,
           timestamp: q.timestamp,
-          chatbotName: names.get(q.chatbotId) || "Unknown chatbot",
+          chatbotName: names.get(q.chatbotId) || t("unknownChatbot"),
         })),
       ]);
       setNotificationsFetched(true);
     } catch (err) {
       console.error("Error fetching notifications:", err);
-      toast.error("Failed to load notifications.");
+      toast.error(t("notificationsLoadFailed"));
     } finally {
       setLoadingNotifications(false);
     }
-  }, [testMode, chatbots]);
+  }, [testMode, chatbots, t]);
 
   // Fetched eagerly so the unseen badge works from any tab.
   useEffect(() => {
@@ -286,15 +298,15 @@ const Dashboard: React.FC<DashboardProps> = ({ testMode }) => {
     const feedback: NotificationItem[] = feedbackEvents.map((e) => ({
       id: e.id,
       type: e.type === "positive" ? "positive_feedback" : "negative_feedback",
-      title: e.type === "positive" ? "Positive rating" : "Negative rating",
-      description: e.type === "positive" ? "A visitor found an answer helpful." : "A visitor found an answer unhelpful.",
+      title: t(e.type === "positive" ? "positiveRating" : "negativeRating"),
+      description: t(e.type === "positive" ? "positiveRatingDesc" : "negativeRatingDesc"),
       timestamp: e.date,
       chatbotName: e.chatbotName,
     }));
     return [...inboxItems, ...feedback]
       .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
       .slice(0, NOTIFICATION_LIMIT);
-  }, [inboxItems, feedbackEvents]);
+  }, [inboxItems, feedbackEvents, t]);
 
   const hasUnseenNotifications =
     activeTab !== "notifications" && notifications.some((n) => n.timestamp.getTime() > lastSeen.getTime());
@@ -321,7 +333,7 @@ const Dashboard: React.FC<DashboardProps> = ({ testMode }) => {
 
     setStatus(!current);
     if (testMode) {
-      toast.success(`(Test mode) ${chatbot.title} ${current ? "paused" : "is live"}`);
+      toast.success(t(current ? "toastTestPaused" : "toastTestLive", { name: chatbot.title }));
       return;
     }
     try {
@@ -329,10 +341,10 @@ const Dashboard: React.FC<DashboardProps> = ({ testMode }) => {
         isActive: !current,
         lastUpdated: new Date(),
       });
-      toast.success(`${chatbot.title} ${current ? "paused" : "is live"}`);
+      toast.success(t(current ? "toastPaused" : "toastLive", { name: chatbot.title }));
     } catch (err) {
       console.error("Error toggling chatbot status:", err);
-      toast.error("Couldn't update the chatbot. Please try again.");
+      toast.error(t("toggleFailed"));
       setStatus(current);
     }
   };
@@ -347,10 +359,10 @@ const Dashboard: React.FC<DashboardProps> = ({ testMode }) => {
     try {
       if (!testMode) await deleteDoc(doc(db, "chatbot_configs", chatbotToDelete));
       setChatbots((prev) => prev.filter((c) => c.id !== chatbotToDelete));
-      toast.success("Chatbot deleted");
+      toast.success(t("chatbotDeleted"));
     } catch (err) {
       console.error("Error deleting chatbot:", err);
-      toast.error(`Couldn't delete the chatbot: ${(err as Error).message}`);
+      toast.error(t("deleteFailed", { message: (err as Error).message }));
     } finally {
       deleteModal.closeModal();
     }
@@ -376,15 +388,15 @@ const Dashboard: React.FC<DashboardProps> = ({ testMode }) => {
     navigator.clipboard.writeText(generateEmbedCode(selectedChatbotId)).then(
       () => {
         setEmbedCopied(true);
-        toast.success("Embed code copied");
+        toast.success(t("embedCopied"));
       },
-      () => toast.error("Couldn't copy the embed code.")
+      () => toast.error(t("embedCopyFailed"))
     );
   };
 
   const refreshDashboard = async () => {
     if (testMode) {
-      toast.success("(Test mode) Nothing to refresh");
+      toast.success(t("testNothingToRefresh"));
       return;
     }
     setRefreshing(true);
@@ -397,20 +409,20 @@ const Dashboard: React.FC<DashboardProps> = ({ testMode }) => {
     try {
       downloadCsv(
         "askio_report",
-        ["Chatbot Name", "Positive Feedback", "Negative Feedback", "Created At", "Last Updated"],
+        [t("csvChatbotName"), t("csvPositive"), t("csvNegative"), t("csvCreatedAt"), t("csvLastUpdated")],
         chatbots.map((c) => {
           const stats = feedbackCounts[c.id] || { positive: 0, negative: 0 };
           return [c.title, stats.positive, stats.negative, c.createdAt.toISOString(), c.lastUpdated.toISOString()];
         })
       );
-      toast.success("Report downloaded");
+      toast.success(t("reportDownloaded"));
     } catch (err) {
       console.error("Error downloading report:", err);
-      toast.error("Failed to download report");
+      toast.error(t("reportFailed"));
     }
   };
 
-  const chatbotName = (id: string) => chatbots.find((c) => c.id === id)?.title || "Unknown chatbot";
+  const chatbotName = (id: string) => chatbots.find((c) => c.id === id)?.title || t("unknownChatbot");
 
   const downloadOwnedReport = async (
     kind: "leads" | "unanswered_queries",
@@ -424,20 +436,20 @@ const Dashboard: React.FC<DashboardProps> = ({ testMode }) => {
       if (kind === "leads") {
         downloadCsv(
           "askio_leads_report",
-          ["Email", "Chatbot Name", "Timestamp"],
+          [t("csvEmail"), t("csvChatbotName"), t("csvTimestamp")],
           rows.map((r) => [r.email || "", chatbotName(r.chatbotId), r.timestamp.toISOString()])
         );
       } else {
         downloadCsv(
           "askio_unanswered_queries_report",
-          ["Query", "Chatbot Name", "Timestamp"],
+          [t("csvQuery"), t("csvChatbotName"), t("csvTimestamp")],
           rows.map((r) => [r.query || "", chatbotName(r.chatbotId), r.timestamp.toISOString()])
         );
       }
-      toast.success(rows.length > 0 ? `Exported ${rows.length} row${rows.length === 1 ? "" : "s"}` : "Exported an empty report");
+      toast.success(rows.length > 0 ? t.plural("exportedRows", rows.length) : t("exportedEmpty"));
     } catch (err) {
       console.error(`Error downloading ${kind} report:`, err);
-      toast.error("Failed to download report");
+      toast.error(t("reportFailed"));
     } finally {
       setBusy(false);
     }
@@ -452,26 +464,29 @@ const Dashboard: React.FC<DashboardProps> = ({ testMode }) => {
 
   const firstName = auth.currentUser?.displayName?.split(" ")[0];
   const deleteTarget = chatbots.find((c) => c.id === chatbotToDelete);
+  const chartFeedback = useMemo(
+    () => ({ ...dailyFeedback, labels: chartDays().map((d) => format(d, t("chartDayFormat"), { locale })) }),
+    [dailyFeedback, t, locale]
+  );
 
   return (
     <div className="min-h-screen bg-[#F3F7FC] font-sans text-[#101723] dark:bg-[#141D2B]">
       <Helmet>
-        <title>Dashboard | Askio Chatbot</title>
-        <meta name="description" content="Manage and optimize your chatbots with Askio's dashboard." />
+        <title>{t("metaTitle")}</title>
+        <meta name="description" content={t("metaDescription")} />
       </Helmet>
 
       <div className="w-full space-y-6 px-4 py-6 sm:px-6 sm:py-8 lg:px-8 xl:px-10">
         <header className="flex flex-wrap items-start justify-between gap-4">
           <div className="min-w-0">
             <p className="text-caption font-medium uppercase tracking-wider text-[#647184] dark:text-[#87909D]">
-              {format(new Date(), "EEEE, MMMM d")}
+              {format(new Date(), t("dateLineFormat"), { locale })}
             </p>
             <h1 className="mt-1 font-serif text-h2 tracking-tight text-[#101723] sm:text-h1 dark:text-[#D7DFE5]">
-              {greeting()}
-              {firstName ? `, ${firstName}` : ""}
+              {firstName ? t(`${greetingKey()}Name`, { name: firstName }) : t(greetingKey())}
             </h1>
             <p className="mt-1 text-body-sm text-[#566273] dark:text-[#9BAABD]">
-              Here's how your chatbots are doing.
+              {t("subtitle")}
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -479,21 +494,21 @@ const Dashboard: React.FC<DashboardProps> = ({ testMode }) => {
               onClick={refreshDashboard}
               disabled={refreshing}
               className={secondaryButton}
-              aria-label="Refresh dashboard"
-              title="Refresh"
+              aria-label={t("refreshDashboard")}
+              title={t("refresh")}
             >
               <RefreshCw size={15} className={refreshing ? "animate-spin" : ""} />
-              <span className="hidden sm:inline">Refresh</span>
+              <span className="hidden sm:inline">{t("refresh")}</span>
             </button>
           </div>
         </header>
 
         <Tabs
           tabs={[
-            { id: "overview", label: "Overview" },
-            { id: "chatbots", label: "Chatbots", count: loading ? undefined : chatbots.length },
-            { id: "reports", label: "Reports" },
-            { id: "notifications", label: "Notifications", showBadge: hasUnseenNotifications },
+            { id: "overview", label: t("tabOverview") },
+            { id: "chatbots", label: t("tabChatbots"), count: loading ? undefined : chatbots.length },
+            { id: "reports", label: t("tabReports") },
+            { id: "notifications", label: t("tabNotifications"), showBadge: hasUnseenNotifications },
           ]}
           activeTab={activeTab}
           onChange={(id) => changeTab(id as TabId)}
@@ -503,7 +518,7 @@ const Dashboard: React.FC<DashboardProps> = ({ testMode }) => {
           <OverviewTab
             chatbots={chatbots}
             feedbackCounts={feedbackCounts}
-            dailyFeedback={dailyFeedback}
+            dailyFeedback={chartFeedback}
             totalFeedback={totalFeedback}
             satisfactionRate={satisfactionRate}
             trends={trends}
@@ -552,41 +567,42 @@ const Dashboard: React.FC<DashboardProps> = ({ testMode }) => {
         isOpen={deleteModal.isOpen}
         onClose={deleteModal.closeModal}
         onConfirm={deleteChatbot}
-        title="Delete chatbot"
-        confirmText="Delete"
-        cancelText="Cancel"
+        title={t("deleteTitle")}
+        confirmText={t("delete")}
+        cancelText={t("cancel")}
         confirmButtonClass="bg-red-600 text-white hover:bg-red-700 shadow-md dark:bg-red-500 dark:hover:bg-red-600 focus:ring-red-500 dark:focus:ring-red-400"
       >
         <p className="text-body-sm text-[#566273] dark:text-[#D7DFE5]">
           {deleteTarget ? (
             <>
-              <span className="font-medium text-[#101723] dark:text-white">{deleteTarget.title}</span> will be
-              removed from every site it's embedded on.
+              {t("deleteNamedBefore")}
+              <span className="font-medium text-[#101723] dark:text-white">{deleteTarget.title}</span>
+              {t("deleteNamedAfter")}
             </>
           ) : (
-            "This chatbot will be removed from every site it's embedded on."
+            t("deleteUnnamed")
           )}{" "}
-          This can't be undone.
+          {t("cannotUndo")}
         </p>
       </ConfirmationModal>
 
       <ConfirmationModal
         isOpen={embedModal.isOpen}
         onClose={embedModal.closeModal}
-        title="Embed code"
-        confirmText={embedCopied ? "Copied" : "Copy code"}
-        cancelText="Close"
+        title={t("embedTitle")}
+        confirmText={embedCopied ? t("copied") : t("copyCode")}
+        cancelText={t("close")}
         onConfirm={copyEmbedCode}
         confirmButtonClass="bg-[#101723] text-white hover:bg-[#243040] shadow-md dark:bg-[#D7DFE5] dark:text-[#141D2B] dark:hover:bg-[#E7EDF6] focus:ring-[#101723] dark:focus:ring-[#D7DFE5]"
       >
         <p className="mb-3 text-body-sm text-[#566273] dark:text-[#9BAABD]">
-          Paste this just before the closing <code className="font-mono text-[13px]">&lt;/body&gt;</code> tag on
-          your site.
+          {t("embedHintBefore")} <code className="font-mono text-[13px]">&lt;/body&gt;</code>
+          {t("embedHintAfter")}
         </p>
         <div className="relative rounded-lg border border-[#D8DFE9] bg-[#101723] p-3 pr-10 dark:border-[#39485B]">
           <button
             onClick={copyEmbedCode}
-            aria-label="Copy embed code"
+            aria-label={t("copyEmbedCode")}
             className="absolute right-2 top-2 rounded-md p-1.5 text-[#9BAABD] transition-colors hover:bg-white/10 hover:text-white"
           >
             {embedCopied ? <Check size={14} /> : <Copy size={14} />}

@@ -19,6 +19,8 @@ import {
 } from "lucide-react";
 import { SortKey, SortOrder } from "./types";
 import { ListSkeleton, Skeleton } from "../../components/Skeleton";
+import { useT } from "../../i18n";
+import { commonMessages } from "../../i18n/messages/common";
 
 // Shared class recipes so every dashboard surface and control reads the same.
 export const focusRing =
@@ -69,7 +71,10 @@ export const SearchInput: React.FC<{
   value: string;
   onChange: (value: string) => void;
   placeholder?: string;
-}> = ({ value, onChange, placeholder = "Search…" }) => (
+}> = ({ value, onChange, placeholder: placeholderProp }) => {
+  const t = useT(commonMessages);
+  const placeholder = placeholderProp ?? t("search");
+  return (
   <div className="relative w-full sm:w-64">
     <Search
       size={16}
@@ -87,34 +92,36 @@ export const SearchInput: React.FC<{
       <button
         type="button"
         onClick={() => onChange("")}
-        aria-label="Clear search"
+        aria-label={t("clearSearch")}
         className={`absolute right-2 top-1/2 -translate-y-1/2 rounded p-0.5 text-[#647184] hover:text-[#101723] dark:text-[#87909D] dark:hover:text-[#D7DFE5] ${focusRing}`}
       >
         <X size={14} />
       </button>
     )}
   </div>
-);
+  );
+};
 
-const SORT_OPTIONS: { key: SortKey; label: string }[] = [
-  { key: "title", label: "Name" },
-  { key: "lastUpdated", label: "Last updated" },
-  { key: "createdAt", label: "Date created" },
-];
+const SORT_OPTIONS = [
+  { key: "title", label: "sortName" },
+  { key: "lastUpdated", label: "sortLastUpdated" },
+  { key: "createdAt", label: "sortDateCreated" },
+] as const satisfies readonly { key: SortKey; label: keyof typeof commonMessages.en }[];
 
 export const SortMenu: React.FC<{
   sortBy: SortKey;
   sortOrder: SortOrder;
   onSort: (key: SortKey) => void;
 }> = ({ sortBy, sortOrder, onSort }) => {
+  const t = useT(commonMessages);
   const current = SORT_OPTIONS.find((o) => o.key === sortBy)!;
   const OrderIcon = sortOrder === "asc" ? ArrowUp : ArrowDown;
   return (
     <Menu as="div" className="relative">
       <Menu.Button className={secondaryButton}>
         <ArrowUpDown size={15} />
-        <span className="hidden sm:inline">Sort:</span>
-        <span className="text-[#101723] dark:text-[#D7DFE5]">{current.label}</span>
+        <span className="hidden sm:inline">{t("sortBy")}</span>
+        <span className="text-[#101723] dark:text-[#D7DFE5]">{t(current.label)}</span>
       </Menu.Button>
       <Menu.Items anchor="bottom end" modal={false} transition className="z-50 w-52 origin-top-right rounded-xl [--anchor-gap:8px] transition duration-100 ease-out data-[closed]:scale-95 data-[closed]:opacity-0 border border-[#D8DFE9] bg-[#F9FCFF] p-1.5 shadow-xl focus:outline-none dark:border-[#2B3646] dark:bg-[#1A2533]">
           {SORT_OPTIONS.map((option) => (
@@ -128,7 +135,7 @@ export const SortMenu: React.FC<{
                       : "text-[#566273] dark:text-[#9BAABD]"
                   }`}
                 >
-                  {option.label}
+                  {t(option.label)}
                   {sortBy === option.key && (
                     <span className="flex items-center gap-1 text-[#101723] dark:text-[#D7DFE5]">
                       <OrderIcon size={13} />
@@ -148,14 +155,15 @@ export const ViewToggle: React.FC<{
   value: "grid" | "list";
   onChange: (value: "grid" | "list") => void;
 }> = ({ value, onChange }) => {
+  const t = useT(commonMessages);
   const options: { id: "grid" | "list"; label: string; Icon: LucideIcon }[] = [
-    { id: "grid", label: "Grid view", Icon: LayoutGrid },
-    { id: "list", label: "List view", Icon: List },
+    { id: "grid", label: t("gridView"), Icon: LayoutGrid },
+    { id: "list", label: t("listView"), Icon: List },
   ];
   return (
     <div
       role="group"
-      aria-label="View mode"
+      aria-label={t("viewMode")}
       className="inline-flex h-9 items-center rounded-lg border border-[#D8DFE9] bg-[#F3F7FC] p-0.5 dark:border-[#2B3646] dark:bg-[#141D2B]"
     >
       {options.map(({ id, label, Icon }) => (
@@ -197,11 +205,12 @@ export const Pagination: React.FC<{
   onChange: (page: number) => void;
   summary?: string;
 }> = ({ page, totalPages, onChange, summary }) => {
+  const t = useT(commonMessages);
   if (totalPages <= 1) return null;
   const pageButton = `inline-flex h-8 min-w-8 items-center justify-center rounded-md px-2 text-body-sm transition-colors ${focusRing}`;
   return (
     <nav
-      aria-label="Pagination"
+      aria-label={t("pagination")}
       className="flex flex-col items-center justify-between gap-3 sm:flex-row"
     >
       <p className="text-caption text-[#647184] dark:text-[#87909D]">{summary}</p>
@@ -209,7 +218,7 @@ export const Pagination: React.FC<{
         <button
           onClick={() => onChange(page - 1)}
           disabled={page === 1}
-          aria-label="Previous page"
+          aria-label={t("previousPage")}
           className={`${pageButton} text-[#566273] hover:bg-[#E7EDF6] disabled:pointer-events-none disabled:opacity-40 dark:text-[#9BAABD] dark:hover:bg-[#273444]`}
         >
           <ChevronLeft size={16} />
@@ -237,7 +246,7 @@ export const Pagination: React.FC<{
         <button
           onClick={() => onChange(page + 1)}
           disabled={page === totalPages}
-          aria-label="Next page"
+          aria-label={t("nextPage")}
           className={`${pageButton} text-[#566273] hover:bg-[#E7EDF6] disabled:pointer-events-none disabled:opacity-40 dark:text-[#9BAABD] dark:hover:bg-[#273444]`}
         >
           <ChevronRight size={16} />
@@ -268,20 +277,19 @@ export const EmptyState: React.FC<{
   </div>
 );
 
-export const CreateChatbotLink: React.FC<{ label?: string; to?: string }> = ({
-  label = "New chatbot",
-  to = "/configure",
-}) => (
-  <Link to={to} className={primaryButton}>
-    <Plus size={16} />
-    {label}
-  </Link>
-);
+export const CreateChatbotLink: React.FC<{ label?: string; to?: string }> = ({ label, to = "/configure" }) => {
+  const t = useT(commonMessages);
+  return (
+    <Link to={to} className={primaryButton}>
+      <Plus size={16} />
+      {label ?? t("newChatbot")}
+    </Link>
+  );
+};
 
-export const ErrorBanner: React.FC<{ message: string; onRetry: () => void }> = ({
-  message,
-  onRetry,
-}) => (
+export const ErrorBanner: React.FC<{ message: string; onRetry: () => void }> = ({ message, onRetry }) => {
+  const t = useT(commonMessages);
+  return (
   <div
     role="alert"
     className="flex flex-col gap-3 rounded-xl border border-red-200 bg-red-50 p-4 sm:flex-row sm:items-center dark:border-red-900/60 dark:bg-red-950/30"
@@ -293,10 +301,11 @@ export const ErrorBanner: React.FC<{ message: string; onRetry: () => void }> = (
       className={`inline-flex h-8 items-center gap-1.5 self-start rounded-lg bg-red-600 px-3 text-button text-white hover:bg-red-700 sm:self-auto ${focusRing}`}
     >
       <RefreshCw size={14} />
-      Retry
+      {t("retry")}
     </button>
   </div>
-);
+  );
+};
 
 export const ChatbotGridSkeleton: React.FC<{ count?: number }> = ({ count = 6 }) => (
   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4" aria-busy="true">

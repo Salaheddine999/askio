@@ -3,17 +3,20 @@ import { format, formatDistanceToNowStrict, isToday, isYesterday } from "date-fn
 import { BellOff, HelpCircle, LucideIcon, ThumbsDown, ThumbsUp, UserPlus } from "lucide-react";
 import { NotificationItem } from "./types";
 import { Pagination, RowsSkeleton, SectionHeader, EmptyState, focusRing, surface } from "./ui";
+import { dateLocale, useT } from "../../i18n";
+import { dashboardMessages } from "../../i18n/messages/dashboard";
+import { commonMessages } from "../../i18n/messages/common";
 
 const PER_PAGE = 10;
 
 type Filter = "all" | "lead" | "unanswered" | "feedback";
 
-const FILTERS: { id: Filter; label: string }[] = [
-  { id: "all", label: "All" },
-  { id: "lead", label: "Leads" },
-  { id: "unanswered", label: "Unanswered" },
-  { id: "feedback", label: "Feedback" },
-];
+const FILTERS = [
+  { id: "all", label: "filterAll" },
+  { id: "lead", label: "filterLeads" },
+  { id: "unanswered", label: "filterUnanswered" },
+  { id: "feedback", label: "filterFeedback" },
+] as const satisfies readonly { id: Filter; label: keyof typeof dashboardMessages.en }[];
 
 const matchesFilter = (item: NotificationItem, filter: Filter) =>
   filter === "all" ||
@@ -38,11 +41,13 @@ const TYPE_STYLE: Record<NotificationItem["type"], { Icon: LucideIcon; tone: str
   },
 };
 
-function dayLabel(date: Date) {
-  if (date.getTime() === 0) return "Undated";
-  if (isToday(date)) return "Today";
-  if (isYesterday(date)) return "Yesterday";
-  return format(date, "EEEE, MMM d");
+type DashboardT = ReturnType<typeof useT<typeof dashboardMessages.en>>;
+
+function dayLabel(date: Date, t: DashboardT) {
+  if (date.getTime() === 0) return t("undated");
+  if (isToday(date)) return t("today");
+  if (isYesterday(date)) return t("yesterday");
+  return format(date, t("dayFormat"), { locale: dateLocale(t.lang) });
 }
 
 interface NotificationsTabProps {
@@ -52,6 +57,9 @@ interface NotificationsTabProps {
 }
 
 const NotificationsTab: React.FC<NotificationsTabProps> = ({ notifications, loading, lastSeen }) => {
+  const t = useT(dashboardMessages);
+  const tc = useT(commonMessages);
+  const locale = dateLocale(t.lang);
   const [filter, setFilter] = useState<Filter>("all");
   const [page, setPage] = useState(1);
 
@@ -77,26 +85,26 @@ const NotificationsTab: React.FC<NotificationsTabProps> = ({ notifications, load
   const groups = useMemo(() => {
     const result: { label: string; items: NotificationItem[] }[] = [];
     pageItems.forEach((item) => {
-      const label = dayLabel(item.timestamp);
+      const label = dayLabel(item.timestamp, t);
       const last = result[result.length - 1];
       if (last?.label === label) last.items.push(item);
       else result.push({ label, items: [item] });
     });
     return result;
-  }, [pageItems]);
+  }, [pageItems, t]);
 
   return (
     <div className="space-y-5">
       <SectionHeader
-        title="Notifications"
-        description="New leads, unanswered questions and ratings across your chatbots."
+        title={t("tabNotifications")}
+        description={t("notificationsDesc")}
       />
 
       <div className="grid grid-cols-1 items-start gap-4 xl:grid-cols-[220px_minmax(0,1fr)]">
       <div
         className="flex flex-wrap gap-2 xl:sticky xl:top-6 xl:flex-col xl:flex-nowrap xl:gap-0.5 xl:rounded-xl xl:border xl:border-[#D8DFE9] xl:bg-[#F9FCFF] xl:p-1.5 dark:xl:border-[#2B3646] dark:xl:bg-[#1A2533]"
         role="group"
-        aria-label="Filter notifications"
+        aria-label={t("filterNotifications")}
       >
         {FILTERS.map((f) => {
           const active = filter === f.id;
@@ -111,9 +119,9 @@ const NotificationsTab: React.FC<NotificationsTabProps> = ({ notifications, load
                   : "border-[#D8DFE9] bg-[#F9FCFF] text-[#566273] hover:text-[#101723] xl:bg-transparent xl:hover:bg-[#F3F7FC] dark:border-[#2B3646] dark:bg-[#1A2533] dark:text-[#9BAABD] dark:hover:text-[#D7DFE5] dark:xl:bg-transparent dark:xl:hover:bg-[#1F2B3A]"
               }`}
             >
-              {f.label}
+              {t(f.label)}
               <span className={`text-caption tabular-nums ${active ? "opacity-70" : "text-[#87909D]"}`}>
-                {counts[f.id]}
+                {counts[f.id].toLocaleString(t.lang)}
               </span>
             </button>
           );
@@ -126,8 +134,8 @@ const NotificationsTab: React.FC<NotificationsTabProps> = ({ notifications, load
         ) : filtered.length === 0 ? (
           <EmptyState
             icon={BellOff}
-            title={filter === "all" ? "You're all caught up" : "Nothing here yet"}
-            description="When your chatbots capture leads, miss a question or get rated, it shows up here."
+            title={filter === "all" ? t("allCaughtUp") : t("nothingHereYet")}
+            description={t("notificationsEmptyDesc")}
           />
         ) : (
           <>
@@ -153,7 +161,7 @@ const NotificationsTab: React.FC<NotificationsTabProps> = ({ notifications, load
                             <span className="font-medium text-[#101723] dark:text-[#D7DFE5]">{item.title}</span>
                             <span className="text-caption text-[#647184] dark:text-[#87909D]">{item.chatbotName}</span>
                             {unseen && (
-                              <span className="h-1.5 w-1.5 rounded-full bg-rose-500" aria-label="New" />
+                              <span className="h-1.5 w-1.5 rounded-full bg-rose-500" aria-label={t("newBadge")} />
                             )}
                           </p>
                           <p className="mt-0.5 break-words text-body-sm text-[#566273] dark:text-[#9BAABD]">
@@ -163,10 +171,10 @@ const NotificationsTab: React.FC<NotificationsTabProps> = ({ notifications, load
                         {item.timestamp.getTime() !== 0 && (
                           <time
                             dateTime={item.timestamp.toISOString()}
-                            title={format(item.timestamp, "MMM d, yyyy 'at' h:mm a")}
+                            title={format(item.timestamp, tc("dateTimeFormat"), { locale })}
                             className="shrink-0 pt-0.5 text-caption tabular-nums text-[#647184] dark:text-[#87909D]"
                           >
-                            {formatDistanceToNowStrict(item.timestamp, { addSuffix: true })}
+                            {formatDistanceToNowStrict(item.timestamp, { addSuffix: true, locale })}
                           </time>
                         )}
                       </li>
@@ -181,7 +189,7 @@ const NotificationsTab: React.FC<NotificationsTabProps> = ({ notifications, load
                   page={currentPage}
                   totalPages={totalPages}
                   onChange={setPage}
-                  summary={`${filtered.length} notification${filtered.length === 1 ? "" : "s"}`}
+                  summary={t.plural("notificationCount", filtered.length)}
                 />
               </div>
             )}

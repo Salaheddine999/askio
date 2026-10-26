@@ -3,6 +3,8 @@ import { RotateCcw } from "lucide-react";
 import Chatbot from "../Chatbot";
 import { focusRing } from "../../pages/dashboard/ui";
 import { ChatbotConfig } from "./types";
+import { useT } from "../../i18n";
+import { editorMessages } from "../../i18n/messages/editor";
 
 const CORNER: Record<ChatbotConfig["position"], string> = {
   "bottom-right": "bottom-0 right-0",
@@ -20,6 +22,7 @@ const Line: React.FC<{ w: string; className?: string }> = ({ w, className = "" }
  * widget's fixed positioning, so it sits in the page's corner, as on a site.
  */
 const PreviewFrame: React.FC<{ config: ChatbotConfig }> = ({ config }) => {
+  const t = useT(editorMessages);
   const [run, setRun] = useState(0);
 
   const replay = () => {
@@ -33,19 +36,19 @@ const PreviewFrame: React.FC<{ config: ChatbotConfig }> = ({ config }) => {
 
   return (
     <div>
-      <div className="mb-3 flex items-center justify-between">
-        <div>
-          <h2 className="text-body font-semibold text-[#101723] dark:text-[#E7EDF6]">Preview</h2>
-          <p className="text-caption text-[#647184] dark:text-[#87909D]">Live, as visitors see it. Try asking a question.</p>
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <div className="min-w-0">
+          <h2 className="text-body font-semibold text-[#101723] dark:text-[#E7EDF6]">{t("preview")}</h2>
+          <p className="text-caption text-[#647184] dark:text-[#87909D]">{t("previewDesc")}</p>
         </div>
         <button
           type="button"
           onClick={replay}
-          title="Start over"
-          className={`inline-flex h-8 items-center gap-1.5 rounded-lg px-2.5 text-caption font-medium text-[#566273] transition-colors hover:bg-[#E7EDF6] hover:text-[#101723] dark:text-[#9BAABD] dark:hover:bg-[#273444] dark:hover:text-[#D7DFE5] ${focusRing}`}
+          title={t("startOver")}
+          className={`inline-flex h-8 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg px-2.5 text-caption font-medium text-[#566273] transition-colors hover:bg-[#E7EDF6] hover:text-[#101723] dark:text-[#9BAABD] dark:hover:bg-[#273444] dark:hover:text-[#D7DFE5] ${focusRing}`}
         >
           <RotateCcw size={13} />
-          Restart
+          {t("restart")}
         </button>
       </div>
 

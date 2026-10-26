@@ -281,7 +281,10 @@ export async function generateFaqsFromUrl(url, isDeepCrawl = false, aiTone = "")
   return safeParseFaqs(resultText);
 }
 
-export async function generateChatResponse(query, history, faqData, aiTone) {
+const LANGUAGE_NAMES = { en: "English", fr: "French", nl: "Dutch", de: "German", es: "Spanish" };
+
+export async function generateChatResponse(query, history, faqData, aiTone, language = "en") {
+  const chatbotLanguage = LANGUAGE_NAMES[language] || "English";
   const ai = getAiClient();
 
   const contextStr = faqData
@@ -315,6 +318,7 @@ export async function generateChatResponse(query, history, faqData, aiTone) {
     2. If the user's question asks for information not found in the knowledge base, politely state that you don't know the answer and offer to connect them with a human agent.
     3. Do not make up information.
     4. Adopt the persona described above.
+    5. Reply in the language the user writes in. If you can't tell, reply in ${chatbotLanguage}.
 
     Provide your response below without markdown formatting or prefix.
   `;

@@ -16,6 +16,9 @@ import {
   secondaryButton,
 } from "./ui";
 import { Chatbot, ChatbotActions, EMPTY_FEEDBACK, FeedbackCounts, SortKey, SortOrder } from "./types";
+import { useT } from "../../i18n";
+import { dashboardMessages } from "../../i18n/messages/dashboard";
+import { commonMessages } from "../../i18n/messages/common";
 
 const PER_PAGE = 12;
 const VIEW_MODE_KEY = "askio_dashboard_view";
@@ -54,6 +57,8 @@ const ChatbotsTab: React.FC<ChatbotsTabProps> = ({
   onRetry,
   ...actions
 }) => {
+  const t = useT(dashboardMessages);
+  const tc = useT(commonMessages);
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState<SortKey>("lastUpdated");
   const [sortOrder, setSortOrder] = useState<SortOrder>("desc");
@@ -99,16 +104,12 @@ const ChatbotsTab: React.FC<ChatbotsTabProps> = ({
   return (
     <div className="space-y-5">
       <SectionHeader
-        title="Your chatbots"
-        description={
-          hasChatbots
-            ? `${chatbots.length} chatbot${chatbots.length === 1 ? "" : "s"} · manage, embed or pause them.`
-            : "Everything you build shows up here."
-        }
+        title={t("yourChatbots")}
+        description={hasChatbots ? t.plural("chatbotsSummary", chatbots.length) : t("chatbotsEmptySummary")}
         actions={
           hasChatbots && (
             <>
-              <SearchInput value={searchTerm} onChange={setSearchTerm} placeholder="Search chatbots" />
+              <SearchInput value={searchTerm} onChange={setSearchTerm} placeholder={t("searchChatbots")} />
               <SortMenu sortBy={sortBy} sortOrder={sortOrder} onSort={handleSort} />
               <ViewToggle value={viewMode} onChange={changeViewMode} />
             </>
@@ -124,20 +125,20 @@ const ChatbotsTab: React.FC<ChatbotsTabProps> = ({
         <div className="rounded-xl border border-dashed border-[#C9D3E0] dark:border-[#39485B]">
           <EmptyState
             icon={Bot}
-            title="No chatbots yet"
-            description="Create your first chatbot to start answering your visitors automatically."
-            action={<CreateChatbotLink label="Create chatbot" to="/start" />}
+            title={t("noChatbotsTitle")}
+            description={t("noChatbotsDesc")}
+            action={<CreateChatbotLink label={t("createChatbot")} to="/start" />}
           />
         </div>
       ) : filtered.length === 0 ? (
         <div className="rounded-xl border border-dashed border-[#C9D3E0] dark:border-[#39485B]">
           <EmptyState
             icon={SearchX}
-            title="No matches"
-            description={`No chatbot is named like “${searchTerm.trim()}”.`}
+            title={t("noMatchesTitle")}
+            description={t("noMatchesDesc", { term: searchTerm.trim() })}
             action={
               <button onClick={() => setSearchTerm("")} className={secondaryButton}>
-                Clear search
+                {tc("clearSearch")}
               </button>
             }
           />
@@ -190,7 +191,11 @@ const ChatbotsTab: React.FC<ChatbotsTabProps> = ({
             page={currentPage}
             totalPages={totalPages}
             onChange={setPage}
-            summary={`Showing ${rangeStart}–${rangeEnd} of ${filtered.length}`}
+            summary={t("showingRange", {
+              start: rangeStart.toLocaleString(t.lang),
+              end: rangeEnd.toLocaleString(t.lang),
+              total: filtered.length.toLocaleString(t.lang),
+            })}
           />
         </>
       )}

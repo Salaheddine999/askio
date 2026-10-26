@@ -24,6 +24,8 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { useIsAdmin } from "../hooks/useIsAdmin";
+import { useT } from "../i18n";
+import { navMessages } from "../i18n/messages/nav";
 
 interface NavbarProps {
   darkMode: boolean;
@@ -35,22 +37,25 @@ interface NavbarProps {
   toggleTestMode: () => void;
 }
 
-const NAV_GROUPS: { title: string; items: { title: string; href: string; icon: LucideIcon }[] }[] = [
+type NavKey = "workspace" | "resources" | "account" | "dashboard" | "analytics" | "integrations" | "documentation" | "settings" | "admin";
+
+// Titles are keys into navMessages.
+const NAV_GROUPS: { title: NavKey; items: { title: NavKey; href: string; icon: LucideIcon }[] }[] = [
   {
-    title: "Workspace",
+    title: "workspace",
     items: [
-      { title: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-      { title: "Analytics", href: "/analytics", icon: BarChart2 },
-      { title: "Integrations", href: "/integrations", icon: Blocks },
+      { title: "dashboard", href: "/dashboard", icon: LayoutDashboard },
+      { title: "analytics", href: "/analytics", icon: BarChart2 },
+      { title: "integrations", href: "/integrations", icon: Blocks },
     ],
   },
   {
-    title: "Resources",
-    items: [{ title: "Documentation", href: "/documentation", icon: FileText }],
+    title: "resources",
+    items: [{ title: "documentation", href: "/documentation", icon: FileText }],
   },
   {
-    title: "Account",
-    items: [{ title: "Settings", href: "/settings", icon: Settings }],
+    title: "account",
+    items: [{ title: "settings", href: "/settings", icon: Settings }],
   },
 ];
 
@@ -114,10 +119,11 @@ const Navbar: React.FC<NavbarProps> = ({
 
   const user = auth.currentUser;
   const isAdmin = useIsAdmin();
+  const t = useT(navMessages);
   // The Admin link is only shown to admins; /admin itself checks on the server.
   const navGroups = isAdmin
     ? NAV_GROUPS.map((g) =>
-        g.title === "Account" ? { ...g, items: [...g.items, { title: "Admin", href: "/admin", icon: ShieldCheck }] } : g
+        g.title === "account" ? { ...g, items: [...g.items, { title: "admin" as const, href: "/admin", icon: ShieldCheck }] } : g
       )
     : NAV_GROUPS;
   const hideWhenCollapsed = collapsed ? "lg:hidden" : "";
@@ -135,7 +141,7 @@ const Navbar: React.FC<NavbarProps> = ({
       <header className="fixed inset-x-0 top-0 z-30 flex h-14 items-center gap-2 border-b border-[#D8DFE9]/80 bg-[#F3F7FC]/85 px-3 backdrop-blur-md lg:hidden dark:border-[#2B3646] dark:bg-[#141D2B]/85">
         <button
           onClick={toggleSidebar}
-          aria-label="Open navigation"
+          aria-label={t("openNavigation")}
           className={`rounded-lg p-2 text-[#566273] hover:bg-[#E7EDF6] hover:text-[#101723] dark:text-[#9BAABD] dark:hover:bg-[#273444] dark:hover:text-[#D7DFE5] ${focusRing}`}
         >
           <MenuIcon size={20} />
@@ -151,7 +157,7 @@ const Navbar: React.FC<NavbarProps> = ({
         )}
         <Link
           to="/configure"
-          aria-label="New chatbot"
+          aria-label={t("newChatbot")}
           className={`ml-auto flex h-9 w-9 items-center justify-center rounded-lg bg-[#101723] text-white dark:bg-[#D7DFE5] dark:text-[#141D2B] ${focusRing}`}
         >
           <Plus size={18} />
@@ -173,7 +179,7 @@ const Navbar: React.FC<NavbarProps> = ({
       </Transition>
 
       <nav
-        aria-label="Main"
+        aria-label={t("mainNavigation")}
         className={`fixed left-0 top-0 z-50 flex h-[100dvh] flex-col border-r border-[#D8DFE9] bg-[#EDF2F8] transition-[width,transform] duration-300 ease-in-out dark:border-[#2B3646] dark:bg-[#17212F] ${
           sidebarOpen ? "w-64 translate-x-0" : "w-64 -translate-x-full lg:w-[72px] lg:translate-x-0"
         }`}
@@ -190,15 +196,15 @@ const Navbar: React.FC<NavbarProps> = ({
           </Link>
           <button
             onClick={toggleSidebar}
-            aria-label="Collapse sidebar"
-            title="Collapse sidebar"
+            aria-label={t("collapseSidebar")}
+            title={t("collapseSidebar")}
             className={`ml-auto hidden rounded-lg p-1.5 text-[#647184] hover:bg-[#E0E7F0] hover:text-[#101723] lg:block dark:text-[#87909D] dark:hover:bg-[#273444] dark:hover:text-[#D7DFE5] ${focusRing} ${hideWhenCollapsed}`}
           >
             <PanelLeftClose size={17} />
           </button>
           <button
             onClick={closeSidebar}
-            aria-label="Close navigation"
+            aria-label={t("closeNavigation")}
             className={`ml-auto rounded-lg p-1.5 text-[#566273] lg:hidden dark:text-[#9BAABD] ${focusRing}`}
           >
             <X size={18} />
@@ -209,17 +215,17 @@ const Navbar: React.FC<NavbarProps> = ({
         <div className={`px-3 pb-2 ${collapsed ? "lg:px-3.5" : ""}`}>
           <Link
             to="/configure"
-            title={collapsed ? "New chatbot" : undefined}
+            title={collapsed ? t("newChatbot") : undefined}
             className={`flex h-9 items-center justify-center gap-2 rounded-lg bg-[#101723] text-button text-white shadow-sm transition-colors hover:bg-[#243040] dark:bg-[#D7DFE5] dark:text-[#141D2B] dark:hover:bg-[#E7EDF6] ${focusRing}`}
           >
             <Plus size={16} className="shrink-0" />
-            <span className={hideWhenCollapsed}>New chatbot</span>
+            <span className={hideWhenCollapsed}>{t("newChatbot")}</span>
           </Link>
           {collapsed && (
             <button
               onClick={toggleSidebar}
-              aria-label="Expand sidebar"
-              title="Expand sidebar"
+              aria-label={t("expandSidebar")}
+              title={t("expandSidebar")}
               className={`mt-2 hidden h-9 w-full items-center justify-center rounded-lg text-[#647184] hover:bg-[#E0E7F0] hover:text-[#101723] lg:flex dark:text-[#87909D] dark:hover:bg-[#273444] dark:hover:text-[#D7DFE5] ${focusRing}`}
             >
               <PanelLeftOpen size={17} />
@@ -234,7 +240,7 @@ const Navbar: React.FC<NavbarProps> = ({
               <h2
                 className={`mb-1.5 px-2.5 text-[11px] font-medium uppercase tracking-wider text-[#87909D] dark:text-[#647184] ${hideWhenCollapsed}`}
               >
-                {group.title}
+                {t(group.title)}
               </h2>
               {collapsed && <div className="mx-auto mb-2 hidden h-px w-6 bg-[#D8DFE9] lg:block dark:bg-[#2B3646]" />}
               <ul className="space-y-0.5">
@@ -242,7 +248,7 @@ const Navbar: React.FC<NavbarProps> = ({
                   <li key={href}>
                     <NavLink
                       to={href}
-                      title={collapsed ? title : undefined}
+                      title={collapsed ? t(title) : undefined}
                       className={({ isActive }) =>
                         `relative flex h-9 items-center gap-2.5 rounded-lg px-2.5 text-body-sm font-medium transition-colors ${focusRing} ${
                           collapsed ? "lg:justify-center lg:px-0" : ""
@@ -260,7 +266,7 @@ const Navbar: React.FC<NavbarProps> = ({
                             strokeWidth={isActive ? 2.1 : 1.8}
                             className={`shrink-0 ${isActive ? "" : "opacity-80"}`}
                           />
-                          <span className={hideWhenCollapsed}>{title}</span>
+                          <span className={hideWhenCollapsed}>{t(title)}</span>
                         </>
                       )}
                     </NavLink>
@@ -276,14 +282,14 @@ const Navbar: React.FC<NavbarProps> = ({
           {testMode && (
             <button
               onClick={toggleTestMode}
-              title="Test mode is on: the dashboard shows sample data. Click to turn off."
+              title={t("testModeOnTitle")}
               className={`flex h-8 w-full items-center gap-2 rounded-lg bg-amber-100 px-2.5 text-caption font-medium text-amber-800 ring-1 ring-inset ring-amber-600/20 dark:bg-amber-900/30 dark:text-amber-200 ${
                 collapsed ? "lg:justify-center lg:px-0" : ""
               }`}
             >
               <Beaker size={14} className="shrink-0" />
-              <span className={`flex-1 text-left ${hideWhenCollapsed}`}>Test mode on</span>
-              <span className={`opacity-70 ${hideWhenCollapsed}`}>Turn off</span>
+              <span className={`flex-1 text-left ${hideWhenCollapsed}`}>{t("testModeOn")}</span>
+              <span className={`opacity-70 ${hideWhenCollapsed}`}>{t("turnOff")}</span>
             </button>
           )}
 
@@ -292,12 +298,12 @@ const Navbar: React.FC<NavbarProps> = ({
               className={`flex w-full items-center gap-2.5 rounded-lg p-1.5 text-left transition-colors hover:bg-[#E0E7F0] dark:hover:bg-[#1F2B3A] ${focusRing} ${
                 collapsed ? "lg:justify-center" : ""
               }`}
-              title={collapsed ? user?.displayName || "Account" : undefined}
+              title={collapsed ? user?.displayName || t("account") : undefined}
             >
               <Avatar />
               <span className={`min-w-0 flex-1 ${hideWhenCollapsed}`}>
                 <span className="block truncate text-body-sm font-medium text-[#101723] dark:text-[#D7DFE5]">
-                  {user?.displayName || "Your account"}
+                  {user?.displayName || t("yourAccount")}
                 </span>
                 <span className="block truncate text-caption text-[#647184] dark:text-[#87909D]">
                   {user?.email}
@@ -317,7 +323,7 @@ const Navbar: React.FC<NavbarProps> = ({
                   <Avatar size="h-9 w-9" />
                   <div className="min-w-0">
                     <p className="truncate text-body-sm font-medium text-[#101723] dark:text-[#D7DFE5]">
-                      {user?.displayName || "Your account"}
+                      {user?.displayName || t("yourAccount")}
                     </p>
                     <p className="truncate text-caption text-[#647184] dark:text-[#87909D]">{user?.email}</p>
                   </div>
@@ -327,7 +333,7 @@ const Navbar: React.FC<NavbarProps> = ({
                   {({ active }) => (
                     <Link to="/settings" className={menuItem(active)}>
                       <Settings size={15} />
-                      Settings
+                      {t("settings")}
                     </Link>
                   )}
                 </Menu.Item>
@@ -335,7 +341,7 @@ const Navbar: React.FC<NavbarProps> = ({
                   {({ active }) => (
                     <button onClick={toggleDarkMode} className={menuItem(active)}>
                       {darkMode ? <Sun size={15} /> : <Moon size={15} />}
-                      {darkMode ? "Light mode" : "Dark mode"}
+                      {darkMode ? t("lightMode") : t("darkMode")}
                     </button>
                   )}
                 </Menu.Item>
@@ -343,7 +349,7 @@ const Navbar: React.FC<NavbarProps> = ({
                   {({ active }) => (
                     <button onClick={toggleTestMode} className={menuItem(active)}>
                       <Beaker size={15} />
-                      <span className="flex-1 text-left">Test mode</span>
+                      <span className="flex-1 text-left">{t("testMode")}</span>
                       <span
                         className={`relative h-4 w-7 rounded-full transition-colors ${
                           testMode ? "bg-amber-500" : "bg-[#D7DFE5] dark:bg-[#39485B]"
@@ -363,7 +369,7 @@ const Navbar: React.FC<NavbarProps> = ({
                   {({ active }) => (
                     <button onClick={handleSignOut} className={menuItem(active)}>
                       <LogOut size={15} />
-                      Sign out
+                      {t("signOut")}
                     </button>
                   )}
                 </Menu.Item>

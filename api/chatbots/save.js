@@ -33,6 +33,7 @@ function normalizeChatbotPayload(payload, uid) {
     greetingBubble: payload.greetingBubble === true,
     initialMessage: String(payload.initialMessage || "Hello! How can I help you today?"),
     placeholder: String(payload.placeholder || "Type your message..."),
+    language: ["en", "fr", "nl", "de", "es"].includes(payload.language) ? payload.language : "en",
     faqData: normalizeFaqData(payload.faqData),
     liveChatLink: String(payload.liveChatLink || "").trim(),
     enableLeadCapture: payload.enableLeadCapture === true,

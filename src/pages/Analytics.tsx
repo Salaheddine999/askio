@@ -28,6 +28,10 @@ import BotAvatar from "../components/BotAvatar";
 import { Skeleton, SkeletonCard, StatTilesSkeleton } from "../components/Skeleton";
 import { CardHeader, CreateChatbotLink, EmptyState, SearchInput, focusRing, secondaryButton, surface } from "./dashboard/ui";
 import { downloadCsv } from "./dashboard/data";
+import { dateLocale, useT, type TFunction } from "../i18n";
+import { analyticsMessages } from "../i18n/messages/analytics";
+
+type AnalyticsT = TFunction<keyof typeof analyticsMessages.en>;
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip);
 
@@ -63,11 +67,11 @@ interface ChatbotInfo {
 }
 
 type RangeId = "7d" | "30d" | "90d" | "all";
-const RANGES: { id: RangeId; label: string; days: number | null }[] = [
-  { id: "7d", label: "7 days", days: 7 },
-  { id: "30d", label: "30 days", days: 30 },
-  { id: "90d", label: "90 days", days: 90 },
-  { id: "all", label: "All time", days: null },
+const RANGES: { id: RangeId; label: "range7d" | "range30d" | "range90d" | "rangeAll"; days: number | null }[] = [
+  { id: "7d", label: "range7d", days: 7 },
+  { id: "30d", label: "range30d", days: 30 },
+  { id: "90d", label: "range90d", days: 90 },
+  { id: "all", label: "rangeAll", days: null },
 ];
 // "All time" still charts a recent window, so the bars stay readable.
 const ALL_TIME_CHART_DAYS = 90;
@@ -153,11 +157,12 @@ const pctChange = (current: number, previous: number) =>
 
 type Trend = { trend?: string; trendDirection?: "up" | "down" };
 
-function trendProps(diff: number, unit: "%" | "pts"): Trend {
+function trendProps(diff: number, unit: "%" | "pts", t: AnalyticsT): Trend {
   if (!Number.isFinite(diff) || Math.round(diff) === 0) return {};
   const rounded = Math.round(diff);
+  const value = `${rounded > 0 ? "+" : ""}${rounded.toLocaleString(t.lang)}`;
   return {
-    trend: `${rounded > 0 ? "+" : ""}${rounded}${unit === "%" ? "%" : " pts"}`,
+    trend: t(unit === "%" ? "percent" : "points", { value }),
     trendDirection: rounded > 0 ? "up" : "down",
   };
 }
@@ -167,10 +172,11 @@ interface AnalyticsProps {
 }
 
 export default function Analytics({ testMode = false }: AnalyticsProps) {
+  const t = useT(analyticsMessages);
   const [loading, setLoading] = useState(true);
   // Range changes refetch in the background; the page stays visible meanwhile.
   const [refreshing, setRefreshing] = useState(false);
-  const [chatbots, setChatbots] = useState<ChatbotInfo[]>([]);
+  const [rawChatbots, setChatbots] = useState<ChatbotInfo[]>([]);
   const [events, setEvents] = useState<AnalyticsEvent[]>([]);
   const [unanswered, setUnanswered] = useState<UnansweredQuery[]>([]);
   const [leads, setLeads] = useState<Lead[]>([]);
@@ -200,7 +206,7 @@ export default function Analytics({ testMode = false }: AnalyticsProps) {
         const botsSnap = await getDocs(query(collection(db, "chatbot_configs"), where("user_id", "==", user.uid)));
         const bots = botsSnap.docs.map((d) => ({
           id: d.id,
-          title: d.data().title || "Untitled chatbot",
+          title: d.data().title || "",
           primaryColor: d.data().primaryColor,
         }));
         setChatbots(bots);
@@ -238,6 +244,11 @@ export default function Analytics({ testMode = false }: AnalyticsProps) {
     load();
   }, [testMode, rangeDays]);
 
+  // Untitled chatbots get their fallback name here, so it follows the language.
+  const chatbots = useMemo(
+    () => rawChatbots.map((c) => (c.title ? c : { ...c, title: t("untitledChatbot") })),
+    [rawChatbots, t]
+  );
   const botById = useMemo(() => new Map(chatbots.map((c) => [c.id, c])), [chatbots]);
   const days = rangeDays;
 
@@ -280,25 +291,25 @@ export default function Analytics({ testMode = false }: AnalyticsProps) {
       leads: scoped.leads.length,
       trends: days
         ? {
-            answered: trendProps(pctChange(answered, prevAnswered), "%"),
-            missed: trendProps(pctChange(missed, prevMissed), "%"),
-            rate: rate !== null && prevRate !== null ? trendProps(rate - prevRate, "pts") : {},
-            leads: trendProps(pctChange(scoped.leads.length, scoped.previous.leads.length), "%"),
+            answered: trendProps(pctChange(answered, prevAnswered), "%", t),
+            missed: trendProps(pctChange(missed, prevMissed), "%", t),
+            rate: rate !== null && prevRate !== null ? trendProps(rate - prevRate, "pts", t) : {},
+            leads: trendProps(pctChange(scoped.leads.length, scoped.previous.leads.length), "%", t),
           }
         : null,
     };
-  }, [scoped, days]);
+  }, [scoped, days, t]);
 
   const breakdown = useMemo(() => {
     const count = (type: EventType) => scoped.events.filter((e) => e.type === type).length;
     const rows = [
-      { key: "faq", label: "Matched an FAQ", value: count("faq_matched"), color: "bg-[#101723] dark:bg-[#D7DFE5]" },
-      { key: "suggestion", label: "Picked a suggested question", value: count("suggestion_clicked"), color: "bg-[#647184] dark:bg-[#87909D]" },
-      { key: "ai", label: "Answered by AI", value: count("ai_generated"), color: "bg-violet-500 dark:bg-violet-400" },
-      { key: "missed", label: "Couldn't answer", value: scoped.unanswered.length, color: "bg-amber-500 dark:bg-amber-400" },
+      { key: "faq", label: t("breakdownFaq"), value: count("faq_matched"), color: "bg-[#101723] dark:bg-[#D7DFE5]" },
+      { key: "suggestion", label: t("breakdownSuggestion"), value: count("suggestion_clicked"), color: "bg-[#647184] dark:bg-[#87909D]" },
+      { key: "ai", label: t("breakdownAi"), value: count("ai_generated"), color: "bg-violet-500 dark:bg-violet-400" },
+      { key: "missed", label: t("breakdownMissed"), value: scoped.unanswered.length, color: "bg-amber-500 dark:bg-amber-400" },
     ];
     return { rows, total: rows.reduce((sum, r) => sum + r.value, 0) };
-  }, [scoped]);
+  }, [scoped, t]);
 
   const topQuestions = useMemo(() => {
     const counts = new Map<string, number>();
@@ -342,27 +353,28 @@ export default function Analytics({ testMode = false }: AnalyticsProps) {
   const exportLeads = () =>
     downloadCsv(
       "askio_leads",
-      ["Email", "Chatbot", "Captured at"],
-      visibleLeads.map((l) => [l.email, botById.get(l.chatbotId)?.title || "Unknown chatbot", l.timestamp.toISOString()])
+      [t("csvEmail"), t("csvChatbot"), t("csvCapturedAt")],
+      visibleLeads.map((l) => [l.email, botById.get(l.chatbotId)?.title || t("unknownChatbot"), l.timestamp.toISOString()])
     );
 
   if (loading) return <AnalyticsSkeleton />;
 
-  const rangeLabel = days ? `last ${days} days` : "all time";
+  const locale = dateLocale(t.lang);
+  const num = (n: number) => n.toLocaleString(t.lang);
   const statIcon = "h-3.5 w-3.5 text-[#566273] dark:text-[#9BAABD]";
 
   return (
     <div className="min-h-screen bg-[#F3F7FC] font-sans text-[#101723] dark:bg-[#141D2B]">
       <Helmet>
-        <title>Analytics | Askio</title>
+        <title>{t("metaTitle")}</title>
       </Helmet>
 
       <div className="w-full space-y-6 px-4 py-6 sm:px-6 sm:py-8 lg:px-8 xl:px-10">
         <header className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div className="min-w-0">
-            <h1 className="font-serif text-h2 tracking-tight text-[#101723] sm:text-h1 dark:text-[#D7DFE5]">Analytics</h1>
+            <h1 className="font-serif text-h2 tracking-tight text-[#101723] sm:text-h1 dark:text-[#D7DFE5]">{t("title")}</h1>
             <p className="mt-1 text-body-sm text-[#566273] dark:text-[#9BAABD]">
-              What visitors ask, how your chatbots answer, and who leaves their email.
+              {t("subtitle")}
             </p>
           </div>
           {chatbots.length > 0 && (
@@ -370,7 +382,7 @@ export default function Analytics({ testMode = false }: AnalyticsProps) {
               <ChatbotFilter chatbots={chatbots} value={chatbotFilter} onChange={setChatbotFilter} />
               <div
                 role="radiogroup"
-                aria-label="Date range"
+                aria-label={t("dateRange")}
                 className="inline-flex h-9 items-center rounded-lg border border-[#D8DFE9] bg-[#F3F7FC] p-0.5 dark:border-[#2B3646] dark:bg-[#141D2B]"
               >
                 {RANGES.map((r) => (
@@ -386,7 +398,7 @@ export default function Analytics({ testMode = false }: AnalyticsProps) {
                         : "text-[#647184] hover:text-[#101723] dark:text-[#87909D] dark:hover:text-[#D7DFE5]"
                     }`}
                   >
-                    {r.label}
+                    {t(r.label)}
                   </button>
                 ))}
               </div>
@@ -398,40 +410,40 @@ export default function Analytics({ testMode = false }: AnalyticsProps) {
           <div className="rounded-2xl border border-dashed border-[#C9D3E0] bg-[#F9FCFF]/60 dark:border-[#39485B] dark:bg-[#1A2533]/40">
             <EmptyState
               icon={BarChart3}
-              title="No chatbots yet"
-              description="Create a chatbot and add it to your website. Questions, answers and leads show up here as visitors chat."
-              action={<CreateChatbotLink label="Create chatbot" />}
+              title={t("noChatbotsTitle")}
+              description={t("noChatbotsDescription")}
+              action={<CreateChatbotLink label={t("createChatbot")} />}
             />
           </div>
         ) : (
           <div aria-busy={refreshing} className={`space-y-6 transition-opacity duration-200 ${refreshing ? "opacity-60" : ""}`}>
             <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
               <StatsCard
-                title="Answered"
-                value={stats.answered.toLocaleString()}
-                description="From FAQs, suggestions and AI"
+                title={t("statAnswered")}
+                value={num(stats.answered)}
+                description={t("statAnsweredDescription")}
                 icon={<MessageSquareText className={statIcon} />}
                 {...stats.trends?.answered}
               />
               <StatsCard
-                title="Answer rate"
-                value={stats.rate === null ? "—" : `${Math.round(stats.rate)}%`}
-                description="Questions your chatbots could answer"
+                title={t("statRate")}
+                value={stats.rate === null ? "—" : t("percent", { value: num(Math.round(stats.rate)) })}
+                description={t("statRateDescription")}
                 icon={<Percent className={statIcon} />}
                 {...stats.trends?.rate}
               />
               <StatsCard
-                title="Unanswered"
-                value={stats.missed.toLocaleString()}
-                description="Questions to add answers for"
+                title={t("statUnanswered")}
+                value={num(stats.missed)}
+                description={t("statUnansweredDescription")}
                 icon={<CircleHelp className={statIcon} />}
                 goodWhen="down"
                 {...stats.trends?.missed}
               />
               <StatsCard
-                title="Leads captured"
-                value={stats.leads.toLocaleString()}
-                description="Visitors who left their email"
+                title={t("statLeads")}
+                value={num(stats.leads)}
+                description={t("statLeadsDescription")}
                 icon={<UserPlus className={statIcon} />}
                 {...stats.trends?.leads}
               />
@@ -447,7 +459,10 @@ export default function Analytics({ testMode = false }: AnalyticsProps) {
                 />
               </div>
               <div className={surface}>
-                <CardHeader title="How questions were answered" description={`${breakdown.total.toLocaleString()} questions, ${rangeLabel}`} />
+                <CardHeader
+                  title={t("breakdownTitle")}
+                  description={days ? t.plural("breakdownDays", breakdown.total, { days: num(days) }) : t.plural("breakdownAll", breakdown.total)}
+                />
                 <div className="px-5 pb-5 sm:px-6">
                   {breakdown.total > 0 ? (
                     <>
@@ -463,16 +478,16 @@ export default function Analytics({ testMode = false }: AnalyticsProps) {
                           <li key={r.key} className="flex items-center gap-3 text-body-sm">
                             <span className={`h-2.5 w-2.5 shrink-0 rounded-sm ${r.color}`} />
                             <span className="flex-1 text-[#566273] dark:text-[#9BAABD]">{r.label}</span>
-                            <span className="tabular-nums font-medium text-[#101723] dark:text-[#D7DFE5]">{r.value.toLocaleString()}</span>
+                            <span className="tabular-nums font-medium text-[#101723] dark:text-[#D7DFE5]">{num(r.value)}</span>
                             <span className="w-10 text-right tabular-nums text-caption text-[#87909D]">
-                              {Math.round((r.value / breakdown.total) * 100)}%
+                              {t("percent", { value: num(Math.round((r.value / breakdown.total) * 100)) })}
                             </span>
                           </li>
                         ))}
                       </ul>
                     </>
                   ) : (
-                    <p className="py-8 text-center text-body-sm text-[#647184] dark:text-[#87909D]">No questions in this period.</p>
+                    <p className="py-8 text-center text-body-sm text-[#647184] dark:text-[#87909D]">{t("noQuestionsInPeriod")}</p>
                   )}
                 </div>
               </div>
@@ -480,17 +495,17 @@ export default function Analytics({ testMode = false }: AnalyticsProps) {
 
             <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
               <div className={surface}>
-                <CardHeader title="Most asked" description="Questions answered from your FAQs" />
+                <CardHeader title={t("mostAskedTitle")} description={t("mostAskedDescription")} />
                 {topQuestions.length > 0 ? (
                   <ol className="space-y-3 px-5 pb-5 sm:px-6">
                     {topQuestions.map((q, i) => (
                       <li key={q.question}>
                         <div className="flex items-baseline justify-between gap-4 text-body-sm">
                           <span className="min-w-0 truncate text-[#101723] dark:text-[#D7DFE5]">
-                            <span className="mr-2 tabular-nums text-[#87909D]">{i + 1}</span>
+                            <span className="mr-2 tabular-nums text-[#87909D]">{num(i + 1)}</span>
                             {q.question}
                           </span>
-                          <span className="shrink-0 tabular-nums font-medium text-[#566273] dark:text-[#9BAABD]">{q.count}</span>
+                          <span className="shrink-0 tabular-nums font-medium text-[#566273] dark:text-[#9BAABD]">{num(q.count)}</span>
                         </div>
                         <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-[#E7EDF6] dark:bg-[#243040]">
                           <div
@@ -505,14 +520,14 @@ export default function Analytics({ testMode = false }: AnalyticsProps) {
                   <EmptyState
                     compact
                     icon={MessageSquareText}
-                    title="No FAQ answers yet"
-                    description="When visitors' questions match your FAQs, the most common ones appear here."
+                    title={t("noFaqTitle")}
+                    description={t("noFaqDescription")}
                   />
                 )}
               </div>
 
               <div className={surface}>
-                <CardHeader title="Couldn't answer" description="Add these to your FAQs so your chatbot can answer next time" />
+                <CardHeader title={t("missedTitle")} description={t("missedDescription")} />
                 {unansweredGroups.length > 0 ? (
                   <ul className="divide-y divide-[#E7EDF6] border-t border-[#E7EDF6] dark:divide-[#2B3646] dark:border-[#2B3646]">
                     {unansweredGroups.map((g) => {
@@ -525,19 +540,19 @@ export default function Analytics({ testMode = false }: AnalyticsProps) {
                           <div className="min-w-0 flex-1">
                             <p className="truncate text-body-sm font-medium text-[#101723] dark:text-[#D7DFE5]">“{g.text}”</p>
                             <p className="mt-0.5 truncate text-caption text-[#647184] dark:text-[#87909D]">
-                              {g.count > 1 ? `Asked ${g.count}× · ` : ""}
-                              {bot?.title || "Unknown chatbot"} · {formatDistanceToNowStrict(g.latest, { addSuffix: true })}
+                              {g.count > 1 ? `${t.plural("askedTimes", g.count)} · ` : ""}
+                              {bot?.title || t("unknownChatbot")} · {formatDistanceToNowStrict(g.latest, { addSuffix: true, locale })}
                             </p>
                           </div>
                           {bot && (
                             <Link
                               to={`/configure/${bot.id}?tab=faq`}
                               state={{ faqQuestion: g.text }}
-                              title={`Add an answer in ${bot.title}`}
+                              title={t("addAnswerIn", { chatbot: bot.title })}
                               className={`inline-flex h-8 shrink-0 items-center gap-1 rounded-lg border border-[#D8DFE9] px-2.5 text-caption font-medium text-[#101723] transition-colors hover:bg-[#F3F7FC] dark:border-[#2B3646] dark:text-[#D7DFE5] dark:hover:bg-[#273444] ${focusRing}`}
                             >
                               <Plus size={13} />
-                              <span className="hidden sm:inline">Add answer</span>
+                              <span className="hidden sm:inline">{t("addAnswer")}</span>
                             </Link>
                           )}
                         </li>
@@ -545,20 +560,24 @@ export default function Analytics({ testMode = false }: AnalyticsProps) {
                     })}
                   </ul>
                 ) : (
-                  <EmptyState compact icon={Check} title="Nothing missed" description="Every question in this period got an answer." />
+                  <EmptyState compact icon={Check} title={t("nothingMissedTitle")} description={t("nothingMissedDescription")} />
                 )}
               </div>
             </div>
 
             <div className={surface}>
               <CardHeader
-                title="Leads"
-                description={`${visibleLeads.length.toLocaleString()} email${visibleLeads.length === 1 ? "" : "s"}, ${rangeLabel}`}
+                title={t("leadsTitle")}
+                description={
+                  days
+                    ? t.plural("leadsDays", visibleLeads.length, { days: num(days) })
+                    : t.plural("leadsAll", visibleLeads.length)
+                }
                 action={
                   scoped.leads.length > 0 && (
                     <button type="button" onClick={exportLeads} className={secondaryButton}>
                       <Download size={15} />
-                      <span className="hidden sm:inline">Export CSV</span>
+                      <span className="hidden sm:inline">{t("exportCsv")}</span>
                     </button>
                   )
                 }
@@ -566,14 +585,14 @@ export default function Analytics({ testMode = false }: AnalyticsProps) {
               {scoped.leads.length > 0 ? (
                 <>
                   <div className="px-5 pb-3 sm:px-6">
-                    <SearchInput value={leadSearch} onChange={setLeadSearch} placeholder="Search emails" />
+                    <SearchInput value={leadSearch} onChange={setLeadSearch} placeholder={t("searchEmails")} />
                   </div>
                   {visibleLeads.length > 0 ? (
                     <div className="overflow-x-auto">
                       <table className="min-w-full">
                         <thead className="border-y border-[#E7EDF6] bg-[#F3F7FC]/70 dark:border-[#2B3646] dark:bg-[#141D2B]/60">
                           <tr>
-                            {["Email", "Chatbot", "Captured"].map((h, i) => (
+                            {[t("columnEmail"), t("columnChatbot"), t("columnCaptured")].map((h, i) => (
                               <th
                                 key={h}
                                 scope="col"
@@ -597,12 +616,12 @@ export default function Analytics({ testMode = false }: AnalyticsProps) {
                                 <td className="hidden px-6 py-3 sm:table-cell">
                                   <span className="flex items-center gap-2 text-body-sm text-[#566273] dark:text-[#9BAABD]">
                                     <BotAvatar color={bot?.primaryColor} size={20} />
-                                    {bot?.title || "Unknown chatbot"}
+                                    {bot?.title || t("unknownChatbot")}
                                   </span>
                                 </td>
                                 <td className="whitespace-nowrap px-5 py-3 text-body-sm text-[#566273] sm:px-6 dark:text-[#9BAABD]">
-                                  <span title={format(lead.timestamp, "MMM d, yyyy 'at' h:mm a")}>
-                                    {formatDistanceToNowStrict(lead.timestamp, { addSuffix: true })}
+                                  <span title={format(lead.timestamp, t("dateTimeFormat"), { locale })}>
+                                    {formatDistanceToNowStrict(lead.timestamp, { addSuffix: true, locale })}
                                   </span>
                                 </td>
                               </tr>
@@ -613,7 +632,7 @@ export default function Analytics({ testMode = false }: AnalyticsProps) {
                     </div>
                   ) : (
                     <p className="border-t border-[#E7EDF6] py-10 text-center text-body-sm text-[#647184] dark:border-[#2B3646] dark:text-[#87909D]">
-                      No emails match “{leadSearch.trim()}”.
+                      {t("noEmailsMatch", { term: leadSearch.trim() })}
                     </p>
                   )}
                   {visibleLeads.length > LEADS_PREVIEW && (
@@ -623,7 +642,7 @@ export default function Analytics({ testMode = false }: AnalyticsProps) {
                         onClick={() => setShowAllLeads((v) => !v)}
                         className={`rounded text-body-sm font-medium text-[#566273] hover:text-[#101723] dark:text-[#9BAABD] dark:hover:text-[#D7DFE5] ${focusRing}`}
                       >
-                        {showAllLeads ? "Show fewer" : `Show all ${visibleLeads.length}`}
+                        {showAllLeads ? t("showFewer") : t("showAll", { count: num(visibleLeads.length) })}
                       </button>
                     </div>
                   )}
@@ -632,8 +651,8 @@ export default function Analytics({ testMode = false }: AnalyticsProps) {
                 <EmptyState
                   compact
                   icon={Inbox}
-                  title="No leads in this period"
-                  description="Turn on lead capture in a chatbot's settings to ask visitors for their email."
+                  title={t("noLeadsTitle")}
+                  description={t("noLeadsDescription")}
                 />
               )}
             </div>
@@ -653,15 +672,16 @@ function ChatbotFilter({
   value: string;
   onChange: (id: string) => void;
 }) {
+  const t = useT(analyticsMessages);
   const selected = chatbots.find((c) => c.id === value);
-  const options: ChatbotInfo[] = [{ id: "all", title: "All chatbots" }, ...chatbots];
+  const options: ChatbotInfo[] = [{ id: "all", title: t("allChatbots") }, ...chatbots];
   return (
     <Listbox value={value} onChange={onChange}>
       <ListboxButton
         className={`inline-flex h-9 w-48 items-center gap-2 rounded-lg border border-[#D8DFE9] bg-[#F9FCFF] px-2.5 text-left text-[13px] font-medium text-[#101723] transition-colors hover:border-[#B8C3D1] dark:border-[#2B3646] dark:bg-[#1A2533] dark:text-[#D7DFE5] ${focusRing}`}
       >
         {selected ? <BotAvatar color={selected.primaryColor} size={18} /> : <Bot size={15} className="shrink-0 text-[#647184]" />}
-        <span className="min-w-0 flex-1 truncate">{selected?.title || "All chatbots"}</span>
+        <span className="min-w-0 flex-1 truncate">{selected?.title || t("allChatbots")}</span>
         <ChevronsUpDown size={14} className="shrink-0 text-[#87909D]" />
       </ListboxButton>
       {/* Anchored and non-modal, like the other pickers, so the page doesn't lock or shift. */}
@@ -703,6 +723,7 @@ function ActivityChart({
   days: number;
   allTime: boolean;
 }) {
+  const t = useT(analyticsMessages);
   const dark = useSiteDarkMode();
   const colors = dark ? CHART_COLORS.dark : CHART_COLORS.light;
 
@@ -724,24 +745,27 @@ function ActivityChart({
       const i = slot(u.timestamp);
       if (i !== undefined) missed[i]++;
     });
-    return { labels: dayList.map((d) => format(d, "MMM d")), faq, ai, missed };
-  }, [events, unanswered, days]);
+    const locale = dateLocale(t.lang);
+    return { labels: dayList.map((d) => format(d, t("chartDayFormat"), { locale })), faq, ai, missed };
+  }, [events, unanswered, days, t]);
 
   const total = [...series.faq, ...series.ai, ...series.missed].reduce((a, b) => a + b, 0);
   const tickFont = { family: '"Inter", sans-serif', size: 12 };
   const legend = [
-    { label: "FAQ answers", color: colors.faq },
-    { label: "AI answers", color: colors.ai },
-    { label: "Unanswered", color: colors.missed },
+    { label: t("legendFaq"), color: colors.faq },
+    { label: t("legendAi"), color: colors.ai },
+    { label: t("legendUnanswered"), color: colors.missed },
   ];
 
   return (
     <div className={`${surface} flex h-full flex-col`}>
       <div className="flex flex-wrap items-start justify-between gap-3 px-5 pt-5 pb-2 sm:px-6">
         <div>
-          <h3 className="text-body font-semibold tracking-tight text-[#101723] dark:text-[#D7DFE5]">Questions per day</h3>
+          <h3 className="text-body font-semibold tracking-tight text-[#101723] dark:text-[#D7DFE5]">{t("chartTitle")}</h3>
           <p className="mt-0.5 text-body-sm text-[#566273] dark:text-[#9BAABD]">
-            {allTime ? `Showing the last ${days} days` : `${total.toLocaleString()} questions in the last ${days} days`}
+            {allTime
+              ? t("chartShowingLast", { days: days.toLocaleString(t.lang) })
+              : t.plural("chartTotal", total, { days: days.toLocaleString(t.lang) })}
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-4 text-caption text-[#566273] dark:text-[#9BAABD]">
@@ -760,9 +784,9 @@ function ActivityChart({
               data={{
                 labels: series.labels,
                 datasets: [
-                  { label: "FAQ answers", data: series.faq, backgroundColor: colors.faq, borderRadius: 2, maxBarThickness: 18 },
-                  { label: "AI answers", data: series.ai, backgroundColor: colors.ai, borderRadius: 2, maxBarThickness: 18 },
-                  { label: "Unanswered", data: series.missed, backgroundColor: colors.missed, borderRadius: 2, maxBarThickness: 18 },
+                  { label: t("legendFaq"), data: series.faq, backgroundColor: colors.faq, borderRadius: 2, maxBarThickness: 18 },
+                  { label: t("legendAi"), data: series.ai, backgroundColor: colors.ai, borderRadius: 2, maxBarThickness: 18 },
+                  { label: t("legendUnanswered"), data: series.missed, backgroundColor: colors.missed, borderRadius: 2, maxBarThickness: 18 },
                 ],
               }}
               options={{
@@ -802,9 +826,9 @@ function ActivityChart({
         ) : (
           <div className="flex h-[260px] flex-col items-center justify-center text-center lg:h-[300px]">
             <BarChart3 size={28} className="text-[#87909D]" strokeWidth={1.5} />
-            <p className="mt-3 text-body-sm font-medium text-[#101723] dark:text-[#D7DFE5]">No questions in this period</p>
+            <p className="mt-3 text-body-sm font-medium text-[#101723] dark:text-[#D7DFE5]">{t("chartEmptyTitle")}</p>
             <p className="mt-1 max-w-xs text-caption text-[#647184] dark:text-[#87909D]">
-              Activity appears here once visitors start chatting with your chatbots.
+              {t("chartEmptyDescription")}
             </p>
           </div>
         )}
@@ -816,8 +840,9 @@ function ActivityChart({
 const BAR_HEIGHTS = [40, 65, 30, 55, 80, 45, 70, 35, 60, 85, 50, 75, 40, 65];
 
 function AnalyticsSkeleton() {
+  const t = useT(analyticsMessages);
   return (
-    <div className="min-h-screen bg-[#F3F7FC] dark:bg-[#141D2B]" aria-busy="true" aria-label="Loading analytics">
+    <div className="min-h-screen bg-[#F3F7FC] dark:bg-[#141D2B]" aria-busy="true" aria-label={t("loading")}>
       <div className="w-full space-y-6 px-4 py-6 sm:px-6 sm:py-8 lg:px-8 xl:px-10">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div className="space-y-3">

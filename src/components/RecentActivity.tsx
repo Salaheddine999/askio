@@ -1,6 +1,9 @@
 import React from "react";
 import { format, formatDistanceToNowStrict } from "date-fns";
 import { MessageSquareHeart, ThumbsDown, ThumbsUp } from "lucide-react";
+import { dateLocale, useT } from "../i18n";
+import { dashboardMessages } from "../i18n/messages/dashboard";
+import { commonMessages } from "../i18n/messages/common";
 
 export interface ActivityItem {
   id: string;
@@ -15,13 +18,16 @@ interface RecentActivityProps {
 }
 
 const RecentActivity: React.FC<RecentActivityProps> = ({ activities, onViewAll }) => {
+  const t = useT(dashboardMessages);
+  const tc = useT(commonMessages);
+  const locale = dateLocale(t.lang);
   return (
     <div className="flex h-full flex-col rounded-xl border border-[#D8DFE9] bg-[#F9FCFF] text-[#101723] shadow-[0_1px_2px_rgba(16,23,35,0.04)] dark:border-[#2B3646] dark:bg-[#1A2533] dark:text-[#D7DFE5]">
       <div className="flex items-start justify-between gap-3 border-b border-[#E7EDF6] px-5 pt-5 pb-4 sm:px-6 dark:border-[#2B3646]">
         <div>
-          <h3 className="text-body font-semibold tracking-tight">Recent activity</h3>
+          <h3 className="text-body font-semibold tracking-tight">{t("recentTitle")}</h3>
           <p className="mt-0.5 text-body-sm text-[#566273] dark:text-[#9BAABD]">
-            Latest feedback from your visitors.
+            {t("recentDesc")}
           </p>
         </div>
         {onViewAll && activities.length > 0 && (
@@ -29,7 +35,7 @@ const RecentActivity: React.FC<RecentActivityProps> = ({ activities, onViewAll }
             onClick={onViewAll}
             className="shrink-0 rounded text-body-sm font-medium text-[#566273] underline-offset-4 hover:text-[#101723] hover:underline dark:text-[#9BAABD] dark:hover:text-[#D7DFE5]"
           >
-            View all
+            {t("viewAll")}
           </button>
         )}
       </div>
@@ -52,17 +58,17 @@ const RecentActivity: React.FC<RecentActivityProps> = ({ activities, onViewAll }
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-body-sm font-medium">{activity.chatbotName}</p>
                   <p className="text-caption text-[#647184] dark:text-[#87909D]">
-                    {positive ? "Positive" : "Negative"} rating
+                    {positive ? t("positiveRating") : t("negativeRating")}
                   </p>
                 </div>
                 <time
                   dateTime={activity.date.toISOString()}
-                  title={format(activity.date, "MMM d, yyyy 'at' h:mm a")}
+                  title={format(activity.date, tc("dateTimeFormat"), { locale })}
                   className="shrink-0 text-caption tabular-nums text-[#647184] dark:text-[#87909D]"
                 >
                   {activity.date.getTime() === 0
                     ? "—"
-                    : formatDistanceToNowStrict(activity.date, { addSuffix: true })}
+                    : formatDistanceToNowStrict(activity.date, { addSuffix: true, locale })}
                 </time>
               </li>
             );
@@ -71,9 +77,9 @@ const RecentActivity: React.FC<RecentActivityProps> = ({ activities, onViewAll }
       ) : (
         <div className="flex flex-1 flex-col items-center justify-center px-6 py-12 text-center">
           <MessageSquareHeart size={26} className="text-[#87909D]" strokeWidth={1.5} />
-          <p className="mt-3 text-body-sm font-medium">No activity yet</p>
+          <p className="mt-3 text-body-sm font-medium">{t("noActivityTitle")}</p>
           <p className="mt-1 max-w-xs text-caption text-[#647184] dark:text-[#87909D]">
-            New ratings from your chatbots will show up here.
+            {t("noActivityDesc")}
           </p>
         </div>
       )}

@@ -14,8 +14,11 @@ import { toast } from "react-hot-toast";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { redirectToProCheckout } from "../utils/billing";
+import { useT } from "../i18n";
+import { authMessages } from "../i18n/messages/auth";
 
 const Auth: React.FC = () => {
+  const t = useT(authMessages);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -68,11 +71,11 @@ const Auth: React.FC = () => {
       if (code === "auth/user-not-found") {
         setResetSent(true);
       } else if (code === "auth/invalid-email") {
-        setError("Please enter a valid email address.");
+        setError(t("errorInvalidEmail"));
       } else if (code === "auth/too-many-requests") {
-        setError("Too many attempts. Please wait a moment and try again.");
+        setError(t("errorTooManyReset"));
       } else {
-        setError("We couldn't send the email. Please try again.");
+        setError(t("errorResetFailed"));
       }
     } finally {
       setIsLoading(false);
@@ -104,21 +107,21 @@ const Auth: React.FC = () => {
           subscriptionStatus: "inactive",
           aiChatbotLimit: 0,
         });
-        toast.success("Registration successful!");
+        toast.success(t("registered"));
         await handlePostAuthRedirect(true);
       }
     } catch (err: unknown) {
       const code = (err as { code?: string }).code || "";
       const messages: Record<string, string> = {
-        "auth/invalid-credential": "Incorrect email or password. Please try again.",
-        "auth/user-not-found": "No account found with this email.",
-        "auth/wrong-password": "Incorrect password. Please try again.",
-        "auth/email-already-in-use": "An account with this email already exists.",
-        "auth/weak-password": "Password should be at least 6 characters.",
-        "auth/invalid-email": "Please enter a valid email address.",
-        "auth/too-many-requests": "Too many attempts. Please try again later.",
+        "auth/invalid-credential": t("errorInvalidCredential"),
+        "auth/user-not-found": t("errorUserNotFound"),
+        "auth/wrong-password": t("errorWrongPassword"),
+        "auth/email-already-in-use": t("errorEmailInUse"),
+        "auth/weak-password": t("errorWeakPassword"),
+        "auth/invalid-email": t("errorInvalidEmail"),
+        "auth/too-many-requests": t("errorTooMany"),
       };
-      setError(messages[code] || "Something went wrong. Please try again.");
+      setError(messages[code] || t("errorGeneric"));
     } finally {
       setIsLoading(false);
     }
@@ -177,14 +180,14 @@ const Auth: React.FC = () => {
                 transition={{ duration: 0.15 }}
               >
                 <h2 className="text-xl font-serif text-[#101723] dark:text-[#D7DFE5] tracking-tight">
-                  {mode === "login" ? "Welcome back" : mode === "register" ? "Create account" : "Reset your password"}
+                  {mode === "login" ? t("welcomeBack") : mode === "register" ? t("createAccountTitle") : t("resetTitle")}
                 </h2>
                 <p className="text-[13px] text-[#647184] dark:text-[#9BAABD] mt-1">
                   {mode === "login"
-                    ? "Sign in to your dashboard"
+                    ? t("loginSubtitle")
                     : mode === "register"
-                      ? "Start building chatbots for free"
-                      : "We'll email you a link to choose a new one"}
+                      ? t("registerSubtitle")
+                      : t("resetSubtitle")}
                 </p>
               </motion.div>
             </AnimatePresence>
@@ -248,7 +251,7 @@ const Auth: React.FC = () => {
                   d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
                 />
               </svg>
-              Continue with Google
+              {t("continueWithGoogle")}
             </button>
 
             {/* Divider */}
@@ -258,7 +261,7 @@ const Auth: React.FC = () => {
               </div>
               <div className="relative flex justify-center text-[11px]">
                 <span className="px-2.5 bg-[#F9FCFF] dark:bg-[#1A2533] text-[#647184] dark:text-[#9BAABD] font-medium uppercase tracking-wider">
-                  or
+                  {t("or")}
                 </span>
               </div>
             </div>
@@ -272,17 +275,17 @@ const Auth: React.FC = () => {
                     <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l9 6 9-6M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                   </svg>
                 </div>
-                <p className="text-[14px] font-medium text-[#101723] dark:text-[#D7DFE5]">Check your inbox</p>
+                <p className="text-[14px] font-medium text-[#101723] dark:text-[#D7DFE5]">{t("checkInbox")}</p>
                 <p className="mt-1 text-[13px] leading-relaxed text-[#647184] dark:text-[#9BAABD]">
-                  If an account exists for <span className="font-medium text-[#101723] dark:text-[#D7DFE5]">{email}</span>, you'll
-                  get a link to reset your password in a few minutes. Check your spam folder if you don't see it.
+                  {t("resetSentBefore")} <span className="font-medium text-[#101723] dark:text-[#D7DFE5]">{email}</span>
+                  {t("resetSentAfter")}
                 </p>
                 <button
                   type="button"
                   onClick={() => switchMode("login")}
                   className="mt-5 w-full rounded-xl border border-[#D8DFE9] bg-[#F9FCFF] px-4 py-2.5 text-[13px] font-medium text-[#101723] transition-colors hover:bg-[#F3F7FC] dark:border-[#2B3646] dark:bg-[#141D2B] dark:text-[#D7DFE5] dark:hover:bg-[#1A2533]"
                 >
-                  Back to sign in
+                  {t("backToSignIn")}
                 </button>
               </div>
             ) : (
@@ -292,12 +295,12 @@ const Auth: React.FC = () => {
                   htmlFor="email"
                   className="block text-[11px] font-semibold text-[#566273] dark:text-[#9BAABD] mb-1 uppercase tracking-wider"
                 >
-                  Email
+                  {t("email")}
                 </label>
                 <input
                   id="email"
                   type="email"
-                  placeholder="you@example.com"
+                  placeholder={t("emailPlaceholder")}
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -312,7 +315,7 @@ const Auth: React.FC = () => {
                     htmlFor="password"
                     className="block text-[11px] font-semibold text-[#566273] dark:text-[#9BAABD] uppercase tracking-wider"
                   >
-                    Password
+                    {t("password")}
                   </label>
                   {mode === "login" && (
                     <button
@@ -320,7 +323,7 @@ const Auth: React.FC = () => {
                       onClick={() => switchMode("reset")}
                       className="text-[12px] font-medium text-[#566273] hover:text-[#101723] hover:underline dark:text-[#9BAABD] dark:hover:text-[#D7DFE5]"
                     >
-                      Forgot password?
+                      {t("forgotPassword")}
                     </button>
                   )}
                 </div>
@@ -362,11 +365,11 @@ const Auth: React.FC = () => {
                         d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                       />
                     </svg>
-                    Processing...
+                    {t("processing")}
                   </span>
                 ) : (
                   <span>
-                    {mode === "login" ? "Sign In" : mode === "register" ? "Create Account" : "Send reset link"}
+                    {mode === "login" ? t("signInButton") : mode === "register" ? t("createAccount") : t("sendResetLink")}
                   </span>
                 )}
               </button>
@@ -375,22 +378,22 @@ const Auth: React.FC = () => {
 
             {mode === "reset" && !resetSent && (
               <p className="mt-4 text-center text-[11.5px] leading-relaxed text-[#647184] dark:text-[#9BAABD]">
-                Signed up with Google? Use &quot;Continue with Google&quot; on the sign-in screen instead.
+                {t("googleResetHint")}
               </p>
             )}
 
             {/* Google sign-in can also create an account, so this shows on sign-in and sign-up. */}
             {mode !== "reset" && (
             <p className="mt-4 text-center text-[11.5px] leading-relaxed text-[#647184] dark:text-[#9BAABD]">
-              By continuing, you agree to our{" "}
+              {t("consentBefore")}{" "}
               <Link to="/terms" className="font-medium text-[#101723] underline underline-offset-2 hover:no-underline dark:text-[#D7DFE5]">
-                Terms of Service
+                {t("consentTerms")}
               </Link>{" "}
-              and{" "}
+              {t("consentAnd")}{" "}
               <Link to="/privacy" className="font-medium text-[#101723] underline underline-offset-2 hover:no-underline dark:text-[#D7DFE5]">
-                Privacy Policy
+                {t("consentPrivacy")}
               </Link>
-              .
+              {t("consentAfter")}
             </p>
             )}
           </div>
@@ -400,32 +403,32 @@ const Auth: React.FC = () => {
             <p className="text-center text-[13px] text-[#647184] dark:text-[#9BAABD]">
               {mode === "reset" ? (
                 <span>
-                  Remembered it?{" "}
+                  {t("remembered")}{" "}
                   <button
                     onClick={() => switchMode("login")}
                     className="text-[#101723] dark:text-[#D7DFE5] font-semibold hover:underline"
                   >
-                    Sign in
+                    {t("signIn")}
                   </button>
                 </span>
               ) : mode === "login" ? (
                 <span>
-                  Don't have an account?{" "}
+                  {t("noAccount")}{" "}
                   <button
                     onClick={() => switchMode("register")}
                     className="text-[#101723] dark:text-[#D7DFE5] font-semibold hover:underline"
                   >
-                    Sign up
+                    {t("signUp")}
                   </button>
                 </span>
               ) : (
                 <span>
-                  Already have an account?{" "}
+                  {t("haveAccount")}{" "}
                   <button
                     onClick={() => switchMode("login")}
                     className="text-[#101723] dark:text-[#D7DFE5] font-semibold hover:underline"
                   >
-                    Sign in
+                    {t("signIn")}
                   </button>
                 </span>
               )}
@@ -435,7 +438,7 @@ const Auth: React.FC = () => {
 
         {/* Trust line */}
         <p className="mt-5 text-center text-[11px] text-[#647184] dark:text-[#9BAABD]">
-          Secure · No credit card required · Free forever
+          {t("trustLine")}
         </p>
       </motion.div>
     </div>

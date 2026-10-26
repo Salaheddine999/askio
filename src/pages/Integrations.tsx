@@ -28,6 +28,10 @@ import ConfirmationModal from "../components/ConfirmationModal";
 import { Skeleton, SkeletonCard } from "../components/Skeleton";
 import { CreateChatbotLink, EmptyState, focusRing, primaryButton, secondaryButton, surface } from "./dashboard/ui";
 import { DUMMY_CHATBOTS } from "../utils/dummyData";
+import { useT } from "../i18n";
+import { integrationsMessages } from "../i18n/messages/integrations";
+
+type MessageKey = keyof typeof integrationsMessages.en;
 
 type Platform = "wordpress" | "shopify" | "wix" | "html";
 
@@ -46,43 +50,45 @@ interface ShopifyConnection {
   connectedAt: string;
 }
 
+// label is a brand name, except "Any website", which is a message key (labelKey).
 const PLATFORMS: {
   key: Platform;
-  label: string;
-  tagline: string;
-  effort: string;
+  label?: string;
+  labelKey?: MessageKey;
+  tagline: MessageKey;
+  effort: MessageKey;
   icon: React.ReactNode;
   logo: React.ReactNode;
 }[] = [
   {
     key: "wordpress",
     label: "WordPress",
-    tagline: "Install our plugin",
-    effort: "No code · 3 min",
+    tagline: "wordpressTagline",
+    effort: "wordpressEffort",
     icon: <FaWordpress size={20} className="text-[#21759B]" />,
     logo: <FaWordpress size={26} className="text-[#21759B]" />,
   },
   {
     key: "shopify",
     label: "Shopify",
-    tagline: "Connect your store",
-    effort: "No code · 2 min",
+    tagline: "shopifyTagline",
+    effort: "shopifyEffort",
     icon: <FaShopify size={20} className="text-[#5E8E3E]" />,
     logo: <FaShopify size={26} className="text-[#5E8E3E]" />,
   },
   {
     key: "wix",
     label: "Wix",
-    tagline: "Paste an HTML embed",
-    effort: "Copy & paste · 5 min",
+    tagline: "wixTagline",
+    effort: "wixEffort",
     icon: <SiWix size={20} className="text-[#0C6EFC]" />,
     logo: <SiWix size={26} className="text-[#0C6EFC]" />,
   },
   {
     key: "html",
-    label: "Any website",
-    tagline: "Webflow, Squarespace, HTML…",
-    effort: "Copy & paste · 1 min",
+    labelKey: "anyWebsite",
+    tagline: "htmlTagline",
+    effort: "htmlEffort",
     icon: <Globe size={20} className="text-[#566273]" />,
     logo: <Globe size={26} className="text-[#566273]" />,
   },
@@ -93,7 +99,8 @@ interface IntegrationsProps {
 }
 
 export default function Integrations({ testMode = false }: IntegrationsProps) {
-  const [chatbots, setChatbots] = useState<Chatbot[]>([]);
+  const t = useT(integrationsMessages);
+  const [rawChatbots, setChatbots] = useState<Chatbot[]>([]);
   const [selectedChatbot, setSelectedChatbot] = useState<string>("");
   const [activePlatform, setActivePlatform] = useState<Platform>("wordpress");
   const [copied, setCopied] = useState(false);
@@ -105,6 +112,8 @@ export default function Integrations({ testMode = false }: IntegrationsProps) {
   const [connectionToRemove, setConnectionToRemove] = useState<ShopifyConnection | null>(null);
 
   const origin = window.location.origin;
+  // Untitled chatbots get their fallback name here, so it follows the language.
+  const chatbots = rawChatbots.map((c) => (c.title ? c : { ...c, title: t("untitledChatbot") }));
 
   useEffect(() => {
     if (testMode) {
@@ -136,7 +145,7 @@ export default function Integrations({ testMode = false }: IntegrationsProps) {
             userId: user.uid,
             connectedAt: new Date().toISOString(),
           });
-          toast.success(`Connected to ${shop}!`);
+          toast.success(t("toastConnected", { shop }));
           fetchShopifyConnections();
         } catch (err) {
           console.error('Error saving connection:', err);
@@ -167,11 +176,11 @@ export default function Integrations({ testMode = false }: IntegrationsProps) {
   const disconnectShopify = async (connectionId: string) => {
     try {
       await deleteDoc(doc(db, 'shopify_connections', connectionId));
-      toast.success('Store disconnected.');
+      toast.success(t("toastDisconnected"));
       fetchShopifyConnections();
     } catch (err) {
       console.error('Error disconnecting:', err);
-      toast.error("Couldn't disconnect the store. Please try again.");
+      toast.error(t("toastDisconnectFailed"));
     } finally {
       setConnectionToRemove(null);
     }
@@ -188,7 +197,7 @@ export default function Integrations({ testMode = false }: IntegrationsProps) {
       const snap = await getDocs(q);
       const bots = snap.docs.map((d) => ({
         id: d.id,
-        title: d.data().title || "Untitled Chatbot",
+        title: d.data().title || "",
         primaryColor: d.data().primaryColor,
         isActive: d.data().isActive,
       }));
@@ -211,9 +220,9 @@ export default function Integrations({ testMode = false }: IntegrationsProps) {
         const set = type === "embed" ? setCopied : setCopiedId;
         set(true);
         setTimeout(() => set(false), 2000);
-        toast.success(type === "embed" ? "Embed code copied" : "Chatbot ID copied");
+        toast.success(type === "embed" ? t("toastEmbedCopied") : t("toastIdCopied"));
       },
-      () => toast.error("Couldn't copy to the clipboard.")
+      () => toast.error(t("toastCopyFailed"))
     );
   };
 
@@ -241,10 +250,10 @@ export default function Integrations({ testMode = false }: IntegrationsProps) {
       link.click();
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
-      toast.success("Plugin downloaded!");
+      toast.success(t("toastPluginDownloaded"));
     } catch (err) {
       console.error("Error generating plugin zip:", err);
-      toast.error("Failed to download plugin.");
+      toast.error(t("toastPluginFailed"));
     } finally {
       setDownloading(false);
     }
@@ -254,15 +263,15 @@ export default function Integrations({ testMode = false }: IntegrationsProps) {
     e.preventDefault();
     const shop = shopUrl.trim().replace(/^https?:\/\//, '').replace(/\/$/, '');
     if (!shop || !shop.includes('.myshopify.com')) {
-      toast.error('Please enter a valid Shopify store URL (e.g. yourstore.myshopify.com)');
+      toast.error(t("toastInvalidShop"));
       return;
     }
     if (!selectedChatbot) {
-      toast.error('Please select a chatbot first.');
+      toast.error(t("toastSelectChatbot"));
       return;
     }
     if (testMode) {
-      toast.success("(Test mode) This would open Shopify to install the app.");
+      toast.success(t("toastTestMode"));
       return;
     }
     const chatbotTitle = chatbots.find(b => b.id === selectedChatbot)?.title || 'Chatbot';
@@ -271,28 +280,29 @@ export default function Integrations({ testMode = false }: IntegrationsProps) {
 
   const selectedBot = chatbots.find((c) => c.id === selectedChatbot);
   const platform = PLATFORMS.find((p) => p.key === activePlatform)!;
+  const platformLabel = (p: (typeof PLATFORMS)[number]) => (p.labelKey ? t(p.labelKey) : p.label);
 
   if (loading) return <IntegrationsSkeleton />;
 
   return (
     <div className="min-h-screen bg-[#F3F7FC] font-sans text-[#101723] dark:bg-[#141D2B]">
       <Helmet>
-        <title>Integrations | Askio Chatbot</title>
+        <title>{t("metaTitle")}</title>
       </Helmet>
 
       <div className="w-full space-y-6 px-4 py-6 sm:px-6 sm:py-8 lg:px-8 xl:px-10">
         <header className="flex flex-wrap items-end justify-between gap-4">
           <div className="min-w-0">
             <h1 className="font-serif text-h2 tracking-tight text-[#101723] sm:text-h1 dark:text-[#D7DFE5]">
-              Integrations
+              {t("title")}
             </h1>
             <p className="mt-1 text-body-sm text-[#566273] dark:text-[#9BAABD]">
-              Put your chatbot on your website. Pick a chatbot, choose your platform and follow the steps.
+              {t("subtitle")}
             </p>
           </div>
           <Link to="/documentation" className={secondaryButton}>
             <BookOpen size={15} />
-            Documentation
+            {t("documentation")}
           </Link>
         </header>
 
@@ -300,9 +310,9 @@ export default function Integrations({ testMode = false }: IntegrationsProps) {
           <div className="rounded-2xl border border-dashed border-[#C9D3E0] bg-[#F9FCFF]/60 dark:border-[#39485B] dark:bg-[#1A2533]/40">
             <EmptyState
               icon={Bot}
-              title="Create a chatbot first"
-              description="Once you have a chatbot, come back here to add it to WordPress, Shopify, Wix or any other website."
-              action={<CreateChatbotLink label="Create chatbot" />}
+              title={t("noChatbotsTitle")}
+              description={t("noChatbotsDescription")}
+              action={<CreateChatbotLink label={t("createChatbot")} />}
             />
           </div>
         ) : (
@@ -310,31 +320,31 @@ export default function Integrations({ testMode = false }: IntegrationsProps) {
             {/* Chatbot to install */}
             <section className={`${surface} flex flex-col gap-4 p-4 sm:p-5 lg:flex-row lg:items-center`}>
               <div className="min-w-0 lg:w-80">
-                <StepLabel n={1}>Chatbot to install</StepLabel>
+                <StepLabel n={1}>{t("stepChatbot")}</StepLabel>
                 <ChatbotPicker chatbots={chatbots} value={selectedChatbot} onChange={setSelectedChatbot} />
               </div>
               <div className="hidden h-12 w-px bg-[#E7EDF6] lg:block dark:bg-[#2B3646]" />
               <div className="min-w-0 flex-1">
-                <p className="mb-2 text-caption font-medium text-[#566273] dark:text-[#9BAABD]">Chatbot ID</p>
+                <p className="mb-2 text-caption font-medium text-[#566273] dark:text-[#9BAABD]">{t("chatbotId")}</p>
                 <div className="flex items-center gap-2">
                   <code className="min-w-0 flex-1 truncate rounded-lg border border-[#E7EDF6] bg-[#F3F7FC] px-3 py-2 font-mono text-[13px] text-[#101723] select-all dark:border-[#2B3646] dark:bg-[#141D2B] dark:text-[#D7DFE5]">
                     {selectedChatbot}
                   </code>
                   <button onClick={() => copyToClipboard(selectedChatbot, "id")} className={secondaryButton}>
                     {copiedId ? <Check size={15} className="text-emerald-500" /> : <Copy size={15} />}
-                    <span className="hidden sm:inline">{copiedId ? "Copied" : "Copy"}</span>
+                    <span className="hidden sm:inline">{copiedId ? t("copied") : t("copy")}</span>
                   </button>
                 </div>
                 <p className="mt-1.5 text-caption text-[#647184] dark:text-[#87909D]">
-                  The WordPress plugin asks for this. The other platforms use the embed code, which already includes it.
+                  {t("chatbotIdHint")}
                 </p>
               </div>
             </section>
 
             {/* Platform picker */}
             <section>
-              <StepLabel n={2}>Where is your website?</StepLabel>
-              <div role="tablist" aria-label="Platform" className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+              <StepLabel n={2}>{t("stepPlatform")}</StepLabel>
+              <div role="tablist" aria-label={t("platformTabs")} className="grid grid-cols-2 gap-3 lg:grid-cols-4">
                 {PLATFORMS.map((p) => {
                   const active = p.key === activePlatform;
                   const connected = p.key === "shopify" ? shopifyConnections.length : 0;
@@ -355,9 +365,9 @@ export default function Integrations({ testMode = false }: IntegrationsProps) {
                       </span>
                       <span className="min-w-0">
                         <span className="block truncate text-body-sm font-semibold text-[#101723] dark:text-[#F3F7FC]">
-                          {p.label}
+                          {platformLabel(p)}
                         </span>
-                        <span className="hidden truncate text-caption text-[#647184] sm:block dark:text-[#87909D]">{p.tagline}</span>
+                        <span className="hidden truncate text-caption text-[#647184] sm:block dark:text-[#87909D]">{t(p.tagline)}</span>
                       </span>
                       {connected > 0 && (
                         <span className="absolute right-2 top-2 inline-flex items-center gap-1 rounded-full bg-emerald-50 px-1.5 py-0.5 text-[10px] font-medium text-emerald-700 ring-1 ring-inset ring-emerald-600/20 dark:bg-emerald-900/25 dark:text-emerald-400">
@@ -384,12 +394,12 @@ export default function Integrations({ testMode = false }: IntegrationsProps) {
                 </span>
                 <div className="min-w-0 flex-1">
                   <h2 className="font-serif text-h3 text-[#101723] dark:text-[#D7DFE5]">
-                    Install on {platform.label === "Any website" ? "any website" : platform.label}
+                    {platform.label ? t("installOn", { platform: platform.label }) : t("installOnAnyWebsite")}
                   </h2>
                   <p className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-body-sm text-[#566273] dark:text-[#9BAABD]">
                     <span className="inline-flex items-center gap-1.5">
                       <Clock size={13} />
-                      {platform.effort}
+                      {t(platform.effort)}
                     </span>
                     {selectedBot && (
                       <span className="inline-flex items-center gap-1.5">
@@ -406,24 +416,24 @@ export default function Integrations({ testMode = false }: IntegrationsProps) {
                   <>
                     <Steps
                       steps={[
-                        { title: "Download the plugin", body: "A small plugin that connects your WordPress site to Askio." },
-                        { title: "Upload it to WordPress", body: "In your WordPress admin go to Plugins → Add New → Upload Plugin, choose the .zip and click Install Now, then Activate." },
-                        { title: "Paste your Chatbot ID", body: "Open “Askio Chatbot” in the WordPress sidebar, paste the Chatbot ID from above and click Save Settings." },
-                        { title: "Check your site", body: "The chatbot appears on every page. Changes you make in Askio show up straight away." },
+                        { title: t("wpStep1Title"), body: t("wpStep1Body") },
+                        { title: t("wpStep2Title"), body: t("wpStep2Body") },
+                        { title: t("wpStep3Title"), body: t("wpStep3Body") },
+                        { title: t("wpStep4Title"), body: t("wpStep4Body") },
                       ]}
                     />
-                    <ActionPanel title="Get the plugin" description="Works with WordPress 5.0 and newer. No theme changes needed.">
+                    <ActionPanel title={t("wpPanelTitle")} description={t("wpPanelDescription")}>
                       <button onClick={downloadWordPressPlugin} disabled={downloading} className={`${primaryButton} w-full sm:w-auto`}>
                         {downloading ? <LoaderCircle size={16} className="animate-spin" /> : <Download size={16} />}
-                        {downloading ? "Preparing…" : "Download askio-chatbot.zip"}
+                        {downloading ? t("preparing") : t("downloadFile", { file: "askio-chatbot.zip" })}
                       </button>
                       <div className="mt-5 border-t border-[#E7EDF6] pt-4 dark:border-[#2B3646]">
-                        <p className="text-caption font-medium text-[#566273] dark:text-[#9BAABD]">You'll need this in step 3</p>
+                        <p className="text-caption font-medium text-[#566273] dark:text-[#9BAABD]">{t("neededInStep3")}</p>
                         <div className="mt-2 flex items-center gap-2">
                           <code className="min-w-0 flex-1 truncate rounded-lg bg-[#101723] px-3 py-2 font-mono text-[13px] text-[#D7DFE5]">
                             {selectedChatbot}
                           </code>
-                          <button onClick={() => copyToClipboard(selectedChatbot, "id")} className={secondaryButton} aria-label="Copy Chatbot ID">
+                          <button onClick={() => copyToClipboard(selectedChatbot, "id")} className={secondaryButton} aria-label={t("copyChatbotId")}>
                             {copiedId ? <Check size={15} className="text-emerald-500" /> : <Copy size={15} />}
                           </button>
                         </div>
@@ -436,19 +446,19 @@ export default function Integrations({ testMode = false }: IntegrationsProps) {
                   <>
                     <Steps
                       steps={[
-                        { title: "Enter your store URL", body: "Type your yourstore.myshopify.com address and click Connect." },
-                        { title: "Approve the app in Shopify", body: "Shopify opens and asks you to allow Askio. Use the “Install unlisted app” link at the bottom of the warning page." },
-                        { title: "That's it", body: "The chatbot appears on your storefront. Changes you make in Askio show up straight away." },
+                        { title: t("shopifyStep1Title"), body: t("shopifyStep1Body") },
+                        { title: t("shopifyStep2Title"), body: t("shopifyStep2Body") },
+                        { title: t("shopifyStep3Title"), body: t("shopifyStep3Body") },
                       ]}
                     />
                     <div className="space-y-4">
                       <ActionPanel
-                        title={shopifyConnections.length > 0 ? "Connect another store" : "Connect your store"}
-                        description="We add the chatbot to your storefront automatically."
+                        title={shopifyConnections.length > 0 ? t("connectAnotherStore") : t("connectYourStore")}
+                        description={t("shopifyPanelDescription")}
                       >
                         <form onSubmit={connectShopify} className="flex flex-col gap-2 sm:flex-row">
                           <label className="sr-only" htmlFor="shop-url">
-                            Store URL
+                            {t("storeUrl")}
                           </label>
                           <div className="relative flex-1">
                             <ShoppingBag size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#87909D]" />
@@ -464,15 +474,18 @@ export default function Integrations({ testMode = false }: IntegrationsProps) {
                             />
                           </div>
                           <button type="submit" className={primaryButton}>
-                            Connect
+                            {t("connect")}
                             <ArrowRight size={15} />
                           </button>
                         </form>
                         <div className="mt-4 flex gap-3 rounded-lg border border-amber-200 bg-amber-50 p-3 dark:border-amber-800/40 dark:bg-amber-900/15">
                           <AlertTriangle size={16} className="mt-0.5 shrink-0 text-amber-600 dark:text-amber-400" />
                           <p className="text-caption leading-relaxed text-amber-900 dark:text-amber-200">
-                            Our app is still in Shopify's review, so Shopify shows an <strong>“App isn't approved”</strong> warning.
-                            It's safe to continue: click <strong>“Install unlisted app”</strong> at the bottom of that page.
+                            {t("shopifyWarningBefore")}
+                            <strong>{t("shopifyWarningNotApproved")}</strong>
+                            {t("shopifyWarningMiddle")}
+                            <strong>{t("shopifyWarningInstall")}</strong>
+                            {t("shopifyWarningAfter")}
                           </p>
                         </div>
                       </ActionPanel>
@@ -480,7 +493,7 @@ export default function Integrations({ testMode = false }: IntegrationsProps) {
                       {shopifyConnections.length > 0 && (
                         <div className="rounded-xl border border-[#E7EDF6] dark:border-[#2B3646]">
                           <p className="border-b border-[#E7EDF6] px-4 py-2.5 text-[11px] font-medium uppercase tracking-wider text-[#647184] dark:border-[#2B3646] dark:text-[#87909D]">
-                            Connected stores
+                            {t("connectedStores")}
                           </p>
                           <ul className="divide-y divide-[#E7EDF6] dark:divide-[#2B3646]">
                             {shopifyConnections.map((conn) => (
@@ -499,7 +512,7 @@ export default function Integrations({ testMode = false }: IntegrationsProps) {
                                   className={`inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-caption font-medium text-[#566273] hover:bg-red-50 hover:text-red-600 dark:text-[#9BAABD] dark:hover:bg-red-950/30 dark:hover:text-red-400 ${focusRing}`}
                                 >
                                   <Unplug size={13} />
-                                  Disconnect
+                                  {t("disconnect")}
                                 </button>
                               </li>
                             ))}
@@ -514,10 +527,10 @@ export default function Integrations({ testMode = false }: IntegrationsProps) {
                   <>
                     <Steps
                       steps={[
-                        { title: "Open the Wix Editor", body: "From your Wix dashboard, open the editor for your site." },
-                        { title: "Add an HTML embed", body: "Click + → Embed Code → Embed HTML. A custom HTML element is added to the page." },
-                        { title: "Paste the code", body: "Choose “Code” in the element's settings, paste the embed code and click Update." },
-                        { title: "Publish", body: "Click Publish. The chatbot now appears on your live site." },
+                        { title: t("wixStep1Title"), body: t("wixStep1Body") },
+                        { title: t("wixStep2Title"), body: t("wixStep2Body") },
+                        { title: t("wixStep3Title"), body: t("wixStep3Body") },
+                        { title: t("wixStep4Title"), body: t("wixStep4Body") },
                       ]}
                     />
                     <EmbedCodeBlock code={embedCode} copied={copied} onCopy={() => copyToClipboard(embedCode, "embed")} />
@@ -528,14 +541,11 @@ export default function Integrations({ testMode = false }: IntegrationsProps) {
                   <>
                     <Steps
                       steps={[
-                        { title: "Copy the embed code", body: "It already includes the chatbot you picked above." },
-                        {
-                          title: "Paste it before </body>",
-                          body: "Add it to every page, or to your site's shared footer or layout template so it loads everywhere.",
-                        },
-                        { title: "Reload your site", body: "The chatbot button appears in the corner you chose in Askio." },
+                        { title: t("htmlStep1Title"), body: t("htmlStep1Body") },
+                        { title: t("htmlStep2Title"), body: t("htmlStep2Body") },
+                        { title: t("htmlStep3Title"), body: t("htmlStep3Body") },
                       ]}
-                      footer="Works on Squarespace, Webflow, Ghost, Framer, custom HTML and any other site where you can add code."
+                      footer={t("htmlFooter")}
                     />
                     <EmbedCodeBlock code={embedCode} copied={copied} onCopy={() => copyToClipboard(embedCode, "embed")} />
                   </>
@@ -550,15 +560,15 @@ export default function Integrations({ testMode = false }: IntegrationsProps) {
         isOpen={connectionToRemove !== null}
         onClose={() => setConnectionToRemove(null)}
         onConfirm={() => connectionToRemove && disconnectShopify(connectionToRemove.id)}
-        title="Disconnect store"
-        confirmText="Disconnect"
-        cancelText="Cancel"
+        title={t("disconnectTitle")}
+        confirmText={t("disconnect")}
+        cancelText={t("cancel")}
         confirmButtonClass="bg-red-600 text-white hover:bg-red-700 shadow-md dark:bg-red-500 dark:hover:bg-red-600 focus:ring-red-500"
       >
         <p className="text-body-sm text-[#566273] dark:text-[#D7DFE5]">
-          The chatbot will stop showing on{" "}
-          <span className="font-medium text-[#101723] dark:text-white">{connectionToRemove?.shop}</span>. You can connect it
-          again at any time.
+          {t("disconnectBefore")}
+          <span className="font-medium text-[#101723] dark:text-white">{connectionToRemove?.shop}</span>
+          {t("disconnectAfter")}
         </p>
       </ConfirmationModal>
     </div>
@@ -587,6 +597,7 @@ function ChatbotPicker({
   value: string;
   onChange: (id: string) => void;
 }) {
+  const t = useT(integrationsMessages);
   const selected = chatbots.find((c) => c.id === value);
   return (
     <Listbox value={value} onChange={onChange}>
@@ -595,7 +606,7 @@ function ChatbotPicker({
       >
         <BotAvatar color={selected?.primaryColor} size={26} muted={selected?.isActive === false} />
         <span className="min-w-0 flex-1 truncate text-body-sm font-medium text-[#101723] dark:text-[#D7DFE5]">
-          {selected?.title || "Select a chatbot"}
+          {selected?.title || t("selectChatbot")}
         </span>
         <ChevronsUpDown size={15} className="shrink-0 text-[#87909D]" />
       </ListboxButton>
@@ -616,7 +627,7 @@ function ChatbotPicker({
             <span className="min-w-0 flex-1 truncate text-[#101723] group-data-[selected]:font-medium dark:text-[#D7DFE5]">
               {bot.title}
             </span>
-            {bot.isActive === false && <span className="text-caption text-[#87909D]">Paused</span>}
+            {bot.isActive === false && <span className="text-caption text-[#87909D]">{t("paused")}</span>}
             <Check size={15} className="invisible text-[#101723] group-data-[selected]:visible dark:text-[#D7DFE5]" />
           </ListboxOption>
         ))}
@@ -680,6 +691,7 @@ function EmbedCodeBlock({
   copied: boolean;
   onCopy: () => void;
 }) {
+  const t = useT(integrationsMessages);
   return (
     <div className="self-start overflow-hidden rounded-xl border border-[#243040] bg-[#101723] shadow-sm">
       <div className="flex items-center justify-between border-b border-white/10 px-4 py-2.5">
@@ -689,7 +701,7 @@ function EmbedCodeBlock({
             <span className="h-2 w-2 rounded-full bg-white/15" />
             <span className="h-2 w-2 rounded-full bg-white/15" />
           </span>
-          Embed code
+          {t("embedCode")}
         </span>
         <button
           onClick={onCopy}
@@ -698,7 +710,7 @@ function EmbedCodeBlock({
           }`}
         >
           {copied ? <Check size={13} /> : <Copy size={13} />}
-          {copied ? "Copied" : "Copy code"}
+          {copied ? t("copied") : t("copyCode")}
         </button>
       </div>
       <pre className="overflow-x-auto p-4 font-mono text-[12.5px] leading-relaxed text-[#D7DFE5]">
@@ -709,8 +721,9 @@ function EmbedCodeBlock({
 }
 
 function IntegrationsSkeleton() {
+  const t = useT(integrationsMessages);
   return (
-    <div className="min-h-screen bg-[#F3F7FC] dark:bg-[#141D2B]" aria-busy="true" aria-label="Loading">
+    <div className="min-h-screen bg-[#F3F7FC] dark:bg-[#141D2B]" aria-busy="true" aria-label={t("loading")}>
       <div className="w-full space-y-6 px-4 py-6 sm:px-6 sm:py-8 lg:px-8 xl:px-10">
         <div className="space-y-3">
           <Skeleton className="h-9 w-48" />

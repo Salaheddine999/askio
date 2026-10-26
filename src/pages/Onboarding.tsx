@@ -14,30 +14,38 @@ import { LIMITS } from "../components/editor/types";
 import PreviewFrame from "../components/editor/PreviewFrame";
 import EmbedTab from "../components/editor/EmbedTab";
 import { focusRing, primaryButton, secondaryButton } from "./dashboard/ui";
-import { BLANK_ID, STARTERS, hasPlaceholder } from "./onboarding/templates";
+import { BLANK_ID, hasPlaceholder, startersFor } from "./onboarding/templates";
+import { makeT, useLanguage, useT, type Lang } from "../i18n";
+import { widgetMessages } from "../i18n/widget";
+import { onboardingMessages } from "../i18n/messages/onboarding";
 
 type Step = 1 | 2 | 3 | 4;
 type DraftFaq = { question: string; answer: string; selected: boolean };
 
-const STEPS = ["Your business", "Questions", "Look", "Install"];
+const STEP_KEYS = ["stepBusiness", "stepQuestions", "stepLook", "stepInstall"] as const;
 const COLORS = ["#101723", "#3B82F6", "#0891B2", "#10B981", "#F59E0B", "#EF4444", "#EC4899", "#8B5CF6"];
 
-const BASE_CONFIG: ChatbotConfig = {
-  id: "",
-  name: "",
-  title: "",
-  primaryColor: "#101723",
-  secondaryColor: "#101723",
-  position: "bottom-right",
-  launcherStyle: "classic",
-  greetingBubble: false,
-  initialMessage: "Hello! How can I help you today?",
-  placeholder: "Type your message...",
-  faqData: [],
-  liveChatLink: "",
-  enableLeadCapture: true,
-  aiEnabled: false,
-  aiTone: "",
+/** The starting config, with the widget's own text in the app's language. */
+const baseConfig = (lang: Lang): ChatbotConfig => {
+  const w = makeT(widgetMessages, lang);
+  return {
+    id: "",
+    name: "",
+    title: "",
+    primaryColor: "#101723",
+    secondaryColor: "#101723",
+    position: "bottom-right",
+    launcherStyle: "classic",
+    greetingBubble: false,
+    initialMessage: w("defaultWelcome"),
+    placeholder: w("defaultPlaceholder"),
+    language: lang,
+    faqData: [],
+    liveChatLink: "",
+    enableLeadCapture: true,
+    aiEnabled: false,
+    aiTone: "",
+  };
 };
 
 function normalizeWebsite(value: string) {
@@ -51,14 +59,17 @@ function normalizeWebsite(value: string) {
   }
 }
 
-const StepIndicator: React.FC<{ step: Step }> = ({ step }) => (
-  <ol className="flex flex-wrap items-center gap-x-2 gap-y-2" aria-label="Setup steps">
-    {STEPS.map((label, i) => {
+const StepIndicator: React.FC<{ step: Step }> = ({ step }) => {
+  const t = useT(onboardingMessages);
+  return (
+  <ol className="flex flex-wrap items-center gap-x-2 gap-y-2" aria-label={t("setupSteps")}>
+    {STEP_KEYS.map((key, i) => {
+      const label = t(key);
       const n = (i + 1) as Step;
       const done = n < step;
       const current = n === step;
       return (
-        <li key={label} className="flex items-center gap-2" aria-current={current ? "step" : undefined}>
+        <li key={key} className="flex items-center gap-2" aria-current={current ? "step" : undefined}>
           <span
             className={`flex h-6 w-6 items-center justify-center rounded-full text-caption font-semibold ${
               done || current
@@ -80,10 +91,14 @@ const StepIndicator: React.FC<{ step: Step }> = ({ step }) => (
       );
     })}
   </ol>
-);
+  );
+};
 
 const Onboarding: React.FC = () => {
   const navigate = useNavigate();
+  const t = useT(onboardingMessages);
+  const { lang } = useLanguage();
+  const starters = startersFor(lang);
   const { canUseAi, loading: planLoading } = usePlanAccess();
   const wide = useMediaQuery("(min-width: 1280px)");
 
@@ -93,7 +108,7 @@ const Onboarding: React.FC = () => {
   const [starterId, setStarterId] = useState<string | null>(null);
   const [faqs, setFaqs] = useState<DraftFaq[]>([]);
   const [editing, setEditing] = useState<number | null>(null);
-  const [config, setConfig] = useState<ChatbotConfig>(BASE_CONFIG);
+  const [config, setConfig] = useState<ChatbotConfig>(() => baseConfig(lang));
   const [chatbotId, setChatbotId] = useState<string | null>(null);
   const [scanning, setScanning] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -125,7 +140,7 @@ const Onboarding: React.FC = () => {
       setShowErrors(true);
       return;
     }
-    const starter = STARTERS.find((s) => s.id === starterId);
+    const starter = starters.find((s) => s.id === starterId);
     setFaqs((starter?.faqs || []).map((f) => ({ ...f, selected: true })));
     applyBusiness(starter?.welcome);
     setEditing(null);
@@ -145,7 +160,7 @@ const Onboarding: React.FC = () => {
     const url = normalizeWebsite(website);
     if (!businessName.trim() || !url) {
       setShowErrors(true);
-      if (businessName.trim()) toast.error("Enter your website address, like yourstore.com.");
+      if (businessName.trim()) toast.error(t("websiteError"));
       return;
     }
     setScanning(true);
@@ -153,19 +168,19 @@ const Onboarding: React.FC = () => {
       const name = businessName.trim();
       const draft = { ...config, name: config.name || name, title: config.title || name.slice(0, LIMITS.title) };
       const saved = await save(draft, true);
-      if (!saved.aiEnabled) throw new Error("AI couldn't be turned on for this chatbot.");
+      if (!saved.aiEnabled) throw new Error(t("aiNotEnabled"));
       setChatbotId(saved.chatbotId);
       setConfig({ ...draft, id: saved.chatbotId, aiEnabled: true });
       const { faqs: generated } = await apiRequest<{ faqs: { question: string; answer: string }[] }>(
         "/api/ai/generate-faq",
         { authRequired: true, body: { chatbotId: saved.chatbotId, url, isDeepCrawl: false } }
       );
-      if (!generated?.length) throw new Error("We couldn't find enough on that page. Pick a business type instead.");
+      if (!generated?.length) throw new Error(t("scanEmpty"));
       setFaqs(generated.map((f) => ({ ...f, selected: true })));
       setEditing(null);
       setStep(2);
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "We couldn't read that website.");
+      toast.error(error instanceof Error ? error.message : t("scanFailed"));
     } finally {
       setScanning(false);
     }
@@ -186,7 +201,7 @@ const Onboarding: React.FC = () => {
         // At the AI chatbot limit: create it without AI rather than not at all.
         if (canUseAi && error instanceof Error && /up to \d+ AI chatbots/i.test(error.message)) {
           result = await save(draft, false);
-          toast("Created without AI replies: you've reached your plan's AI chatbot limit.");
+          toast(t("createdWithoutAi"));
         } else {
           throw error;
         }
@@ -194,7 +209,7 @@ const Onboarding: React.FC = () => {
       setChatbotId(result.chatbotId);
       setStep(4);
     } catch (error) {
-      toast.error(error instanceof Error ? `Couldn't create your chatbot: ${error.message}` : "Couldn't create your chatbot.");
+      toast.error(error instanceof Error ? t("createFailedWith", { message: error.message }) : t("createFailed"));
     } finally {
       setSaving(false);
     }
@@ -208,7 +223,7 @@ const Onboarding: React.FC = () => {
   return (
     <div className="min-h-screen bg-[#F3F7FC] font-sans text-[#101723] dark:bg-[#141D2B] dark:text-[#D7DFE5]">
       <Helmet>
-        <title>Set up your chatbot | Askio</title>
+        <title>{t("pageTitle")}</title>
       </Helmet>
 
       <div className="w-full px-4 py-6 sm:px-6 sm:py-8 lg:px-8 xl:px-10">
@@ -216,12 +231,10 @@ const Onboarding: React.FC = () => {
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
               <h1 className="font-serif text-h2 tracking-tight sm:text-h1 dark:text-[#E7EDF6]">
-                {step === 4 ? "Your chatbot is ready" : "Set up your chatbot"}
+                {step === 4 ? t("headingReady") : t("headingSetup")}
               </h1>
               <p className="mt-1 text-body-sm text-[#566273] dark:text-[#9BAABD]">
-                {step === 4
-                  ? "Paste the code on your site and it starts answering visitors."
-                  : "A few minutes from now, it'll be answering your visitors."}
+                {step === 4 ? t("subReady") : t("subSetup")}
               </p>
             </div>
             {step < 4 && (
@@ -229,7 +242,7 @@ const Onboarding: React.FC = () => {
                 to="/configure"
                 className={`rounded text-body-sm text-[#647184] underline-offset-2 hover:text-[#101723] hover:underline dark:text-[#87909D] dark:hover:text-[#D7DFE5] ${focusRing}`}
               >
-                Skip, I'll set it up myself
+                {t("skip")}
               </Link>
             )}
           </div>
@@ -240,32 +253,32 @@ const Onboarding: React.FC = () => {
           <div className={`min-w-0 space-y-5 ${showPreview ? "" : "max-w-3xl"}`}>
             {step === 1 && (
               <>
-                <Panel title="Your business" description="We'll use this to name your chatbot and fill in the basics.">
+                <Panel title={t("businessTitle")} description={t("businessDescription")}>
                   <PanelBody className="grid grid-cols-1 gap-5 sm:grid-cols-2">
                     <Field
-                      label="Business name"
+                      label={t("businessName")}
                       htmlFor="ob-name"
-                      error={showErrors && !businessName.trim() ? "What's your business called?" : null}
+                      error={showErrors && !businessName.trim() ? t("businessNameError") : null}
                     >
                       <input
                         id="ob-name"
                         autoFocus
                         className={`${inputClass} h-10`}
-                        placeholder="e.g. Bloom Studio"
+                        placeholder={t("businessNamePlaceholder")}
                         maxLength={LIMITS.name}
                         value={businessName}
                         onChange={(e) => setBusinessName(e.target.value)}
                       />
                     </Field>
                     <Field
-                      label="Website"
+                      label={t("website")}
                       htmlFor="ob-site"
-                      hint={canUseAi ? "We can read it and write your questions for you." : "Optional. Where the chatbot will live."}
+                      hint={canUseAi ? t("websiteHintAi") : t("websiteHint")}
                     >
                       <input
                         id="ob-site"
                         className={`${inputClass} h-10`}
-                        placeholder="yourstore.com"
+                        placeholder={t("websitePlaceholder")}
                         value={website}
                         spellCheck={false}
                         autoComplete="url"
@@ -282,10 +295,8 @@ const Onboarding: React.FC = () => {
                         <Sparkles size={16} />
                       </span>
                       <div>
-                        <p className="text-body-sm font-medium text-[#101723] dark:text-[#E7EDF6]">Write my questions from my website</p>
-                        <p className="mt-0.5 text-caption text-[#647184] dark:text-[#87909D]">
-                          AI reads your page and drafts answers you can review. It can take up to a minute.
-                        </p>
+                        <p className="text-body-sm font-medium text-[#101723] dark:text-[#E7EDF6]">{t("scanTitle")}</p>
+                        <p className="mt-0.5 text-caption text-[#647184] dark:text-[#87909D]">{t("scanDescription")}</p>
                       </div>
                     </div>
                     <button
@@ -294,18 +305,18 @@ const Onboarding: React.FC = () => {
                       disabled={scanning || !website.trim()}
                       className={`${primaryButton} shrink-0 self-start sm:self-auto`}
                     >
-                      {scanning ? "Reading your website…" : "Scan my website"}
+                      {scanning ? t("scanning") : t("scan")}
                     </button>
                   </div>
                 )}
 
                 <Panel
-                  title={canUseAi ? "Or start from a business type" : "What kind of business is it?"}
-                  description="You'll get common questions to edit and keep."
+                  title={canUseAi ? t("typeTitleAi") : t("typeTitle")}
+                  description={t("typeDescription")}
                 >
                   <PanelBody>
-                    <div role="radiogroup" aria-label="Business type" className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
-                      {[...STARTERS, { id: BLANK_ID, label: "Start from scratch", hint: "Write your own questions" }].map((s) => {
+                    <div role="radiogroup" aria-label={t("businessType")} className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+                      {[...starters, { id: BLANK_ID, label: t("blankLabel"), hint: t("blankHint") }].map((s) => {
                         const isSelected = starterId === s.id;
                         return (
                           <button
@@ -328,14 +339,14 @@ const Onboarding: React.FC = () => {
                     </div>
                     {showErrors && !starterId && (
                       <p role="alert" className="mt-3 text-caption text-red-600 dark:text-red-400">
-                        Pick the closest match, or start from scratch.
+                        {t("pickType")}
                       </p>
                     )}
                     {!canUseAi && !planLoading && (
                       <p className="mt-4 text-caption text-[#647184] dark:text-[#87909D]">
-                        On Pro, AI can write these from your website.{" "}
+                        {t("proUpsell")}{" "}
                         <Link to="/plans" className="font-medium text-[#101723] underline underline-offset-2 dark:text-[#E7EDF6]">
-                          See Pro
+                          {t("seePro")}
                         </Link>
                       </p>
                     )}
@@ -344,7 +355,7 @@ const Onboarding: React.FC = () => {
 
                 <div className="flex justify-end">
                   <button type="button" onClick={continueWithStarter} disabled={scanning} className={primaryButton}>
-                    Continue
+                    {t("continue")}
                     <ArrowRight size={16} />
                   </button>
                 </div>
@@ -354,8 +365,8 @@ const Onboarding: React.FC = () => {
             {step === 2 && (
               <>
                 <Panel
-                  title="Your questions"
-                  description="Keep the ones that fit, and replace the [highlighted] parts with your details."
+                  title={t("questionsTitle")}
+                  description={t("questionsDescription")}
                   action={
                     <button
                       type="button"
@@ -366,13 +377,13 @@ const Onboarding: React.FC = () => {
                       className={secondaryButton}
                     >
                       <Plus size={15} />
-                      Add
+                      {t("add")}
                     </button>
                   }
                 >
                   {faqs.length === 0 ? (
                     <p className="px-6 py-10 text-center text-body-sm text-[#647184] dark:text-[#87909D]">
-                      No questions yet. Add the ones your customers ask most.
+                      {t("noQuestions")}
                     </p>
                   ) : (
                     <ul className="divide-y divide-[#E7EDF6] dark:divide-[#2B3646]">
@@ -385,7 +396,7 @@ const Onboarding: React.FC = () => {
                                 type="checkbox"
                                 checked={faq.selected}
                                 onChange={(e) => setFaq(i, { selected: e.target.checked })}
-                                aria-label={`Keep “${faq.question || "new question"}”`}
+                                aria-label={t("keepQuestion", { question: faq.question || t("newQuestion") })}
                                 className="mt-1 h-4 w-4 shrink-0 cursor-pointer accent-[#101723] dark:accent-[#D7DFE5]"
                               />
                               {editing === i ? (
@@ -393,7 +404,7 @@ const Onboarding: React.FC = () => {
                                   <input
                                     autoFocus={!faq.question}
                                     className={`${inputClass} h-9 font-medium`}
-                                    placeholder="Question"
+                                    placeholder={t("questionPlaceholder")}
                                     maxLength={LIMITS.question}
                                     value={faq.question}
                                     onChange={(e) => setFaq(i, { question: e.target.value })}
@@ -402,14 +413,14 @@ const Onboarding: React.FC = () => {
                                     autoFocus={!!faq.question}
                                     rows={3}
                                     className={`${inputClass} resize-y py-2 leading-relaxed`}
-                                    placeholder="Answer"
+                                    placeholder={t("answerPlaceholder")}
                                     maxLength={LIMITS.answer}
                                     value={faq.answer}
                                     onChange={(e) => setFaq(i, { answer: e.target.value })}
                                   />
                                   <div className="flex justify-end">
                                     <button type="button" onClick={() => setEditing(null)} className={secondaryButton}>
-                                      Done
+                                      {t("done")}
                                     </button>
                                   </div>
                                 </div>
@@ -420,11 +431,11 @@ const Onboarding: React.FC = () => {
                                   className={`min-w-0 flex-1 rounded-md text-left ${focusRing}`}
                                 >
                                   <span className="block text-body-sm font-medium text-[#101723] dark:text-[#D7DFE5]">
-                                    {faq.question || "Untitled question"}
+                                    {faq.question || t("untitledQuestion")}
                                   </span>
                                   <span className="mt-1 block text-body-sm text-[#566273] dark:text-[#9BAABD]">
                                     {!faq.answer
-                                      ? "No answer yet"
+                                      ? t("noAnswer")
                                       : faq.answer.split(/(\[[^\]]+\])/).map((part, k) =>
                                       /^\[[^\]]+\]$/.test(part) ? (
                                         <mark
@@ -440,7 +451,7 @@ const Onboarding: React.FC = () => {
                                   </span>
                                   {needsDetails && (
                                     <span className="mt-1.5 inline-flex items-center gap-1 text-caption font-medium text-amber-700 dark:text-amber-300">
-                                      <Pencil size={11} /> Add your details
+                                      <Pencil size={11} /> {t("addDetails")}
                                     </span>
                                   )}
                                 </button>
@@ -448,7 +459,7 @@ const Onboarding: React.FC = () => {
                               {editing !== i && (
                                 <button
                                   type="button"
-                                  aria-label="Remove question"
+                                  aria-label={t("removeQuestion")}
                                   onClick={() => setFaqs((list) => list.filter((_, j) => j !== i))}
                                   className={`rounded-lg p-1.5 text-[#87909D] hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/30 ${focusRing}`}
                                 >
@@ -466,19 +477,19 @@ const Onboarding: React.FC = () => {
                 {showErrors && unfinished > 0 && (
                   <div role="alert" className="flex items-start gap-2.5 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-body-sm text-amber-900 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-200">
                     <AlertTriangle size={16} className="mt-0.5 shrink-0" />
-                    {unfinished === 1 ? "1 kept question still has" : `${unfinished} kept questions still have`} [bracketed] text.
-                    Replace it with your details, or untick the question, so visitors don't see placeholders.
+                    {t.plural("placeholderWarning", unfinished)}
                   </div>
                 )}
 
                 <div className="flex items-center justify-between gap-3">
                   <button type="button" onClick={() => setStep(1)} className={secondaryButton}>
                     <ArrowLeft size={16} />
-                    Back
+                    {t("back")}
                   </button>
                   <div className="flex items-center gap-3">
                     <span className="hidden text-caption text-[#647184] sm:inline dark:text-[#87909D]">
-                      {selected.length} kept{unfinished ? ` · ${unfinished} to finish` : ""}
+                      {t.plural("kept", selected.length)}
+                      {unfinished ? t.plural("toFinish", unfinished) : ""}
                     </span>
                     <button
                       type="button"
@@ -493,7 +504,7 @@ const Onboarding: React.FC = () => {
                       }}
                       className={primaryButton}
                     >
-                      Continue
+                      {t("continue")}
                       <ArrowRight size={16} />
                     </button>
                   </div>
@@ -503,14 +514,14 @@ const Onboarding: React.FC = () => {
 
             {step === 3 && (
               <>
-                <Panel title="How it looks" description="You can change all of this later in the editor.">
+                <Panel title={t("lookTitle")} description={t("lookDescription")}>
                   <PanelBody className="space-y-5">
                     <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
                       <Field
-                        label="Chat title"
+                        label={t("chatTitle")}
                         htmlFor="ob-title"
-                        hint="Shown at the top of the chat."
-                        error={showErrors && !config.title.trim() ? "Add a title." : null}
+                        hint={t("chatTitleHint")}
+                        error={showErrors && !config.title.trim() ? t("chatTitleError") : null}
                       >
                         <input
                           id="ob-title"
@@ -520,7 +531,7 @@ const Onboarding: React.FC = () => {
                           onChange={(e) => update("title", e.target.value)}
                         />
                       </Field>
-                      <Field label="Welcome message" htmlFor="ob-welcome">
+                      <Field label={t("welcomeMessage")} htmlFor="ob-welcome">
                         <input
                           id="ob-welcome"
                           className={`${inputClass} h-10`}
@@ -532,7 +543,7 @@ const Onboarding: React.FC = () => {
                     </div>
 
                     <div>
-                      <p className="mb-2 text-label text-[#101723] dark:text-[#D7DFE5]">Brand colour</p>
+                      <p className="mb-2 text-label text-[#101723] dark:text-[#D7DFE5]">{t("brandColour")}</p>
                       <div className="flex flex-wrap items-center gap-2">
                         {COLORS.map((c) => {
                           const active = config.primaryColor.toLowerCase() === c.toLowerCase();
@@ -540,7 +551,7 @@ const Onboarding: React.FC = () => {
                             <button
                               key={c}
                               type="button"
-                              aria-label={`Use ${c}`}
+                              aria-label={t("useColour", { colour: c })}
                               aria-pressed={active}
                               onClick={() => setConfig((cfg) => ({ ...cfg, primaryColor: c, secondaryColor: c }))}
                               className={`flex h-8 w-8 items-center justify-center rounded-full ring-1 ring-inset ring-black/10 transition-transform hover:scale-110 ${focusRing} ${
@@ -554,7 +565,7 @@ const Onboarding: React.FC = () => {
                         })}
                         <div className="w-44">
                           <ColorField
-                            label="Custom colour"
+                            label={t("customColour")}
                             color={config.primaryColor}
                             onChange={(c) => setConfig((cfg) => ({ ...cfg, primaryColor: c, secondaryColor: c }))}
                           />
@@ -563,10 +574,10 @@ const Onboarding: React.FC = () => {
                     </div>
 
                     <div>
-                      <p className="mb-2 text-label text-[#101723] dark:text-[#D7DFE5]">Launcher</p>
-                      <div role="radiogroup" aria-label="Launcher style" className="grid max-w-sm grid-cols-2 gap-3">
+                      <p className="mb-2 text-label text-[#101723] dark:text-[#D7DFE5]">{t("launcher")}</p>
+                      <div role="radiogroup" aria-label={t("launcherStyle")} className="grid max-w-sm grid-cols-2 gap-3">
                         {([
-                          { value: "classic", label: "Classic" },
+                          { value: "classic", label: t("classic") },
                           { value: "orb", label: "Kio" },
                         ] as const).map((o) => {
                           const isSelected = (config.launcherStyle ?? "classic") === o.value;
@@ -600,10 +611,10 @@ const Onboarding: React.FC = () => {
                 <div className="flex items-center justify-between gap-3">
                   <button type="button" onClick={() => setStep(2)} className={secondaryButton}>
                     <ArrowLeft size={16} />
-                    Back
+                    {t("back")}
                   </button>
                   <button type="button" onClick={finish} disabled={saving} className={primaryButton}>
-                    {saving ? "Creating…" : "Create my chatbot"}
+                    {saving ? t("creating") : t("create")}
                   </button>
                 </div>
               </>
@@ -614,10 +625,10 @@ const Onboarding: React.FC = () => {
                 <EmbedTab chatbotId={chatbotId} hasChanges={false} saving={false} onSave={() => undefined} />
                 <div className="flex flex-wrap items-center gap-2">
                   <button type="button" onClick={() => navigate(`/configure/${chatbotId}`)} className={primaryButton}>
-                    Fine-tune it in the editor
+                    {t("fineTune")}
                   </button>
                   <button type="button" onClick={() => navigate("/dashboard")} className={secondaryButton}>
-                    Go to dashboard
+                    {t("goToDashboard")}
                   </button>
                 </div>
               </>
@@ -625,7 +636,7 @@ const Onboarding: React.FC = () => {
           </div>
 
           {showPreview && (
-            <aside className="sticky top-6" aria-label="Preview">
+            <aside className="sticky top-6" aria-label={t("preview")}>
               <PreviewFrame config={previewConfig} />
             </aside>
           )}

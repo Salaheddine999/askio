@@ -16,6 +16,9 @@ import {
 import { motion } from "framer-motion";
 import { Menu } from "@headlessui/react";
 import BotAvatar from "./BotAvatar";
+import { dateLocale, useT } from "../i18n";
+import { dashboardMessages } from "../i18n/messages/dashboard";
+import { commonMessages } from "../i18n/messages/common";
 
 interface ChatbotCardProps {
   chatbot: {
@@ -51,11 +54,13 @@ const StatusSwitch: React.FC<{ active: boolean; title: string; onToggle: () => v
   active,
   title,
   onToggle,
-}) => (
+}) => {
+  const t = useT(dashboardMessages);
+  return (
   <button
     role="switch"
     aria-checked={active}
-    aria-label={active ? `${title} is live. Pause it` : `${title} is paused. Make it live`}
+    aria-label={t(active ? "statusLiveAria" : "statusPausedAria", { name: title })}
     onClick={onToggle}
     className={`inline-flex shrink-0 items-center gap-2 rounded-full py-0.5 pl-0.5 pr-2.5 text-[11px] font-medium ring-1 ring-inset transition-colors ${focusRing} ${
       active
@@ -74,9 +79,10 @@ const StatusSwitch: React.FC<{ active: boolean; title: string; onToggle: () => v
         }`}
       />
     </span>
-    {active ? "Live" : "Paused"}
+    {active ? t("live") : t("paused")}
   </button>
-);
+  );
+};
 
 const satisfactionTone = (rate: number) =>
   rate >= 80 ? "bg-emerald-500" : rate >= 50 ? "bg-amber-500" : "bg-rose-500";
@@ -91,14 +97,17 @@ const ChatbotCard: React.FC<ChatbotCardProps> = ({
   onToggleActive,
   index,
 }) => {
+  const t = useT(dashboardMessages);
+  const tc = useT(commonMessages);
+  const locale = dateLocale(t.lang);
   const isActive = chatbot.isActive ?? true;
   const isAiEnabled = chatbot.aiEnabled === true;
   const faqCount = Array.isArray(chatbot.faqData) ? chatbot.faqData.length : 0;
   const totalFeedback = feedback.positive + feedback.negative;
   const satisfactionRate =
     totalFeedback > 0 ? Math.round((feedback.positive / totalFeedback) * 100) : null;
-  const updatedLabel = formatDistanceToNowStrict(chatbot.lastUpdated, { addSuffix: true });
-  const updatedTitle = format(chatbot.lastUpdated, "MMM d, yyyy 'at' h:mm a");
+  const updatedLabel = formatDistanceToNowStrict(chatbot.lastUpdated, { addSuffix: true, locale });
+  const updatedTitle = format(chatbot.lastUpdated, tc("dateTimeFormat"), { locale });
 
   if (viewMode === "list") {
     return (
@@ -113,12 +122,12 @@ const ChatbotCard: React.FC<ChatbotCardProps> = ({
               <span className="mt-0.5 flex items-center gap-2 text-caption text-[#647184] dark:text-[#87909D]">
                 <span className="flex items-center gap-1">
                   <span className={`h-1.5 w-1.5 rounded-full ${isActive ? "bg-emerald-500" : "bg-[#87909D]"}`} />
-                  {isActive ? "Live" : "Paused"}
+                  {isActive ? t("live") : t("paused")}
                 </span>
                 {isAiEnabled && (
                   <span className="flex items-center gap-0.5 text-violet-600 dark:text-violet-300">
                     <Sparkles size={10} />
-                    AI
+                    {t("ai")}
                   </span>
                 )}
               </span>
@@ -127,7 +136,7 @@ const ChatbotCard: React.FC<ChatbotCardProps> = ({
         </td>
         <td className="hidden whitespace-nowrap px-4 py-3 sm:table-cell sm:px-6">
           {satisfactionRate === null ? (
-            <span className="text-caption text-[#87909D]">No ratings yet</span>
+            <span className="text-caption text-[#87909D]">{t("noRatingsYet")}</span>
           ) : (
             <div className="flex items-center gap-3">
               <div className="h-1.5 w-16 overflow-hidden rounded-full bg-[#E7EDF6] dark:bg-[#243040]">
@@ -140,7 +149,7 @@ const ChatbotCard: React.FC<ChatbotCardProps> = ({
                 {satisfactionRate}%
               </span>
               <span className="text-caption tabular-nums text-[#647184] dark:text-[#87909D]">
-                {totalFeedback} rating{totalFeedback === 1 ? "" : "s"}
+                {t.plural("ratingCount", totalFeedback)}
               </span>
             </div>
           )}
@@ -156,27 +165,27 @@ const ChatbotCard: React.FC<ChatbotCardProps> = ({
             <button
               onClick={() => onToggleActive(chatbot.id)}
               className={iconButton}
-              title={isActive ? "Pause" : "Go live"}
-              aria-label={isActive ? `Pause ${chatbot.title}` : `Activate ${chatbot.title}`}
+              title={isActive ? t("pause") : t("goLive")}
+              aria-label={t(isActive ? "pauseNamed" : "activateNamed", { name: chatbot.title })}
             >
               {isActive ? <Pause size={15} /> : <Play size={15} />}
             </button>
-            <button onClick={() => onEdit(chatbot.id)} className={iconButton} title="Edit" aria-label={`Edit ${chatbot.title}`}>
+            <button onClick={() => onEdit(chatbot.id)} className={iconButton} title={t("edit")} aria-label={t("editNamed", { name: chatbot.title })}>
               <Edit2 size={15} />
             </button>
             <button
               onClick={() => onEmbed(chatbot.id)}
               className={iconButton}
-              title="Embed code"
-              aria-label={`Embed code for ${chatbot.title}`}
+              title={t("embedTitle")}
+              aria-label={t("embedCodeNamed", { name: chatbot.title })}
             >
               <Code size={15} />
             </button>
             <button
               onClick={() => onDelete(chatbot.id)}
               className={`${iconButton} hover:!bg-red-50 hover:!text-red-600 dark:hover:!bg-red-950/30 dark:hover:!text-red-400`}
-              title="Delete"
-              aria-label={`Delete ${chatbot.title}`}
+              title={t("delete")}
+              aria-label={t("deleteNamed", { name: chatbot.title })}
             >
               <Trash2 size={15} />
             </button>
@@ -212,15 +221,15 @@ const ChatbotCard: React.FC<ChatbotCardProps> = ({
             >
               {chatbot.title}
             </button>
-            <p className="mt-0.5 flex items-center gap-2 text-caption text-[#647184] dark:text-[#87909D]">
-              <span className="flex items-center gap-1">
+            <p className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-caption text-[#647184] dark:text-[#87909D]">
+              <span className="flex items-center gap-1 whitespace-nowrap">
                 <MessageSquareText size={12} />
-                {faqCount} FAQ{faqCount === 1 ? "" : "s"}
+                {t.plural("faqCount", faqCount)}
               </span>
               {isAiEnabled && (
-                <span className="flex items-center gap-1 text-violet-600 dark:text-violet-300">
+                <span className="flex items-center gap-1 whitespace-nowrap text-violet-600 dark:text-violet-300">
                   <Sparkles size={11} />
-                  AI replies
+                  {t("aiReplies")}
                 </span>
               )}
             </p>
@@ -228,7 +237,7 @@ const ChatbotCard: React.FC<ChatbotCardProps> = ({
           <div className="flex shrink-0 items-center gap-1">
           <StatusSwitch active={isActive} title={chatbot.title} onToggle={() => onToggleActive(chatbot.id)} />
           <Menu as="div" className="relative -mr-1.5">
-            <Menu.Button className={iconButton} aria-label={`More actions for ${chatbot.title}`}>
+            <Menu.Button className={iconButton} aria-label={t("moreActionsNamed", { name: chatbot.title })}>
               <MoreHorizontal size={18} />
             </Menu.Button>
             <Menu.Items anchor="bottom end" modal={false} transition className="z-50 w-44 origin-top-right rounded-xl [--anchor-gap:6px] transition duration-100 ease-out data-[closed]:scale-95 data-[closed]:opacity-0 border border-[#D8DFE9] bg-[#F9FCFF] p-1.5 shadow-xl focus:outline-none dark:border-[#2B3646] dark:bg-[#1A2533]">
@@ -236,7 +245,7 @@ const ChatbotCard: React.FC<ChatbotCardProps> = ({
                   {({ active }) => (
                     <button onClick={() => onEdit(chatbot.id)} className={menuItem(active)}>
                       <Edit2 size={15} />
-                      Edit
+                      {t("edit")}
                     </button>
                   )}
                 </Menu.Item>
@@ -244,7 +253,7 @@ const ChatbotCard: React.FC<ChatbotCardProps> = ({
                   {({ active }) => (
                     <button onClick={() => onEmbed(chatbot.id)} className={menuItem(active)}>
                       <Code size={15} />
-                      Embed code
+                      {t("embedTitle")}
                     </button>
                   )}
                 </Menu.Item>
@@ -258,7 +267,7 @@ const ChatbotCard: React.FC<ChatbotCardProps> = ({
                       }`}
                     >
                       <Trash2 size={15} />
-                      Delete
+                      {t("delete")}
                     </button>
                   )}
                 </Menu.Item>
@@ -269,7 +278,7 @@ const ChatbotCard: React.FC<ChatbotCardProps> = ({
 
         <div className="mt-4">
           <div className="flex items-baseline justify-between">
-            <span className="text-caption font-medium text-[#566273] dark:text-[#9BAABD]">Satisfaction</span>
+            <span className="text-caption font-medium text-[#566273] dark:text-[#9BAABD]">{t("satisfaction")}</span>
             <span className="font-serif text-body-lg leading-none tabular-nums text-[#101723] dark:text-[#F3F7FC]">
               {satisfactionRate === null ? "—" : `${satisfactionRate}%`}
             </span>
@@ -293,23 +302,23 @@ const ChatbotCard: React.FC<ChatbotCardProps> = ({
                   <ThumbsDown size={11} className="text-rose-600 dark:text-rose-400" />
                   {feedback.negative}
                 </span>
-                <span className="ml-auto">{totalFeedback} ratings</span>
+                <span className="ml-auto">{t.plural("ratingCount", totalFeedback)}</span>
               </>
             ) : (
-              <span>No ratings yet</span>
+              <span>{t("noRatingsYet")}</span>
             )}
           </div>
         </div>
 
         <div className="mt-4 flex items-center gap-2 border-t border-[#E7EDF6] pt-3 dark:border-[#2B3646]">
           <span className="mr-auto truncate text-caption text-[#647184] dark:text-[#87909D]" title={updatedTitle}>
-            Updated {updatedLabel}
+            {t("updatedAgo", { time: updatedLabel })}
           </span>
           <button
             onClick={() => onEmbed(chatbot.id)}
             className={`inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-[#D8DFE9] text-[#566273] transition-colors hover:bg-[#F3F7FC] hover:text-[#101723] dark:border-[#2B3646] dark:text-[#9BAABD] dark:hover:bg-[#273444] dark:hover:text-[#D7DFE5] ${focusRing}`}
-            title="Embed code"
-            aria-label={`Embed code for ${chatbot.title}`}
+            title={t("embedTitle")}
+            aria-label={t("embedCodeNamed", { name: chatbot.title })}
           >
             <Code size={14} />
           </button>
@@ -317,7 +326,7 @@ const ChatbotCard: React.FC<ChatbotCardProps> = ({
             onClick={() => onEdit(chatbot.id)}
             className={`group/btn inline-flex h-8 shrink-0 items-center gap-1.5 rounded-lg bg-[#101723] px-3 text-button text-white shadow-sm transition-colors hover:bg-[#243040] dark:bg-[#D7DFE5] dark:text-[#141D2B] dark:hover:bg-[#E7EDF6] ${focusRing}`}
           >
-            Manage
+            {t("manage")}
             <ArrowRight size={14} className="transition-transform duration-200 group-hover/btn:translate-x-0.5" />
           </button>
         </div>

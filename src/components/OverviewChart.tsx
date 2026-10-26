@@ -10,6 +10,8 @@ import {
 } from "chart.js";
 import { BarChart3 } from "lucide-react";
 import { useSiteDarkMode } from "../utils/useSiteDarkMode";
+import { useT } from "../i18n";
+import { dashboardMessages } from "../i18n/messages/dashboard";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend);
 
@@ -34,6 +36,7 @@ const PALETTE = {
 const hasAny = (s: FeedbackSeries) => s.positive.some((v) => v > 0) || s.negative.some((v) => v > 0);
 
 const OverviewChart: React.FC<OverviewChartProps> = ({ byChatbot, overTime }) => {
+  const t = useT(dashboardMessages);
   const darkMode = useSiteDarkMode();
   const [mode, setMode] = useState<Mode>(() => (hasAny(overTime) ? "time" : "chatbot"));
   const colors = darkMode ? PALETTE.dark : PALETTE.light;
@@ -48,22 +51,20 @@ const OverviewChart: React.FC<OverviewChartProps> = ({ byChatbot, overTime }) =>
     <div className="flex h-full flex-col rounded-xl border border-[#D8DFE9] bg-[#F9FCFF] text-[#101723] shadow-[0_1px_2px_rgba(16,23,35,0.04)] dark:border-[#2B3646] dark:bg-[#1A2533] dark:text-[#D7DFE5]">
       <div className="flex flex-wrap items-start justify-between gap-3 px-5 pt-5 pb-2 sm:px-6">
         <div>
-          <h3 className="text-body font-semibold tracking-tight">Visitor feedback</h3>
+          <h3 className="text-body font-semibold tracking-tight">{t("chartTitle")}</h3>
           <p className="mt-0.5 text-body-sm text-[#566273] dark:text-[#9BAABD]">
-            {mode === "time"
-              ? `${total.toLocaleString()} rating${total === 1 ? "" : "s"} in the last 30 days`
-              : "All-time ratings for each chatbot"}
+            {mode === "time" ? t.plural("ratingsLast30", total) : t("allTimeByChatbot")}
           </p>
         </div>
         <div
           role="group"
-          aria-label="Chart view"
+          aria-label={t("chartView")}
           className="inline-flex rounded-lg border border-[#D8DFE9] bg-[#F3F7FC] p-0.5 text-caption font-medium dark:border-[#2B3646] dark:bg-[#141D2B]"
         >
           {(
             [
-              ["time", "Last 30 days"],
-              ["chatbot", "By chatbot"],
+              ["time", t("last30Days")],
+              ["chatbot", t("byChatbot")],
             ] as [Mode, string][]
           ).map(([id, label]) => (
             <button
@@ -85,11 +86,11 @@ const OverviewChart: React.FC<OverviewChartProps> = ({ byChatbot, overTime }) =>
         <div className="flex items-center gap-4 px-5 pb-1 text-caption text-[#566273] sm:px-6 dark:text-[#9BAABD]">
           <span className="flex items-center gap-1.5">
             <span className="h-2.5 w-2.5 rounded-sm" style={{ background: colors.positive }} />
-            Positive
+            {t("positive")}
           </span>
           <span className="flex items-center gap-1.5">
             <span className="h-2.5 w-2.5 rounded-sm" style={{ background: colors.negative }} />
-            Negative
+            {t("negative")}
           </span>
         </div>
       )}
@@ -101,14 +102,14 @@ const OverviewChart: React.FC<OverviewChartProps> = ({ byChatbot, overTime }) =>
                 labels: series.labels,
                 datasets: [
                   {
-                    label: "Positive",
+                    label: t("positive"),
                     data: series.positive,
                     backgroundColor: colors.positive,
                     borderRadius: stacked ? 2 : 4,
                     maxBarThickness: stacked ? 18 : 28,
                   },
                   {
-                    label: "Negative",
+                    label: t("negative"),
                     data: series.negative,
                     backgroundColor: colors.negative,
                     borderRadius: stacked ? 2 : 4,
@@ -119,6 +120,7 @@ const OverviewChart: React.FC<OverviewChartProps> = ({ byChatbot, overTime }) =>
               options={{
                 responsive: true,
                 maintainAspectRatio: false,
+                locale: t.lang,
                 interaction: { mode: "index", intersect: false },
                 plugins: {
                   legend: { display: false },
@@ -164,10 +166,10 @@ const OverviewChart: React.FC<OverviewChartProps> = ({ byChatbot, overTime }) =>
           <div className="flex h-[280px] flex-col items-center justify-center text-center lg:h-[320px]">
             <BarChart3 size={28} className="text-[#87909D]" strokeWidth={1.5} />
             <p className="mt-3 text-body-sm font-medium text-[#101723] dark:text-[#D7DFE5]">
-              {mode === "time" ? "No ratings in the last 30 days" : "No feedback yet"}
+              {mode === "time" ? t("noRatings30") : t("noFeedbackYet")}
             </p>
             <p className="mt-1 max-w-xs text-caption text-[#647184] dark:text-[#87909D]">
-              Ratings appear here once visitors give your chatbots a thumbs up or down.
+              {t("chartEmptyDesc")}
             </p>
           </div>
         )}
