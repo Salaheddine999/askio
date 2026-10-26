@@ -8,7 +8,7 @@ import type { Lang } from "..";
 //   `text`         inline code
 //   [label](/path) a link inside the app
 
-export type GuideId = "create" | "faqs" | "appearance" | "ai" | "leads" | "install" | "improve";
+export type GuideId = "create" | "faqs" | "appearance" | "ai" | "leads" | "install" | "improve" | "conversations" | "languages";
 
 export interface GuideContent {
   title: string;
@@ -114,6 +114,31 @@ export const docsContent: Record<Lang, DocsContent> = {
           "Download raw data from the {{Reports}} tab on the dashboard.",
         ],
         tip: "A quick weekly look at unanswered questions is the fastest way to make your chatbot more useful.",
+      },
+      conversations: {
+        title: "Read your conversations",
+        summary: "See every chat visitors had with your chatbot.",
+        linkLabel: "Open Conversations",
+        keywords: "conversations chat history transcript messages saved read visitors pro privacy 90 days delete",
+        steps: [
+          "Open the chatbot editor and, in the {{General}} tab, turn on {{Save conversations}} under {{Conversation history}}. Click {{Save changes}}. This is part of Pro.",
+          "From then on, each chat with that chatbot is saved. Visitors see a short notice in the chat that chats are saved.",
+          "Open [Conversations](/conversations) in the sidebar. Pick a chat to read it, or filter by chatbot when you have several.",
+          "Chats where the visitor left their email are marked, and the email is shown at the top so you can copy it.",
+        ],
+        tip: "Conversations are deleted automatically 90 days after the last message, and you can delete one yourself at any time. Mention saved chats in your own website's privacy notice.",
+      },
+      languages: {
+        title: "Chat in your visitors' language",
+        summary: "Pick each chatbot's language, and Askio's own.",
+        keywords: "language languages french dutch german spanish english translate multilingual locale",
+        steps: [
+          "In the chatbot editor, open {{General}} and choose the chatbot's {{Language}} under {{Conversation}}. The chat's built-in text, like the message box and the email form, appears in that language.",
+          "Switching the language also swaps the default welcome message and placeholder. Text you wrote yourself isn't changed, so translate your {{Welcome message}} and FAQs too.",
+          "With AI replies on, the chatbot answers each visitor in the language they write in.",
+          "To change the language of Askio itself, go to [Settings](/settings), then {{Appearance}}, then {{Language}}. It's saved on your account, so it follows you to every device.",
+        ],
+        tip: "Running a site in two languages? Make one chatbot per language and add each one to its version of the site.",
       },
     },
     faqs: [
@@ -228,6 +253,31 @@ export const docsContent: Record<Lang, DocsContent> = {
         ],
         tip: "Un coup d'œil hebdomadaire aux questions sans réponse est le moyen le plus rapide de rendre votre chatbot plus utile.",
       },
+      conversations: {
+        title: "Lire vos conversations",
+        summary: "Consultez chaque échange de vos visiteurs avec votre chatbot.",
+        linkLabel: "Ouvrir Conversations",
+        keywords: "conversations historique chat messages enregistrés lire visiteurs pro confidentialité 90 jours supprimer",
+        steps: [
+          "Ouvrez l'éditeur du chatbot et, dans l'onglet {{Général}}, activez {{Enregistrer les conversations}} sous {{Historique des conversations}}. Cliquez sur {{Enregistrer}}. Cette fonction fait partie de Pro.",
+          "À partir de là, chaque échange avec ce chatbot est enregistré. Les visiteurs voient un court avis dans le chat.",
+          "Ouvrez [Conversations](/conversations) dans la barre latérale. Choisissez un échange pour le lire, ou filtrez par chatbot si vous en avez plusieurs.",
+          "Les échanges où le visiteur a laissé son e-mail sont signalés, et l'e-mail s'affiche en haut pour que vous puissiez le copier.",
+        ],
+        tip: "Les conversations sont supprimées automatiquement 90 jours après le dernier message, et vous pouvez en supprimer une à tout moment. Mentionnez l'enregistrement des chats dans la politique de confidentialité de votre site.",
+      },
+      languages: {
+        title: "Parler la langue de vos visiteurs",
+        summary: "Choisissez la langue de chaque chatbot, et celle d'Askio.",
+        keywords: "langue langues français néerlandais allemand espagnol anglais traduire multilingue",
+        steps: [
+          "Dans l'éditeur, ouvrez {{Général}} et choisissez la {{Langue}} du chatbot sous {{Conversation}}. Les textes intégrés du chat, comme le champ de message et le formulaire d'e-mail, s'affichent dans cette langue.",
+          "Changer de langue remplace aussi le message d'accueil et le texte indicatif par défaut. Les textes que vous avez écrits ne changent pas : traduisez aussi votre {{Message d'accueil}} et vos questions.",
+          "Avec les réponses IA activées, le chatbot répond à chaque visiteur dans la langue où il écrit.",
+          "Pour changer la langue d'Askio, allez dans [Paramètres](/settings), puis {{Apparence}}, puis {{Langue}}. Elle est enregistrée sur votre compte et vous suit sur tous vos appareils.",
+        ],
+        tip: "Votre site existe en deux langues ? Créez un chatbot par langue et ajoutez chacun à la version correspondante du site.",
+      },
     },
     faqs: [
       {
@@ -340,6 +390,31 @@ export const docsContent: Record<Lang, DocsContent> = {
           "Download ruwe gegevens via het tabblad {{Rapporten}} op het dashboard.",
         ],
         tip: "Elke week even naar de onbeantwoorde vragen kijken is de snelste manier om je chatbot nuttiger te maken.",
+      },
+      conversations: {
+        title: "Je gesprekken lezen",
+        summary: "Bekijk elke chat die bezoekers met je chatbot voerden.",
+        linkLabel: "Gesprekken openen",
+        keywords: "gesprekken geschiedenis chat berichten opgeslagen lezen bezoekers pro privacy 90 dagen verwijderen",
+        steps: [
+          "Open de chatbot-editor en zet in het tabblad {{Algemeen}} {{Gesprekken opslaan}} aan onder {{Gespreksgeschiedenis}}. Klik op {{Wijzigingen opslaan}}. Dit hoort bij Pro.",
+          "Vanaf dan wordt elke chat met die chatbot opgeslagen. Bezoekers zien een korte melding in de chat.",
+          "Open [Gesprekken](/conversations) in de zijbalk. Kies een chat om hem te lezen, of filter op chatbot als je er meerdere hebt.",
+          "Chats waarin de bezoeker een e-mailadres achterliet, zijn gemarkeerd, en het adres staat bovenaan zodat je het kunt kopiëren.",
+        ],
+        tip: "Gesprekken worden automatisch verwijderd 90 dagen na het laatste bericht, en je kunt er zelf altijd een verwijderen. Vermeld opgeslagen chats in de privacyverklaring van je eigen website.",
+      },
+      languages: {
+        title: "Chat in de taal van je bezoekers",
+        summary: "Kies de taal van elke chatbot, en die van Askio.",
+        keywords: "taal talen frans nederlands duits spaans engels vertalen meertalig",
+        steps: [
+          "Open in de editor {{Algemeen}} en kies de {{Taal}} van de chatbot onder {{Gesprek}}. De vaste teksten in de chat, zoals het berichtvak en het e-mailformulier, verschijnen in die taal.",
+          "Als je de taal wisselt, worden ook het standaard welkomstbericht en de voorbeeldtekst aangepast. Teksten die je zelf schreef blijven staan, dus vertaal ook je {{Welkomstbericht}} en vragen.",
+          "Met AI-antwoorden aan antwoordt de chatbot elke bezoeker in de taal waarin die schrijft.",
+          "Wil je de taal van Askio zelf wijzigen? Ga naar [Instellingen](/settings), dan {{Weergave}}, dan {{Taal}}. Die wordt op je account bewaard en volgt je naar elk apparaat.",
+        ],
+        tip: "Heeft je site twee talen? Maak per taal een chatbot en zet elke chatbot op de bijbehorende versie van je site.",
       },
     },
     faqs: [
@@ -454,6 +529,31 @@ export const docsContent: Record<Lang, DocsContent> = {
         ],
         tip: "Ein kurzer wöchentlicher Blick auf unbeantwortete Fragen ist der schnellste Weg, Ihren Chatbot nützlicher zu machen.",
       },
+      conversations: {
+        title: "Gespräche lesen",
+        summary: "Sehen Sie jeden Chat Ihrer Besucher mit Ihrem Chatbot.",
+        linkLabel: "Gespräche öffnen",
+        keywords: "gespräche verlauf chat nachrichten gespeichert lesen besucher pro datenschutz 90 tage löschen",
+        steps: [
+          "Öffnen Sie den Chatbot-Editor und aktivieren Sie im Tab {{Allgemein}} unter {{Gesprächsverlauf}} die Option {{Gespräche speichern}}. Klicken Sie auf {{Änderungen speichern}}. Das ist Teil von Pro.",
+          "Ab dann wird jeder Chat mit diesem Chatbot gespeichert. Besucher sehen im Chat einen kurzen Hinweis.",
+          "Öffnen Sie [Gespräche](/conversations) in der Seitenleiste. Wählen Sie einen Chat zum Lesen aus, oder filtern Sie nach Chatbot, wenn Sie mehrere haben.",
+          "Chats, in denen der Besucher seine E-Mail-Adresse hinterlassen hat, sind markiert, und die Adresse steht oben zum Kopieren.",
+        ],
+        tip: "Gespräche werden 90 Tage nach der letzten Nachricht automatisch gelöscht, und Sie können jedes jederzeit selbst löschen. Erwähnen Sie gespeicherte Chats in der Datenschutzerklärung Ihrer Website.",
+      },
+      languages: {
+        title: "In der Sprache Ihrer Besucher chatten",
+        summary: "Wählen Sie die Sprache jedes Chatbots und die von Askio.",
+        keywords: "sprache sprachen französisch niederländisch deutsch spanisch englisch übersetzen mehrsprachig",
+        steps: [
+          "Öffnen Sie im Editor {{Allgemein}} und wählen Sie unter {{Gespräch}} die {{Sprache}} des Chatbots. Die festen Texte im Chat, etwa das Nachrichtenfeld und das E-Mail-Formular, erscheinen in dieser Sprache.",
+          "Beim Wechsel der Sprache werden auch die Standard-Begrüßungsnachricht und der Platzhalter angepasst. Selbst geschriebene Texte bleiben, übersetzen Sie also auch Ihre {{Begrüßungsnachricht}} und Fragen.",
+          "Mit KI-Antworten antwortet der Chatbot jedem Besucher in der Sprache, in der er schreibt.",
+          "Die Sprache von Askio selbst ändern Sie unter [Einstellungen](/settings), dann {{Darstellung}}, dann {{Sprache}}. Sie wird in Ihrem Konto gespeichert und gilt auf allen Geräten.",
+        ],
+        tip: "Ihre Website gibt es in zwei Sprachen? Erstellen Sie pro Sprache einen Chatbot und binden Sie jeden in die passende Version ein.",
+      },
     },
     faqs: [
       {
@@ -566,6 +666,31 @@ export const docsContent: Record<Lang, DocsContent> = {
           "Descarga los datos sin procesar desde la pestaña {{Informes}} del panel.",
         ],
         tip: "Revisar cada semana las preguntas sin respuesta es la forma más rápida de que tu chatbot sea más útil.",
+      },
+      conversations: {
+        title: "Leer tus conversaciones",
+        summary: "Mira cada chat de tus visitantes con tu chatbot.",
+        linkLabel: "Abrir Conversaciones",
+        keywords: "conversaciones historial chat mensajes guardados leer visitantes pro privacidad 90 días eliminar",
+        steps: [
+          "Abre el editor del chatbot y, en la pestaña {{General}}, activa {{Guardar conversaciones}} en {{Historial de conversaciones}}. Haz clic en {{Guardar cambios}}. Forma parte de Pro.",
+          "A partir de entonces, cada chat con ese chatbot se guarda. Los visitantes ven un breve aviso en el chat.",
+          "Abre [Conversaciones](/conversations) en la barra lateral. Elige un chat para leerlo, o filtra por chatbot si tienes varios.",
+          "Los chats en los que el visitante dejó su correo aparecen marcados, y el correo se muestra arriba para que puedas copiarlo.",
+        ],
+        tip: "Las conversaciones se eliminan automáticamente 90 días después del último mensaje, y puedes eliminar cualquiera cuando quieras. Menciona los chats guardados en la política de privacidad de tu web.",
+      },
+      languages: {
+        title: "Chatea en el idioma de tus visitantes",
+        summary: "Elige el idioma de cada chatbot y el de Askio.",
+        keywords: "idioma idiomas francés neerlandés alemán español inglés traducir multilingüe",
+        steps: [
+          "En el editor, abre {{General}} y elige el {{Idioma}} del chatbot en {{Conversación}}. Los textos propios del chat, como el cuadro de mensaje y el formulario de correo, aparecen en ese idioma.",
+          "Al cambiar el idioma también se cambian el mensaje de bienvenida y el texto de ejemplo por defecto. Lo que escribiste tú no cambia, así que traduce también tu {{Mensaje de bienvenida}} y tus preguntas.",
+          "Con las respuestas de IA activadas, el chatbot responde a cada visitante en el idioma en que escribe.",
+          "Para cambiar el idioma de Askio, ve a [Ajustes](/settings), luego {{Apariencia}} y luego {{Idioma}}. Se guarda en tu cuenta y te sigue en todos tus dispositivos.",
+        ],
+        tip: "¿Tu web está en dos idiomas? Crea un chatbot por idioma y añade cada uno a su versión de la web.",
       },
     },
     faqs: [

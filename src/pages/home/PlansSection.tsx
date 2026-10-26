@@ -178,6 +178,7 @@ export default function PlansSection() {
                 "Custom colors and greeting",
                 "Capture visitor contact details",
                 "Basic chatbot analytics",
+                "Chat in English, French, Dutch, German and Spanish",
               ]}
             />
 
@@ -203,6 +204,7 @@ export default function PlansSection() {
                 "Deep crawl your website",
                 "Up to 10 AI-enabled chatbots",
                 `${PRO_AI_REPLY_LIMIT.toLocaleString("en-US")} AI replies every month`,
+                "Read every conversation, kept 90 days",
               ]}
             />
 

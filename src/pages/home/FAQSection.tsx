@@ -9,6 +9,8 @@ const faqs = [
   { q: "Does Askio have a free plan?", a: "Yes. Askio includes a free Starter plan with unlimited standard chatbots, a manual FAQ builder, lead capture flows, and basic analytics. If you need AI features, the Professional plan is $39/month, or $390/year (two months free), and Enterprise pricing is available for larger teams." },
   { q: "Do I have control over where the chatbot appears?", a: "Absolutely. You can choose where you want the chatbot to appear on your website, giving you full control over its placement and visibility." },
   { q: "Do I need coding skills?", a: "No coding skills are required. The chatbot is designed to be easy to implement with a simple embed code, making it accessible for users of all technical levels." },
+  { q: "Which languages does Askio speak?", a: "Your chatbot's built-in text, like the message box and email form, comes in English, French, Dutch, German and Spanish, and you pick the language per chatbot. With AI replies on, it answers each visitor in the language they write in. The Askio dashboard is available in the same five languages." },
+  { q: "Can I read my chatbot's conversations?", a: "Yes, on Pro. Turn on \"Save conversations\" for a chatbot and every chat appears in your Conversations page, so you can see what visitors ask and improve your answers. Visitors see a short notice that chats are saved, and each conversation is deleted automatically after 90 days." },
   { q: "Can I create multiple chatbots?", a: "Yes, you can create multiple chatbots, allowing you to have different chatbots for your various websites or web pages, each tailored to specific needs." },
 ];
 

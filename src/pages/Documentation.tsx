@@ -18,6 +18,8 @@ import {
   SearchX,
   Sparkles,
   UserPlus,
+  Languages,
+  MessagesSquare,
 } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { EmptyState, SearchInput, focusRing, surface } from "./dashboard/ui";
@@ -39,6 +41,8 @@ const GUIDE_ORDER: { id: GuideId; icon: LucideIcon; to?: string }[] = [
   { id: "leads", icon: UserPlus },
   { id: "install", icon: Blocks, to: "/integrations" },
   { id: "improve", icon: BarChart3, to: "/analytics" },
+  { id: "conversations", icon: MessagesSquare, to: "/conversations" },
+  { id: "languages", icon: Languages },
 ];
 
 const Field: React.FC<{ children: React.ReactNode }> = ({ children }) => (

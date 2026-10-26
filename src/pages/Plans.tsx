@@ -182,6 +182,7 @@ const Plans: React.FC = () => {
                   "Manual FAQ builder",
                   "Lead capture flows",
                   "Basic chatbot analytics",
+                  "Widget in 5 languages",
                   "No AI-generated replies",
                 ]}
               />
@@ -214,6 +215,7 @@ const Plans: React.FC = () => {
                   "Deep site crawl for richer FAQs",
                   "Up to 10 AI-enabled chatbots",
                   `${PRO_AI_REPLY_LIMIT.toLocaleString("en-US")} AI replies every month`,
+                  "Conversation history, kept 90 days",
                   "Faster premium setup workflow",
                 ]}
               />

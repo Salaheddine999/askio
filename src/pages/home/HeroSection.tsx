@@ -17,11 +17,11 @@ export default function HeroSection() {
         className="max-w-[920px] px-4"
       >
         <a
-          href="#kio"
+          href="#plans"
           className="group mb-6 inline-flex items-center gap-2 rounded-full border border-[#D8DFE9] bg-[#F9FCFF]/80 py-1 pl-1 pr-3 text-xs font-medium text-[#566273] transition-colors duration-200 hover:border-[#B8C2CF] hover:text-[#101723] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#87909D] dark:border-[#2B3646] dark:bg-[#1A2533]/80 dark:text-[#9BAABD] dark:hover:text-[#D7DFE5]"
         >
           <span className="rounded-full bg-[#101723] px-2 py-0.5 text-[11px] font-semibold text-white dark:bg-[#D7DFE5] dark:text-[#141D2B]">New</span>
-          Meet Kio, our new chat launcher
+          Now in 5 languages, with conversation history
           <ArrowRight className="h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-x-0.5 motion-reduce:transform-none" />
         </a>
         <h1 className="text-[2.25rem] sm:text-[clamp(2.5rem,5vw,4rem)] font-serif leading-[1.08] tracking-[-0.025em] [text-wrap:balance] text-[#101723] dark:text-[#D7DFE5] mb-5">
