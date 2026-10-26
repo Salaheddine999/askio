@@ -5,251 +5,223 @@ import { Helmet } from "react-helmet-async";
 import { redirectToProCheckout } from "../utils/billing";
 import { auth } from "../utils/firebase";
 import BillingToggle from "../components/BillingToggle";
+import { usePlanAccess } from "../hooks/usePlanAccess";
+import { COMPANY } from "./legal/company";
+import { focusRing } from "./dashboard/styles";
 import { PRO_AI_REPLY_LIMIT, PRO_PRICE, proYearlyMonthlyEquivalent, type BillingInterval } from "../utils/pricing";
+import { useT } from "../i18n";
+import { plansMessages } from "../i18n/messages/plans";
+
+type Cta =
+  | { label: string; to: string }
+  | { label: string; href: string }
+  | { label: string; onClick: () => void }
+  | { label: string; current: true }
+  | null;
 
 type PlanCardProps = {
-  title: string;
+  name: string;
   description: string;
   price: string;
   priceSuffix?: string;
-  subtext: string;
-  ctaLabel: string;
-  ctaHref: string;
-  ctaAction?: (() => void) | null;
+  note?: string;
+  cta: Cta;
   features: string[];
   featured?: boolean;
-  featuredLabel?: string;
-  external?: boolean;
+  badge?: string;
 };
 
-function PlanCard({
-  title,
-  description,
-  price,
-  priceSuffix,
-  subtext,
-  ctaLabel,
-  ctaHref,
-  ctaAction,
-  features,
-  featured = false,
-  featuredLabel,
-  external = false,
-}: PlanCardProps) {
-  const cardClass = featured
-    ? "bg-[#101723] text-white dark:bg-[#243040] dark:text-[#D7DFE5]"
-    : "bg-[#F3F7FC] text-[#101723] dark:bg-[#141D2B] dark:text-[#D7DFE5]";
+function PlanCard({ name, description, price, priceSuffix, note, cta, features, featured = false, badge }: PlanCardProps) {
+  const muted = featured ? "text-white/70 dark:text-[#9BAABD]" : "text-[#566273] dark:text-[#9BAABD]";
+  const button = `mt-5 inline-flex h-9 w-full items-center justify-center gap-1.5 rounded-lg text-button transition-colors ${focusRing} ${
+    featured
+      ? "bg-[#F9FCFF] text-[#101723] hover:bg-[#E7EDF6]"
+      : "bg-[#101723] text-white hover:bg-[#243040] dark:bg-[#D7DFE5] dark:text-[#141D2B] dark:hover:bg-[#E7EDF6]"
+  }`;
+  const arrow = <ArrowRight className="h-4 w-4" />;
 
-  const mutedClass = featured
-    ? "text-[rgba(255,255,255,0.72)] dark:text-[#D7DFE5]"
-    : "text-[#566273] dark:text-[#9BAABD]";
-
-  const buttonClass = featured
-    ? "bg-[#F9FCFF] text-[#101723] hover:bg-[#E7EDF6]"
-    : "bg-[#101723] text-white hover:bg-[#243040] dark:bg-[#D7DFE5] dark:text-[#141D2B] dark:hover:bg-[#E7EDF6]";
-
-  const featureClass = featured
-    ? "text-[rgba(255,255,255,0.86)] dark:text-[#E7EDF6]"
-    : "text-[#566273] dark:text-[#D7DFE5]";
-
-  const checkClass = featured
-    ? "text-[#D7DFE5]"
-    : "text-[#87909D] dark:text-[#9BAABD]";
-
-  const buttonContent = (
-    <>
-      {ctaLabel}
-      <ArrowRight className="ml-2 h-4 w-4" />
-    </>
-  );
+  let action: React.ReactNode = <div className="mt-5 h-9" aria-hidden />;
+  if (cta && "current" in cta) {
+    action = (
+      <div
+        className={`mt-5 inline-flex h-9 w-full items-center justify-center gap-1.5 rounded-lg text-button ring-1 ring-inset ${
+          featured ? "text-white/80 ring-white/20" : "text-[#566273] ring-[#D8DFE9] dark:text-[#9BAABD] dark:ring-[#2B3646]"
+        }`}
+      >
+        <Check className="h-4 w-4" />
+        {cta.label}
+      </div>
+    );
+  } else if (cta && "onClick" in cta) {
+    action = (
+      <button type="button" onClick={cta.onClick} className={button}>
+        {cta.label}
+        {arrow}
+      </button>
+    );
+  } else if (cta && "href" in cta) {
+    action = (
+      <a href={cta.href} className={button}>
+        {cta.label}
+        {arrow}
+      </a>
+    );
+  } else if (cta) {
+    action = (
+      <Link to={cta.to} className={button}>
+        {cta.label}
+        {arrow}
+      </Link>
+    );
+  }
 
   return (
     <div
-      className={`min-h-full p-6 sm:p-7 lg:p-8 border-b lg:border-b-0 lg:border-r last:border-r-0 border-[rgba(16,23,35,0.12)] dark:border-[#2B3646] ${cardClass}`}
+      className={`flex flex-col rounded-xl p-6 ring-1 ${
+        featured
+          ? "bg-[#101723] text-white ring-[#101723] dark:bg-[#243040] dark:text-[#E7EDF6] dark:ring-[#39485B]"
+          : "bg-[#F9FCFF] text-[#101723] ring-[#D8DFE9] dark:bg-[#1A2533] dark:text-[#D7DFE5] dark:ring-[#2B3646]"
+      }`}
     >
-      <div className="max-w-[290px] mx-auto lg:mx-0">
-        <div className="flex items-end justify-between gap-3">
-          <h3 className="text-[30px] leading-none font-serif">{title}</h3>
-          {featured && featuredLabel ? (
-            <p className="shrink-0 rounded-full border border-[#D7DFE5]/30 bg-[#D7DFE5]/12 px-2.5 py-1 text-[10px] font-medium tracking-[0.02em] text-[#D7DFE5] dark:border-[#D7DFE5]/20 dark:bg-[#D7DFE5]/10 dark:text-[#F3F7FC]">
-              {featuredLabel}
-            </p>
-          ) : null}
-        </div>
-        <p className={`mt-4 text-[15px] leading-6 ${mutedClass}`}>{description}</p>
-
-        <div className="mt-12">
-          <div className="flex items-end gap-1">
-            <span className="text-[58px] leading-none font-serif tracking-tight">{price}</span>
-            {priceSuffix ? (
-              <span className={`mb-2 text-[16px] font-medium ${mutedClass}`}>{priceSuffix}</span>
-            ) : null}
-          </div>
-          <p className={`mt-3 text-[15px] font-medium ${mutedClass}`}>{subtext}</p>
-        </div>
-
-        {ctaAction ? (
-          <button
-            onClick={ctaAction}
-            className={`mt-10 inline-flex h-10 w-full items-center justify-center rounded-full text-[15px] font-medium transition-all duration-200 ${buttonClass}`}
+      <div className="flex items-center justify-between gap-3">
+        <h2 className="text-body-lg font-semibold">{name}</h2>
+        {badge && (
+          <span
+            className={`shrink-0 rounded-full px-2.5 py-0.5 text-[11px] font-medium ${
+              featured ? "bg-white/10 text-white/90" : "bg-[#E7EDF6] text-[#566273] dark:bg-[#273444] dark:text-[#9BAABD]"
+            }`}
           >
-            {buttonContent}
-          </button>
-        ) : external ? (
-          <a
-            href={ctaHref}
-            className={`mt-10 inline-flex h-10 w-full items-center justify-center rounded-full text-[15px] font-medium transition-all duration-200 ${buttonClass}`}
-          >
-            {buttonContent}
-          </a>
-        ) : (
-          <Link
-            to={ctaHref}
-            className={`mt-10 inline-flex h-10 w-full items-center justify-center rounded-full text-[15px] font-medium transition-all duration-200 ${buttonClass}`}
-          >
-            {buttonContent}
-          </Link>
+            {badge}
+          </span>
         )}
-
-        <div className="mt-12 space-y-3.5">
-          {features.map((feature) => (
-            <div
-              key={feature}
-              className={`flex items-start gap-3 text-[15px] leading-7 ${featureClass}`}
-            >
-              <Check
-                className={`h-4 w-4 mt-[7px] shrink-0 ${checkClass}`}
-                strokeWidth={2.5}
-              />
-              <span>{feature}</span>
-            </div>
-          ))}
-        </div>
       </div>
+      <p className={`mt-1.5 min-h-[2.5rem] text-body-sm ${muted}`}>{description}</p>
+
+      <div className="mt-5 flex h-9 items-baseline gap-1">
+        <span className="font-serif text-[36px] leading-none tracking-tight">{price}</span>
+        {priceSuffix && <span className={`text-body-sm ${muted}`}>{priceSuffix}</span>}
+      </div>
+      <p className={`mt-1.5 min-h-[1.25rem] text-caption ${muted}`}>{note}</p>
+
+      {action}
+
+      <div className={`my-6 h-px ${featured ? "bg-white/10" : "bg-[#E7EDF6] dark:bg-[#2B3646]"}`} />
+
+      <ul className="space-y-2.5">
+        {features.map((feature) => (
+          <li key={feature} className={`flex items-start gap-2.5 text-body-sm ${featured ? "text-white/85 dark:text-[#D7DFE5]" : "text-[#566273] dark:text-[#D7DFE5]"}`}>
+            <Check
+              className={`mt-[3px] h-4 w-4 shrink-0 ${featured ? "text-white/70" : "text-[#87909D] dark:text-[#9BAABD]"}`}
+              strokeWidth={2.5}
+            />
+            <span>{feature}</span>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
 
 const Plans: React.FC = () => {
+  const t = useT(plansMessages);
   const isAuthenticated = Boolean(auth.currentUser);
+  const { plan, loading: planLoading } = usePlanAccess();
   const [billingInterval, setBillingInterval] = useState<BillingInterval>("monthly");
   const yearly = billingInterval === "yearly";
+  const onPaidPlan = isAuthenticated && plan !== "free";
+
+  // What each card offers depends on who's looking: signed-out visitors sign
+  // up, Free owners upgrade, Pro owners manage billing. Nothing shows until the
+  // plan is known, so the buttons don't flicker.
+  const known = !isAuthenticated || !planLoading;
+  const starterCta: Cta = !known
+    ? null
+    : !isAuthenticated
+      ? { label: t("startFree"), to: "/auth" }
+      : onPaidPlan
+        ? null
+        : { label: t("currentPlan"), current: true };
+  const proCta: Cta = !known
+    ? null
+    : !isAuthenticated
+      ? { label: t("upgrade"), to: yearly ? "/auth?next=pro-checkout&interval=yearly" : "/auth?next=pro-checkout" }
+      : onPaidPlan
+        ? { label: t("manageBilling"), to: "/settings" }
+        : { label: t("upgrade"), onClick: () => void redirectToProCheckout(billingInterval) };
 
   return (
-    <div className="min-h-screen bg-[#F3F7FC] dark:bg-[#141D2B] text-[#101723] dark:text-[#D7DFE5]">
+    <div className="min-h-screen bg-[#F3F7FC] text-[#101723] dark:bg-[#141D2B] dark:text-[#D7DFE5]">
       <Helmet>
-        <title>Plans | Askio</title>
-        <meta
-          name="description"
-          content="Compare Askio plans and choose the right setup for your chatbots."
-        />
+        <title>{`${t("title")} | Askio`}</title>
+        <meta name="description" content="Compare Askio plans and choose the right setup for your chatbots." />
       </Helmet>
 
-      <div className="max-w-[1060px] mx-auto px-4 sm:px-6 lg:px-0 py-12 sm:py-16">
-        <div className="text-center max-w-2xl mx-auto px-4">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-[#F9FCFF] dark:bg-[#1A2533] shadow-[0px_0px_0px_4px_rgba(16,23,35,0.05)] rounded-full border border-[rgba(2,6,23,0.08)] dark:border-[#2B3646]">
-            <div className="w-2 h-2 rounded-full bg-[#101723] dark:bg-[#D7DFE5]" />
-            <span className="text-[#101723] dark:text-[#D7DFE5] text-caption font-medium">
-              Plans
-            </span>
+      <div className="mx-auto w-full max-w-[1060px] px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
+        <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <h1 className="font-serif text-h2 tracking-tight sm:text-h1">{t("title")}</h1>
+            <p className="mt-1 max-w-2xl text-body-sm text-[#566273] dark:text-[#9BAABD]">{t("subtitle")}</p>
           </div>
+          <div className="shrink-0">
+            <BillingToggle
+              value={billingInterval}
+              onChange={setBillingInterval}
+              layoutId="plans-billing-toggle"
+              labels={{ monthly: t("monthly"), yearly: t("yearly"), savings: t("savings"), group: t("billingPeriod") }}
+            />
+          </div>
+        </header>
 
-          <h1 className="mt-5 text-4xl sm:text-5xl lg:text-[56px] font-serif tracking-tight text-[#101723] dark:text-[#D7DFE5]">
-            Pick the right Askio setup
-          </h1>
-          <p className="mt-4 text-[#566273] dark:text-[#9BAABD] text-base sm:text-lg leading-relaxed">
-            Unlimited manual chatbots for everyone, with AI reserved for teams
-            that need smarter automation.
-          </p>
-          <div className="mt-8">
-            <BillingToggle value={billingInterval} onChange={setBillingInterval} layoutId="plans-billing-toggle" />
-          </div>
+        <div className="mt-6 grid gap-4 lg:grid-cols-3">
+          <PlanCard
+            name="Starter"
+            description={t("starterDesc")}
+            price="$0"
+            priceSuffix={t("perMonth")}
+            cta={starterCta}
+            features={[t("starterF1"), t("starterF2"), t("starterF3"), t("starterF4"), t("starterF5")]}
+          />
+          <PlanCard
+            name="Pro"
+            description={t("proDesc")}
+            price={`$${yearly ? PRO_PRICE.yearly : PRO_PRICE.monthly}`}
+            priceSuffix={yearly ? t("perYear") : t("perMonth")}
+            note={yearly ? t("yearlyNote", { price: proYearlyMonthlyEquivalent() }) : undefined}
+            cta={proCta}
+            featured
+            badge={onPaidPlan ? t("currentPlan") : t("mostPopular")}
+            features={[
+              t("proF1"),
+              t("proF2"),
+              t("proF3"),
+              t("proF4"),
+              t("proF5"),
+              t("proF6", { count: PRO_AI_REPLY_LIMIT.toLocaleString(t.lang) }),
+              t("proF7"),
+            ]}
+          />
+          <PlanCard
+            name="Enterprise"
+            description={t("enterpriseDesc")}
+            price={t("custom")}
+            cta={{
+              label: t("talkToSales"),
+              href: `mailto:${COMPANY.contactEmail}?subject=${encodeURIComponent("Askio Enterprise plan")}`,
+            }}
+            features={[t("entF1"), t("entF2"), t("entF3"), t("entF4"), t("entF5"), t("entF6")]}
+          />
         </div>
 
-        <div className="mt-12 border-t border-b border-[rgba(16,23,35,0.12)] dark:border-[#2B3646]">
-          <div className="border-t border-l border-r border-[rgba(16,23,35,0.12)] dark:border-[#2B3646]">
-            <div className="grid grid-cols-1 lg:grid-cols-3">
-              <PlanCard
-                title="Starter"
-                description="Unlimited manual chatbots for getting started."
-                price="$0"
-                priceSuffix="/month"
-                subtext="Best for simple, manual chatbot setups."
-                ctaLabel="Start free"
-                ctaHref="/auth"
-                features={[
-                  "Unlimited standard chatbots",
-                  "Manual FAQ builder",
-                  "Lead capture flows",
-                  "Basic chatbot analytics",
-                  "Widget in 5 languages",
-                  "No AI-generated replies",
-                ]}
-              />
-
-              <PlanCard
-                title="Professional"
-                description="AI tools for teams that need faster setup."
-                price={`$${yearly ? PRO_PRICE.yearly : PRO_PRICE.monthly}`}
-                priceSuffix={yearly ? "/year" : "/month"}
-                subtext={
-                  yearly
-                    ? `${proYearlyMonthlyEquivalent()}/month, billed yearly.`
-                    : "Best for AI-powered chatbot creation and growth."
-                }
-                ctaLabel="Upgrade to Pro"
-                ctaHref={yearly ? "/auth?next=pro-checkout&interval=yearly" : "/auth?next=pro-checkout"}
-                ctaAction={
-                  isAuthenticated
-                    ? () => {
-                        void redirectToProCheckout(billingInterval);
-                      }
-                    : null
-                }
-                featured
-                featuredLabel="Most Popular"
-                features={[
-                  "Everything in Starter",
-                  "AI FAQ generation",
-                  "AI persona customization",
-                  "Deep site crawl for richer FAQs",
-                  "Up to 10 AI-enabled chatbots",
-                  `${PRO_AI_REPLY_LIMIT.toLocaleString("en-US")} AI replies every month`,
-                  "Conversation history, kept 90 days",
-                  "Faster premium setup workflow",
-                ]}
-              />
-
-              <PlanCard
-                title="Enterprise"
-                description="Custom setup for larger organizations."
-                price="Custom"
-                subtext="Best for teams that need custom rollout and support."
-                ctaLabel="Talk to sales"
-                ctaHref="mailto:abw.salaheddine@gmail.com?subject=Askio%20Enterprise%20Plan"
-                external
-                features={[
-                  "Everything in Professional",
-                  "More than 10 AI chatbots",
-                  "Custom AI reply limits",
-                  "Custom onboarding support",
-                  "Priority coordination",
-                  "Tailored rollout for larger teams",
-                  "Custom agreements on request",
-                ]}
-              />
-            </div>
+        {!isAuthenticated && (
+          <div className="mt-8 text-center">
+            <Link
+              to="/"
+              className={`inline-flex items-center rounded text-body-sm font-medium text-[#566273] hover:text-[#101723] dark:text-[#9BAABD] dark:hover:text-[#D7DFE5] ${focusRing}`}
+            >
+              {t("backHome")}
+            </Link>
           </div>
-        </div>
-
-        <div className="mt-10 text-center">
-          <Link
-            to="/"
-            className="inline-flex items-center text-sm font-medium text-[#566273] dark:text-[#9BAABD] hover:text-[#101723] dark:hover:text-[#D7DFE5]"
-          >
-            Back to home
-          </Link>
-        </div>
+        )}
       </div>
     </div>
   );
