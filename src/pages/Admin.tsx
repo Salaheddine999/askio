@@ -1,164 +1,85 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import React, { useCallback, useEffect, useState } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
-import { format, formatDistanceToNowStrict } from "date-fns";
-import type { QueryDocumentSnapshot } from "firebase/firestore";
-import { Bot, Ban, RefreshCw, ShieldCheck, Sparkles, UserPlus, Users } from "lucide-react";
-import StatsCard from "../components/StatsCard";
-import { PageSkeleton, Skeleton } from "../components/Skeleton";
+import { RefreshCw, ShieldCheck } from "lucide-react";
+import { PageSkeleton } from "../components/Skeleton";
 import { useIsAdmin } from "../hooks/useIsAdmin";
-import { EmptyState, Pagination, SearchInput, focusRing, secondaryButton, surface } from "./dashboard/ui";
+import { EmptyState, focusRing, secondaryButton } from "./dashboard/ui";
 import {
   AdminUser,
   LogEntry,
   Overview,
   UsageRow,
   fetchLog,
+  fetchNewestAccounts,
   fetchOverview,
   fetchTopUsage,
-  PAGE_SIZE,
-  countUsers,
-  fetchUsersAfter,
-  toAdminUser,
 } from "./admin/data";
 import AccountPanel from "./admin/AccountPanel";
-import { PlanBadge, UsageBar } from "./admin/parts";
+import OverviewTab, { type AdminTab } from "./admin/OverviewTab";
+import AccountsTab from "./admin/AccountsTab";
+import UsageTab from "./admin/UsageTab";
+import ActivityTab from "./admin/ActivityTab";
 
-const statIcon = "h-3.5 w-3.5 text-[#566273] dark:text-[#9BAABD]";
-const fmt = (n: number | null) => (n === null ? "—" : n.toLocaleString());
-
-const LOG_LABELS: Record<string, string> = { suspend: "Suspended", unsuspend: "Unsuspended", delete: "Deleted" };
-
-const Card: React.FC<{ title: string; description?: string; action?: React.ReactNode; children: React.ReactNode }> = ({
-  title,
-  description,
-  action,
-  children,
-}) => (
-  <section className={surface}>
-    <div className="flex items-start justify-between gap-4 border-b border-[#E7EDF6] px-5 py-4 sm:px-6 dark:border-[#2B3646]">
-      <div className="min-w-0">
-        <h2 className="text-body font-semibold text-[#101723] dark:text-[#E7EDF6]">{title}</h2>
-        {description && <p className="mt-0.5 text-body-sm text-[#647184] dark:text-[#87909D]">{description}</p>}
-      </div>
-      {action}
-    </div>
-    {children}
-  </section>
-);
+const TABS: { key: AdminTab; label: string }[] = [
+  { key: "overview", label: "Overview" },
+  { key: "accounts", label: "Accounts" },
+  { key: "usage", label: "AI usage" },
+  { key: "activity", label: "Activity" },
+];
 
 const Admin: React.FC = () => {
   const isAdmin = useIsAdmin();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const requested = searchParams.get("tab") as AdminTab | null;
+  const tab: AdminTab = requested && TABS.some((t) => t.key === requested) ? requested : "overview";
+
   const [overview, setOverview] = useState<Overview | null>(null);
+  const [newest, setNewest] = useState<AdminUser[] | null>(null);
   const [usage, setUsage] = useState<UsageRow[] | null>(null);
   const [log, setLog] = useState<LogEntry[] | null>(null);
-  const [users, setUsers] = useState<AdminUser[] | null>(null);
-  const [page, setPage] = useState(1);
-  const [total, setTotal] = useState<number | null>(null);
-  const [pageLoading, setPageLoading] = useState(false);
-  const [search, setSearch] = useState("");
   const [selected, setSelected] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
-  const accountsRef = useRef<HTMLDivElement>(null);
+  // Bumped after an action or a refresh; the list tabs reload when it changes.
+  const [version, setVersion] = useState(0);
 
-  // Firestore can't skip to page N, so remember where each loaded page ends
-  // and start the next fetch after the furthest one known. Reset on search.
-  const pageEnds = useRef<(QueryDocumentSnapshot | null)[]>([]);
-  const pageCache = useRef(new Map<number, AdminUser[]>());
-  const latestRequest = useRef(0);
+  const setTab = (next: AdminTab) =>
+    setSearchParams(
+      (prev) => {
+        const params = new URLSearchParams(prev);
+        if (next === "overview") params.delete("tab");
+        else params.set("tab", next);
+        return params;
+      },
+      { replace: true }
+    );
 
-  const showPage = useCallback(async (term: string, target: number, fresh = false) => {
-    if (fresh) {
-      pageEnds.current = [];
-      pageCache.current = new Map();
-    }
-    const request = ++latestRequest.current;
-    const cached = pageCache.current.get(target);
-    if (cached) {
-      setUsers(cached);
-      setPage(target);
-      return;
-    }
-    const known = Math.min(pageEnds.current.length, target - 1);
-    const docs = await fetchUsersAfter(term, known > 0 ? pageEnds.current[known - 1] : null, (target - known) * PAGE_SIZE);
-    if (request !== latestRequest.current) return;
-    for (let p = known + 1; p <= target; p++) {
-      const slice = docs.slice((p - known - 1) * PAGE_SIZE, (p - known) * PAGE_SIZE);
-      pageCache.current.set(p, slice.map((d) => toAdminUser(d.id, d.data())));
-      pageEnds.current[p - 1] = slice[slice.length - 1] ?? null;
-    }
-    setUsers(pageCache.current.get(target) ?? []);
-    setPage(target);
-  }, []);
-
-  const loadSummary = useCallback(async () => {
-    const [o, u, l] = await Promise.allSettled([fetchOverview(), fetchTopUsage(), fetchLog()]);
+  const loadOverview = useCallback(async () => {
+    const [o, n, u, l] = await Promise.allSettled([fetchOverview(), fetchNewestAccounts(), fetchTopUsage(), fetchLog()]);
     setOverview(o.status === "fulfilled" ? o.value : null);
+    setNewest(n.status === "fulfilled" ? n.value : []);
     setUsage(u.status === "fulfilled" ? u.value : []);
     setLog(l.status === "fulfilled" ? l.value : []);
-    [u, l].forEach((r) => r.status === "rejected" && console.warn("Admin section failed:", r.reason));
+    [n, u, l].forEach((r) => r.status === "rejected" && console.warn("Admin overview section failed:", r.reason));
   }, []);
 
   useEffect(() => {
-    if (isAdmin) void loadSummary();
-  }, [isAdmin, loadSummary]);
-
-  // Searches as you type, after a short pause, back on page 1.
-  useEffect(() => {
-    if (!isAdmin) return;
-    let cancelled = false;
-    const timer = window.setTimeout(async () => {
-      try {
-        const [count] = await Promise.all([countUsers(search), showPage(search, 1, true)]);
-        if (!cancelled) setTotal(count);
-      } catch (error) {
-        console.error("Failed to load accounts:", error);
-        if (!cancelled) setUsers([]);
-      }
-    }, search ? 250 : 0);
-    return () => {
-      cancelled = true;
-      window.clearTimeout(timer);
-    };
-  }, [isAdmin, search, showPage]);
-
-  const goToPage = async (target: number) => {
-    setPageLoading(true);
-    try {
-      await showPage(search, target);
-      accountsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-    } catch (error) {
-      console.error("Failed to load accounts:", error);
-    } finally {
-      setPageLoading(false);
-    }
-  };
-
-  const reloadAccounts = async () => {
-    const [count] = await Promise.all([countUsers(search), showPage(search, page, true)]);
-    setTotal(count);
-  };
+    if (isAdmin) void loadOverview();
+  }, [isAdmin, loadOverview]);
 
   const refresh = async () => {
     setRefreshing(true);
     try {
-      await Promise.all([loadSummary(), reloadAccounts()]);
+      setVersion((v) => v + 1);
+      await loadOverview();
     } finally {
       setRefreshing(false);
     }
   };
 
-  const handleChanged = (uid: string, user: AdminUser | null) => {
-    if (user) {
-      setUsers((prev) => (prev || []).map((u) => (u.uid === uid ? user : u)));
-      pageCache.current.forEach((list, p) => pageCache.current.set(p, list.map((u) => (u.uid === uid ? user : u))));
-    } else {
-      // A deletion shifts every later page, so reload from here.
-      void reloadAccounts().catch(() => undefined);
-    }
-    setUsage((prev) => (prev || []).map((row) => (row.uid === uid ? { ...row, user } : row)));
-    void fetchLog().then(setLog, () => undefined);
-    void fetchOverview().then(setOverview, () => undefined);
+  const handleChanged = () => {
+    setVersion((v) => v + 1);
+    void loadOverview();
   };
 
   if (isAdmin === null) return <PageSkeleton tiles={4} />;
@@ -187,7 +108,7 @@ const Admin: React.FC = () => {
         <meta name="robots" content="noindex" />
       </Helmet>
 
-      <div className={`w-full space-y-6 px-4 py-6 transition-opacity sm:px-6 sm:py-8 lg:px-8 xl:px-10 ${refreshing ? "opacity-60" : ""}`}>
+      <div className="w-full px-4 py-6 sm:px-6 sm:py-8 lg:px-8 xl:px-10">
         <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <h1 className="font-serif text-h2 tracking-tight text-[#101723] sm:text-h1 dark:text-[#D7DFE5]">Admin</h1>
@@ -201,164 +122,39 @@ const Admin: React.FC = () => {
           </button>
         </header>
 
-        <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
-          {overview === null ? (
-            [0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-[118px] rounded-xl" />)
-          ) : (
-            <>
-              <StatsCard
-                title="Accounts"
-                value={fmt(overview.accounts)}
-                description={`${fmt(overview.signups7d)} this week · ${fmt(overview.signups30d)} in 30 days`}
-                icon={<Users className={statIcon} />}
-              />
-              <StatsCard
-                title="Paid accounts"
-                value={fmt(overview.paid)}
-                description={overview.suspended ? `${fmt(overview.suspended)} suspended` : "Pro and Enterprise"}
-                icon={<UserPlus className={statIcon} />}
-              />
-              <StatsCard
-                title="Chatbots"
-                value={fmt(overview.chatbots)}
-                description={`${fmt(overview.aiChatbots)} with AI replies on`}
-                icon={<Bot className={statIcon} />}
-              />
-              <StatsCard
-                title="AI replies this month"
-                value={fmt(overview.aiRepliesThisMonth)}
-                description="Across every account"
-                icon={<Sparkles className={statIcon} />}
-              />
-            </>
+        <nav
+          role="tablist"
+          aria-label="Admin sections"
+          className="scrollbar-hide -mx-4 mt-6 flex gap-1 overflow-x-auto border-b border-[#D8DFE9] px-4 sm:mx-0 sm:px-0 dark:border-[#2B3646]"
+        >
+          {TABS.map((t) => {
+            const isActive = tab === t.key;
+            return (
+              <button
+                key={t.key}
+                type="button"
+                role="tab"
+                aria-selected={isActive}
+                onClick={() => setTab(t.key)}
+                className={`relative -mb-px shrink-0 whitespace-nowrap border-b-2 px-3 pb-3 pt-1 text-body-sm font-medium transition-colors ${focusRing} ${
+                  isActive
+                    ? "border-[#101723] text-[#101723] dark:border-[#D7DFE5] dark:text-[#E7EDF6]"
+                    : "border-transparent text-[#647184] hover:text-[#101723] dark:text-[#87909D] dark:hover:text-[#D7DFE5]"
+                }`}
+              >
+                {t.label}
+              </button>
+            );
+          })}
+        </nav>
+
+        <div role="tabpanel" className={`mt-6 transition-opacity ${refreshing ? "opacity-60" : ""}`}>
+          {tab === "overview" && (
+            <OverviewTab overview={overview} newest={newest} usage={usage} log={log} onOpen={setSelected} onTab={setTab} />
           )}
-        </div>
-
-        <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
-          <Card title="Top AI usage this month" description="Each AI reply costs you; watch who's near their limit.">
-            {usage === null ? (
-              <div className="space-y-3 p-6">
-                {[0, 1, 2].map((i) => (
-                  <Skeleton key={i} className="h-9 w-full" />
-                ))}
-              </div>
-            ) : usage.length === 0 ? (
-              <EmptyState compact icon={Sparkles} title="No AI replies yet" description="Nobody has used AI replies this month." />
-            ) : (
-              <ul className="divide-y divide-[#E7EDF6] dark:divide-[#2B3646]">
-                {usage.map((row) => (
-                  <li key={row.uid}>
-                    <button
-                      type="button"
-                      onClick={() => setSelected(row.uid)}
-                      className={`w-full px-5 py-3 text-left transition-colors hover:bg-[#F3F7FC] sm:px-6 dark:hover:bg-[#141D2B] ${focusRing}`}
-                    >
-                      <p className="mb-1.5 truncate text-body-sm font-medium text-[#101723] dark:text-[#D7DFE5]">
-                        {row.user?.email || row.uid}
-                      </p>
-                      <UsageBar used={row.replies} limit={row.user?.aiReplyLimit ?? 0} />
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </Card>
-
-          <Card title="Admin log" description="Every suspension and deletion, newest first.">
-            {log === null ? (
-              <div className="space-y-3 p-6">
-                {[0, 1, 2].map((i) => (
-                  <Skeleton key={i} className="h-6 w-full" />
-                ))}
-              </div>
-            ) : log.length === 0 ? (
-              <EmptyState compact icon={Ban} title="Nothing yet" description="Suspensions and deletions will be listed here." />
-            ) : (
-              <ul className="divide-y divide-[#E7EDF6] dark:divide-[#2B3646]">
-                {log.map((entry) => (
-                  <li key={entry.id} className="flex items-start justify-between gap-4 px-5 py-3 sm:px-6">
-                    <div className="min-w-0">
-                      <p className="truncate text-body-sm text-[#101723] dark:text-[#D7DFE5]">
-                        <span className="font-medium">{LOG_LABELS[entry.action] || entry.action}</span>{" "}
-                        {entry.targetEmail || "an account"}
-                      </p>
-                      {entry.reason && (
-                        <p className="mt-0.5 truncate text-caption text-[#647184] dark:text-[#87909D]">“{entry.reason}”</p>
-                      )}
-                    </div>
-                    <span className="shrink-0 text-caption text-[#87909D]" title={entry.at ? format(entry.at, "PPpp") : undefined}>
-                      {entry.at ? formatDistanceToNowStrict(entry.at, { addSuffix: true }) : ""}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </Card>
-        </div>
-
-        <div ref={accountsRef} className={`scroll-mt-6 transition-opacity ${pageLoading ? "pointer-events-none opacity-60" : ""}`}>
-          <Card
-            title="Accounts"
-            description={search ? "Matching emails that start with your search." : "Newest first. Click one for details and actions."}
-            action={<SearchInput value={search} onChange={setSearch} placeholder="Search by email" />}
-          >
-            {users === null ? (
-              <div className="space-y-3 p-6">
-                {[0, 1, 2, 3, 4].map((i) => (
-                  <Skeleton key={i} className="h-8 w-full" />
-                ))}
-              </div>
-            ) : users.length === 0 ? (
-              <EmptyState
-                compact
-                icon={Users}
-                title={search ? "No matching accounts" : "No accounts yet"}
-                description={search ? "Emails are matched from the start, e.g. “sara@”." : "New sign-ups will show up here."}
-              />
-            ) : (
-              <>
-                <div className="hidden grid-cols-[minmax(0,1fr)_200px_120px] gap-4 border-b border-[#E7EDF6] px-6 py-2 text-caption font-medium uppercase tracking-wider text-[#87909D] md:grid dark:border-[#2B3646]">
-                  <span>Email</span>
-                  <span>Plan</span>
-                  <span className="text-right">Joined</span>
-                </div>
-                <ul className="divide-y divide-[#E7EDF6] dark:divide-[#2B3646]">
-                  {users.map((u) => (
-                    <li key={u.uid}>
-                      <button
-                        type="button"
-                        onClick={() => setSelected(u.uid)}
-                        className={`grid w-full grid-cols-1 gap-1.5 px-5 py-3 text-left transition-colors hover:bg-[#F3F7FC] sm:px-6 md:grid-cols-[minmax(0,1fr)_200px_120px] md:items-center md:gap-4 dark:hover:bg-[#141D2B] ${focusRing}`}
-                      >
-                        <span className="min-w-0">
-                          <span className="block truncate text-body-sm font-medium text-[#101723] dark:text-[#D7DFE5]">
-                            {u.email || u.uid}
-                          </span>
-                          {u.displayName && (
-                            <span className="block truncate text-caption text-[#647184] dark:text-[#87909D]">{u.displayName}</span>
-                          )}
-                        </span>
-                        <PlanBadge user={u} />
-                        <span className="text-caption text-[#647184] md:text-right dark:text-[#87909D]">
-                          {u.createdAt ? format(u.createdAt, "MMM d, yyyy") : "—"}
-                        </span>
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-                {total !== null && total > PAGE_SIZE && (
-                  <div className="border-t border-[#E7EDF6] px-5 py-3 sm:px-6 dark:border-[#2B3646]">
-                    <Pagination
-                      page={page}
-                      totalPages={Math.ceil(total / PAGE_SIZE)}
-                      onChange={(p) => void goToPage(p)}
-                      summary={`Showing ${((page - 1) * PAGE_SIZE + 1).toLocaleString()}–${Math.min(page * PAGE_SIZE, total).toLocaleString()} of ${total.toLocaleString()}`}
-                    />
-                  </div>
-                )}
-              </>
-            )}
-          </Card>
+          {tab === "accounts" && <AccountsTab onOpen={setSelected} version={version} />}
+          {tab === "usage" && <UsageTab onOpen={setSelected} version={version} />}
+          {tab === "activity" && <ActivityTab version={version} />}
         </div>
       </div>
 

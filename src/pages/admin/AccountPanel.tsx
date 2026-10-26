@@ -11,6 +11,9 @@ import { PlanBadge, UsageBar } from "./parts";
 
 type Confirm = "suspend" | "delete" | null;
 
+/** Chatbots listed before "Show all", so a big account doesn't make the panel endless. */
+const BOTS_SHOWN = 8;
+
 const inputClass =
   "w-full rounded-lg border border-[#D8DFE9] bg-[#F9FCFF] px-3 text-body-sm text-[#101723] placeholder:text-[#87909D] focus:border-[#101723] focus:outline-none focus:ring-2 focus:ring-[#101723]/10 dark:border-[#2B3646] dark:bg-[#141D2B] dark:text-[#D7DFE5] dark:focus:border-[#9BAABD]";
 
@@ -49,12 +52,14 @@ const AccountPanel: React.FC<Props> = ({ uid, onClose, onChanged }) => {
   const [reason, setReason] = useState("");
   const [confirmEmail, setConfirmEmail] = useState("");
   const [busy, setBusy] = useState(false);
+  const [showAllBots, setShowAllBots] = useState(false);
 
   useEffect(() => {
     if (!uid) return;
     let cancelled = false;
     setLoading(true);
     setConfirm(null);
+    setShowAllBots(false);
     Promise.all([fetchUser(uid), fetchAccountDetail(uid)])
       .then(([u, detail]) => {
         if (cancelled) return;
@@ -184,10 +189,12 @@ const AccountPanel: React.FC<Props> = ({ uid, onClose, onChanged }) => {
                   </p>
                   {chatbots && chatbots.length > 0 ? (
                     <ul className="divide-y divide-[#E7EDF6] rounded-xl border border-[#E7EDF6] dark:divide-[#2B3646] dark:border-[#2B3646]">
-                      {chatbots.map((bot) => (
+                      {(showAllBots ? chatbots : chatbots.slice(0, BOTS_SHOWN)).map((bot) => (
                         <li key={bot.id} className="flex items-center justify-between gap-3 px-3.5 py-2.5">
                           <div className="min-w-0">
-                            <p className="truncate text-body-sm font-medium text-[#101723] dark:text-[#D7DFE5]">{bot.name}</p>
+                            <p className="truncate text-body-sm font-medium text-[#101723] dark:text-[#D7DFE5]" title={bot.name}>
+                              {bot.name}
+                            </p>
                             <p className="truncate text-caption text-[#647184] dark:text-[#87909D]">
                               {bot.faqCount} questions
                               {bot.lastUpdated ? ` · edited ${format(bot.lastUpdated, "MMM d")}` : ""}
@@ -200,6 +207,17 @@ const AccountPanel: React.FC<Props> = ({ uid, onClose, onChanged }) => {
                           )}
                         </li>
                       ))}
+                      {chatbots.length > BOTS_SHOWN && (
+                        <li>
+                          <button
+                            type="button"
+                            onClick={() => setShowAllBots((v) => !v)}
+                            className={`w-full px-3.5 py-2.5 text-left text-caption font-medium text-[#566273] hover:text-[#101723] dark:text-[#9BAABD] dark:hover:text-[#D7DFE5] ${focusRing}`}
+                          >
+                            {showAllBots ? "Show fewer" : `Show all ${chatbots.length}`}
+                          </button>
+                        </li>
+                      )}
                     </ul>
                   ) : (
                     <p className="text-body-sm text-[#647184] dark:text-[#87909D]">No chatbots yet.</p>

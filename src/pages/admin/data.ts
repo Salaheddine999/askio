@@ -10,7 +10,6 @@ import {
   limit,
   orderBy,
   query,
-  startAfter,
   sum,
   where,
   type DocumentData,
@@ -20,8 +19,6 @@ import { PRO_AI_REPLY_LIMIT } from "../../utils/pricing";
 
 // Reads for the admin dashboard. They only work for accounts with the admin
 // claim: the Firestore rules give admins read access to these collections.
-
-export const PAGE_SIZE = 25;
 
 export type Plan = "free" | "pro" | "enterprise";
 
@@ -78,6 +75,7 @@ export interface LogEntry {
 }
 
 /** The usage period, e.g. "2026-10", matching the server (UTC months). */
+/** The current usage period, e.g. "2026-10", matching the server (UTC months). */
 export const currentUsageMonth = () => new Date().toISOString().slice(0, 7);
 
 const toDate = (value: unknown): Date | null => {
@@ -152,39 +150,74 @@ export async function fetchUser(uid: string) {
   return snap.exists() ? toAdminUser(snap.id, snap.data()) : null;
 }
 
-export async function fetchTopUsage(max = 8): Promise<UsageRow[]> {
-  const snap = await getDocs(
-    query(collection(db, "ai_usage"), where("month", "==", currentUsageMonth()), orderBy("replies", "desc"), limit(max))
-  );
-  return Promise.all(
-    snap.docs.map(async (d) => {
-      const uid = String(d.data().uid || d.id.split("_")[0]);
-      return { uid, replies: Number(d.data().replies) || 0, user: await fetchUser(uid).catch(() => null) };
-    })
-  );
+export async function fetchTopUsage(max = 5): Promise<UsageRow[]> {
+  const snap = await getDocs(query(usageQuery(usageMonth()), limit(max)));
+  return Promise.all(snap.docs.map(toUsageRow));
 }
+
+export type AccountFilter = "all" | "free" | "paid" | "suspended";
 
 /**
- * Accounts newest first, or matching an email prefix when searching.
- * Accounts created before sign-up dates were recorded only show up in search.
+ * Accounts newest first (or by email when searching an email prefix),
+ * optionally narrowed by plan or suspension. Each filter + order pair has a
+ * composite index in firestore.indexes.json. Accounts created before sign-up
+ * dates were recorded only show up when searching.
  */
-function usersQuery(search: string) {
+export function accountsQuery(filter: AccountFilter, search: string) {
   const users = collection(db, "users");
   const term = search.trim().toLowerCase();
+  const narrow =
+    filter === "free"
+      ? [where("plan", "==", "free")]
+      : filter === "paid"
+        ? [where("plan", "in", ["pro", "enterprise"])]
+        : filter === "suspended"
+          ? [where("suspended", "==", true)]
+          : [];
   return term
-    ? query(users, where("email", ">=", term), where("email", "<=", `${term}\uf8ff`), orderBy("email"))
-    : query(users, orderBy("createdAt", "desc"));
+    ? query(users, ...narrow, where("email", ">=", term), where("email", "<=", `${term}\uf8ff`), orderBy("email"))
+    : query(users, ...narrow, orderBy("createdAt", "desc"));
 }
 
-export async function countUsers(search: string) {
-  return (await getCountFromServer(usersQuery(search))).data().count;
+export const toAccount = (d: QueryDocumentSnapshot) => toAdminUser(d.id, d.data());
+
+/** The newest accounts, for the overview. */
+export async function fetchNewestAccounts(max = 5) {
+  const snap = await getDocs(query(accountsQuery("all", ""), limit(max)));
+  return snap.docs.map(toAccount);
 }
 
-/** Up to `max` accounts after a cursor (the last account of an earlier page). */
-export async function fetchUsersAfter(search: string, after: QueryDocumentSnapshot | null, max: number) {
-  const base = usersQuery(search);
-  const snap = await getDocs(after ? query(base, startAfter(after), limit(max)) : query(base, limit(max)));
-  return snap.docs;
+/** A usage month: 0 is this month, 1 last month, and so on (UTC, like the server). */
+export function usageMonth(monthsAgo = 0) {
+  const now = new Date();
+  return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - monthsAgo, 1)).toISOString().slice(0, 7);
+}
+
+export const usageQuery = (month: string) =>
+  query(collection(db, "ai_usage"), where("month", "==", month), orderBy("replies", "desc"));
+
+export async function toUsageRow(d: QueryDocumentSnapshot): Promise<UsageRow> {
+  const uid = String(d.data().uid || d.id.split("_")[0]);
+  return { uid, replies: Number(d.data().replies) || 0, user: await fetchUser(uid).catch(() => null) };
+}
+
+export type LogFilter = "all" | "suspend" | "unsuspend" | "delete";
+
+export const logQuery = (action: LogFilter) =>
+  action === "all"
+    ? query(collection(db, "admin_log"), orderBy("at", "desc"))
+    : query(collection(db, "admin_log"), where("action", "==", action), orderBy("at", "desc"));
+
+export function toLogEntry(d: QueryDocumentSnapshot): LogEntry {
+  const data = d.data();
+  return {
+    id: d.id,
+    action: data.action,
+    targetEmail: data.targetEmail ?? null,
+    adminEmail: data.adminEmail ?? null,
+    reason: data.reason ?? null,
+    at: toDate(data.at),
+  };
 }
 
 export async function fetchAccountDetail(uid: string) {
@@ -207,17 +240,7 @@ export async function fetchAccountDetail(uid: string) {
   return { chatbots, aiReplies: usageSnap.exists() ? Number(usageSnap.data().replies) || 0 : 0 };
 }
 
-export async function fetchLog(max = 10): Promise<LogEntry[]> {
-  const snap = await getDocs(query(collection(db, "admin_log"), orderBy("at", "desc"), limit(max)));
-  return snap.docs.map((d) => {
-    const data = d.data();
-    return {
-      id: d.id,
-      action: data.action,
-      targetEmail: data.targetEmail ?? null,
-      adminEmail: data.adminEmail ?? null,
-      reason: data.reason ?? null,
-      at: toDate(data.at),
-    };
-  });
+export async function fetchLog(max = 5): Promise<LogEntry[]> {
+  const snap = await getDocs(query(logQuery("all"), limit(max)));
+  return snap.docs.map(toLogEntry);
 }

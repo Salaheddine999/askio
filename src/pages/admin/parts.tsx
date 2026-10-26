@@ -1,4 +1,6 @@
 import React from "react";
+import { Skeleton } from "../../components/Skeleton";
+import { Pagination, focusRing, surface } from "../dashboard/ui";
 import { AdminUser } from "./data";
 
 const tone = {
@@ -47,3 +49,80 @@ export const UsageBar: React.FC<{ used: number; limit: number }> = ({ used, limi
     </div>
   );
 };
+
+export const Card: React.FC<{
+  title: string;
+  description?: string;
+  action?: React.ReactNode;
+  children: React.ReactNode;
+}> = ({ title, description, action, children }) => (
+  <section className={surface}>
+    <div className="flex flex-col gap-3 border-b border-[#E7EDF6] px-5 py-4 sm:flex-row sm:items-start sm:justify-between sm:px-6 dark:border-[#2B3646]">
+      <div className="min-w-0">
+        <h2 className="text-body font-semibold text-[#101723] dark:text-[#E7EDF6]">{title}</h2>
+        {description && <p className="mt-0.5 text-body-sm text-[#647184] dark:text-[#87909D]">{description}</p>}
+      </div>
+      {action && <div className="flex shrink-0 flex-wrap items-center gap-2">{action}</div>}
+    </div>
+    {children}
+  </section>
+);
+
+/** Placeholder rows while a list loads. */
+export const RowsLoading: React.FC<{ rows?: number; height?: string }> = ({ rows = 5, height = "h-8" }) => (
+  <div className="space-y-3 p-5 sm:p-6" aria-busy="true">
+    {Array.from({ length: rows }).map((_, i) => (
+      <Skeleton key={i} className={`${height} w-full`} />
+    ))}
+  </div>
+);
+
+/** A row of filter chips; the selected one is filled. */
+export function FilterChips<T extends string>({
+  value,
+  onChange,
+  options,
+  label,
+}: {
+  value: T;
+  onChange: (value: T) => void;
+  options: { value: T; label: string }[];
+  label: string;
+}) {
+  return (
+    <div role="radiogroup" aria-label={label} className="flex flex-wrap gap-1.5">
+      {options.map((o) => {
+        const selected = o.value === value;
+        return (
+          <button
+            key={o.value}
+            type="button"
+            role="radio"
+            aria-checked={selected}
+            onClick={() => onChange(o.value)}
+            className={`h-8 rounded-full border px-3 text-caption font-medium transition-colors ${focusRing} ${
+              selected
+                ? "border-[#101723] bg-[#101723] text-white dark:border-[#D7DFE5] dark:bg-[#D7DFE5] dark:text-[#141D2B]"
+                : "border-[#D8DFE9] text-[#566273] hover:border-[#B8C3D1] hover:text-[#101723] dark:border-[#2B3646] dark:text-[#9BAABD] dark:hover:text-[#D7DFE5]"
+            }`}
+          >
+            {o.label}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+/** The numbered pager under a paged list, hidden when everything fits on one page. */
+export const Pager: React.FC<{
+  page: number;
+  totalPages: number;
+  summary: string;
+  onChange: (page: number) => void;
+}> = ({ page, totalPages, summary, onChange }) =>
+  totalPages > 1 ? (
+    <div className="border-t border-[#E7EDF6] px-5 py-3 sm:px-6 dark:border-[#2B3646]">
+      <Pagination page={page} totalPages={totalPages} onChange={onChange} summary={summary} />
+    </div>
+  ) : null;
