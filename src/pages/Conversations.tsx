@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import { markConversationsSeen } from "../utils/sidebarCounts";
 import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { toast } from "react-hot-toast";
@@ -276,6 +277,11 @@ const Conversations: React.FC<{ testMode?: boolean }> = ({ testMode = false }) =
   const [filter, setFilter] = useState("all");
   const [openId, setOpenId] = useState<string | null>(null);
   const [samples, setSamples] = useState<Conversation[]>(() => sampleConversations());
+
+  // Opening this page clears the sidebar's "new conversations" count.
+  useEffect(() => {
+    if (!testMode) markConversationsSeen();
+  }, [testMode]);
 
   useEffect(() => {
     if (testMode) {

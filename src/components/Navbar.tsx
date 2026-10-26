@@ -1,12 +1,11 @@
 import BrandLogo from "./BrandLogo";
-import React, { Fragment, useEffect } from "react";
+import React, { Fragment, useEffect, useState } from "react";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import { Menu, Transition } from "@headlessui/react";
 import { auth } from "../utils/firebase";
 import { signOut } from "firebase/auth";
 import {
   LayoutDashboard,
-  FileText,
   Settings,
   Sun,
   Moon,
@@ -23,10 +22,19 @@ import {
   LucideIcon,
   ShieldCheck,
   MessagesSquare,
+  LifeBuoy,
+  Sparkles,
 } from "lucide-react";
+import { collection, onSnapshot, query, where } from "firebase/firestore";
+import { db } from "../utils/db";
+import BotAvatar from "./BotAvatar";
+import { DUMMY_CHATBOTS } from "../utils/dummyData";
+import { usePlanAccess } from "../hooks/usePlanAccess";
+import { AI_USAGE_WARNING_RATIO, PRO_AI_REPLY_LIMIT } from "../utils/pricing";
 import { useIsAdmin } from "../hooks/useIsAdmin";
 import { useT } from "../i18n";
 import { navMessages } from "../i18n/messages/nav";
+import { fetchAiUsage, fetchSidebarCounts, SEEN_EVENT, type AiUsage, type SidebarCounts } from "../utils/sidebarCounts";
 
 interface NavbarProps {
   darkMode: boolean;
@@ -38,28 +46,28 @@ interface NavbarProps {
   toggleTestMode: () => void;
 }
 
-type NavKey = "workspace" | "resources" | "account" | "dashboard" | "analytics" | "conversations" | "integrations" | "documentation" | "settings" | "admin";
+type NavKey = "dashboard" | "analytics" | "conversations" | "integrations" | "helpCenter" | "settings" | "admin";
+type NavItem = { title: NavKey; href: string; icon: LucideIcon; count?: keyof SidebarCounts };
 
-// Titles are keys into navMessages.
-const NAV_GROUPS: { title: NavKey; items: { title: NavKey; href: string; icon: LucideIcon }[] }[] = [
-  {
-    title: "workspace",
-    items: [
-      { title: "dashboard", href: "/dashboard", icon: LayoutDashboard },
-      { title: "analytics", href: "/analytics", icon: BarChart2 },
-      { title: "conversations", href: "/conversations", icon: MessagesSquare },
-      { title: "integrations", href: "/integrations", icon: Blocks },
-    ],
-  },
-  {
-    title: "resources",
-    items: [{ title: "documentation", href: "/documentation", icon: FileText }],
-  },
-  {
-    title: "account",
-    items: [{ title: "settings", href: "/settings", icon: Settings }],
-  },
+// Titles are keys into navMessages. `count` shows how many new items wait there.
+const WORKSPACE: NavItem[] = [
+  { title: "dashboard", href: "/dashboard", icon: LayoutDashboard, count: "dashboard" },
+  { title: "analytics", href: "/analytics", icon: BarChart2 },
+  { title: "conversations", href: "/conversations", icon: MessagesSquare, count: "conversations" },
+  { title: "integrations", href: "/integrations", icon: Blocks },
 ];
+
+// Pinned above the account card.
+const FOOTER_LINKS: NavItem[] = [
+  { title: "helpCenter", href: "/documentation", icon: LifeBuoy },
+  { title: "settings", href: "/settings", icon: Settings },
+];
+
+const NO_COUNTS: SidebarCounts = { dashboard: 0, conversations: 0 };
+
+// The owner's chatbots, most recently edited first; the rest are on the dashboard.
+const MAX_SIDEBAR_BOTS = 5;
+type SidebarBot = { id: string; title: string; isActive: boolean; primaryColor?: string; launcherStyle?: string; updated: number };
 
 const focusRing =
   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#101723]/25 dark:focus-visible:ring-[#D7DFE5]/40";
@@ -123,12 +131,186 @@ const Navbar: React.FC<NavbarProps> = ({
   const isAdmin = useIsAdmin();
   const t = useT(navMessages);
   // The Admin link is only shown to admins; /admin itself checks on the server.
-  const navGroups = isAdmin
-    ? NAV_GROUPS.map((g) =>
-        g.title === "account" ? { ...g, items: [...g.items, { title: "admin" as const, href: "/admin", icon: ShieldCheck }] } : g
-      )
-    : NAV_GROUPS;
+  const footerLinks: NavItem[] = isAdmin ? [...FOOTER_LINKS, { title: "admin", href: "/admin", icon: ShieldCheck }] : FOOTER_LINKS;
   const hideWhenCollapsed = collapsed ? "lg:hidden" : "";
+
+  // New leads, questions and conversations since the owner last looked.
+  // Refreshed on every page change, when the tab regains focus, and right
+  // after the owner opens the place they're counted.
+  const [counts, setCounts] = useState<SidebarCounts>(NO_COUNTS);
+  const uid = user?.uid;
+  useEffect(() => {
+    if (!uid || testMode) {
+      setCounts(NO_COUNTS);
+      return;
+    }
+    let cancelled = false;
+    const refresh = () =>
+      fetchSidebarCounts(uid).then((next) => {
+        if (!cancelled) setCounts(next);
+      });
+    refresh();
+    window.addEventListener(SEEN_EVENT, refresh);
+    window.addEventListener("focus", refresh);
+    return () => {
+      cancelled = true;
+      window.removeEventListener(SEEN_EVENT, refresh);
+      window.removeEventListener("focus", refresh);
+    };
+  }, [uid, testMode, location.pathname]);
+
+  const rowClass = (isActive: boolean) =>
+    `relative flex h-9 items-center gap-3 rounded-lg px-2.5 text-body-sm font-medium transition-colors ${focusRing} ${
+      collapsed ? "lg:justify-center lg:px-0" : ""
+    } ${
+      isActive
+        ? "bg-[#F9FCFF] text-[#101723] ring-1 ring-[#D8DFE9] dark:bg-[#243040] dark:text-[#F3F7FC] dark:ring-[#2B3646]"
+        : "text-[#566273] hover:bg-[#E0E7F0] hover:text-[#101723] dark:text-[#9BAABD] dark:hover:bg-[#1F2B3A] dark:hover:text-[#D7DFE5]"
+    }`;
+
+  // Live list of the owner's chatbots, so a rename or a new bot shows at once.
+  const [bots, setBots] = useState<SidebarBot[]>([]);
+  useEffect(() => {
+    if (testMode) {
+      setBots(
+        DUMMY_CHATBOTS.map((b) => ({
+          id: b.id,
+          title: b.title,
+          isActive: b.isActive ?? true,
+          primaryColor: b.primaryColor,
+          launcherStyle: b.launcherStyle,
+          updated: 0,
+        }))
+      );
+      return;
+    }
+    if (!uid) {
+      setBots([]);
+      return;
+    }
+    return onSnapshot(
+      query(collection(db, "chatbot_configs"), where("user_id", "==", uid)),
+      (snap) =>
+        setBots(
+          snap.docs
+            .map((d) => {
+              const data = d.data();
+              return {
+                id: d.id,
+                title: data.title || "Chatbot",
+                isActive: data.isActive ?? true,
+                primaryColor: data.primaryColor,
+                launcherStyle: data.launcherStyle,
+                updated: data.lastUpdated?.toMillis?.() ?? data.createdAt?.toMillis?.() ?? 0,
+              };
+            })
+            .sort((a, b) => b.updated - a.updated)
+        ),
+      () => setBots([])
+    );
+  }, [uid, testMode]);
+
+  // Plan card: an upgrade prompt on Free, this month's AI replies on Pro.
+  const { plan, canUseAi, loading: planLoading } = usePlanAccess();
+  const [usage, setUsage] = useState<AiUsage | null>(null);
+  useEffect(() => {
+    if (!uid || !canUseAi) {
+      setUsage(null);
+      return;
+    }
+    let cancelled = false;
+    fetchAiUsage(uid, PRO_AI_REPLY_LIMIT)
+      .then((next) => !cancelled && setUsage(next))
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, [uid, canUseAi, location.pathname]);
+
+  const renderPlanCard = () => {
+    if (planLoading) return null;
+    const card = `rounded-xl bg-[#F9FCFF] p-3 ring-1 ring-[#D8DFE9] dark:bg-[#1F2B3A] dark:ring-[#2B3646] ${collapsed ? "lg:hidden" : ""}`;
+    const button = `mt-2.5 flex h-8 items-center justify-center rounded-lg bg-[#101723] text-caption font-medium text-white transition-colors hover:bg-[#243040] dark:bg-[#D7DFE5] dark:text-[#141D2B] dark:hover:bg-[#E7EDF6] ${focusRing}`;
+    if (!canUseAi) {
+      // Free, or a Pro whose payment failed.
+      const lapsed = plan !== "free";
+      return (
+        <div className={card}>
+          <p className="flex items-center gap-1.5 text-body-sm font-medium text-[#101723] dark:text-[#D7DFE5]">
+            <Sparkles size={14} className="shrink-0" />
+            {t(lapsed ? "proPlan" : "freePlan")}
+          </p>
+          <p className="mt-1 text-caption text-[#647184] dark:text-[#87909D]">{t(lapsed ? "paymentIssue" : "freePlanBody")}</p>
+          <Link to={lapsed ? "/settings" : "/plans"} className={button}>
+            {t(lapsed ? "updateBilling" : "upgrade")}
+          </Link>
+        </div>
+      );
+    }
+    if (!usage) return null;
+    const { used, limit } = usage;
+    const ratio = limit ? Math.min(used / limit, 1) : 0;
+    const bar =
+      limit !== null && used >= limit
+        ? "bg-[#C2410C]"
+        : ratio >= AI_USAGE_WARNING_RATIO
+          ? "bg-[#D7A43B]"
+          : "bg-[#101723] dark:bg-[#D7DFE5]";
+    return (
+      <Link to="/settings" className={`block transition-colors hover:ring-[#B8C2CF] dark:hover:ring-[#39485B] ${card} ${focusRing}`}>
+        <p className="flex items-center gap-1.5 text-body-sm font-medium text-[#101723] dark:text-[#D7DFE5]">
+          <Sparkles size={14} className="shrink-0" />
+          {t("proPlan")}
+        </p>
+        <div className="mt-2 flex items-baseline justify-between gap-2 text-caption">
+          <span className="text-[#647184] dark:text-[#87909D]">{t("aiReplies")}</span>
+          <span className="shrink-0 font-medium tabular-nums text-[#101723] dark:text-[#D7DFE5]">
+            {limit === null
+              ? t("repliesUsedUnlimited", { used: used.toLocaleString(t.lang) })
+              : t("repliesUsed", { used: used.toLocaleString(t.lang), limit: limit.toLocaleString(t.lang) })}
+          </span>
+        </div>
+        {limit !== null && (
+          <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-[#E0E7F0] dark:bg-[#2B3646]">
+            <div className={`h-full rounded-full ${bar}`} style={{ width: `${Math.max(ratio * 100, used > 0 ? 2 : 0)}%` }} />
+          </div>
+        )}
+      </Link>
+    );
+  };
+
+  const renderLink = ({ title, href, icon: Icon, count }: NavItem) => {
+    const n = count ? counts[count] : 0;
+    return (
+      <li key={href}>
+        <NavLink
+          to={href}
+          title={collapsed ? t(title) : undefined}
+          className={({ isActive }) => rowClass(isActive)}
+        >
+          {({ isActive }) => (
+            <>
+              <span className="relative shrink-0">
+                <Icon size={18} strokeWidth={isActive ? 2.1 : 1.8} className={isActive ? "" : "opacity-80"} />
+                {n > 0 && collapsed && (
+                  <span className="absolute -right-1 -top-1 hidden h-2 w-2 rounded-full bg-[#101723] ring-2 ring-[#EDF2F8] lg:block dark:bg-[#D7DFE5] dark:ring-[#17212F]" />
+                )}
+              </span>
+              <span className={`flex-1 truncate ${hideWhenCollapsed}`}>{t(title)}</span>
+              {n > 0 && (
+                <span
+                  className={`min-w-[22px] rounded-full bg-[#101723] px-1.5 text-center text-[11px] font-semibold leading-5 text-white dark:bg-[#D7DFE5] dark:text-[#141D2B] ${hideWhenCollapsed}`}
+                >
+                  <span aria-hidden>{n > 99 ? "99+" : n}</span>
+                  <span className="sr-only">{t.plural("newCount", n)}</span>
+                </span>
+              )}
+            </>
+          )}
+        </NavLink>
+      </li>
+    );
+  };
 
   const menuItem = (active: boolean) =>
     `flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-body-sm ${
@@ -230,51 +412,51 @@ const Navbar: React.FC<NavbarProps> = ({
         </div>
 
         {/* Navigation */}
-        <div className="flex-1 space-y-5 overflow-y-auto px-3 py-3">
-          {navGroups.map((group) => (
-            <div key={group.title}>
-              <h2
-                className={`mb-1.5 px-2.5 text-[11px] font-medium uppercase tracking-wider text-[#87909D] dark:text-[#647184] ${hideWhenCollapsed}`}
-              >
-                {t(group.title)}
+        <div className="flex-1 overflow-y-auto px-3 py-3">
+          <h2 className={`mb-1.5 px-2.5 text-caption font-medium text-[#87909D] dark:text-[#647184] ${hideWhenCollapsed}`}>
+            {t("workspace")}
+          </h2>
+          <ul className="space-y-0.5">{WORKSPACE.map(renderLink)}</ul>
+
+          {bots.length > 0 && (
+            <div className="mt-5">
+              <h2 className={`mb-1.5 px-2.5 text-caption font-medium text-[#87909D] dark:text-[#647184] ${hideWhenCollapsed}`}>
+                {t("chatbots")}
               </h2>
               {collapsed && <div className="mx-auto mb-2 hidden h-px w-6 bg-[#D8DFE9] lg:block dark:bg-[#2B3646]" />}
               <ul className="space-y-0.5">
-                {group.items.map(({ title, href, icon: Icon }) => (
-                  <li key={href}>
+                {bots.slice(0, MAX_SIDEBAR_BOTS).map((bot) => (
+                  <li key={bot.id}>
                     <NavLink
-                      to={href}
-                      title={collapsed ? t(title) : undefined}
-                      className={({ isActive }) =>
-                        `relative flex h-9 items-center gap-2.5 rounded-lg px-2.5 text-body-sm font-medium transition-colors ${focusRing} ${
-                          collapsed ? "lg:justify-center lg:px-0" : ""
-                        } ${
-                          isActive
-                            ? "bg-[#F9FCFF] text-[#101723] shadow-[0_1px_2px_rgba(16,23,35,0.06)] ring-1 ring-[#D8DFE9] dark:bg-[#243040] dark:text-[#F3F7FC] dark:ring-[#2B3646]"
-                            : "text-[#566273] hover:bg-[#E0E7F0] hover:text-[#101723] dark:text-[#9BAABD] dark:hover:bg-[#1F2B3A] dark:hover:text-[#D7DFE5]"
-                        }`
-                      }
+                      to={`/configure/${bot.id}`}
+                      title={collapsed ? bot.title : undefined}
+                      className={({ isActive }) => rowClass(isActive)}
                     >
-                      {({ isActive }) => (
-                        <>
-                          <Icon
-                            size={17}
-                            strokeWidth={isActive ? 2.1 : 1.8}
-                            className={`shrink-0 ${isActive ? "" : "opacity-80"}`}
-                          />
-                          <span className={hideWhenCollapsed}>{t(title)}</span>
-                        </>
+                      <BotAvatar color={bot.primaryColor} launcherStyle={bot.launcherStyle} size={20} muted={!bot.isActive} />
+                      <span className={`flex-1 truncate ${hideWhenCollapsed}`}>{bot.title}</span>
+                      {!bot.isActive && (
+                        <span className={`shrink-0 text-caption font-normal text-[#87909D] ${hideWhenCollapsed}`}>{t("paused")}</span>
                       )}
                     </NavLink>
                   </li>
                 ))}
               </ul>
+              {bots.length > MAX_SIDEBAR_BOTS && (
+                <Link
+                  to="/dashboard"
+                  className={`mt-1 flex h-8 items-center rounded-lg px-2.5 text-caption font-medium text-[#647184] transition-colors hover:text-[#101723] dark:text-[#87909D] dark:hover:text-[#D7DFE5] ${focusRing} ${hideWhenCollapsed}`}
+                >
+                  {t("viewAll", { count: bots.length })}
+                </Link>
+              )}
             </div>
-          ))}
+          )}
         </div>
 
         {/* Footer */}
-        <div className="shrink-0 space-y-2 border-t border-[#D8DFE9] p-3 dark:border-[#2B3646]">
+        <div className="shrink-0 space-y-2 p-3">
+          {renderPlanCard()}
+          <ul className="space-y-0.5">{footerLinks.map(renderLink)}</ul>
           {testMode && (
             <button
               onClick={toggleTestMode}
@@ -291,8 +473,8 @@ const Navbar: React.FC<NavbarProps> = ({
 
           <Menu as="div" className="relative">
             <Menu.Button
-              className={`flex w-full items-center gap-2.5 rounded-lg p-1.5 text-left transition-colors hover:bg-[#E0E7F0] dark:hover:bg-[#1F2B3A] ${focusRing} ${
-                collapsed ? "lg:justify-center" : ""
+              className={`flex w-full items-center gap-2.5 rounded-xl bg-[#F9FCFF] p-2 text-left ring-1 ring-[#D8DFE9] transition-colors hover:ring-[#B8C2CF] dark:bg-[#1F2B3A] dark:ring-[#2B3646] dark:hover:ring-[#39485B] ${focusRing} ${
+                collapsed ? "lg:justify-center lg:bg-transparent lg:p-1.5 lg:ring-0 dark:lg:bg-transparent" : ""
               }`}
               title={collapsed ? user?.displayName || t("account") : undefined}
             >

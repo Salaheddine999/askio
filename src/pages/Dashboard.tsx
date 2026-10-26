@@ -32,6 +32,7 @@ import { downloadCsv, fetchOwnedByChatbots, fetchRecentOwned } from "./dashboard
 import { Chatbot, FeedbackCounts, NotificationItem, TrendData } from "./dashboard/types";
 import { dateLocale, useT } from "../i18n";
 import { dashboardMessages } from "../i18n/messages/dashboard";
+import { markNotificationsSeen, NOTIFICATIONS_SEEN_KEY } from "../utils/sidebarCounts";
 
 type TabId = "overview" | "chatbots" | "reports" | "notifications";
 type Trends = Record<"chatbots" | "feedback" | "satisfaction" | "avgFeedback", TrendData>;
@@ -43,13 +44,12 @@ const NEUTRAL_TRENDS: Trends = {
   avgFeedback: { value: "0", direction: "neutral" },
 };
 
-const LAST_SEEN_KEY = "askio_notifications_last_seen";
 const RECENT_ACTIVITY_LIMIT = 5;
 const NOTIFICATION_LIMIT = 200;
 
 function readLastSeen() {
   try {
-    const stored = localStorage.getItem(LAST_SEEN_KEY);
+    const stored = localStorage.getItem(NOTIFICATIONS_SEEN_KEY);
     return stored ? new Date(stored) : new Date(0);
   } catch {
     return new Date(0);
@@ -316,11 +316,7 @@ const Dashboard: React.FC<DashboardProps> = ({ testMode }) => {
       const now = new Date();
       setSeenBeforeOpen(lastSeen);
       setLastSeen(now);
-      try {
-        localStorage.setItem(LAST_SEEN_KEY, now.toISOString());
-      } catch {
-        // Without storage the badge just reappears next visit.
-      }
+      markNotificationsSeen();
     }
     setActiveTab(id);
     window.scrollTo({ top: 0, behavior: "smooth" });
