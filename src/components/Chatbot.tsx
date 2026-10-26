@@ -730,15 +730,15 @@ const Chatbot: React.FC<ChatbotProps> = ({
     >
       {/* Header */}
       <div
-        className="text-white px-5 py-5 flex items-center justify-between relative overflow-hidden flex-shrink-0"
+        className="text-white px-5 py-5 flex items-center justify-between gap-3 relative overflow-hidden flex-shrink-0"
         style={headerStyle}
       >
         {/* Subtle gradient overlay for depth */}
         <div className="absolute inset-0 bg-gradient-to-b from-white/[0.08] to-transparent pointer-events-none" />
         <div className="absolute bottom-0 left-0 right-0 h-px bg-black/10" />
         
-        <div className="flex items-center gap-3.5 relative z-10">
-          <div className="relative">
+        <div className="flex min-w-0 flex-1 items-center gap-3.5 relative z-10">
+          <div className="relative shrink-0">
             {useOrb ? (
               <LiveOrb size={40} {...headerOrbPropsFor(primaryColor)} mood={orbMood} />
             ) : (
@@ -750,12 +750,13 @@ const Chatbot: React.FC<ChatbotProps> = ({
               <div className="absolute inset-0 rounded-full bg-emerald-400 animate-ping opacity-40" />
             </div>
           </div>
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1">
             <h2 className="truncate font-bold text-base leading-tight tracking-[-0.01em]">{title || "Askio Assistant"}</h2>
-            <div className="flex items-center gap-1.5 mt-0.5">
+            {/* One line: the label stays whole, the status shortens if space runs out. */}
+            <div className="flex min-w-0 items-center gap-1.5 mt-0.5 whitespace-nowrap">
               {/* Visitors should always know they aren't talking to a person (EU AI Act, art. 50).
                   The green dot on the avatar already shows the chat is online. */}
-              <span className="flex items-center gap-1 text-[11px] font-medium text-white/75">
+              <span className="flex shrink-0 items-center gap-1 text-[11px] font-medium text-white/75">
                 {aiEnabled ? (
                   <Sparkles size={11} strokeWidth={2.25} className="shrink-0" aria-hidden="true" />
                 ) : (
@@ -763,8 +764,8 @@ const Chatbot: React.FC<ChatbotProps> = ({
                 )}
                 {aiEnabled ? t("aiAssistant") : t("automatedAssistant")}
               </span>
-              <span className="text-white/30">·</span>
-              <span className="text-[11px] text-white/50" aria-live="polite">{statusText}</span>
+              <span className="shrink-0 text-white/30">·</span>
+              <span className="min-w-0 truncate text-[11px] text-white/50" aria-live="polite">{statusText}</span>
             </div>
           </div>
         </div>
@@ -781,7 +782,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
       </div>
 
       {/* Messages Area */}
-      <div className="flex-grow overflow-y-auto px-4 py-4 space-y-3">
+      <div className="flex-grow overflow-y-auto px-4 py-4 space-y-3 [scrollbar-width:thin] [scrollbar-color:rgba(100,113,132,0.35)_transparent]">
         <AnimatePresence>
           {messages.map((message, index) => (
             <motion.div
@@ -873,10 +874,9 @@ const Chatbot: React.FC<ChatbotProps> = ({
                   {suggestions.map((question, idx) => (
                     <motion.button
                       key={idx}
-                      whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                       onClick={(e) => handleSuggestionClick(e, question)}
-                      className="text-[12px] bg-[#F9FCFF] dark:bg-[#1A2533] hover:bg-[#E7EDF6] dark:hover:bg-[#273444] text-[#101723] dark:text-[#D7DFE5] py-1.5 px-3 rounded-full transition-colors duration-150 border border-[#D8DFE9] dark:border-[#2B3646] text-left shadow-sm hover:shadow"
+                      className="max-w-full text-[12px] leading-snug [text-wrap:pretty] bg-[#F9FCFF] dark:bg-[#1A2533] hover:bg-[#E7EDF6] dark:hover:bg-[#273444] text-[#101723] dark:text-[#D7DFE5] py-2 px-3.5 rounded-2xl transition-colors duration-150 border border-[#D8DFE9] hover:border-[#C9D3E0] dark:border-[#2B3646] dark:hover:border-[#39485B] text-left"
                     >
                       {question}
                     </motion.button>
