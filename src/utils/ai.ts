@@ -196,7 +196,7 @@ export const generateFaqsFromUrl = async (url: string, isDeepCrawl: boolean = fa
           throw new Error("AI did not return an array");
       }
       return parsedFaqs;
-    } catch (parseError) {
+    } catch {
       console.error("Failed to parse AI response as JSON:", resultText);
       throw new Error("Failed to parse the AI generated FAQs.");
     }

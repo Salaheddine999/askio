@@ -12,6 +12,7 @@ import { useMediaQuery } from "../hooks/useMediaQuery";
 import Chatbot from "./Chatbot";
 import BotAvatar from "./BotAvatar";
 import { Skeleton, SkeletonCard } from "./Skeleton";
+import ConfirmationModal from "./ConfirmationModal";
 import { focusRing, primaryButton, secondaryButton } from "../pages/dashboard/ui";
 import { Panel } from "./editor/controls";
 import { ChatbotConfig, ConfigChange, Plan } from "./editor/types";
@@ -28,13 +29,13 @@ import { editorMessages } from "../i18n/messages/editor";
 const aiModules = import.meta.glob('./AiFaqGenerator.tsx');
 const aiModuleLoader = Object.values(aiModules)[0];
 const AiFaqGenerator = aiModuleLoader
-  ? lazy(() => aiModuleLoader() as Promise<{ default: React.ComponentType<any> }>)
+  ? lazy(() => aiModuleLoader() as Promise<{ default: React.ComponentType<Record<string, unknown>> }>)
   : null;
 
 const aiPersonaModules = import.meta.glob('./AiPersonaTab.tsx');
 const aiPersonaModuleLoader = Object.values(aiPersonaModules)[0];
 const AiPersonaTab = aiPersonaModuleLoader
-  ? lazy(() => aiPersonaModuleLoader() as Promise<{ default: React.ComponentType<any> }>)
+  ? lazy(() => aiPersonaModuleLoader() as Promise<{ default: React.ComponentType<Record<string, unknown>> }>)
   : null;
 
 function hasPaidAccessUntilPeriodEnd(subscriptionStatus: string, currentPeriodEnd?: string | null) {
@@ -362,6 +363,25 @@ const EditChatbot: React.FC = () => {
     return () => window.removeEventListener("beforeunload", warn);
   }, [hasChanges]);
 
+  // Links elsewhere in the app (sidebar, navbar, back) don't unload the page,
+  // so ask before they drop unsaved changes.
+  const [leaveTo, setLeaveTo] = useState<string | null>(null);
+  useEffect(() => {
+    if (!hasChanges) return;
+    const onClick = (e: MouseEvent) => {
+      if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+      const link = (e.target as Element | null)?.closest?.("a[href]") as HTMLAnchorElement | null;
+      if (!link || link.target === "_blank" || link.hasAttribute("download")) return;
+      const url = new URL(link.href, window.location.href);
+      if (url.origin !== window.location.origin || url.pathname === window.location.pathname) return;
+      e.preventDefault();
+      e.stopPropagation();
+      setLeaveTo(url.pathname + url.search + url.hash);
+    };
+    document.addEventListener("click", onClick, true);
+    return () => document.removeEventListener("click", onClick, true);
+  }, [hasChanges]);
+
   const heading = config.name.trim() || (id ? t("untitledChatbot") : t("newChatbot"));
   const aiReady = canUseAi && config.aiEnabled === true;
 
@@ -580,6 +600,21 @@ const EditChatbot: React.FC = () => {
           customPositionClass={`${CORNER[config.position] ?? CORNER["bottom-right"]} m-4`}
         />
       )}
+
+      <ConfirmationModal
+        isOpen={leaveTo !== null}
+        onClose={() => setLeaveTo(null)}
+        onConfirm={() => {
+          setLeaveTo(null);
+          if (leaveTo) navigate(leaveTo);
+        }}
+        title={t("leaveTitle")}
+        confirmText={t("leaveConfirm")}
+        cancelText={t("keepEditing")}
+        confirmButtonClass="bg-red-600 text-white hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600 focus:ring-red-500"
+      >
+        <p>{t("leaveBody")}</p>
+      </ConfirmationModal>
     </div>
   );
 };

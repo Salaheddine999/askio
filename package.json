@@ -10,7 +10,8 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "test:rules": "npx firebase-tools@14 emulators:exec --only firestore --project askio-rules-test \"vitest run -c vitest.rules.config.ts\""
   },
   "dependencies": {
     "@google/genai": "^1.43.0",
@@ -48,6 +49,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.9.0",
+    "@firebase/rules-unit-testing": "^3.0.4",
     "@sentry/vite-plugin": "^3.6.1",
     "@types/react": "^18.3.5",
     "@types/react-dom": "^18.3.0",

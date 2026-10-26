@@ -6,6 +6,8 @@ import { defineConfig } from "vitest/config";
 export default defineConfig({
   test: {
     include: ["tests/**/*.test.{ts,js}"],
+    // The Firestore rules tests need the emulator: `npm run test:rules`.
+    exclude: ["tests/rules/**", "node_modules/**"],
     environment: "node",
     env: {
       SHOPIFY_API_SECRET: "test-shopify-secret",

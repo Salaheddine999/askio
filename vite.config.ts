@@ -9,7 +9,9 @@ const rootDir = dirname(fileURLToPath(import.meta.url));
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, rootDir, "");
-  const apiProxyTarget = env.VITE_API_PROXY_TARGET || "https://askio.vercel.app";
+  // The live site's final address: askio.vercel.app and the bare domain
+  // redirect here, and a redirect drops POST bodies.
+  const apiProxyTarget = env.VITE_API_PROXY_TARGET || "https://www.getaskio.xyz";
   // Source maps go to Sentry only on builds that have an auth token (set on
   // Vercel), and are deleted afterwards so they're never served publicly.
   const sentryToken = process.env.SENTRY_AUTH_TOKEN || env.SENTRY_AUTH_TOKEN;

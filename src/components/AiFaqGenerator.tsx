@@ -555,7 +555,8 @@ const AiFaqGenerator: React.FC<AiFaqGeneratorProps> = ({
                   type="button"
                   onClick={() => {
                     const cleanFaqs = pendingFaqs.map(
-                      ({ isOpen, ...rest }) => rest
+                      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                      ({ isOpen: _isOpen, ...rest }) => rest
                     );
                     onFaqsApproved(cleanFaqs);
                     setShowReviewModal(false);
