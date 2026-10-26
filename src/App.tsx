@@ -27,6 +27,7 @@ const pages = {
   analytics: () => import("./pages/Analytics"),
   integrations: () => import("./pages/Integrations"),
   admin: () => import("./pages/Admin"),
+  onboarding: () => import("./pages/Onboarding"),
   plans: () => import("./pages/Plans"),
   privacy: () => import("./pages/PrivacyPolicy"),
   terms: () => import("./pages/TermsOfService"),
@@ -43,6 +44,7 @@ const Settings = lazy(pages.settings);
 const Analytics = lazy(pages.analytics);
 const Integrations = lazy(pages.integrations);
 const Admin = lazy(pages.admin);
+const Onboarding = lazy(pages.onboarding);
 const SuspendedNotice = lazy(() => import("./components/SuspendedNotice"));
 const Plans = lazy(pages.plans);
 const PrivacyPolicy = lazy(pages.privacy);
@@ -58,6 +60,7 @@ function preloadCurrentPage(path: string) {
     [path.startsWith("/chatbot/"), pages.embed],
     [path === "/dashboard", pages.dashboard],
     [path.startsWith("/configure"), pages.editor],
+    [path === "/start", pages.onboarding],
     [path === "/plans", pages.plans],
     [path === "/privacy", pages.privacy],
     [path === "/terms", pages.terms],
@@ -277,6 +280,7 @@ const App: React.FC = () => {
                 element={user ? <Integrations testMode={testMode} /> : <Navigate to="/auth" />}
               />
               <Route path="/admin" element={user ? <Admin /> : <Navigate to="/auth" />} />
+              <Route path="/start" element={user ? <Onboarding /> : <Navigate to="/auth" />} />
               <Route
                 path="/plans"
                 element={<Plans />}

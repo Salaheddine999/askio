@@ -25,7 +25,8 @@ const Auth: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const handlePostAuthRedirect = async () => {
+  /** New accounts go to the guided first-chatbot setup; returning ones to the dashboard. */
+  const handlePostAuthRedirect = async (isNewAccount = false) => {
     const params = new URLSearchParams(location.search);
     const next = params.get("next");
 
@@ -34,7 +35,7 @@ const Auth: React.FC = () => {
       return;
     }
 
-    navigate("/dashboard");
+    navigate(isNewAccount ? "/start" : "/dashboard");
   };
 
   const switchMode = (next: "login" | "register" | "reset") => {
@@ -104,7 +105,7 @@ const Auth: React.FC = () => {
           aiChatbotLimit: 0,
         });
         toast.success("Registration successful!");
-        await handlePostAuthRedirect();
+        await handlePostAuthRedirect(true);
       }
     } catch (err: unknown) {
       const code = (err as { code?: string }).code || "";
@@ -128,7 +129,8 @@ const Auth: React.FC = () => {
       const googleProvider = new GoogleAuthProvider();
       const userCredential = await signInWithPopup(auth, googleProvider);
       const userDoc = await getDoc(doc(db, "users", userCredential.user.uid));
-      if (!userDoc.exists()) {
+      const isNewAccount = !userDoc.exists();
+      if (isNewAccount) {
         await setDoc(doc(db, "users", userCredential.user.uid), {
           email: userCredential.user.email?.toLowerCase() || "",
           name: userCredential.user.displayName || "",
@@ -140,7 +142,7 @@ const Auth: React.FC = () => {
           aiChatbotLimit: 0,
         });
       }
-      await handlePostAuthRedirect();
+      await handlePostAuthRedirect(isNewAccount);
     } catch (error) {
       setError((error as Error).message);
     }

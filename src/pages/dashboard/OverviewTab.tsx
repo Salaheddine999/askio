@@ -116,7 +116,7 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
             icon={Bot}
             title="Create your first chatbot"
             description="Add your FAQs, pick your colours and paste one snippet on your site. Your stats show up here as soon as visitors start chatting."
-            action={<CreateChatbotLink label="Create chatbot" />}
+            action={<CreateChatbotLink label="Create chatbot" to="/start" />}
           />
         </div>
       </div>

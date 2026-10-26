@@ -126,7 +126,7 @@ const ChatbotsTab: React.FC<ChatbotsTabProps> = ({
             icon={Bot}
             title="No chatbots yet"
             description="Create your first chatbot to start answering your visitors automatically."
-            action={<CreateChatbotLink label="Create chatbot" />}
+            action={<CreateChatbotLink label="Create chatbot" to="/start" />}
           />
         </div>
       ) : filtered.length === 0 ? (

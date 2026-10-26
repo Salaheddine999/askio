@@ -268,8 +268,11 @@ export const EmptyState: React.FC<{
   </div>
 );
 
-export const CreateChatbotLink: React.FC<{ label?: string }> = ({ label = "New chatbot" }) => (
-  <Link to="/configure" className={primaryButton}>
+export const CreateChatbotLink: React.FC<{ label?: string; to?: string }> = ({
+  label = "New chatbot",
+  to = "/configure",
+}) => (
+  <Link to={to} className={primaryButton}>
     <Plus size={16} />
     {label}
   </Link>
