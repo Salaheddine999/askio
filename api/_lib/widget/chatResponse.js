@@ -1,7 +1,7 @@
-import { generateChatResponse } from "../_lib/ai.js";
-import { assertChatbotAiAvailable } from "../_lib/plan.js";
-import { getMonthlyAiReplies, recordAiReply } from "../_lib/aiUsage.js";
-import { takeRateLimit, visitorKey } from "../_lib/rateLimit.js";
+import { generateChatResponse } from "../ai.js";
+import { assertChatbotAiAvailable } from "../plan.js";
+import { getMonthlyAiReplies, recordAiReply } from "../aiUsage.js";
+import { takeRateLimit, visitorKey } from "../rateLimit.js";
 
 const MAX_QUERY_CHARS = 1000;
 const MAX_HISTORY_MESSAGES = 6;

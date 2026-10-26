@@ -554,6 +554,7 @@ const EditChatbot: React.FC = () => {
         <Chatbot
           {...config}
           isEmbedded
+          isPreview
           customPositionClass={`${CORNER[config.position] ?? CORNER["bottom-right"]} m-4`}
         />
       )}

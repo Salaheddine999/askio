@@ -93,6 +93,7 @@ const PreviewFrame: React.FC<{ config: ChatbotConfig }> = ({ config }) => {
             key={run}
             {...config}
             isEmbedded
+            isPreview
             customPositionClass={`${CORNER[config.position] ?? CORNER["bottom-right"]} m-3`}
           />
         </div>

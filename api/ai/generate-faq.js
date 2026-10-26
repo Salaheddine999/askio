@@ -1,5 +1,6 @@
 import { requireUser } from "../_lib/auth.js";
 import { generateFaqsFromUrl } from "../_lib/ai.js";
+import { assertPublicUrl } from "../_lib/safeFetch.js";
 import { adminDb } from "../_lib/firebaseAdmin.js";
 import { assertCanUseAiForOwner, assertNotSuspended, getOwnedChatbot } from "../_lib/plan.js";
 
@@ -47,6 +48,9 @@ export default async function handler(req, res) {
     if (!normalizedUrl) {
       return res.status(400).json({ error: "Please provide a valid website URL." });
     }
+
+    // Only public websites: never localhost, private networks or cloud metadata.
+    await assertPublicUrl(normalizedUrl);
 
     const { chatbotRef, chatbotData } = await getOwnedChatbot(decodedToken.uid, chatbotId);
     const ownerProfile = await assertCanUseAiForOwner(decodedToken.uid);

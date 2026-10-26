@@ -1,4 +1,5 @@
 import { GoogleGenAI } from "@google/genai";
+import { safeFetch } from "./safeFetch.js";
 
 const apiKey = process.env.GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY;
 
@@ -10,12 +11,13 @@ function getAiClient() {
   return new GoogleGenAI({ apiKey });
 }
 
-async function fetchWithTimeout(url, options = {}, timeoutMs = 12000) {
+// `fetcher` is safeFetch for addresses a user gave us, plain fetch for our own services.
+async function fetchWithTimeout(url, options = {}, timeoutMs = 12000, fetcher = fetch) {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
   try {
-    return await fetch(url, {
+    return await fetcher(url, {
       ...options,
       signal: controller.signal,
     });
@@ -163,11 +165,7 @@ export async function generateFaqsFromUrl(url, isDeepCrawl = false, aiTone = "")
     isSpaFallback = true;
 
     try {
-      const rawResponse = await fetchWithTimeout(
-        url,
-        { headers: requestHeaders },
-        10000
-      );
+      const rawResponse = await fetchWithTimeout(url, { headers: requestHeaders }, 10000, safeFetch);
 
       if (rawResponse.ok) {
         rawHtml = await rawResponse.text();
@@ -203,7 +201,7 @@ export async function generateFaqsFromUrl(url, isDeepCrawl = false, aiTone = "")
             console.error(`Deep crawl Jina fetch failed for ${link}:`, error);
           }
 
-          const res = await fetchWithTimeout(link, { headers: requestHeaders }, 8000);
+          const res = await fetchWithTimeout(link, { headers: requestHeaders }, 8000, safeFetch);
           if (!res.ok) {
             throw new Error(`Failed to fetch ${link}`);
           }

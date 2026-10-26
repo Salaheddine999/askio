@@ -4,7 +4,7 @@ import { Send, X, ThumbsUp, ThumbsDown, MessageSquare, Sparkles, Bot } from "luc
 import { motion, AnimatePresence } from "framer-motion";
 import Fuse from "fuse.js";
 import { db } from "../utils/db";
-import { doc, setDoc, getDoc, collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { doc, getDoc } from "firebase/firestore";
 import toast from "react-hot-toast";
 import bot1 from "../assets/chat1.svg";
 import { apiRequest } from "../utils/api";
@@ -70,9 +70,16 @@ const Chatbot: React.FC<ChatbotProps> = ({
   aiEnabled,
   launcherStyle = "classic",
   greetingBubble = false,
-  user_id,
+  isPreview = false,
 }) => {
   const contactHref = normalizeContactLink(liveChatLink);
+
+  // Leads, analytics and ratings go through the server, which checks and
+  // rate-limits them. The owner's own preview isn't a visitor: it records nothing.
+  const record = async (kind: "lead" | "event" | "unanswered" | "feedback", fields: Record<string, unknown>) => {
+    if (!id || isPreview) return;
+    await apiRequest("/api/ai/record", { body: { kind, chatbotId: id, ...fields } });
+  };
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isOpen, setIsOpen] = useState(!isEmbedded);
@@ -191,13 +198,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
 
     try {
       if (id) {
-        await addDoc(collection(db, "leads"), {
-          chatbotId: id,
-          ownerId: user_id ?? null,
-          email: leadEmail.trim(),
-          timestamp: serverTimestamp(),
-          anonymousToken: anonymousToken || "anonymous",
-        });
+        await record("lead", { email: leadEmail.trim(), anonymousToken });
       }
       setIsTyping(false);
       setMessages((prev) => [
@@ -299,13 +300,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
             // Track as unanswered query
             if (id) {
               try {
-                await addDoc(collection(db, "unanswered_queries"), {
-                  chatbotId: id,
-                  ownerId: user_id ?? null,
-                  query: input,
-                  timestamp: serverTimestamp(),
-                  anonymousToken: anonymousToken,
-                });
+                await record("unanswered", { query: input, anonymousToken });
               } catch (error) {
                 console.error("Error tracking unanswered query:", error);
               }
@@ -314,14 +309,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
           
           if (id && !aiCouldNotAnswer) {
             try {
-              await addDoc(collection(db, "analytics_events"), {
-                chatbotId: id,
-                ownerId: user_id ?? null,
-                type: "ai_generated",
-                userQuery: input,
-                timestamp: serverTimestamp(),
-                anonymousToken: anonymousToken,
-              });
+              await record("event", { type: "ai_generated", userQuery: input, anonymousToken });
             } catch (error) {
               console.error("Error tracking analytics event:", error);
             }
@@ -373,15 +361,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
         // Track analytics
         if (id) {
           try {
-            await addDoc(collection(db, "analytics_events"), {
-              chatbotId: id,
-              ownerId: user_id ?? null,
-              type: "faq_matched",
-              question: matchedFaq.question,
-              userQuery: input,
-              timestamp: serverTimestamp(),
-              anonymousToken: anonymousToken,
-            });
+            await record("event", { type: "faq_matched", question: matchedFaq.question, userQuery: input, anonymousToken });
           } catch (error) {
             console.error("Error tracking analytics event:", error);
           }
@@ -412,13 +392,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
         // Track unanswered query
         if (id) {
           try {
-            await addDoc(collection(db, "unanswered_queries"), {
-              chatbotId: id,
-              ownerId: user_id ?? null,
-              query: input,
-              timestamp: serverTimestamp(),
-              anonymousToken: anonymousToken,
-            });
+            await record("unanswered", { query: input, anonymousToken });
           } catch (error) {
             console.error("Error tracking unanswered query:", error);
           }
@@ -465,14 +439,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
         // Track suggestion click analytics
         if (id) {
           try {
-            await addDoc(collection(db, "analytics_events"), {
-              chatbotId: id,
-              ownerId: user_id ?? null,
-              type: "suggestion_clicked",
-              question: matchedFaq.question,
-              timestamp: serverTimestamp(),
-              anonymousToken: anonymousToken,
-            });
+            await record("event", { type: "suggestion_clicked", question: matchedFaq.question, anonymousToken });
           } catch (error) {
             console.error("Error tracking suggestion click:", error);
           }
@@ -632,23 +599,19 @@ const Chatbot: React.FC<ChatbotProps> = ({
     }
 
     try {
-      const feedbackId = `${id}_${anonymousToken}`;
-      const feedbackRef = doc(db, "feedback", feedbackId);
-
-      await setDoc(feedbackRef, {
-        chatbotId: id,
-        // Lets the owner's dashboard read only its own ratings.
-        ownerId: user_id ?? null,
-        isPositive: isPositive,
-        timestamp: serverTimestamp(),
-        anonymousToken: anonymousToken,
-      });
+      await record("feedback", { isPositive, anonymousToken });
 
       localStorage.setItem(`feedback_${id}`, "true");
       setHasFeedback(true);
       toast.success("Thank you for your feedback!");
       setShowFeedback(false);
     } catch (error) {
+      if (error instanceof Error && /already rated/i.test(error.message)) {
+        localStorage.setItem(`feedback_${id}`, "true");
+        setHasFeedback(true);
+        setShowFeedback(false);
+        return;
+      }
       console.error("Error submitting feedback:", error);
       if (error instanceof Error) {
         toast.error(`Failed to submit feedback: ${error.message}`);
