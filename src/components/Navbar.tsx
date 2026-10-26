@@ -258,23 +258,23 @@ const Navbar: React.FC<NavbarProps> = ({
           : "bg-[#101723] dark:bg-[#D7DFE5]";
     return (
       <Link to="/settings" className={`block transition-colors hover:ring-[#B8C2CF] dark:hover:ring-[#39485B] ${card} ${focusRing}`}>
-        <p className="flex items-center gap-1.5 text-body-sm font-medium text-[#101723] dark:text-[#D7DFE5]">
-          <Sparkles size={14} className="shrink-0" />
-          {t("proPlan")}
-        </p>
-        <div className="mt-2 flex items-baseline justify-between gap-2 text-caption">
-          <span className="text-[#647184] dark:text-[#87909D]">{t("aiReplies")}</span>
-          <span className="shrink-0 font-medium tabular-nums text-[#101723] dark:text-[#D7DFE5]">
+        <div className="flex items-baseline justify-between gap-2">
+          <p className="flex items-center gap-1.5 text-body-sm font-medium text-[#101723] dark:text-[#D7DFE5]">
+            <Sparkles size={14} className="shrink-0" />
+            {t("proPlan")}
+          </p>
+          <span className="shrink-0 text-caption font-medium tabular-nums text-[#101723] dark:text-[#D7DFE5]">
             {limit === null
               ? t("repliesUsedUnlimited", { used: used.toLocaleString(t.lang) })
               : t("repliesUsed", { used: used.toLocaleString(t.lang), limit: limit.toLocaleString(t.lang) })}
           </span>
         </div>
         {limit !== null && (
-          <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-[#E0E7F0] dark:bg-[#2B3646]">
+          <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-[#E0E7F0] dark:bg-[#2B3646]">
             <div className={`h-full rounded-full ${bar}`} style={{ width: `${Math.max(ratio * 100, used > 0 ? 2 : 0)}%` }} />
           </div>
         )}
+        <p className="mt-1.5 text-caption text-[#647184] dark:text-[#87909D]">{t("aiReplies")}</p>
       </Link>
     );
   };
