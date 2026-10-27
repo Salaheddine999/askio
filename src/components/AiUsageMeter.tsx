@@ -6,6 +6,7 @@ import { db } from "../utils/db";
 import { AI_USAGE_WARNING_RATIO, PRO_AI_REPLY_LIMIT } from "../utils/pricing";
 import { useT, type Lang } from "../i18n";
 import { settingsMessages } from "../i18n/messages/settings";
+import { COMPANY } from "../pages/legal/company";
 
 type Usage = { used: number; limit: number | null };
 
@@ -109,7 +110,7 @@ const AiUsageMeter: React.FC = () => {
               ? t("usageReached", { date: resetDateLabel(t.lang) })
               : t("usageWarning", { percent: Math.round(ratio * 100), date: resetDateLabel(t.lang) })}{" "}
             <a
-              href="mailto:abw.salaheddine@gmail.com?subject=Askio%20AI%20reply%20limit"
+              href={`mailto:${COMPANY.contactEmail}?subject=Askio%20AI%20reply%20limit`}
               className="font-medium underline underline-offset-2"
             >
               {t("usageNeedMore")}

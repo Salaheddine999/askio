@@ -6,6 +6,7 @@ import { useInView } from "react-intersection-observer";
 import Badge from "./Badge";
 import HatchStrip from "./HatchStrip";
 import BillingToggle from "../../components/BillingToggle";
+import { COMPANY } from "../legal/company";
 import { PRO_AI_REPLY_LIMIT, PRO_PRICE, proYearlyMonthlyEquivalent, type BillingInterval } from "../../utils/pricing";
 
 type PlanCardProps = {
@@ -215,7 +216,7 @@ export default function PlansSection() {
               price="Custom"
               subtext="For teams that need more than 10 AI chatbots."
               ctaLabel="Talk to sales"
-              ctaHref="mailto:abw.salaheddine@gmail.com?subject=Askio%20Enterprise%20Plan"
+              ctaHref={`mailto:${COMPANY.contactEmail}?subject=Askio%20Enterprise%20Plan`}
               external
               features={[
                 "Everything in Pro",

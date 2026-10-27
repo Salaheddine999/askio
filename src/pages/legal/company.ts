@@ -4,7 +4,7 @@
 // CONFIRMED is false, both pages show a "draft" notice.
 export const COMPANY = {
   operator: "Askio",
-  contactEmail: "abw.salaheddine@gmail.com",
+  contactEmail: "support@getaskio.xyz",
   country: "Morocco",
   courts: "the competent courts of Morocco",
   effectiveDate: "October 27, 2026",

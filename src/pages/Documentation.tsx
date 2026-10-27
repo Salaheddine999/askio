@@ -26,6 +26,7 @@ import { EmptyState, SearchInput, focusRing, surface } from "./dashboard/ui";
 import { useT } from "../i18n";
 import { docsMessages } from "../i18n/messages/docs";
 import { docsContent, type GuideContent, type GuideId } from "../i18n/messages/docs-content";
+import { COMPANY } from "./legal/company";
 
 interface Guide extends GuideContent {
   id: GuideId;
@@ -306,7 +307,7 @@ const Documentation: React.FC<{ toggleSidebar: () => void }> = () => {
 
             <p className="flex items-center gap-2 px-1 text-body-sm text-[#647184] dark:text-[#87909D]">
               <Check size={15} className="text-emerald-500" />
-              {t("stillStuckBefore")} <a href="mailto:abw.salaheddine@gmail.com" className="font-medium text-[#101723] underline underline-offset-2 dark:text-[#D7DFE5]">abw.salaheddine@gmail.com</a> {t("stillStuckAfter")}
+              {t("stillStuckBefore")} <a href={`mailto:${COMPANY.contactEmail}`} className="font-medium text-[#101723] underline underline-offset-2 dark:text-[#D7DFE5]">{COMPANY.contactEmail}</a> {t("stillStuckAfter")}
             </p>
           </div>
         </div>
