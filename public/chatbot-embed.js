@@ -80,15 +80,6 @@
       var currentPosition = "bottom-right";
       var greetingSize = null;
 
-      function toggleChatbot() {
-        isOpen = !isOpen;
-        updatePosition(currentPosition, isOpen);
-        iframe.contentWindow.postMessage(
-          { type: "toggleChatbot", isOpen },
-          "*"
-        );
-      }
-
       // The orb launcher's eyes follow the visitor's pointer across the page.
       // Positions are sent relative to the iframe, at most once per frame, and
       // only while the chat is closed.
@@ -136,13 +127,9 @@
         if (touchOnly) window.addEventListener("scroll", onScroll, { passive: true });
       }
 
-      iframe.addEventListener("load", function () {
-        iframe.contentWindow.addEventListener("click", function (e) {
-          if (e.target.closest("button")) {
-            toggleChatbot();
-          }
-        });
-      });
+      // Opening and closing is reported by the widget ("chatbotState" below).
+      // Reaching into the frame instead only works on our own domain and
+      // throws a SecurityError on every other site.
 
       window.addEventListener("message", function (event) {
         if (event.data.type === "chatbotReady") {

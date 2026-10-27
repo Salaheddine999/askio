@@ -82,7 +82,7 @@ export default async function handler(req, res) {
     } catch (error) {
       // Out of quota, overloaded or slow: the widget answers from the FAQs.
       if (error.statusCode !== 503) throw error;
-      reportError(error, { route: "chat-response", aiStatus: error.aiStatus });
+      if (!error.expected) reportError(error, { route: "chat-response", aiStatus: error.aiStatus });
       return sendFallback(res, "ai_error");
     }
 

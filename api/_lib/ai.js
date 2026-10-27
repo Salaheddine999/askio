@@ -58,6 +58,9 @@ async function generate(models, request, timeoutMs) {
   );
   failure.statusCode = 503;
   failure.aiStatus = lastStatus;
+  // Out of quota, overloaded or slow happens and passes; anything else (a
+  // bad key, a retired model) needs a look, so only that is reported.
+  failure.expected = lastStatus === 0 || RETRY_ON.has(lastStatus);
   throw failure;
 }
 
