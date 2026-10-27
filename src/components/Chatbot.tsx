@@ -1,16 +1,17 @@
 import brandLogo from "../assets/logo.svg";
 import React, { useState, useEffect, useRef, useMemo } from "react";
-import { Send, X, ThumbsUp, ThumbsDown, MessageSquare, Sparkles, Bot } from "lucide-react";
+import { Send, X, ThumbsUp, ThumbsDown, MessageSquare, Sparkles, Bot, UserRound } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Fuse from "fuse.js";
 import { db } from "../utils/db";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, onSnapshot } from "firebase/firestore";
 import toast from "react-hot-toast";
 import bot1 from "../assets/chat1.svg";
 import { apiRequest } from "../utils/api";
 import { LiveOrb } from "./LiveOrb";
 import { headerOrbPropsFor, orbPropsFor, type LauncherStyle } from "../utils/orbColors";
 import { isOwnerBrowsing } from "../utils/ownerSession";
+import { isPresenceOnline, LIVE_WAIT_MS, type LiveStatus } from "../utils/liveChat";
 import { normalizeContactLink } from "../utils/links";
 import { pickSuggested, SUGGESTED_QUESTIONS as MAX_SUGGESTIONS } from "../utils/suggestions";
 import { isLang, makeT, type Lang } from "../i18n";
@@ -18,16 +19,17 @@ import { widgetMessages } from "../i18n/widget";
 
 type Message = {
   text: string;
-  sender: "user" | "bot";
+  /** "agent" is the owner answering live; "notice" is a line like "Sara joined". */
+  sender: "user" | "bot" | "agent" | "notice";
   isFallback?: boolean;
   isLeadCapture?: boolean;
+  name?: string;
 };
 
 /** How long the launcher waits before showing the greeting bubble. */
 const GREETING_DELAY_MS = 4000;
 /** How long the orb looks at the bubble before following the pointer again. */
 const GREETING_GLANCE_MS = 1500;
-
 
 // Matches the length limit in the Firestore rules for logged questions.
 const MAX_MESSAGE_LENGTH = 2000;
@@ -55,6 +57,8 @@ export interface ChatbotProps {
   suspended?: boolean;
   /** The owner saves conversations (Pro): messages are sent to be stored, and visitors are told. */
   saveConversations?: boolean;
+  /** Visitors can ask for the owner while they're online in the dashboard (Pro). */
+  liveChat?: boolean;
   /** The language of the widget's own text, for visitors. English by default. */
   language?: Lang;
   /** The chatbot owner's uid, from the saved config. */
@@ -81,6 +85,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
   isPreview = false,
   language,
   saveConversations = false,
+  liveChat = false,
 }) => {
   const t = useMemo(() => makeT(widgetMessages, isLang(language) ? language : "en"), [language]);
   const contactHref = normalizeContactLink(liveChatLink);
@@ -143,7 +148,8 @@ const Chatbot: React.FC<ChatbotProps> = ({
     const fresh = messages.slice(savedCount.current);
     savedCount.current = Math.max(messages.length, 1);
     for (const message of fresh) {
-      if (!message.text) continue;
+      // The owner's live replies are already saved; notices are only shown.
+      if (!message.text || message.sender === "agent" || message.sender === "notice") continue;
       saveQueue.current = saveQueue.current
         .then(() =>
           record("message", {
@@ -301,6 +307,102 @@ const Chatbot: React.FC<ChatbotProps> = ({
     }
   };
 
+  // Live chat: when the owner is online, a visitor can ask for them. The
+  // owner's online status and, once asked, this conversation are followed in
+  // Firestore; the bot stays quiet until the owner ends the chat.
+  const canTalkLive = liveChat && saveConversations && !!id && !!user_id && !isPreview && !isOwnerBrowsing(user_id);
+  const [ownerOnline, setOwnerOnline] = useState(false);
+  useEffect(() => {
+    if (!canTalkLive || !user_id) return;
+    let latest: Record<string, unknown> | undefined;
+    const update = () => setOwnerOnline(isPresenceOnline(latest));
+    const unsubscribe = onSnapshot(
+      doc(db, "presence", user_id),
+      (snap) => {
+        latest = snap.data();
+        update();
+      },
+      () => setOwnerOnline(false)
+    );
+    // Online goes stale without a fresh heartbeat; check now and then.
+    const timer = window.setInterval(update, 30_000);
+    return () => {
+      unsubscribe();
+      window.clearInterval(timer);
+    };
+  }, [canTalkLive, user_id]);
+
+  const [live, setLive] = useState<{ status: LiveStatus; name: string } | null>(null);
+  const liveRef = useRef(live);
+  liveRef.current = live;
+  const [liveFollowing, setLiveFollowing] = useState(false);
+  const seenAgentMessages = useRef(0);
+  const agentLabel = (name?: string) => name || t("teamName");
+
+  const requestPerson = async () => {
+    if (liveRef.current || !id) return;
+    setLive({ status: "waiting", name: "" });
+    setShowSuggestions(false);
+    setMessages((prev) => [...prev, { text: t("liveWaiting"), sender: "bot" }]);
+    try {
+      await apiRequest("/api/ai/record", { body: { kind: "handoff", action: "request", chatbotId: id, sessionId, anonymousToken } });
+      setLiveFollowing(true);
+    } catch {
+      setLive(null);
+      setMessages((prev) => [...prev, { text: t("liveUnavailable"), sender: "bot", isFallback: true }]);
+    }
+  };
+
+  useEffect(() => {
+    if (!liveFollowing || !id) return;
+    return onSnapshot(
+      doc(db, "conversations", `${id}_${sessionId}`),
+      (snap) => {
+        const data = snap.data();
+        if (!data) return;
+        const agent = (Array.isArray(data.messages) ? data.messages : [])
+          .filter((m: { role?: string }) => m.role === "agent")
+          .sort((a: { at: number }, b: { at: number }) => a.at - b.at);
+        const fresh = agent.slice(seenAgentMessages.current);
+        seenAgentMessages.current = agent.length;
+        const name = typeof data.agentName === "string" ? data.agentName : "";
+        const current = liveRef.current;
+        const added: Message[] = [];
+        if (data.liveStatus === "active" && current?.status === "waiting") {
+          added.push({ text: t("liveJoined", { name: agentLabel(name) }), sender: "notice" });
+          react("happy");
+        }
+        for (const m of fresh) added.push({ text: m.text, sender: "agent", name: m.name || name });
+        if ((data.liveStatus === "ended" || data.liveStatus === "missed") && current) {
+          if (data.liveStatus === "ended") added.push({ text: t("liveEnded", { name: agentLabel(current.name || name) }), sender: "notice" });
+          setLive(null);
+          setLiveFollowing(false);
+        } else if (data.liveStatus === "active" || data.liveStatus === "waiting") {
+          setLive({ status: data.liveStatus, name });
+        }
+        if (added.length) setMessages((prev) => [...prev, ...added]);
+      },
+      () => undefined
+    );
+  }, [liveFollowing, id, sessionId]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Nobody answered in time: let go, and offer the email form or contact link.
+  useEffect(() => {
+    if (live?.status !== "waiting" || !liveFollowing) return;
+    const timer = window.setTimeout(() => {
+      void apiRequest("/api/ai/record", { body: { kind: "handoff", action: "cancel", chatbotId: id, sessionId, anonymousToken } }).catch(() => undefined);
+      setLive(null);
+      setLiveFollowing(false);
+      const leadCapture = enableLeadCapture === true || (enableLeadCapture as unknown as string) === "true";
+      setMessages((prev) => [
+        ...prev,
+        { text: t("liveNoAnswer"), sender: "bot", isFallback: !leadCapture },
+        ...(leadCapture ? [{ text: t("leadAsk"), sender: "bot" as const, isLeadCapture: true }] : []),
+      ]);
+    }, LIVE_WAIT_MS);
+    return () => window.clearTimeout(timer);
+  }, [live?.status, liveFollowing]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const handleSend = async (e?: React.FormEvent) => {
     if (e) {
       e.preventDefault();
@@ -311,6 +413,8 @@ const Chatbot: React.FC<ChatbotProps> = ({
     setMessages((prev) => [...prev, { text: input, sender: "user" }]);
     setShowSuggestions(false);
     setInput("");
+    // A person is (or is about to be) answering: no bot reply.
+    if (liveRef.current) return;
 
     let matchedFaq: { question: string; answer: string } | undefined;
 
@@ -679,7 +783,16 @@ const Chatbot: React.FC<ChatbotProps> = ({
   // With the orb launcher, the orb carries into the chat as the bot's face.
   const useOrb = launcherStyle === "orb";
   const orbMood = isTyping ? "thinking" : reaction ?? (inputFocused && input.trim() ? "listening" : "idle");
-  const statusText = !useOrb ? t("readyToChat") : orbMood === "thinking" ? t("thinking") : orbMood === "listening" ? t("listening") : t("readyToChat");
+  const statusText =
+    live?.status === "waiting"
+      ? t("liveConnecting")
+      : !useOrb
+        ? t("readyToChat")
+        : orbMood === "thinking"
+          ? t("thinking")
+          : orbMood === "listening"
+            ? t("listening")
+            : t("readyToChat");
 
   const isLeftPosition = position.endsWith("left");
   // The orb glances toward the bubble as it appears.
@@ -810,16 +923,26 @@ const Chatbot: React.FC<ChatbotProps> = ({
             <div className="flex min-w-0 items-center gap-1.5 mt-0.5 whitespace-nowrap">
               {/* Visitors should always know they aren't talking to a person (EU AI Act, art. 50).
                   The green dot on the avatar already shows the chat is online. */}
-              <span className="flex shrink-0 items-center gap-1 text-[11px] font-medium text-white/75">
-                {aiEnabled ? (
-                  <Sparkles size={11} strokeWidth={2.25} className="shrink-0" aria-hidden="true" />
-                ) : (
-                  <Bot size={12} strokeWidth={2.25} className="shrink-0" aria-hidden="true" />
-                )}
-                {aiEnabled ? t("aiAssistant") : t("automatedAssistant")}
-              </span>
-              <span className="shrink-0 text-white/30">·</span>
-              <span className="min-w-0 truncate text-[11px] text-white/50" aria-live="polite">{statusText}</span>
+              {live?.status === "active" ? (
+                // A person is answering now, so say so instead of "AI assistant".
+                <span className="flex min-w-0 items-center gap-1 text-[11px] font-medium text-white/80" aria-live="polite">
+                  <UserRound size={12} strokeWidth={2.25} className="shrink-0" aria-hidden="true" />
+                  <span className="truncate">{t("liveWith", { name: agentLabel(live.name) })}</span>
+                </span>
+              ) : (
+                <>
+                  <span className="flex shrink-0 items-center gap-1 text-[11px] font-medium text-white/75">
+                    {aiEnabled ? (
+                      <Sparkles size={11} strokeWidth={2.25} className="shrink-0" aria-hidden="true" />
+                    ) : (
+                      <Bot size={12} strokeWidth={2.25} className="shrink-0" aria-hidden="true" />
+                    )}
+                    {aiEnabled ? t("aiAssistant") : t("automatedAssistant")}
+                  </span>
+                  <span className="shrink-0 text-white/30">·</span>
+                  <span className="min-w-0 truncate text-[11px] text-white/50" aria-live="polite">{statusText}</span>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -838,7 +961,17 @@ const Chatbot: React.FC<ChatbotProps> = ({
       {/* Messages Area */}
       <div className="flex-grow overflow-y-auto px-4 py-4 space-y-3 [scrollbar-width:thin] [scrollbar-color:rgba(100,113,132,0.35)_transparent]">
         <AnimatePresence>
-          {messages.map((message, index) => (
+          {messages.map((message, index) =>
+            message.sender === "notice" ? (
+              <motion.p
+                key={index}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="text-center text-[11px] text-[#647184] dark:text-[#9BAABD]"
+              >
+                {message.text}
+              </motion.p>
+            ) : (
             <motion.div
               key={index}
               initial={{ opacity: 0, y: 8 }}
@@ -853,14 +986,37 @@ const Chatbot: React.FC<ChatbotProps> = ({
                 className={`inline-block px-3.5 py-2.5 max-w-[80%] text-[13px] leading-relaxed ${
                   message.sender === "user"
                     ? "text-white rounded-2xl rounded-br-md"
-                    : "bg-[#E7EDF6] dark:bg-[#1A2533] text-[#101723] dark:text-[#D7DFE5] rounded-2xl rounded-bl-md"
+                    : message.sender === "agent"
+                      ? "bg-emerald-50 dark:bg-emerald-950/30 ring-1 ring-emerald-200 dark:ring-emerald-900/60 text-[#101723] dark:text-[#D7DFE5] rounded-2xl rounded-bl-md"
+                      : "bg-[#E7EDF6] dark:bg-[#1A2533] text-[#101723] dark:text-[#D7DFE5] rounded-2xl rounded-bl-md"
                 }`}
                 style={message.sender === "user" ? userMessageStyle : {}}
               >
+                {message.sender === "agent" && (
+                  <span className="mb-0.5 flex items-center gap-1 text-[11px] font-semibold text-emerald-700 dark:text-emerald-300">
+                    <UserRound size={11} aria-hidden="true" />
+                    {agentLabel(message.name)}
+                  </span>
+                )}
                 {message.text}
                 
                 {/* Fallback Live Chat Link */}
-                {message.isFallback && index === lastFallbackIndex && contactHref && (
+                {message.isFallback && index === lastFallbackIndex && canTalkLive && ownerOnline && !live && (
+                  <div className="mt-2.5 flex justify-start">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        void requestPerson();
+                      }}
+                      className="inline-flex items-center justify-center bg-[#F9FCFF] dark:bg-[#273444] hover:bg-[#F3F7FC] dark:hover:bg-[#39485B] text-[#101723] dark:text-[#D7DFE5] text-[12px] font-medium py-1.5 px-3 rounded-md shadow-sm border border-[#D8DFE9] dark:border-[#39485B] transition-colors gap-1.5"
+                    >
+                      <span className="h-2 w-2 rounded-full bg-emerald-500" aria-hidden="true" />
+                      {t("chatWithPersonNow")}
+                    </button>
+                  </div>
+                )}
+                {message.isFallback && index === lastFallbackIndex && contactHref && !(canTalkLive && ownerOnline && !live) && (
                   <div className="mt-2.5 flex justify-start">
                     <a
                       href={contactHref}
@@ -920,7 +1076,8 @@ const Chatbot: React.FC<ChatbotProps> = ({
                 )}
               </div>
             </motion.div>
-          ))}
+            )
+          )}
 
           {/* Suggestion Chips */}
           {showSuggestions &&
@@ -975,6 +1132,19 @@ const Chatbot: React.FC<ChatbotProps> = ({
 
       {/* Input Area */}
       <div className="px-4 py-3 border-t border-[#D8DFE9]/60 dark:border-[#2B3646]/60 bg-[#F3F7FC] dark:bg-[#141D2B]">
+        {canTalkLive && ownerOnline && !live && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              void requestPerson();
+            }}
+            className="mb-2 inline-flex items-center gap-1.5 rounded-full text-[12px] font-medium text-[#566273] transition-colors hover:text-[#101723] dark:text-[#9BAABD] dark:hover:text-[#D7DFE5]"
+          >
+            <span className="h-2 w-2 rounded-full bg-emerald-500" aria-hidden="true" />
+            {t("talkToPerson")}
+          </button>
+        )}
         <form onSubmit={handleSend} className="flex items-center gap-2">
           <input
             type="text"

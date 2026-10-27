@@ -1,5 +1,5 @@
 import BrandLogo from "./BrandLogo";
-import React, { Fragment, useEffect, useState } from "react";
+import React, { Fragment, useEffect, useRef, useState } from "react";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import { Menu, Transition } from "@headlessui/react";
 import { auth } from "../utils/firebase";
@@ -26,6 +26,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { collection, onSnapshot, query, where } from "firebase/firestore";
+import { PRESENCE_HEARTBEAT_MS, playChime, readOnlineChoice, saveOnlineChoice, writePresence } from "../utils/liveChat";
 import { db } from "../utils/db";
 import BotAvatar from "./BotAvatar";
 import { DUMMY_CHATBOTS } from "../utils/dummyData";
@@ -212,6 +213,65 @@ const Navbar: React.FC<NavbarProps> = ({
 
   // Plan card: an upgrade prompt on Free, this month's AI replies on Pro.
   const { plan, canUseAi, loading: planLoading } = usePlanAccess();
+
+  // Live chat (Pro): while the switch is on, the dashboard keeps your
+  // "online" status fresh, and tells you when a visitor asks for a person.
+  const [liveOnline, setLiveOnline] = useState(readOnlineChoice);
+  const liveOn = liveOnline && canUseAi && !!uid && !testMode;
+  useEffect(() => {
+    if (!liveOn || !uid) return;
+    const beat = () => void writePresence(uid, true).catch(() => undefined);
+    beat();
+    const timer = window.setInterval(beat, PRESENCE_HEARTBEAT_MS);
+    const leave = () => void writePresence(uid, false).catch(() => undefined);
+    window.addEventListener("pagehide", leave);
+    return () => {
+      window.clearInterval(timer);
+      window.removeEventListener("pagehide", leave);
+      leave();
+    };
+  }, [liveOn, uid]);
+
+  const [waiting, setWaiting] = useState(0);
+  const seenWaiting = useRef<Set<string> | null>(null);
+  useEffect(() => {
+    if (!liveOn || !uid) {
+      setWaiting(0);
+      seenWaiting.current = null;
+      return;
+    }
+    return onSnapshot(
+      query(collection(db, "conversations"), where("ownerId", "==", uid), where("liveStatus", "==", "waiting")),
+      (snap) => {
+        setWaiting(snap.size);
+        const ids = new Set(snap.docs.map((d) => d.id));
+        // The first snapshot is who's already waiting; alert only for new ones.
+        const fresh = seenWaiting.current ? snap.docs.filter((d) => !seenWaiting.current!.has(d.id)) : [];
+        seenWaiting.current = ids;
+        if (fresh.length === 0) return;
+        playChime();
+        if (typeof Notification !== "undefined" && Notification.permission === "granted") {
+          const preview = fresh[0].data().preview;
+          const note = new Notification(t("liveNotifyTitle"), { body: preview || t("liveNotifyBody"), tag: fresh[0].id });
+          note.onclick = () => {
+            window.focus();
+            navigate(`/conversations?open=${fresh[0].id}`);
+            note.close();
+          };
+        }
+      },
+      () => setWaiting(0)
+    );
+  }, [liveOn, uid]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const toggleLive = () => {
+    const next = !liveOnline;
+    setLiveOnline(next);
+    saveOnlineChoice(next);
+    if (next && typeof Notification !== "undefined" && Notification.permission === "default") {
+      void Notification.requestPermission();
+    }
+  };
   const [usage, setUsage] = useState<AiUsage | null>(null);
   useEffect(() => {
     if (!uid || !canUseAi) {
@@ -280,7 +340,8 @@ const Navbar: React.FC<NavbarProps> = ({
   };
 
   const renderLink = ({ title, href, icon: Icon, count }: NavItem) => {
-    const n = count ? counts[count] : 0;
+    const live = count === "conversations" && waiting > 0;
+    const n = live ? waiting : count ? counts[count] : 0;
     return (
       <li key={href}>
         <NavLink
@@ -293,16 +354,24 @@ const Navbar: React.FC<NavbarProps> = ({
               <span className="relative shrink-0">
                 <Icon size={18} strokeWidth={isActive ? 2.1 : 1.8} className={isActive ? "" : "opacity-80"} />
                 {n > 0 && collapsed && (
-                  <span className="absolute -right-1 -top-1 hidden h-2 w-2 rounded-full bg-[#101723] ring-2 ring-[#EDF2F8] lg:block dark:bg-[#D7DFE5] dark:ring-[#17212F]" />
+                  <span
+                    className={`absolute -right-1 -top-1 hidden h-2 w-2 rounded-full ring-2 ring-[#EDF2F8] lg:block dark:ring-[#17212F] ${
+                      live ? "bg-emerald-500" : "bg-[#101723] dark:bg-[#D7DFE5]"
+                    }`}
+                  />
                 )}
               </span>
               <span className={`flex-1 truncate ${hideWhenCollapsed}`}>{t(title)}</span>
               {n > 0 && (
                 <span
-                  className={`min-w-[22px] rounded-full bg-[#101723] px-1.5 text-center text-[11px] font-semibold leading-5 text-white dark:bg-[#D7DFE5] dark:text-[#141D2B] ${hideWhenCollapsed}`}
+                  className={`min-w-[22px] rounded-full px-1.5 text-center text-[11px] font-semibold leading-5 ${hideWhenCollapsed} ${
+                    live
+                      ? "bg-emerald-500 text-white"
+                      : "bg-[#101723] text-white dark:bg-[#D7DFE5] dark:text-[#141D2B]"
+                  }`}
                 >
                   <span aria-hidden>{n > 99 ? "99+" : n}</span>
-                  <span className="sr-only">{t.plural("newCount", n)}</span>
+                  <span className="sr-only">{live ? t.plural("waitingCount", n) : t.plural("newCount", n)}</span>
                 </span>
               )}
             </>
@@ -455,6 +524,36 @@ const Navbar: React.FC<NavbarProps> = ({
 
         {/* Footer */}
         <div className="shrink-0 space-y-2 p-3">
+          {canUseAi && !testMode && (
+            <button
+              type="button"
+              role="switch"
+              aria-checked={liveOnline}
+              onClick={toggleLive}
+              title={collapsed ? t(liveOnline ? "liveOnline" : "liveOffline") : t("liveHint")}
+              className={`flex h-9 w-full items-center gap-2.5 rounded-lg px-2.5 text-body-sm text-[#566273] transition-colors hover:bg-[#E0E7F0] hover:text-[#101723] dark:text-[#9BAABD] dark:hover:bg-[#1F2B3A] dark:hover:text-[#D7DFE5] ${focusRing} ${
+                collapsed ? "lg:justify-center lg:px-0" : ""
+              }`}
+            >
+              <span
+                aria-hidden
+                className={`h-2.5 w-2.5 shrink-0 rounded-full ${liveOnline ? "bg-emerald-500 ring-4 ring-emerald-500/15" : "bg-[#B8C2CF] dark:bg-[#4A5A6E]"}`}
+              />
+              <span className={`flex-1 truncate text-left font-medium ${hideWhenCollapsed}`}>
+                {t(liveOnline ? "liveOnline" : "liveOffline")}
+              </span>
+              <span
+                aria-hidden
+                className={`relative h-4 w-7 shrink-0 rounded-full transition-colors ${hideWhenCollapsed} ${
+                  liveOnline ? "bg-emerald-500" : "bg-[#D7DFE5] dark:bg-[#39485B]"
+                }`}
+              >
+                <span
+                  className={`absolute top-0.5 h-3 w-3 rounded-full bg-white shadow transition-[left] ${liveOnline ? "left-[14px]" : "left-0.5"}`}
+                />
+              </span>
+            </button>
+          )}
           {renderPlanCard()}
           <ul className="space-y-0.5">{footerLinks.map(renderLink)}</ul>
           {testMode && (

@@ -296,7 +296,7 @@ const EditChatbot: React.FC = () => {
     setSaving(true);
     try {
       const { id: chatbotId, ...chatbotConfig } = toSave;
-      const result = await apiRequest<{ chatbotId: string; aiEnabled: boolean; saveConversations?: boolean }>("/api/chatbots/save", {
+      const result = await apiRequest<{ chatbotId: string; aiEnabled: boolean; saveConversations?: boolean; liveChat?: boolean }>("/api/chatbots/save", {
         authRequired: true,
         body: { chatbotId, config: chatbotConfig },
       });
@@ -306,6 +306,7 @@ const EditChatbot: React.FC = () => {
         id: result.chatbotId,
         aiEnabled: result.aiEnabled,
         saveConversations: result.saveConversations === true,
+        liveChat: result.liveChat === true,
       };
       loadedId.current = result.chatbotId;
       setConfig(next);

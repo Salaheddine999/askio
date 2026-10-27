@@ -293,13 +293,27 @@ const GeneralTab: React.FC<Props> = ({ config, onChange, errors, onLinkBlur, can
 
       <Panel title={t("historyTitle")} description={t("historyDesc")}>
         {canUseAi ? (
-          <Row label={t("saveConversations")} hint={t("saveConversationsHint")}>
-            <Switch
-              checked={config.saveConversations === true}
-              onChange={(v) => onChange("saveConversations", v)}
-              label={t("saveConversations")}
-            />
-          </Row>
+          <>
+            <Row label={t("saveConversations")} hint={t("saveConversationsHint")}>
+              <Switch
+                checked={config.saveConversations === true}
+                onChange={(v) => {
+                  onChange("saveConversations", v);
+                  // Live chat replies inside the saved conversation.
+                  if (!v && config.liveChat) onChange("liveChat", false);
+                }}
+                label={t("saveConversations")}
+              />
+            </Row>
+            <Row label={t("liveChat")} hint={config.saveConversations ? t("liveChatHint") : t("liveChatNeedsHistory")}>
+              <Switch
+                checked={config.liveChat === true}
+                onChange={(v) => onChange("liveChat", v)}
+                label={t("liveChat")}
+                disabled={config.saveConversations !== true}
+              />
+            </Row>
+          </>
         ) : (
           <div className="flex flex-col gap-4 px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
             <div className="flex min-w-0 items-start gap-3">

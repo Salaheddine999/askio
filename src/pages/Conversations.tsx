@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { markConversationsSeen } from "../utils/sidebarCounts";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { toast } from "react-hot-toast";
 import { format, formatDistanceToNowStrict } from "date-fns";
@@ -10,15 +10,18 @@ import {
   deleteDoc,
   doc,
   getDocs,
+  onSnapshot,
   orderBy,
   query,
   where,
   Timestamp,
   type DocumentData,
-  type QueryDocumentSnapshot,
+  type DocumentSnapshot,
 } from "firebase/firestore";
-import { ArrowLeft, Bot, Check, ChevronsUpDown, Copy, Mail, MessagesSquare, Trash2 } from "lucide-react";
+import { ArrowLeft, Bot, Check, ChevronsUpDown, Copy, Mail, MessagesSquare, Send, Trash2 } from "lucide-react";
 import { auth } from "../utils/firebase";
+import { apiRequest } from "../utils/api";
+import type { LiveStatus } from "../utils/liveChat";
 import { db } from "../utils/db";
 import { DUMMY_CHATBOTS } from "../utils/dummyData";
 import BotAvatar from "../components/BotAvatar";
@@ -39,9 +42,11 @@ interface ChatbotInfo {
 }
 
 interface ChatMessage {
-  role: "visitor" | "bot";
+  role: "visitor" | "bot" | "agent";
   text: string;
   at: number;
+  /** For "agent": the first name the visitor saw. */
+  name?: string;
 }
 
 interface Conversation {
@@ -53,12 +58,14 @@ interface Conversation {
   lastMessageAt: Date | null;
   leadEmail: string | null;
   messages: ChatMessage[];
+  liveStatus: LiveStatus | null;
+  liveRequestedAt: Date | null;
 }
 
 const toDate = (value: unknown) => (value instanceof Timestamp ? value.toDate() : null);
 
-function toConversation(d: QueryDocumentSnapshot<DocumentData>): Conversation {
-  const data = d.data();
+function toConversation(d: DocumentSnapshot<DocumentData>): Conversation {
+  const data = d.data() ?? {};
   const messages: ChatMessage[] = Array.isArray(data.messages) ? data.messages : [];
   return {
     id: d.id,
@@ -70,8 +77,12 @@ function toConversation(d: QueryDocumentSnapshot<DocumentData>): Conversation {
     leadEmail: data.leadEmail ?? null,
     // arrayUnion keeps insertion order, but sort by time to be safe.
     messages: [...messages].sort((a, b) => a.at - b.at),
+    liveStatus: data.liveStatus ?? null,
+    liveRequestedAt: toDate(data.liveRequestedAt),
   };
 }
+
+const isLive = (c: Conversation | null | undefined) => c?.liveStatus === "waiting" || c?.liveStatus === "active";
 
 // Test mode: a few believable chats so the page can be seen without real data.
 function sampleConversations(): Conversation[] {
@@ -89,6 +100,8 @@ function sampleConversations(): Conversation[] {
       lastMessageAt: new Date(messages[messages.length - 1].at),
       leadEmail,
       messages,
+      liveStatus: null,
+      liveRequestedAt: null,
     };
   };
   return [
@@ -169,11 +182,41 @@ const Transcript: React.FC<{
   const [confirming, setConfirming] = useState(false);
   const bottom = useRef<HTMLDivElement>(null);
   const visitorColor = chatbot?.secondaryColor || chatbot?.primaryColor || "#243040";
+  const live = isLive(conversation);
+  const [reply, setReply] = useState("");
+  const [sending, setSending] = useState(false);
 
   useEffect(() => {
     setConfirming(false);
+    setReply("");
     bottom.current?.scrollIntoView({ block: "end" });
   }, [conversation.id]);
+  // New live messages scroll into view.
+  useEffect(() => {
+    if (live) bottom.current?.scrollIntoView({ block: "end", behavior: "smooth" });
+  }, [conversation.messages.length, live]);
+
+  const send = async () => {
+    const text = reply.trim();
+    if (!text || sending) return;
+    setSending(true);
+    try {
+      await apiRequest("/api/account/live-reply", { authRequired: true, body: { conversationId: conversation.id, text } });
+      setReply("");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : t("replyFailed"));
+    } finally {
+      setSending(false);
+    }
+  };
+  const endChat = async () => {
+    try {
+      await apiRequest("/api/account/live-end", { authRequired: true, body: { conversationId: conversation.id } });
+      toast.success(t("chatEnded"));
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : t("endFailed"));
+    }
+  };
 
   return (
     <div className="flex h-full min-h-0 flex-col">
@@ -239,9 +282,31 @@ const Transcript: React.FC<{
         </div>
       )}
 
+      {live && (
+        <div className="flex items-center gap-3 border-b border-[#E7EDF6] bg-emerald-50/70 px-5 py-2.5 text-caption text-emerald-900 dark:border-[#2B3646] dark:bg-emerald-950/25 dark:text-emerald-200">
+          <span className="relative flex h-2.5 w-2.5 shrink-0">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60 motion-reduce:hidden" />
+            <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500" />
+          </span>
+          <span className="min-w-0 flex-1">
+            {conversation.liveStatus === "waiting"
+              ? t("waitingBanner", {
+                  time: conversation.liveRequestedAt
+                    ? formatDistanceToNowStrict(conversation.liveRequestedAt, { addSuffix: true, locale })
+                    : t("justNow"),
+                })
+              : t("activeBanner")}
+          </span>
+          <button type="button" onClick={endChat} className={`${secondaryButton} h-7 shrink-0 px-2.5 text-caption`}>
+            {t("endChat")}
+          </button>
+        </div>
+      )}
+
       <div className="min-h-0 flex-1 space-y-3 overflow-y-auto bg-[#F3F7FC] px-5 py-5 [scrollbar-width:thin] dark:bg-[#141D2B]">
         {conversation.messages.map((m, i) => {
           const isVisitor = m.role === "visitor";
+          const isAgent = m.role === "agent";
           return (
             <div key={`${m.at}-${i}`} className={`flex ${isVisitor ? "justify-end" : "justify-start"}`}>
               <div className="max-w-[80%]">
@@ -249,14 +314,16 @@ const Transcript: React.FC<{
                   className={`whitespace-pre-wrap break-words rounded-2xl px-3.5 py-2 text-body-sm leading-relaxed ${
                     isVisitor
                       ? "rounded-br-md text-white dark:ring-1 dark:ring-white/15"
-                      : "rounded-bl-md bg-[#F9FCFF] text-[#101723] ring-1 ring-[#E7EDF6] dark:bg-[#1A2533] dark:text-[#D7DFE5] dark:ring-[#2B3646]"
+                      : isAgent
+                        ? "rounded-bl-md bg-emerald-50 text-[#101723] ring-1 ring-emerald-200 dark:bg-emerald-950/30 dark:text-[#D7DFE5] dark:ring-emerald-900/60"
+                        : "rounded-bl-md bg-[#F9FCFF] text-[#101723] ring-1 ring-[#E7EDF6] dark:bg-[#1A2533] dark:text-[#D7DFE5] dark:ring-[#2B3646]"
                   }`}
                   style={isVisitor ? { background: visitorColor } : undefined}
                 >
                   {m.text}
                 </div>
                 <p className={`mt-1 text-[11px] text-[#87909D] ${isVisitor ? "text-right" : ""}`}>
-                  {isVisitor ? t("visitor") : chatbot?.title || "Bot"} · {format(new Date(m.at), t("timeFormat"), { locale })}
+                  {isVisitor ? t("visitor") : isAgent ? t("you") : chatbot?.title || "Bot"} · {format(new Date(m.at), t("timeFormat"), { locale })}
                 </p>
               </div>
             </div>
@@ -264,6 +331,36 @@ const Transcript: React.FC<{
         })}
         <div ref={bottom} />
       </div>
+
+      {live && (
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            void send();
+          }}
+          className="flex items-end gap-2 border-t border-[#E7EDF6] px-4 py-3 dark:border-[#2B3646]"
+        >
+          <textarea
+            value={reply}
+            onChange={(e) => setReply(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                void send();
+              }
+            }}
+            rows={1}
+            maxLength={1000}
+            placeholder={t("replyPlaceholder")}
+            aria-label={t("replyPlaceholder")}
+            className={`min-h-[38px] flex-1 resize-none rounded-lg border border-[#D8DFE9] bg-[#F9FCFF] px-3 py-2 text-body-sm text-[#101723] placeholder:text-[#87909D] dark:border-[#2B3646] dark:bg-[#1A2533] dark:text-[#D7DFE5] ${focusRing}`}
+          />
+          <button type="submit" disabled={!reply.trim() || sending} className={`${primaryButton} h-[38px] shrink-0`} aria-label={t("send")}>
+            <Send size={15} />
+            <span className="hidden sm:inline">{t("send")}</span>
+          </button>
+        </form>
+      )}
     </div>
   );
 };
@@ -277,6 +374,16 @@ const Conversations: React.FC<{ testMode?: boolean }> = ({ testMode = false }) =
   const [filter, setFilter] = useState("all");
   const [openId, setOpenId] = useState<string | null>(null);
   const [samples, setSamples] = useState<Conversation[]>(() => sampleConversations());
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // A notification links here with ?open=<id>.
+  useEffect(() => {
+    const target = searchParams.get("open");
+    if (!target) return;
+    setOpenId(target);
+    searchParams.delete("open");
+    setSearchParams(searchParams, { replace: true });
+  }, [searchParams, setSearchParams]);
 
   // Opening this page clears the sidebar's "new conversations" count.
   useEffect(() => {
@@ -323,10 +430,45 @@ const Conversations: React.FC<{ testMode?: boolean }> = ({ testMode = false }) =
     live
   );
 
+  // Visitors waiting for you or chatting with you right now, kept live.
+  const [liveItems, setLiveItems] = useState<Conversation[]>([]);
+  useEffect(() => {
+    if (!live) {
+      setLiveItems([]);
+      return;
+    }
+    return onSnapshot(
+      query(collection(db, "conversations"), where("ownerId", "==", uid), where("liveStatus", "in", ["waiting", "active"])),
+      (snap) =>
+        setLiveItems(
+          snap.docs
+            .map(toConversation)
+            .sort((a, b) => (b.liveRequestedAt?.getTime() ?? 0) - (a.liveRequestedAt?.getTime() ?? 0))
+        ),
+      () => setLiveItems([])
+    );
+  }, [live, uid]);
+
+  // The open conversation follows Firestore, so new messages and live status
+  // changes show at once (also one opened from a notification).
+  const [followed, setFollowed] = useState<Conversation | null>(null);
+  const followId = openId;
+  useEffect(() => {
+    if (!live || !followId) {
+      setFollowed(null);
+      return;
+    }
+    return onSnapshot(
+      doc(db, "conversations", followId),
+      (snap) => setFollowed(snap.exists() ? toConversation(snap) : null),
+      () => setFollowed(null)
+    );
+  }, [live, followId]);
+
   const items = testMode ? samples.filter((c) => filter === "all" || c.chatbotId === filter) : list.items;
   const total = testMode ? items?.length ?? 0 : list.total;
   const byId = useMemo(() => new Map((chatbots || []).map((c) => [c.id, c])), [chatbots]);
-  const open = items?.find((c) => c.id === openId) ?? null;
+  const open = (followed && followed.id === openId ? followed : null) ?? items?.find((c) => c.id === openId) ?? null;
   const anySaving = testMode || (chatbots || []).some((c) => c.saveConversations);
   const firstChatbot = chatbots?.[0];
 
@@ -400,7 +542,7 @@ const Conversations: React.FC<{ testMode?: boolean }> = ({ testMode = false }) =
     );
   } else if (items === null || chatbots === null) {
     body = <Skeleton className="h-[520px] w-full rounded-xl" />;
-  } else if (items.length === 0) {
+  } else if (items.length === 0 && liveItems.length === 0) {
     body = (
       <div className={surface}>
         {anySaving ? (
@@ -425,6 +567,42 @@ const Conversations: React.FC<{ testMode?: boolean }> = ({ testMode = false }) =
     body = (
       <div className={`${surface} grid h-[calc(100vh-13rem)] min-h-[480px] grid-cols-1 overflow-hidden lg:grid-cols-[minmax(280px,380px)_minmax(0,1fr)]`}>
         <div className={`flex min-h-0 flex-col border-[#E7EDF6] lg:border-r dark:border-[#2B3646] ${open ? "hidden lg:flex" : "flex"}`}>
+          {liveItems.length > 0 && (
+            <div className="border-b border-[#E7EDF6] bg-emerald-50/40 dark:border-[#2B3646] dark:bg-emerald-950/15">
+              <p className="px-4 pb-1 pt-3 text-[11px] font-semibold uppercase tracking-wide text-emerald-700 dark:text-emerald-300">
+                {t("liveNow")}
+              </p>
+              <ul className="pb-1.5">
+                {liveItems.map((c) => {
+                  const bot = byId.get(c.chatbotId);
+                  return (
+                    <li key={c.id}>
+                      <button
+                        type="button"
+                        onClick={() => setOpenId(c.id)}
+                        aria-current={c.id === openId ? "true" : undefined}
+                        className={`flex w-full items-center gap-3 px-4 py-2.5 text-left transition-colors ${focusRing} ${
+                          c.id === openId ? "bg-emerald-100/60 dark:bg-emerald-950/40" : "hover:bg-emerald-100/40 dark:hover:bg-emerald-950/30"
+                        }`}
+                      >
+                        <BotAvatar color={bot?.primaryColor} launcherStyle={bot?.launcherStyle} size={24} />
+                        <span className="min-w-0 flex-1 truncate text-body-sm text-[#101723] dark:text-[#D7DFE5]">
+                          {c.preview || t("noQuestion")}
+                        </span>
+                        <span
+                          className={`shrink-0 rounded-full px-2 py-px text-[11px] font-semibold ${
+                            c.liveStatus === "waiting" ? "bg-emerald-500 text-white" : "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-200"
+                          }`}
+                        >
+                          {c.liveStatus === "waiting" ? t("waitingBadge") : t("liveBadge")}
+                        </span>
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          )}
           <ul className={`min-h-0 flex-1 divide-y divide-[#E7EDF6] overflow-y-auto [scrollbar-width:thin] dark:divide-[#2B3646] ${list.loading ? "opacity-60" : ""}`}>
             {items.map((c) => {
               const bot = byId.get(c.chatbotId);

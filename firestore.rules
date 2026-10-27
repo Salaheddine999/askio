@@ -104,9 +104,25 @@ service cloud.firestore {
     // readable only by the chatbot's owner, not by admins. Owners may delete
     // them; the nightly cleanup removes ones idle for 90 days.
     match /conversations/{conversationId} {
-      allow read: if ownsRecord();
+      // During live chat the visitor's widget follows its own conversation.
+      // Its id holds the visitor's random session id, so only they know it;
+      // listing stays owner-only.
+      allow get: if ownsRecord() || resource.data.get('liveStatus', null) != null;
+      allow list: if ownsRecord();
       allow delete: if ownsRecord() && notSuspended();
       allow create, update: if false;
+    }
+
+    // Whether an owner is online for live chat. Widgets read it; only the
+    // owner writes it, stamped with the server's time.
+    match /presence/{userId} {
+      allow read: if true;
+      allow create, update: if ownsUserDoc(userId)
+        && notSuspended()
+        && request.resource.data.keys().hasOnly(['online', 'lastSeen'])
+        && request.resource.data.online is bool
+        && request.resource.data.lastSeen == request.time;
+      allow delete: if ownsUserDoc(userId);
     }
 
     // Monthly AI reply counts, keyed "{uid}_{YYYY-MM}". Only the server writes

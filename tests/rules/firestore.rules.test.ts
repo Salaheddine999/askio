@@ -5,7 +5,7 @@ import {
   initializeTestEnvironment,
   type RulesTestEnvironment,
 } from "@firebase/rules-unit-testing";
-import { deleteDoc, doc, getDoc, getDocs, collection, query, setDoc, updateDoc, where } from "firebase/firestore";
+import { deleteDoc, doc, getDoc, getDocs, collection, query, serverTimestamp, setDoc, updateDoc, where } from "firebase/firestore";
 import { afterAll, beforeAll, beforeEach, describe, it } from "vitest";
 
 // Runs firestore.rules in the Firestore emulator, which needs Java. Locally:
@@ -48,6 +48,8 @@ async function seed(extra: { suspended?: boolean } = {}) {
     for (const name of ["leads", "analytics_events", "unanswered_queries", "feedback", "conversations"]) {
       await setDoc(doc(db, `${name}/r1`), record);
     }
+    await setDoc(doc(db, "conversations/bot1_livesession1"), { ...record, liveStatus: "waiting" });
+    await setDoc(doc(db, "presence/owner1"), { online: true, lastSeen: new Date() });
     await setDoc(doc(db, "ai_usage/owner1_2026-10"), { count: 3 });
     await setDoc(doc(db, "admin_log/e1"), { action: "suspend" });
     await setDoc(doc(db, "ai_rate_limits/w1"), { count: 1 });
@@ -168,9 +170,44 @@ describe("suspended owners", () => {
     await assertFails(deleteDoc(doc(owner(), "conversations/r1")));
   });
 
+  it("can't go online for live chat", async () => {
+    await assertFails(setDoc(doc(owner(), "presence/owner1"), { online: true, lastSeen: serverTimestamp() }));
+  });
+
   it("can't lift the suspension or delete the profile to escape it", async () => {
     await assertFails(updateDoc(doc(owner(), "users/owner1"), { suspended: false }));
     await assertFails(deleteDoc(doc(owner(), "users/owner1")));
+  });
+});
+
+describe("live chat", () => {
+  it("a visitor can follow a conversation in live chat, but not an ordinary one", async () => {
+    await assertSucceeds(getDoc(doc(visitor(), "conversations/bot1_livesession1")));
+    await assertFails(getDoc(doc(visitor(), "conversations/r1")));
+  });
+
+  it("nobody but the owner lists conversations, live or not", async () => {
+    await assertFails(getDocs(collection(visitor(), "conversations")));
+    await assertFails(getDocs(query(collection(stranger(), "conversations"), where("liveStatus", "==", "waiting"))));
+    await assertSucceeds(
+      getDocs(query(collection(owner(), "conversations"), where("ownerId", "==", "owner1"), where("liveStatus", "==", "waiting")))
+    );
+  });
+
+  it("visitors can't write to a live conversation", async () => {
+    await assertFails(updateDoc(doc(visitor(), "conversations/bot1_livesession1"), { liveStatus: "active" }));
+  });
+
+  it("anyone can see whether an owner is online", async () => {
+    await assertSucceeds(getDoc(doc(visitor(), "presence/owner1")));
+  });
+
+  it("only the owner sets their status, with the server's time and nothing else", async () => {
+    await assertSucceeds(setDoc(doc(owner(), "presence/owner1"), { online: false, lastSeen: serverTimestamp() }));
+    await assertFails(setDoc(doc(stranger(), "presence/owner1"), { online: true, lastSeen: serverTimestamp() }));
+    await assertFails(setDoc(doc(owner(), "presence/owner1"), { online: true, lastSeen: new Date(2030, 0, 1) }));
+    await assertFails(setDoc(doc(owner(), "presence/owner1"), { online: true, lastSeen: serverTimestamp(), name: "x" }));
+    await assertFails(setDoc(doc(visitor(), "presence/owner1"), { online: true, lastSeen: serverTimestamp() }));
   });
 });
 

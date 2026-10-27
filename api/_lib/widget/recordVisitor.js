@@ -19,6 +19,7 @@ const LIMITS = {
   unanswered: [20, 300],
   feedback: [5, 60],
   message: [40, 1200],
+  handoff: [4, 60],
 };
 
 const SESSION_ID = /^[A-Za-z0-9_-]{8,64}$/;
@@ -85,6 +86,10 @@ function fieldsFor(kind, body) {
         sessionId: body.sessionId,
         anonymousToken: token(body.anonymousToken),
       };
+    case "handoff":
+      if (!["request", "cancel"].includes(body.action)) throw badRequest("Invalid request.");
+      if (typeof body.sessionId !== "string" || !SESSION_ID.test(body.sessionId)) throw badRequest("Invalid session.");
+      return { action: body.action, sessionId: body.sessionId, anonymousToken: token(body.anonymousToken) };
     case "feedback":
       if (typeof body.isPositive !== "boolean") throw badRequest("Invalid rating.");
       return { isPositive: body.isPositive, anonymousToken: token(body.anonymousToken, { required: true }) };
@@ -136,6 +141,59 @@ async function appendMessage(chatbotId, chatbot, { role, text: messageText, sess
   });
 }
 
+/**
+ * A visitor asks to talk to a person (live chat), or gives up waiting. Needs
+ * live chat and conversation history on, and the owner on an active paid
+ * plan. The conversation becomes "waiting" until the owner replies (then
+ * "active") or ends it; "missed" when nobody answered in time.
+ */
+async function handoff(chatbotId, chatbot, { action, sessionId, anonymousToken }) {
+  const ref = adminDb.collection("conversations").doc(`${chatbotId}_${sessionId}`);
+  if (action === "cancel") {
+    await adminDb.runTransaction(async (transaction) => {
+      const snap = await transaction.get(ref);
+      if (snap.exists && snap.data().liveStatus === "waiting") transaction.update(ref, { liveStatus: "missed" });
+    });
+    return "missed";
+  }
+
+  if (chatbot.liveChat !== true || chatbot.saveConversations !== true) {
+    const error = badRequest("Live chat isn't available for this chatbot.");
+    error.statusCode = 403;
+    throw error;
+  }
+  const { access } = await getUserAccessProfile(chatbot.user_id);
+  if (access.plan === "free" || !access.isSubscriptionActive) {
+    const error = badRequest("Live chat isn't available for this chatbot.");
+    error.statusCode = 403;
+    throw error;
+  }
+
+  return adminDb.runTransaction(async (transaction) => {
+    const snap = await transaction.get(ref);
+    if (snap.exists && snap.data().liveStatus === "active") return "active";
+    const live = {
+      liveStatus: "waiting",
+      liveRequestedAt: FieldValue.serverTimestamp(),
+      lastMessageAt: FieldValue.serverTimestamp(),
+    };
+    if (snap.exists) transaction.update(ref, live);
+    else
+      transaction.set(ref, {
+        chatbotId,
+        ownerId: chatbot.user_id,
+        anonymousToken: anonymousToken || null,
+        startedAt: FieldValue.serverTimestamp(),
+        messageCount: 0,
+        visitorMessages: 0,
+        preview: null,
+        messages: [],
+        ...live,
+      });
+    return "waiting";
+  });
+}
+
 /** Marks a saved conversation as having left this email, if there is one. */
 async function tagConversationLead(chatbotId, sessionId, email) {
   if (typeof sessionId !== "string" || !SESSION_ID.test(sessionId)) return;
@@ -177,6 +235,10 @@ export default async function recordVisitor(req, res) {
     if (kind === "message") {
       await appendMessage(chatbotId, chatbot, fields);
       return res.status(201).json({ ok: true });
+    }
+    if (kind === "handoff") {
+      const status = await handoff(chatbotId, chatbot, fields);
+      return res.status(201).json({ ok: true, status });
     }
 
     const record = {
