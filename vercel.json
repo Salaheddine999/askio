@@ -7,15 +7,27 @@
       "maxDuration": 20
     }
   },
+  "regions": [
+    "cdg1"
+  ],
   "crons": [
-    { "path": "/api/cron/cleanup-rate-limits", "schedule": "0 3 * * *" }
+    {
+      "path": "/api/cron/cleanup-rate-limits",
+      "schedule": "0 3 * * *"
+    }
   ],
   "headers": [
     {
       "source": "/api/(.*)",
       "headers": [
-        { "key": "Access-Control-Allow-Credentials", "value": "true" },
-        { "key": "Access-Control-Allow-Origin", "value": "*" },
+        {
+          "key": "Access-Control-Allow-Credentials",
+          "value": "true"
+        },
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        },
         {
           "key": "Access-Control-Allow-Methods",
           "value": "GET,OPTIONS,POST,PUT,DELETE"
@@ -29,20 +41,38 @@
     {
       "source": "/chatbot-embed.js",
       "headers": [
-        { "key": "Access-Control-Allow-Origin", "value": "*" },
-        { "key": "Content-Type", "value": "application/javascript" }
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        },
+        {
+          "key": "Content-Type",
+          "value": "application/javascript"
+        }
       ]
     },
     {
       "source": "/chatbot/(.*)",
       "headers": [
-        { "key": "X-Frame-Options", "value": "ALLOWALL" },
-        { "key": "Content-Security-Policy", "value": "frame-ancestors *" }
+        {
+          "key": "X-Frame-Options",
+          "value": "ALLOWALL"
+        },
+        {
+          "key": "Content-Security-Policy",
+          "value": "frame-ancestors *"
+        }
       ]
     }
   ],
   "rewrites": [
-    { "source": "/chatbot-embed.js", "destination": "/chatbot-embed.js" },
-    { "source": "/((?!api/|assets/).*)", "destination": "/index.html" }
+    {
+      "source": "/chatbot-embed.js",
+      "destination": "/chatbot-embed.js"
+    },
+    {
+      "source": "/((?!api/|assets/).*)",
+      "destination": "/index.html"
+    }
   ]
 }

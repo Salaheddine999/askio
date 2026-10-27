@@ -31,13 +31,13 @@ async function ownedLiveConversation(uid, conversationId) {
   if (typeof conversationId !== "string" || !CONVERSATION_ID.test(conversationId)) {
     throw httpError(400, "Which conversation? Send its id.");
   }
-  const profile = await getUserAccessProfile(uid);
+  const ref = adminDb.collection("conversations").doc(conversationId);
+  // Both reads at once: each one is a round trip to the database.
+  const [profile, snap] = await Promise.all([getUserAccessProfile(uid), ref.get()]);
   assertNotSuspended(profile.userData);
   if (profile.access.plan === "free" || !profile.access.isSubscriptionActive) {
     throw httpError(403, "Live chat is part of the Pro plan.");
   }
-  const ref = adminDb.collection("conversations").doc(conversationId);
-  const snap = await ref.get();
   if (!snap.exists || snap.data().ownerId !== uid) throw httpError(404, "Conversation not found.");
   return { ref, chatbotId: snap.data().chatbotId };
 }

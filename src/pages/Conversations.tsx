@@ -6,9 +6,13 @@ import { toast } from "react-hot-toast";
 import { format, formatDistanceToNowStrict } from "date-fns";
 import { Listbox, ListboxButton, ListboxOption, ListboxOptions } from "@headlessui/react";
 import {
+  arrayUnion,
   collection,
   deleteDoc,
   doc,
+  increment,
+  serverTimestamp,
+  updateDoc,
   getDocs,
   onSnapshot,
   orderBy,
@@ -175,6 +179,37 @@ const ChatbotPicker: React.FC<{ chatbots: ChatbotInfo[]; value: string; onChange
   );
 };
 
+/** The first name the visitor sees next to your replies. */
+const agentName = () => (auth.currentUser?.displayName || "").trim().split(/\s+/)[0].slice(0, 40);
+
+/**
+ * Sends a live reply straight to Firestore, so it reaches the visitor at once
+ * (the security rules check it). If the rules refuse it, the server tries,
+ * and its message explains why when it can't either.
+ */
+async function sendLiveReply(conversationId: string, text: string) {
+  const name = agentName();
+  try {
+    await updateDoc(doc(db, "conversations", conversationId), {
+      messages: arrayUnion({ role: "agent", text, at: Date.now(), name }),
+      messageCount: increment(1),
+      lastMessageAt: serverTimestamp(),
+      liveStatus: "active",
+      agentName: name,
+    });
+  } catch {
+    await apiRequest("/api/account/live-reply", { authRequired: true, body: { conversationId, text } });
+  }
+}
+
+async function endLiveChat(conversationId: string) {
+  try {
+    await updateDoc(doc(db, "conversations", conversationId), { liveStatus: "ended", liveEndedAt: serverTimestamp() });
+  } catch {
+    await apiRequest("/api/account/live-end", { authRequired: true, body: { conversationId } });
+  }
+}
+
 const Transcript: React.FC<{
   conversation: Conversation;
   chatbot?: ChatbotInfo;
@@ -193,7 +228,8 @@ const Transcript: React.FC<{
   const joinable = !live && chatbot?.liveChat === true && conversation.liveStatus !== null && isRecent(conversation);
   const canWrite = live || joinable;
   const [reply, setReply] = useState("");
-  const [sending, setSending] = useState(false);
+  // Replies on their way: shown at once, dropped when the saved copy arrives.
+  const [pending, setPending] = useState<{ text: string; at: number }[]>([]);
 
   useEffect(() => {
     setConfirming(false);
@@ -203,29 +239,41 @@ const Transcript: React.FC<{
   // New live messages scroll into view.
   useEffect(() => {
     if (live) bottom.current?.scrollIntoView({ block: "end", behavior: "smooth" });
-  }, [conversation.messages.length, live]);
+  }, [conversation.messages.length, pending.length, live]);
 
   const send = async () => {
     const text = reply.trim();
-    if (!text || sending) return;
+    if (!text) return;
+    setReply("");
     if (onLocalReply) {
       onLocalReply(text);
-      setReply("");
       return;
     }
-    setSending(true);
+    const item = { text, at: Date.now() };
+    setPending((list) => [...list, item]);
     try {
-      await apiRequest("/api/account/live-reply", { authRequired: true, body: { conversationId: conversation.id, text } });
-      setReply("");
+      await sendLiveReply(conversation.id, text);
     } catch (error) {
+      // Put it back in the box so nothing you typed is lost.
+      setPending((list) => list.filter((p) => p !== item));
+      setReply((current) => current || text);
       toast.error(error instanceof Error ? error.message : t("replyFailed"));
-    } finally {
-      setSending(false);
     }
   };
+  // A reply is done once the conversation holds it.
+  useEffect(() => {
+    setPending((list) =>
+      list.filter((p) => !conversation.messages.some((m) => m.role === "agent" && m.text === p.text && m.at >= p.at - 60_000))
+    );
+  }, [conversation.messages]);
+  useEffect(() => setPending([]), [conversation.id]);
+  const shown = [
+    ...conversation.messages,
+    ...pending.map((p) => ({ role: "agent" as const, text: p.text, at: p.at, pending: true })),
+  ];
   const endChat = async () => {
     try {
-      await apiRequest("/api/account/live-end", { authRequired: true, body: { conversationId: conversation.id } });
+      await endLiveChat(conversation.id);
       toast.success(t("chatEnded"));
     } catch (error) {
       toast.error(error instanceof Error ? error.message : t("endFailed"));
@@ -318,14 +366,15 @@ const Transcript: React.FC<{
       )}
 
       <div className="min-h-0 flex-1 space-y-3 overflow-y-auto bg-[#F3F7FC] px-5 py-5 [scrollbar-width:thin] dark:bg-[#141D2B]">
-        {conversation.messages.map((m, i) => {
+        {shown.map((m, i) => {
           const isVisitor = m.role === "visitor";
           const isAgent = m.role === "agent";
+          const isPending = "pending" in m;
           return (
             <div key={`${m.at}-${i}`} className={`flex ${isVisitor ? "justify-end" : "justify-start"}`}>
               <div className="max-w-[80%]">
                 <div
-                  className={`whitespace-pre-wrap break-words rounded-2xl px-3.5 py-2 text-body-sm leading-relaxed ${
+                  className={`whitespace-pre-wrap break-words rounded-2xl px-3.5 py-2 text-body-sm leading-relaxed ${isPending ? "opacity-60" : ""} ${
                     isVisitor
                       ? "rounded-br-md text-white dark:ring-1 dark:ring-white/15"
                       : isAgent
@@ -337,7 +386,8 @@ const Transcript: React.FC<{
                   {m.text}
                 </div>
                 <p className={`mt-1 text-[11px] text-[#87909D] ${isVisitor ? "text-right" : ""}`}>
-                  {isVisitor ? t("visitor") : isAgent ? t("you") : chatbot?.title || "Bot"} · {format(new Date(m.at), t("timeFormat"), { locale })}
+                  {isVisitor ? t("visitor") : isAgent ? t("you") : chatbot?.title || "Bot"} ·{" "}
+                  {isPending ? t("sending") : format(new Date(m.at), t("timeFormat"), { locale })}
                 </p>
               </div>
             </div>
@@ -389,7 +439,7 @@ const Transcript: React.FC<{
             aria-label={t("replyPlaceholder")}
             className={`min-h-[38px] flex-1 resize-none rounded-lg border border-[#D8DFE9] bg-[#F9FCFF] px-3 py-2 text-body-sm text-[#101723] placeholder:text-[#87909D] dark:border-[#2B3646] dark:bg-[#1A2533] dark:text-[#D7DFE5] ${focusRing}`}
           />
-          <button type="submit" disabled={!reply.trim() || sending} className={`${primaryButton} h-[38px] shrink-0`} aria-label={t("send")}>
+          <button type="submit" disabled={!reply.trim()} className={`${primaryButton} h-[38px] shrink-0`} aria-label={t("send")}>
             <Send size={15} />
             <span className="hidden sm:inline">{t("send")}</span>
           </button>

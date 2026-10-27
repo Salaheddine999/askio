@@ -4,6 +4,7 @@ import { defineMessages } from "..";
 // The *Format keys are date-fns patterns.
 export const conversationsMessages = defineMessages({
   en: {
+    sending: "Sending…",
     joinHint: "This visitor wrote {time}. Reply to join the chat; they'll see it if their chat is still open.",
     visitorLeftHint: "This visitor left a while ago, so a reply here wouldn't reach them.",
     liveOffHint: "To reply to visitors here, turn on Live chat for this chatbot.",
@@ -59,6 +60,7 @@ export const conversationsMessages = defineMessages({
     dateTimeFormat: "MMM d, yyyy 'at' h:mm a",
   },
   fr: {
+    sending: "Envoi…",
     joinHint: "Ce visiteur a écrit {time}. Répondez pour rejoindre le chat ; il verra votre message si son chat est encore ouvert.",
     visitorLeftHint: "Ce visiteur est parti il y a un moment, une réponse ici ne lui parviendrait pas.",
     liveOffHint: "Pour répondre aux visiteurs ici, activez le chat en direct pour ce chatbot.",
@@ -114,6 +116,7 @@ export const conversationsMessages = defineMessages({
     dateTimeFormat: "d MMM yyyy 'à' HH:mm",
   },
   nl: {
+    sending: "Versturen…",
     joinHint: "Deze bezoeker schreef {time}. Antwoord om deel te nemen; ze zien het als hun chat nog open is.",
     visitorLeftHint: "Deze bezoeker is al even weg, dus een antwoord hier komt niet aan.",
     liveOffHint: "Zet livechat aan voor deze chatbot om hier bezoekers te antwoorden.",
@@ -169,6 +172,7 @@ export const conversationsMessages = defineMessages({
     dateTimeFormat: "d MMM yyyy 'om' HH:mm",
   },
   de: {
+    sending: "Wird gesendet…",
     joinHint: "Dieser Besucher hat {time} geschrieben. Antworten Sie, um dem Chat beizutreten; er sieht es, wenn sein Chat noch offen ist.",
     visitorLeftHint: "Dieser Besucher ist schon eine Weile weg, eine Antwort hier würde ihn nicht erreichen.",
     liveOffHint: "Um Besuchern hier zu antworten, aktivieren Sie den Live-Chat für diesen Chatbot.",
@@ -224,6 +228,7 @@ export const conversationsMessages = defineMessages({
     dateTimeFormat: "d. MMM yyyy 'um' HH:mm",
   },
   es: {
+    sending: "Enviando…",
     joinHint: "Este visitante escribió {time}. Responde para unirte al chat; lo verá si su chat sigue abierto.",
     visitorLeftHint: "Este visitante se fue hace un rato, así que una respuesta aquí no le llegaría.",
     liveOffHint: "Para responder a los visitantes aquí, activa el chat en vivo para este chatbot.",

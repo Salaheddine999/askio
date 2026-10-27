@@ -103,6 +103,48 @@ service cloud.firestore {
     // Saved conversations (Pro, opt-in per chatbot), written by the server and
     // readable only by the chatbot's owner, not by admins. Owners may delete
     // them; the nightly cleanup removes ones idle for 90 days.
+    // Live chat replies come straight from the owner's dashboard, so they
+    // reach the visitor at once. Same checks as /api/account/live-reply:
+    // a Pro owner, not suspended, on a chat that's live or whose visitor
+    // wrote in the last 30 minutes, adding exactly one reply of their own.
+    function isProOwner() {
+      let user = get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+      return user.get('plan', 'free') in ['pro', 'enterprise'] && user.get('suspended', false) != true;
+    }
+
+    function canJoinLive() {
+      let status = resource.data.get('liveStatus', null);
+      return status in ['waiting', 'active']
+        || (status != null
+          && resource.data.get('lastMessageAt', null) != null
+          && request.time < resource.data.lastMessageAt + duration.value(30, 'm'));
+    }
+
+    function isOwnerReply() {
+      let before = resource.data.get('messages', []);
+      let after = request.resource.data.get('messages', []);
+      let reply = after[after.size() - 1];
+      return request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['messages', 'messageCount', 'lastMessageAt', 'liveStatus', 'agentName'])
+        && resource.data.get('messageCount', 0) < 200
+        && after.size() == before.size() + 1
+        && after[0:before.size()] == before
+        && reply.keys().hasOnly(['role', 'text', 'at', 'name'])
+        && reply.role == 'agent'
+        && reply.text is string && reply.text.size() > 0 && reply.text.size() <= 1000
+        && reply.at is int
+        && reply.get('name', '') is string && reply.get('name', '').size() <= 40
+        && request.resource.data.messageCount == resource.data.get('messageCount', 0) + 1
+        && request.resource.data.lastMessageAt == request.time
+        && request.resource.data.liveStatus == 'active';
+    }
+
+    function isOwnerEndingChat() {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(['liveStatus', 'liveEndedAt'])
+        && request.resource.data.liveStatus == 'ended'
+        && request.resource.data.liveEndedAt == request.time;
+    }
+
     match /conversations/{conversationId} {
       // During live chat the visitor's widget follows its own conversation.
       // Its id holds the visitor's random session id, so only they know it;
@@ -110,7 +152,8 @@ service cloud.firestore {
       allow get: if ownsRecord() || resource.data.get('liveStatus', null) != null;
       allow list: if ownsRecord();
       allow delete: if ownsRecord() && notSuspended();
-      allow create, update: if false;
+      allow update: if ownsRecord() && isProOwner() && ((canJoinLive() && isOwnerReply()) || isOwnerEndingChat());
+      allow create: if false;
     }
 
     // Whether an owner is online for live chat. Widgets read it; only the

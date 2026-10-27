@@ -5,7 +5,7 @@ import {
   initializeTestEnvironment,
   type RulesTestEnvironment,
 } from "@firebase/rules-unit-testing";
-import { deleteDoc, doc, getDoc, getDocs, collection, query, serverTimestamp, setDoc, updateDoc, where } from "firebase/firestore";
+import { arrayUnion, deleteDoc, doc, getDoc, getDocs, collection, increment, query, serverTimestamp, setDoc, updateDoc, where } from "firebase/firestore";
 import { afterAll, beforeAll, beforeEach, describe, it } from "vitest";
 
 // Runs firestore.rules in the Firestore emulator, which needs Java. Locally:
@@ -193,6 +193,50 @@ describe("live chat", () => {
     await assertFails(getDocs(query(collection(stranger(), "conversations"), where("liveStatus", "==", "waiting"))));
     await assertSucceeds(
       getDocs(query(collection(owner(), "conversations"), where("ownerId", "==", "owner1"), where("liveStatus", "==", "waiting")))
+    );
+  });
+
+  const reply = (text: string, extra: Record<string, unknown> = {}) => ({
+    messages: arrayUnion({ role: "agent", text, at: Date.now(), name: "Sara" }),
+    messageCount: increment(1),
+    lastMessageAt: serverTimestamp(),
+    liveStatus: "active",
+    agentName: "Sara",
+    ...extra,
+  });
+
+  it("the owner replies straight from the dashboard, one reply at a time", async () => {
+    await assertSucceeds(updateDoc(doc(owner(), "conversations/bot1_livesession1"), reply("Hi, Sara here.")));
+    await assertSucceeds(updateDoc(doc(owner(), "conversations/bot1_livesession1"), reply("How can I help?")));
+  });
+
+  it("an owner reply can't change anything else", async () => {
+    await assertFails(updateDoc(doc(owner(), "conversations/bot1_livesession1"), reply("Hi", { ownerId: "stranger" })));
+    await assertFails(
+      updateDoc(doc(owner(), "conversations/bot1_livesession1"), {
+        messages: arrayUnion({ role: "visitor", text: "fake", at: 1 }),
+        messageCount: increment(1),
+        lastMessageAt: serverTimestamp(),
+        liveStatus: "active",
+      })
+    );
+    await assertFails(updateDoc(doc(owner(), "conversations/bot1_livesession1"), reply("x".repeat(1001))));
+  });
+
+  it("only the owner, on Pro, replies; strangers and visitors can't", async () => {
+    await assertFails(updateDoc(doc(stranger(), "conversations/bot1_livesession1"), reply("Hi")));
+    await assertFails(updateDoc(doc(visitor(), "conversations/bot1_livesession1"), reply("Hi")));
+    await env.withSecurityRulesDisabled((ctx) => updateDoc(doc(ctx.firestore(), "users/owner1"), { plan: "free" }));
+    await assertFails(updateDoc(doc(owner(), "conversations/bot1_livesession1"), reply("Hi")));
+  });
+
+  it("the owner can't reply into an ordinary or long-finished chat", async () => {
+    await assertFails(updateDoc(doc(owner(), "conversations/r1"), reply("Hi")));
+  });
+
+  it("the owner ends a live chat", async () => {
+    await assertSucceeds(
+      updateDoc(doc(owner(), "conversations/bot1_livesession1"), { liveStatus: "ended", liveEndedAt: serverTimestamp() })
     );
   });
 
