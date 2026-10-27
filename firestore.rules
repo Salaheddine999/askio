@@ -128,7 +128,8 @@ service cloud.firestore {
           .hasOnly(['messages', 'messageCount', 'lastMessageAt', 'liveStatus', 'agentName'])
         && resource.data.get('messageCount', 0) < 200
         && after.size() == before.size() + 1
-        && after[0:before.size()] == before
+        // Earlier messages unchanged (an empty range is an error in rules).
+        && (before.size() == 0 || after[0:before.size()] == before)
         && reply.keys().hasOnly(['role', 'text', 'at', 'name'])
         && reply.role == 'agent'
         && reply.text is string && reply.text.size() > 0 && reply.text.size() <= 1000
