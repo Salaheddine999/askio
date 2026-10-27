@@ -3,13 +3,15 @@ import { adminDb } from "../firebaseAdmin.js";
 import { takeRateLimit } from "../rateLimit.js";
 import { reportError } from "../monitoring.js";
 import { emailConfigured, sendEmail } from "./send.js";
-import { leadEmail, missedChatEmail, unsubscribePage } from "./templates.js";
+import { FieldValue, Timestamp } from "firebase-admin/firestore";
+import { leadEmail, missedChatEmail, setupReminderEmail, unsubscribePage } from "./templates.js";
 
-// Email alerts for chatbot owners: a new lead, a missed live chat. Each type
+// Email alerts for chatbot owners: a new lead, a missed live chat, a new
+// chatbot that isn't on a website yet (sent once, by the nightly cron). Each type
 // can be turned off in Settings or with the link in every email, and an
 // account gets at most DAILY_CAP alerts a day, so fake leads can't flood it.
 
-export const ALERT_TYPES = ["leads", "missedChats"];
+export const ALERT_TYPES = ["leads", "missedChats", "setup"];
 const DAILY_CAP = 50;
 const DAY_MS = 86_400_000;
 const UID = /^[A-Za-z0-9]{1,128}$/;
@@ -87,6 +89,37 @@ export async function sendMissedChatAlert({ chatbotId, chatbot, sessionId }) {
   const asked = await visitorQuestions(chatbotId, sessionId);
   const conversationId = `${chatbotId}_${sessionId}`;
   return deliver(chatbot, "missedChats", (ctx) => missedChatEmail({ ...ctx, asked, conversationId }));
+}
+
+// A chatbot gets its reminder once it's a day old and still hasn't been seen
+// on a website; after a week it's left alone.
+const SETUP_AFTER_MS = DAY_MS;
+const SETUP_UNTIL_MS = 7 * DAY_MS;
+const SETUP_PER_RUN = 100;
+
+/**
+ * For the nightly cron: one email per new chatbot that no website has loaded
+ * yet. Returns how many were sent.
+ */
+export async function sendSetupReminders() {
+  if (!emailConfigured()) return 0;
+  const now = Date.now();
+  const snap = await adminDb
+    .collection("chatbot_configs")
+    .where("createdAt", ">=", Timestamp.fromMillis(now - SETUP_UNTIL_MS))
+    .where("createdAt", "<=", Timestamp.fromMillis(now - SETUP_AFTER_MS))
+    .limit(SETUP_PER_RUN * 3)
+    .get();
+  let sent = 0;
+  for (const doc of snap.docs) {
+    if (sent >= SETUP_PER_RUN) break;
+    const chatbot = doc.data();
+    if (chatbot.installedAt || chatbot.setupReminderSentAt || chatbot.suspended === true) continue;
+    // Marked first, so a failed or repeated run never emails twice.
+    await doc.ref.update({ setupReminderSentAt: FieldValue.serverTimestamp() });
+    if (await deliver(chatbot, "setup", (ctx) => setupReminderEmail({ ...ctx, chatbotId: doc.id }))) sent += 1;
+  }
+  return sent;
 }
 
 /**

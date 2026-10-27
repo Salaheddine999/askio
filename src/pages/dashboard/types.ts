@@ -12,6 +12,10 @@ export interface Chatbot {
   faqData?: unknown[];
   createdAt: Date;
   lastUpdated: Date;
+  /** When the widget first loaded on a website; null until it has. */
+  installedAt?: Date | null;
+  /** The site it last loaded on, e.g. "shop.example". */
+  lastSeenHost?: string;
 }
 
 export interface FeedbackCounts {

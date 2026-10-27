@@ -165,6 +165,9 @@ export const dashboardMessages = defineMessages({
     moreActionsNamed: "More actions for {name}",
     satisfaction: "Satisfaction",
     updatedAgo: "Updated {time}",
+    notOnSite: "Not on your site yet",
+    notOnSiteHint: "Add the embed code to your website. This updates once someone visits a page with it.",
+    onSite: "On {host}",
     manage: "Manage",
 
     // Recent activity
@@ -344,6 +347,9 @@ export const dashboardMessages = defineMessages({
     moreActionsNamed: "Plus d'actions pour {name}",
     satisfaction: "Satisfaction",
     updatedAgo: "Modifié {time}",
+    notOnSite: "Pas encore sur votre site",
+    notOnSiteHint: "Ajoutez le code d'intégration à votre site. Ceci se met à jour dès qu'une page qui l'affiche est visitée.",
+    onSite: "Sur {host}",
     manage: "Gérer",
 
     recentTitle: "Activité récente",
@@ -521,6 +527,9 @@ export const dashboardMessages = defineMessages({
     moreActionsNamed: "Meer acties voor {name}",
     satisfaction: "Tevredenheid",
     updatedAgo: "Bijgewerkt {time}",
+    notOnSite: "Nog niet op je site",
+    notOnSiteHint: "Voeg de insluitcode toe aan je website. Dit wordt bijgewerkt zodra iemand een pagina met de code bezoekt.",
+    onSite: "Op {host}",
     manage: "Beheren",
 
     recentTitle: "Recente activiteit",
@@ -698,6 +707,9 @@ export const dashboardMessages = defineMessages({
     moreActionsNamed: "Weitere Aktionen für {name}",
     satisfaction: "Zufriedenheit",
     updatedAgo: "Geändert {time}",
+    notOnSite: "Noch nicht auf Ihrer Website",
+    notOnSiteHint: "Fügen Sie den Einbettungscode in Ihre Website ein. Dies wird aktualisiert, sobald jemand eine Seite damit besucht.",
+    onSite: "Auf {host}",
     manage: "Verwalten",
 
     recentTitle: "Letzte Aktivität",
@@ -875,6 +887,9 @@ export const dashboardMessages = defineMessages({
     moreActionsNamed: "Más acciones para {name}",
     satisfaction: "Satisfacción",
     updatedAgo: "Modificado {time}",
+    notOnSite: "Aún no está en tu web",
+    notOnSiteHint: "Añade el código de inserción a tu web. Esto se actualiza en cuanto alguien visita una página que lo tenga.",
+    onSite: "En {host}",
     manage: "Gestionar",
 
     recentTitle: "Actividad reciente",

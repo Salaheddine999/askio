@@ -107,7 +107,7 @@ const Settings: React.FC<SettingsProps> = ({ darkMode, setDarkMode, suspension }
   const navigate = useNavigate();
   const deleteAccountModal = useModal();
   const [user, setUser] = useState<User | null>(null);
-  const [emailAlerts, setEmailAlerts] = useState({ leads: true, missedChats: true });
+  const [emailAlerts, setEmailAlerts] = useState({ leads: true, missedChats: true, setup: true });
   const [push, setPush] = useState<PushState | null>(null);
   const [pushBusy, setPushBusy] = useState(false);
   useEffect(() => {
@@ -129,7 +129,7 @@ const Settings: React.FC<SettingsProps> = ({ darkMode, setDarkMode, suspension }
       setPushBusy(false);
     }
   };
-  const saveEmailAlert = async (type: "leads" | "missedChats", on: boolean) => {
+  const saveEmailAlert = async (type: "leads" | "missedChats" | "setup", on: boolean) => {
     const user = auth.currentUser;
     if (!user) return;
     setEmailAlerts((current) => ({ ...current, [type]: on }));
@@ -178,7 +178,11 @@ const Settings: React.FC<SettingsProps> = ({ darkMode, setDarkMode, suspension }
         setUserPlan(plan);
         setSubscriptionStatus(userData.subscriptionStatus || (plan === "free" ? "inactive" : "active"));
         setCurrentPeriodEnd(userData.currentPeriodEnd || null);
-        setEmailAlerts({ leads: userData.emailAlerts?.leads !== false, missedChats: userData.emailAlerts?.missedChats !== false });
+        setEmailAlerts({
+          leads: userData.emailAlerts?.leads !== false,
+          missedChats: userData.emailAlerts?.missedChats !== false,
+          setup: userData.emailAlerts?.setup !== false,
+        });
         setHasSubscription(Boolean(userData.lemonSqueezySubscriptionId));
       }
       setLoading(false);
@@ -472,6 +476,9 @@ const Settings: React.FC<SettingsProps> = ({ darkMode, setDarkMode, suspension }
               </Row>
               <Row label={t("alertMissed")} hint={t("alertMissedHint")}>
                 <Switch checked={emailAlerts.missedChats} onChange={(v) => void saveEmailAlert("missedChats", v)} label={t("alertMissed")} />
+              </Row>
+              <Row label={t("alertSetup")} hint={t("alertSetupHint")}>
+                <Switch checked={emailAlerts.setup} onChange={(v) => void saveEmailAlert("setup", v)} label={t("alertSetup")} />
               </Row>
               <Row
                 label={t("pushTitle")}

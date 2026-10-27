@@ -97,10 +97,13 @@ const Chatbot: React.FC<ChatbotProps> = ({
   // Leads, analytics and ratings go through the server, which checks and
   // rate-limits them. The owner isn't a visitor: their preview, and their own
   // chats with the bot in a browser where they're signed in, record nothing.
-  const record = async (kind: "lead" | "event" | "unanswered" | "feedback" | "message" | "typing", fields: Record<string, unknown>) => {
+  const record = async (kind: "lead" | "event" | "unanswered" | "feedback" | "message" | "typing" | "seen", fields: Record<string, unknown>) => {
     if (!id || isPreview || isOwnerBrowsing(user_id)) return;
     await apiRequest("/api/ai/record", { body: { kind, chatbotId: id, ...fields } });
   };
+  // For listeners set up once, so they always use the current settings.
+  const recordRef = useRef(record);
+  recordRef.current = record;
   const [messages, setMessages] = useState<Message[]>([]);
   // Only the latest reply the bot couldn't answer offers a human, so several
   // misses in a row don't repeat the button.
@@ -708,11 +711,25 @@ const Chatbot: React.FC<ChatbotProps> = ({
     const onPage = (event: MessageEvent) => {
       if (event.source !== window.parent || event.data?.type !== "askioPage") return;
       const url = event.data.url;
-      if (typeof url === "string" && /^https?:\/\//.test(url) && url.length <= 300) pageUrl.current = url;
+      if (typeof url !== "string" || !/^https?:\/\//.test(url) || url.length > 300) return;
+      const first = !pageUrl.current;
+      pageUrl.current = url;
+      // Tells the dashboard this chatbot is on a website, once a day per browser.
+      if (first) {
+        const key = `askio-seen:${id}`;
+        const today = new Date().toISOString().slice(0, 10);
+        try {
+          if (localStorage.getItem(key) === today) return;
+          localStorage.setItem(key, today);
+        } catch {
+          // Storage blocked: report anyway; the server ignores repeats.
+        }
+        void recordRef.current("seen", { page: url }).catch(() => undefined);
+      }
     };
     window.addEventListener("message", onPage);
     return () => window.removeEventListener("message", onPage);
-  }, [isEmbedded]);
+  }, [isEmbedded, id]);
 
   // The embed script forwards the host page's pointer so the orb's eyes can
   // follow it beyond this small iframe. Replaying it as a pointermove lets the

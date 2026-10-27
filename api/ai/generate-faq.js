@@ -5,6 +5,7 @@ import { assertPublicUrl } from "../_lib/safeFetch.js";
 import { adminDb } from "../_lib/firebaseAdmin.js";
 import { assertCanUseAiForOwner, assertNotSuspended, getOwnedChatbot } from "../_lib/plan.js";
 import { withMonitoring } from "../_lib/monitoring.js";
+import { noteAiFailure } from "../_lib/aiHealth.js";
 
 
 function normalizeUrl(value) {
@@ -79,6 +80,8 @@ async function handler(req, res) {
     return res.status(200).json({ faqs });
   } catch (error) {
     console.error("Failed to generate FAQs:", error);
+    // Gemini itself failed (quota, timeout, outage), not the request.
+    if (error.aiStatus !== undefined) await noteAiFailure(error.aiStatus, "faq");
     return sendError(res, error);
   }
 }

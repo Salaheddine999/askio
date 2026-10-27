@@ -4,6 +4,7 @@ import { assertChatbotAiAvailable } from "../plan.js";
 import { getMonthlyAiReplies, recordAiReply } from "../aiUsage.js";
 import { takeRateLimit, visitorKey } from "../rateLimit.js";
 import { reportError } from "../monitoring.js";
+import { noteAiFailure } from "../aiHealth.js";
 import { adminDb } from "../firebaseAdmin.js";
 
 const MAX_QUERY_CHARS = 1000;
@@ -99,6 +100,7 @@ export default async function handler(req, res) {
       // Out of quota, overloaded or slow: the widget answers from the FAQs.
       if (error.statusCode !== 503) throw error;
       if (!error.expected) reportError(error, { route: "chat-response", aiStatus: error.aiStatus });
+      await noteAiFailure(error.aiStatus);
       return sendFallback(res, "ai_error");
     }
 

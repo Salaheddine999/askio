@@ -184,6 +184,7 @@ const Dashboard: React.FC<DashboardProps> = ({ testMode }) => {
             ...data,
             createdAt: data.createdAt?.toDate() || new Date(),
             lastUpdated: data.lastUpdated?.toDate() || new Date(),
+            installedAt: data.installedAt?.toDate?.() ?? null,
           } as Chatbot;
         })
       );

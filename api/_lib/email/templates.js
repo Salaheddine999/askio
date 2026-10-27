@@ -22,6 +22,10 @@ const STRINGS = {
     unsubscribedBody: "You won't get these emails anymore. You can turn them back on in your Askio settings.",
     invalidTitle: "This link doesn't work",
     invalidBody: "It may be incomplete. You can change your email alerts in your Askio settings.",
+    setupSubject: "{bot} isn't on your website yet",
+    setupHeading: "One step left: put {bot} on your site",
+    setupIntro: "You created {bot}, but it hasn't shown up on a website yet. Paste the embed code into your site and it starts answering visitors right away.",
+    setupCta: "Get the embed code",
   },
   fr: {
     pushLiveTitle: "Un visiteur souhaite vous parler",
@@ -43,6 +47,10 @@ const STRINGS = {
     unsubscribedBody: "Vous ne recevrez plus ces e-mails. Vous pouvez les réactiver dans les paramètres d'Askio.",
     invalidTitle: "Ce lien ne fonctionne pas",
     invalidBody: "Il est peut-être incomplet. Vous pouvez modifier vos alertes dans les paramètres d'Askio.",
+    setupSubject: "{bot} n'est pas encore sur votre site",
+    setupHeading: "Plus qu'une étape : ajoutez {bot} à votre site",
+    setupIntro: "Vous avez créé {bot}, mais il n'apparaît encore sur aucun site. Collez le code d'intégration sur votre site et il répondra aussitôt à vos visiteurs.",
+    setupCta: "Obtenir le code d'intégration",
   },
   nl: {
     pushLiveTitle: "Een bezoeker wil je spreken",
@@ -64,6 +72,10 @@ const STRINGS = {
     unsubscribedBody: "Je krijgt deze e-mails niet meer. Je kunt ze weer aanzetten in je Askio-instellingen.",
     invalidTitle: "Deze link werkt niet",
     invalidBody: "Misschien is hij onvolledig. Je kunt je e-mailmeldingen wijzigen in je Askio-instellingen.",
+    setupSubject: "{bot} staat nog niet op je website",
+    setupHeading: "Nog één stap: zet {bot} op je site",
+    setupIntro: "Je hebt {bot} gemaakt, maar hij is nog op geen enkele website verschenen. Plak de insluitcode op je site en hij beantwoordt meteen vragen van bezoekers.",
+    setupCta: "Insluitcode ophalen",
   },
   de: {
     pushLiveTitle: "Ein Besucher möchte mit Ihnen sprechen",
@@ -85,6 +97,10 @@ const STRINGS = {
     unsubscribedBody: "Sie erhalten diese E-Mails nicht mehr. Sie können sie in Ihren Askio-Einstellungen wieder aktivieren.",
     invalidTitle: "Dieser Link funktioniert nicht",
     invalidBody: "Er ist vielleicht unvollständig. Sie können Ihre E-Mail-Benachrichtigungen in den Askio-Einstellungen ändern.",
+    setupSubject: "{bot} ist noch nicht auf Ihrer Website",
+    setupHeading: "Nur noch ein Schritt: Bringen Sie {bot} auf Ihre Website",
+    setupIntro: "Sie haben {bot} erstellt, aber er ist noch auf keiner Website aufgetaucht. Fügen Sie den Einbettungscode in Ihre Website ein, und er beantwortet sofort Fragen Ihrer Besucher.",
+    setupCta: "Einbettungscode holen",
   },
   es: {
     pushLiveTitle: "Un visitante quiere hablar contigo",
@@ -106,6 +122,10 @@ const STRINGS = {
     unsubscribedBody: "Ya no recibirás estos correos. Puedes volver a activarlos en los ajustes de Askio.",
     invalidTitle: "Este enlace no funciona",
     invalidBody: "Puede que esté incompleto. Puedes cambiar tus alertas en los ajustes de Askio.",
+    setupSubject: "{bot} aún no está en tu web",
+    setupHeading: "Solo queda un paso: pon {bot} en tu web",
+    setupIntro: "Has creado {bot}, pero todavía no aparece en ninguna web. Pega el código de inserción en tu sitio y empezará a responder a tus visitantes al momento.",
+    setupCta: "Obtener el código de inserción",
   },
 };
 
@@ -178,6 +198,22 @@ export function missedChatEmail({ lang, appUrl, unsubscribe, botName, asked = []
     rows: asked.length ? [{ label: s.askedLabel, value: asked.join("\n") }] : [],
     cta: s.openConversations,
     ctaUrl: `${appUrl}/conversations${conversationId ? `?open=${encodeURIComponent(conversationId)}` : ""}`,
+    settingsUrl: `${appUrl}/settings#emails`,
+    unsubscribe,
+  });
+}
+
+export function setupReminderEmail({ lang, appUrl, unsubscribe, botName, chatbotId }) {
+  const s = stringsFor(lang);
+  const bot = botName || "Askio";
+  return alertEmail({
+    s,
+    subject: fill(s.setupSubject, { bot }),
+    heading: fill(s.setupHeading, { bot }),
+    intro: fill(s.setupIntro, { bot }),
+    rows: [],
+    cta: s.setupCta,
+    ctaUrl: `${appUrl}/configure/${encodeURIComponent(chatbotId)}?tab=embed`,
     settingsUrl: `${appUrl}/settings#emails`,
     unsubscribe,
   });

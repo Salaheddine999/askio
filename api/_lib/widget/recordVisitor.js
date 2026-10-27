@@ -23,6 +23,7 @@ const LIMITS = {
   message: [40, 1200],
   handoff: [4, 60],
   typing: [30, 900],
+  seen: [10, 600],
 };
 
 const SESSION_ID = /^[A-Za-z0-9_-]{8,64}$/;
@@ -102,6 +103,15 @@ function fieldsFor(kind, body) {
         anonymousToken: token(body.anonymousToken),
         page: pageOf(body.page),
       };
+    case "seen": {
+      // The page the widget loaded on; the embed script sends it.
+      const page = pageOf(body.page);
+      if (!page) throw badRequest("Invalid page.");
+      const host = new URL(page).host;
+      // A local test page isn't a website visitors see.
+      const local = /^(localhost|127\.0\.0\.1|\[::1\])(:\d+)?$/.test(host) || /\.localhost(:\d+)?$/.test(host);
+      return { host: local ? null : host };
+    }
     case "typing":
       if (typeof body.sessionId !== "string" || !SESSION_ID.test(body.sessionId)) throw badRequest("Invalid session.");
       return { sessionId: body.sessionId };
@@ -164,6 +174,23 @@ async function appendMessage(chatbotId, chatbot, { role, text: messageText, sess
       if (!snap.data().preview) update.preview = messageText.slice(0, 200);
     }
     transaction.update(ref, update);
+  });
+}
+
+const SEEN_REFRESH_MS = 20 * 3_600_000;
+
+/**
+ * The widget loaded on a website: the dashboard shows the chatbot as
+ * installed, and the setup reminder isn't sent. Written at most about once a
+ * day per chatbot, or when it shows up on another site.
+ */
+async function markSeen(ref, chatbot, host) {
+  const last = chatbot.lastSeenAt?.toMillis?.() ?? 0;
+  if (chatbot.installedAt && chatbot.lastSeenHost === host && Date.now() - last < SEEN_REFRESH_MS) return;
+  await ref.update({
+    lastSeenAt: FieldValue.serverTimestamp(),
+    lastSeenHost: host,
+    ...(chatbot.installedAt ? {} : { installedAt: FieldValue.serverTimestamp() }),
   });
 }
 
@@ -270,6 +297,10 @@ export default async function recordVisitor(req, res) {
 
     if (kind === "message") {
       await appendMessage(chatbotId, chatbot, fields);
+      return res.status(201).json({ ok: true });
+    }
+    if (kind === "seen") {
+      if (fields.host) await markSeen(chatbotSnap.ref, chatbot, fields.host);
       return res.status(201).json({ ok: true });
     }
     if (kind === "typing") {

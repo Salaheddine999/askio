@@ -12,6 +12,7 @@ import {
   ThumbsUp,
   ThumbsDown,
   MessageSquareText,
+  Globe,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { Menu } from "@headlessui/react";
@@ -32,6 +33,8 @@ interface ChatbotCardProps {
     launcherStyle?: string;
     initialMessage?: string;
     faqData?: unknown[];
+    installedAt?: Date | null;
+    lastSeenHost?: string;
   };
   feedback: {
     positive: number;
@@ -109,6 +112,8 @@ const ChatbotCard: React.FC<ChatbotCardProps> = ({
     totalFeedback > 0 ? Math.round((feedback.positive / totalFeedback) * 100) : null;
   const updatedLabel = formatDistanceToNowStrict(chatbot.lastUpdated, { addSuffix: true, locale });
   const updatedTitle = format(chatbot.lastUpdated, tc("dateTimeFormat"), { locale });
+  // Not loaded on any website yet: point the owner at the embed code.
+  const installed = Boolean(chatbot.installedAt);
 
   if (viewMode === "list") {
     return (
@@ -129,6 +134,11 @@ const ChatbotCard: React.FC<ChatbotCardProps> = ({
                   <span className="flex items-center gap-0.5 text-violet-600 dark:text-violet-300">
                     <Sparkles size={10} />
                     {t("ai")}
+                  </span>
+                )}
+                {!installed && (
+                  <span className="truncate text-amber-700 dark:text-amber-300" title={t("notOnSiteHint")}>
+                    {t("notOnSite")}
                   </span>
                 )}
               </span>
@@ -233,6 +243,12 @@ const ChatbotCard: React.FC<ChatbotCardProps> = ({
                   {t("aiReplies")}
                 </span>
               )}
+              {installed && chatbot.lastSeenHost && (
+                <span className="flex min-w-0 items-center gap-1" title={chatbot.lastSeenHost}>
+                  <Globe size={11} className="shrink-0" />
+                  <span className="truncate">{t("onSite", { host: chatbot.lastSeenHost })}</span>
+                </span>
+              )}
             </p>
           </div>
           <div className="flex shrink-0 items-center gap-1">
@@ -312,9 +328,20 @@ const ChatbotCard: React.FC<ChatbotCardProps> = ({
         </div>
 
         <div className="mt-4 flex items-center gap-2 border-t border-[#E7EDF6] pt-3 dark:border-[#2B3646]">
-          <span className="mr-auto truncate text-caption text-[#647184] dark:text-[#87909D]" title={updatedTitle}>
-            {t("updatedAgo", { time: updatedLabel })}
-          </span>
+          {installed ? (
+            <span className="mr-auto truncate text-caption text-[#647184] dark:text-[#87909D]" title={updatedTitle}>
+              {t("updatedAgo", { time: updatedLabel })}
+            </span>
+          ) : (
+            <button
+              onClick={() => onEmbed(chatbot.id)}
+              title={t("notOnSiteHint")}
+              className={`mr-auto flex min-w-0 items-center gap-1.5 rounded text-caption font-medium text-amber-700 hover:underline hover:underline-offset-2 dark:text-amber-300 ${focusRing}`}
+            >
+              <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-amber-500" aria-hidden="true" />
+              <span className="truncate">{t("notOnSite")}</span>
+            </button>
+          )}
           <button
             onClick={() => onEmbed(chatbot.id)}
             className={`inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-[#D8DFE9] text-[#566273] transition-colors hover:bg-[#F3F7FC] hover:text-[#101723] dark:border-[#2B3646] dark:text-[#9BAABD] dark:hover:bg-[#273444] dark:hover:text-[#D7DFE5] ${focusRing}`}
