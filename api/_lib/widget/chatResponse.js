@@ -109,7 +109,7 @@ export default async function handler(req, res) {
       await recordAiReply(ownerUid);
     }
 
-    return res.status(200).json({ reply: result.reply, answered: result.answered, live });
+    return res.status(200).json({ reply: result.reply, answered: result.answered, sources: result.sources || [], live });
   } catch (error) {
     console.error("Failed to generate AI chat response:", error);
     return sendError(res, error);

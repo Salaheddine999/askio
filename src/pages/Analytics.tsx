@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
-import { Timestamp, collection, getDocs, query, where } from "firebase/firestore";
+import { Timestamp, arrayUnion, collection, doc, getDocs, query, serverTimestamp, updateDoc, where, writeBatch } from "firebase/firestore";
+import { toast } from "react-hot-toast";
 import { format, formatDistanceToNowStrict, isAfter, startOfDay, subDays } from "date-fns";
 import { Listbox, ListboxButton, ListboxOption, ListboxOptions } from "@headlessui/react";
 import { Bar } from "react-chartjs-2";
@@ -51,7 +52,11 @@ interface UnansweredQuery {
   chatbotId: string;
   query: string;
   timestamp: Date;
+  /** Answered since, from this page; it leaves the "couldn't answer" list but still counts in the stats. */
+  resolved?: boolean;
 }
+
+type UnansweredGroup = { key: string; text: string; count: number; latest: Date; chatbotId: string; ids: string[] };
 
 interface Lead {
   id: string;
@@ -326,16 +331,17 @@ export default function Analytics({ testMode = false }: AnalyticsProps) {
 
   // Repeated questions are grouped, so the most-asked gaps come first.
   const unansweredGroups = useMemo(() => {
-    const groups = new Map<string, { text: string; count: number; latest: Date; chatbotId: string }>();
+    const groups = new Map<string, UnansweredGroup>();
     scoped.unanswered.forEach((u) => {
       const text = (u.query || "").trim();
-      if (!text) return;
+      if (!text || u.resolved) return;
       const key = text.toLowerCase();
       const g = groups.get(key);
       if (!g) {
-        groups.set(key, { text, count: 1, latest: u.timestamp, chatbotId: u.chatbotId });
+        groups.set(key, { key, text, count: 1, latest: u.timestamp, chatbotId: u.chatbotId, ids: [u.id] });
       } else {
         g.count++;
+        g.ids.push(u.id);
         if (u.timestamp > g.latest) {
           g.latest = u.timestamp;
           g.chatbotId = u.chatbotId;
@@ -344,6 +350,39 @@ export default function Analytics({ testMode = false }: AnalyticsProps) {
     });
     return [...groups.values()].sort((a, b) => b.count - a.count || b.latest.getTime() - a.latest.getTime()).slice(0, 6);
   }, [scoped]);
+
+  // Answering a missed question right here: it becomes an FAQ of that
+  // chatbot, and the question leaves the list.
+  const [answering, setAnswering] = useState<{ key: string; question: string; answer: string } | null>(null);
+  const [savingAnswer, setSavingAnswer] = useState(false);
+  const saveAnswer = async (g: UnansweredGroup) => {
+    if (!answering) return;
+    const question = answering.question.trim();
+    const answer = answering.answer.trim();
+    const bot = botById.get(g.chatbotId);
+    if (!question || !answer || !bot) return;
+    setSavingAnswer(true);
+    try {
+      if (!testMode) {
+        await updateDoc(doc(db, "chatbot_configs", g.chatbotId), {
+          faqData: arrayUnion({ question, answer }),
+          lastUpdated: serverTimestamp(),
+        });
+        const batch = writeBatch(db);
+        g.ids.slice(0, 450).forEach((id) => batch.update(doc(db, "unanswered_queries", id), { resolved: true }));
+        await batch.commit();
+      }
+      const done = new Set(g.ids);
+      setUnanswered((list) => list.map((u) => (done.has(u.id) ? { ...u, resolved: true } : u)));
+      setAnswering(null);
+      toast.success(t("answerAdded", { chatbot: bot.title }));
+    } catch (error) {
+      console.error("Couldn't add the answer:", error);
+      toast.error(t("answerFailed"));
+    } finally {
+      setSavingAnswer(false);
+    }
+  };
 
   const visibleLeads = useMemo(() => {
     const term = leadSearch.trim().toLowerCase();
@@ -535,8 +574,10 @@ export default function Analytics({ testMode = false }: AnalyticsProps) {
                   <ul className="divide-y divide-[#E7EDF6] border-t border-[#E7EDF6] dark:divide-[#2B3646] dark:border-[#2B3646]">
                     {unansweredGroups.map((g) => {
                       const bot = botById.get(g.chatbotId);
+                      const open = answering?.key === g.key;
                       return (
-                        <li key={g.text} className="flex items-center gap-3 px-5 py-3 sm:px-6">
+                        <li key={g.key} className="px-5 py-3 sm:px-6">
+                        <div className="flex items-center gap-3">
                           <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-amber-50 text-amber-600 dark:bg-amber-900/25 dark:text-amber-400">
                             <CircleHelp size={15} />
                           </span>
@@ -547,17 +588,73 @@ export default function Analytics({ testMode = false }: AnalyticsProps) {
                               {bot?.title || t("unknownChatbot")} · {formatDistanceToNowStrict(g.latest, { addSuffix: true, locale })}
                             </p>
                           </div>
-                          {bot && (
-                            <Link
-                              to={`/configure/${bot.id}?tab=faq`}
-                              state={{ faqQuestion: g.text }}
+                          {bot && !open && (
+                            <button
+                              type="button"
+                              onClick={() => setAnswering({ key: g.key, question: g.text, answer: "" })}
                               title={t("addAnswerIn", { chatbot: bot.title })}
                               className={`inline-flex h-8 shrink-0 items-center gap-1 rounded-lg border border-[#D8DFE9] px-2.5 text-caption font-medium text-[#101723] transition-colors hover:bg-[#F3F7FC] dark:border-[#2B3646] dark:text-[#D7DFE5] dark:hover:bg-[#273444] ${focusRing}`}
                             >
                               <Plus size={13} />
                               <span className="hidden sm:inline">{t("addAnswer")}</span>
-                            </Link>
+                            </button>
                           )}
+                        </div>
+                        {bot && open && answering && (
+                          <form
+                            className="mt-3 space-y-2.5 sm:pl-11"
+                            onSubmit={(e) => {
+                              e.preventDefault();
+                              void saveAnswer(g);
+                            }}
+                          >
+                            <label className="block">
+                              <span className="text-caption font-medium text-[#566273] dark:text-[#9BAABD]">{t("questionLabel")}</span>
+                              <input
+                                value={answering.question}
+                                onChange={(e) => setAnswering({ ...answering, question: e.target.value })}
+                                maxLength={300}
+                                className={`mt-1 h-9 w-full rounded-lg border border-[#D8DFE9] bg-[#F9FCFF] px-3 text-body-sm text-[#101723] dark:border-[#2B3646] dark:bg-[#141D2B] dark:text-[#D7DFE5] ${focusRing}`}
+                              />
+                            </label>
+                            <label className="block">
+                              <span className="text-caption font-medium text-[#566273] dark:text-[#9BAABD]">{t("answerLabel")}</span>
+                              <textarea
+                                autoFocus
+                                rows={3}
+                                value={answering.answer}
+                                onChange={(e) => setAnswering({ ...answering, answer: e.target.value })}
+                                maxLength={2000}
+                                placeholder={t("answerPlaceholder")}
+                                className={`mt-1 w-full resize-y rounded-lg border border-[#D8DFE9] bg-[#F9FCFF] px-3 py-2 text-body-sm text-[#101723] placeholder:text-[#87909D] dark:border-[#2B3646] dark:bg-[#141D2B] dark:text-[#D7DFE5] ${focusRing}`}
+                              />
+                            </label>
+                            <div className="flex flex-wrap items-center gap-2">
+                              <button
+                                type="submit"
+                                disabled={savingAnswer || !answering.question.trim() || !answering.answer.trim()}
+                                className={`inline-flex h-8 items-center gap-1.5 rounded-lg bg-[#101723] px-3 text-caption font-medium text-white transition-colors hover:bg-[#243040] disabled:opacity-50 dark:bg-[#D7DFE5] dark:text-[#141D2B] dark:hover:bg-[#E7EDF6] ${focusRing}`}
+                              >
+                                <Check size={13} />
+                                {t("saveAnswer")}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setAnswering(null)}
+                                className={`inline-flex h-8 items-center rounded-lg px-2.5 text-caption font-medium text-[#566273] hover:bg-[#F3F7FC] dark:text-[#9BAABD] dark:hover:bg-[#273444] ${focusRing}`}
+                              >
+                                {t("cancelAnswer")}
+                              </button>
+                              <Link
+                                to={`/configure/${bot.id}?tab=faq`}
+                                state={{ faqQuestion: answering.question }}
+                                className={`ml-auto rounded text-caption text-[#647184] underline-offset-2 hover:text-[#101723] hover:underline dark:text-[#87909D] dark:hover:text-[#D7DFE5] ${focusRing}`}
+                              >
+                                {t("moreOptions")}
+                              </Link>
+                            </div>
+                          </form>
+                        )}
                         </li>
                       );
                     })}

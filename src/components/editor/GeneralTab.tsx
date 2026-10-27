@@ -155,6 +155,13 @@ const GeneralTab: React.FC<Props> = ({ config, onChange, errors, onLinkBlur, can
             />
           </Field>
         </PanelBody>
+        <Row label={t("showSources")} hint={t("showSourcesHint")}>
+          <Switch
+            checked={config.showSources !== false}
+            onChange={(v) => onChange("showSources", v)}
+            label={t("showSources")}
+          />
+        </Row>
       </Panel>
 
       <Panel title={t("position")} description={t("positionDesc")}>

@@ -347,6 +347,17 @@ const LANGUAGE_NAMES = { en: "English", fr: "French", nl: "Dutch", de: "German",
  * answer: "live" (the owner is online and joins), "email" (it asks for one),
  * "human" (a contact button) or "none".
  */
+/** The FAQ questions behind a reply, from the entry numbers the model gave. */
+export function sourceQuestions(numbers, faqData) {
+  if (!Array.isArray(numbers)) return [];
+  const seen = new Set();
+  return numbers
+    .filter((n) => Number.isInteger(n) && n >= 1 && n <= faqData.length && !seen.has(n) && seen.add(n))
+    .slice(0, 2)
+    .map((n) => String(faqData[n - 1].question || "").slice(0, 200))
+    .filter(Boolean);
+}
+
 export async function generateChatResponse({
   query,
   history = [],
@@ -358,8 +369,9 @@ export async function generateChatResponse({
 }) {
   const chatbotLanguage = LANGUAGE_NAMES[language] || "English";
 
+  // Numbered, so the reply can say which entries it used.
   const contextStr = faqData
-    .map((faq) => `Q: ${faq.question}\nA: ${faq.answer}`)
+    .map((faq, i) => `[${i + 1}] Q: ${faq.question}\nA: ${faq.answer}`)
     .join("\n\n");
 
   const historyStr = history
@@ -401,7 +413,7 @@ export async function generateChatResponse({
     - One to three short sentences, plain text, no markdown, no hype, no exclamation marks.
     - Reply in the visitor's language. If you can't tell, use ${chatbotLanguage}.
 
-    Return JSON: {"reply": "your reply", "answered": true or false}. "answered" is false only when you couldn't answer their question from the knowledge base.
+    Return JSON: {"reply": "your reply", "answered": true or false, "sources": [numbers]}. "answered" is false only when you couldn't answer their question from the knowledge base. "sources" lists the numbers of the knowledge base entries your reply's facts came from, most relevant first; leave it empty for small talk or when you didn't answer.
   `;
 
   const aiResponse = await generate(
@@ -413,7 +425,11 @@ export async function generateChatResponse({
         responseMimeType: "application/json",
         responseSchema: {
           type: "object",
-          properties: { reply: { type: "string" }, answered: { type: "boolean" } },
+          properties: {
+            reply: { type: "string" },
+            answered: { type: "boolean" },
+            sources: { type: "array", items: { type: "integer" } },
+          },
           required: ["reply", "answered"],
         },
         temperature: 0.3,
@@ -426,10 +442,11 @@ export async function generateChatResponse({
   try {
     const parsed = JSON.parse(text);
     if (typeof parsed?.reply === "string" && parsed.reply.trim()) {
-      return { reply: parsed.reply.trim(), answered: parsed.answered !== false };
+      const answered = parsed.answered !== false;
+      return { reply: parsed.reply.trim(), answered, sources: answered ? sourceQuestions(parsed.sources, faqData) : [] };
     }
   } catch {
     // Not JSON after all: use the text as the reply.
   }
-  return { reply: text || null, answered: undefined };
+  return { reply: text || null, answered: undefined, sources: [] };
 }

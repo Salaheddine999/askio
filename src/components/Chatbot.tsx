@@ -1,6 +1,6 @@
 import brandLogo from "../assets/logo.svg";
 import React, { useState, useEffect, useRef, useMemo } from "react";
-import { Send, X, ThumbsUp, ThumbsDown, MessageSquare, Sparkles, Bot, UserRound } from "lucide-react";
+import { Send, X, ThumbsUp, ThumbsDown, MessageSquare, Sparkles, Bot, UserRound, BookOpen } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Fuse from "fuse.js";
 import { db } from "../utils/db";
@@ -24,6 +24,8 @@ type Message = {
   isFallback?: boolean;
   isLeadCapture?: boolean;
   name?: string;
+  /** The FAQ question an answer came from, shown under it. */
+  source?: string;
 };
 
 /** How long a "typing" signal stays on screen, and how often one is sent. */
@@ -53,6 +55,8 @@ export interface ChatbotProps {
   gradientStart?: string;
   liveChatLink?: string;
   enableLeadCapture?: boolean;
+  /** Show "Answered from: <FAQ>" under answers. On unless turned off. */
+  showSources?: boolean;
   aiTone?: string;
   aiEnabled?: boolean;
   launcherStyle?: LauncherStyle;
@@ -83,6 +87,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
   customPositionClass,
   liveChatLink,
   enableLeadCapture,
+  showSources = true,
   aiEnabled,
   launcherStyle = "classic",
   greetingBubble = false,
@@ -482,9 +487,10 @@ const Chatbot: React.FC<ChatbotProps> = ({
       let aiHandled = true;
       try {
         const historyContext = messages.filter(m => !m.isFallback && !m.isLeadCapture);
-        const { reply: aiResponseText, answered, live: ownerLive } = await apiRequest<{
+        const { reply: aiResponseText, answered, sources, live: ownerLive } = await apiRequest<{
           reply: string | null;
           answered?: boolean;
+          sources?: string[];
           live?: boolean;
           fallback?: string;
         }>(
@@ -520,7 +526,12 @@ const Chatbot: React.FC<ChatbotProps> = ({
 
           setMessages((prev) => [
             ...prev,
-            { text: aiResponseText, sender: "bot", isFallback: aiCouldNotAnswer && !enableLeadCapture && !handOff },
+            {
+              text: aiResponseText,
+              sender: "bot",
+              isFallback: aiCouldNotAnswer && !enableLeadCapture && !handOff,
+              source: aiCouldNotAnswer ? undefined : sources?.[0],
+            },
           ]);
 
           if (handOff) {
@@ -580,7 +591,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
       if (matchedFaq) {
         setMessages((prev) => [
           ...prev,
-          { text: matchedFaq.answer, sender: "bot" },
+          { text: matchedFaq.answer, sender: "bot", source: matchedFaq.question },
         ]);
         setIsTyping(false);
         
@@ -1088,7 +1099,15 @@ const Chatbot: React.FC<ChatbotProps> = ({
                   </span>
                 )}
                 {message.text}
-                
+
+                {/* Which FAQ the answer came from: proof it isn't made up. */}
+                {message.sender === "bot" && message.source && showSources !== false && (
+                  <span className="mt-1.5 flex items-start gap-1 border-t border-[#101723]/[0.07] pt-1.5 text-[11px] leading-snug text-[#647184] dark:border-white/[0.07] dark:text-[#9BAABD]">
+                    <BookOpen size={11} className="mt-[2px] shrink-0" aria-hidden="true" />
+                    <span>{t("answeredFrom", { source: message.source })}</span>
+                  </span>
+                )}
+
                 {/* Fallback Live Chat Link */}
                 {message.isFallback && index === lastFallbackIndex && canTalkLive && ownerOnline && !live && (
                   <div className="mt-2.5 flex justify-start">

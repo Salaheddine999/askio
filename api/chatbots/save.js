@@ -43,6 +43,8 @@ function normalizeChatbotPayload(payload, uid) {
     faqData: normalizeFaqData(payload.faqData),
     liveChatLink: String(payload.liveChatLink || "").trim(),
     enableLeadCapture: payload.enableLeadCapture === true,
+    // "Answered from: …" under replies; on unless the owner turns it off.
+    showSources: payload.showSources !== false,
     saveConversations: payload.saveConversations === true,
     // Live chat replies through the saved conversation, so it needs history.
     liveChat: payload.liveChat === true && payload.saveConversations === true,

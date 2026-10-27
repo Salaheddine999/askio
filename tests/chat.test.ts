@@ -75,7 +75,7 @@ describe("AI chat replies (/api/ai/chat-response)", () => {
     const res = fakeRes();
     await chatResponse(ask(), res);
     expect(res.statusCode).toBe(200);
-    expect(res.body).toEqual({ reply: "Yes, to Belgium.", answered: true, live: false });
+    expect(res.body).toEqual({ reply: "Yes, to Belgium.", answered: true, sources: [], live: false });
     expect(ai.recorded).toBe(1);
   });
 

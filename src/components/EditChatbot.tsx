@@ -66,6 +66,7 @@ const DEFAULT_CONFIG: ChatbotConfig = {
   faqData: [],
   liveChatLink: "",
   enableLeadCapture: false,
+  showSources: true,
   aiEnabled: false,
   aiTone: "",
   language: "en",
