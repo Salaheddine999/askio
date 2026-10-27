@@ -184,12 +184,11 @@ const SEEN_REFRESH_MS = 20 * 3_600_000;
  * installed, and the setup reminder isn't sent. Written at most about once a
  * day per chatbot, or when it shows up on another site.
  */
-async function markSeen(ref, chatbot, host) {
-  // Askio's own preview deployments (askio-…vercel.app) share the live
-  // database; a visit there isn't the chatbot's website.
-  const ownPreview =
-    process.env.VERCEL_ENV && process.env.VERCEL_ENV !== "production" && [process.env.VERCEL_URL, process.env.VERCEL_BRANCH_URL].includes(host);
-  if (ownPreview) return;
+async function markSeen(ref, chatbot, host, requestHost) {
+  // Askio's own deployments (askio-…vercel.app, preview or production) share
+  // the live database. On them the widget reports to the same address it's
+  // shown on; a visit there isn't the chatbot's website.
+  if (host.endsWith(".vercel.app") && host === requestHost) return;
   const last = chatbot.lastSeenAt?.toMillis?.() ?? 0;
   if (chatbot.installedAt && chatbot.lastSeenHost === host && Date.now() - last < SEEN_REFRESH_MS) return;
   await ref.update({
@@ -305,7 +304,8 @@ export default async function recordVisitor(req, res) {
       return res.status(201).json({ ok: true });
     }
     if (kind === "seen") {
-      if (fields.host) await markSeen(chatbotSnap.ref, chatbot, fields.host);
+      const requestHost = String(req.headers["x-forwarded-host"] || req.headers.host || "").split(",")[0].trim().toLowerCase();
+      if (fields.host) await markSeen(chatbotSnap.ref, chatbot, fields.host, requestHost);
       return res.status(201).json({ ok: true });
     }
     if (kind === "typing") {
