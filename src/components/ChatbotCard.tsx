@@ -219,7 +219,7 @@ const ChatbotCard: React.FC<ChatbotCardProps> = ({
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.25, delay: index * 0.04, ease: "easeOut" }}
-      className="group relative flex flex-col rounded-2xl border border-[#D8DFE9] bg-[#F9FCFF] shadow-[0_1px_2px_rgba(16,23,35,0.04)] transition-colors duration-200 hover:border-[#C9D3E0] dark:border-[#2B3646] dark:bg-[#1A2533] dark:hover:border-[#39485B]"
+      className="group relative flex h-full flex-col rounded-2xl border border-[#D8DFE9] bg-[#F9FCFF] shadow-[0_1px_2px_rgba(16,23,35,0.04)] transition-colors duration-200 hover:border-[#C9D3E0] dark:border-[#2B3646] dark:bg-[#1A2533] dark:hover:border-[#39485B]"
     >
       <div className="flex flex-1 flex-col p-4">
         <div className="flex items-start gap-3">
@@ -241,12 +241,6 @@ const ChatbotCard: React.FC<ChatbotCardProps> = ({
                 <span className="flex items-center gap-1 whitespace-nowrap text-violet-600 dark:text-violet-300">
                   <Sparkles size={11} />
                   {t("aiReplies")}
-                </span>
-              )}
-              {installed && chatbot.lastSeenHost && (
-                <span className="flex min-w-0 items-center gap-1" title={chatbot.lastSeenHost}>
-                  <Globe size={11} className="shrink-0" />
-                  <span className="truncate">{t("onSite", { host: chatbot.lastSeenHost })}</span>
                 </span>
               )}
             </p>
@@ -293,7 +287,7 @@ const ChatbotCard: React.FC<ChatbotCardProps> = ({
           </div>
         </div>
 
-        <div className="mt-4">
+        <div className="mb-4 mt-4">
           <div className="flex items-baseline justify-between">
             <span className="text-caption font-medium text-[#566273] dark:text-[#9BAABD]">{t("satisfaction")}</span>
             <span className="font-serif text-body-lg leading-none tabular-nums text-[#101723] dark:text-[#F3F7FC]">
@@ -327,8 +321,18 @@ const ChatbotCard: React.FC<ChatbotCardProps> = ({
           </div>
         </div>
 
-        <div className="mt-4 flex items-center gap-2 border-t border-[#E7EDF6] pt-3 dark:border-[#2B3646]">
-          {installed ? (
+        <div className="mt-auto flex items-center gap-2 border-t border-[#E7EDF6] pt-3 dark:border-[#2B3646]">
+          {/* Where it's installed, or that it isn't yet; the same spot on every
+              card keeps them lined up. */}
+          {installed && chatbot.lastSeenHost ? (
+            <span
+              className="mr-auto flex min-w-0 items-center gap-1.5 text-caption text-[#647184] dark:text-[#87909D]"
+              title={`${chatbot.lastSeenHost} · ${t("updatedAgo", { time: updatedLabel })}`}
+            >
+              <Globe size={12} className="shrink-0" />
+              <span className="truncate">{t("onSite", { host: chatbot.lastSeenHost })}</span>
+            </span>
+          ) : installed ? (
             <span className="mr-auto truncate text-caption text-[#647184] dark:text-[#87909D]" title={updatedTitle}>
               {t("updatedAgo", { time: updatedLabel })}
             </span>

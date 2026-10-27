@@ -185,6 +185,11 @@ const SEEN_REFRESH_MS = 20 * 3_600_000;
  * day per chatbot, or when it shows up on another site.
  */
 async function markSeen(ref, chatbot, host) {
+  // Askio's own preview deployments (askio-…vercel.app) share the live
+  // database; a visit there isn't the chatbot's website.
+  const ownPreview =
+    process.env.VERCEL_ENV && process.env.VERCEL_ENV !== "production" && [process.env.VERCEL_URL, process.env.VERCEL_BRANCH_URL].includes(host);
+  if (ownPreview) return;
   const last = chatbot.lastSeenAt?.toMillis?.() ?? 0;
   if (chatbot.installedAt && chatbot.lastSeenHost === host && Date.now() - last < SEEN_REFRESH_MS) return;
   await ref.update({

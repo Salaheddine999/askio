@@ -129,6 +129,21 @@ describe("the widget loading on a website", () => {
     expect(fake.store.chatbot_configs.bot1.installedAt).toBeUndefined();
   });
 
+  it("ignores Askio's own preview deployments", async () => {
+    fake.store.chatbot_configs = { bot1: { user_id: "owner1" } };
+    process.env.VERCEL_ENV = "preview";
+    process.env.VERCEL_URL = "askio-abc123-team.vercel.app";
+    try {
+      await recordVisitor(seen("https://askio-abc123-team.vercel.app/"), res());
+      expect(fake.store.chatbot_configs.bot1.installedAt).toBeUndefined();
+      await recordVisitor(seen("https://someshop.vercel.app/"), res());
+      expect(fake.store.chatbot_configs.bot1.lastSeenHost).toBe("someshop.vercel.app");
+    } finally {
+      delete process.env.VERCEL_ENV;
+      delete process.env.VERCEL_URL;
+    }
+  });
+
   it("refuses a missing or odd page", async () => {
     fake.store.chatbot_configs = { bot1: { user_id: "owner1" } };
     const r = res();

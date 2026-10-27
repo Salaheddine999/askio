@@ -17,6 +17,7 @@ export const DUMMY_CHATBOTS = [
     createdAt: daysAgo(96),
     lastUpdated: daysAgo(0, 2),
     installedAt: daysAgo(30),
+    lastSeenHost: "yourstore.com",
   },
   {
     id: "dummy-2",
@@ -30,6 +31,7 @@ export const DUMMY_CHATBOTS = [
     createdAt: daysAgo(80),
     lastUpdated: daysAgo(1, 4),
     installedAt: daysAgo(30),
+    lastSeenHost: "yourstore.com",
   },
   {
     id: "dummy-3",
@@ -43,6 +45,7 @@ export const DUMMY_CHATBOTS = [
     createdAt: daysAgo(54),
     lastUpdated: daysAgo(6),
     installedAt: daysAgo(30),
+    lastSeenHost: "yourstore.com",
   },
   {
     id: "dummy-4",
@@ -57,6 +60,7 @@ export const DUMMY_CHATBOTS = [
     createdAt: daysAgo(40),
     lastUpdated: daysAgo(2),
     installedAt: daysAgo(30),
+    lastSeenHost: "yourstore.com",
   },
   {
     id: "dummy-5",
@@ -70,6 +74,7 @@ export const DUMMY_CHATBOTS = [
     createdAt: daysAgo(21),
     lastUpdated: daysAgo(9),
     installedAt: daysAgo(30),
+    lastSeenHost: "yourstore.com",
   },
   {
     id: "dummy-6",
