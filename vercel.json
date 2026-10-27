@@ -2,6 +2,9 @@
   "functions": {
     "api/ai/generate-faq.js": {
       "maxDuration": 60
+    },
+    "api/ai/[action].js": {
+      "maxDuration": 20
     }
   },
   "crons": [

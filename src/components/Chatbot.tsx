@@ -333,7 +333,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
       let aiHandled = true;
       try {
         const historyContext = messages.filter(m => !m.isFallback && !m.isLeadCapture);
-        const { reply: aiResponseText } = await apiRequest<{ reply: string | null; fallback?: string }>(
+        const { reply: aiResponseText, answered } = await apiRequest<{ reply: string | null; answered?: boolean; fallback?: string }>(
           "/api/ai/chat-response",
           {
             body: {
@@ -355,7 +355,10 @@ const Chatbot: React.FC<ChatbotProps> = ({
             "don't have information", "no answer", "can't help with that",
             "unable to help", "not in my knowledge",
           ];
-          const aiCouldNotAnswer = cantAnswerPhrases.some(phrase => lowerResponse.includes(phrase));
+          // The server says whether it answered, in any language; older
+          // replies without that flag fall back to spotting English phrases.
+          const aiCouldNotAnswer =
+            typeof answered === "boolean" ? !answered : cantAnswerPhrases.some((phrase) => lowerResponse.includes(phrase));
 
           setMessages((prev) => [
             ...prev,
@@ -403,32 +406,9 @@ const Chatbot: React.FC<ChatbotProps> = ({
           aiHandled = false;
         }
       } catch (error) {
+        // Unreachable server or network: answer from the FAQs instead.
         console.error("Error generating AI response:", error);
-        // Fallback to standard flow on error
-        const isLeadCaptureEnabled = enableLeadCapture === true || (enableLeadCapture as unknown as string) === "true";
-        if (isLeadCaptureEnabled) {
-          setMessages((prev) => [
-            ...prev,
-            {
-              text: t("noAnswerLeadAsk"),
-              sender: "bot",
-              isLeadCapture: true,
-            },
-          ]);
-        } else {
-          setMessages((prev) => [
-            ...prev,
-            {
-              text: t("errorRelated"),
-              sender: "bot",
-              isFallback: true,
-            },
-          ]);
-          setTimeout(() => {
-            setShowSuggestions(true);
-            updateSuggestions(input);
-          }, 100);
-        }
+        aiHandled = false;
       } finally {
         if (aiHandled) setIsTyping(false);
       }

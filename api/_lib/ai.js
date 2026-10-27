@@ -11,6 +11,56 @@ function getAiClient() {
   return new GoogleGenAI({ apiKey });
 }
 
+// Each list tries the next model when one is out of quota or overloaded; every
+// model has its own quota. Chat wants speed (Flash-Lite answers in about a
+// second); writing FAQs from a website wants quality.
+const CHAT_MODELS = ["gemini-3.5-flash-lite", "gemini-2.5-flash"];
+const FAQ_MODELS = ["gemini-2.5-flash", "gemini-3.5-flash-lite"];
+const RETRY_ON = new Set([429, 500, 503]);
+
+function statusOf(error) {
+  if (typeof error?.status === "number") return error.status;
+  const match = /"code":\s*(\d{3})/.exec(String(error?.message || ""));
+  return match ? Number(match[1]) : 0;
+}
+
+/**
+ * Calls Gemini within `timeoutMs`, moving to the lighter model when the main
+ * one is out of quota or busy. Failures become a plain 503: Google's own
+ * error text includes quota details that shouldn't reach visitors or owners.
+ */
+async function generate(models, request, timeoutMs) {
+  const ai = getAiClient();
+  const deadline = Date.now() + timeoutMs;
+  let lastStatus = 0;
+  for (const model of models) {
+    const remaining = deadline - Date.now();
+    if (remaining < 1500) break;
+    // Gemini 2.5 thinks before answering unless told not to; for a short
+    // reply that's seconds of waiting for nothing.
+    const thinking = request.fast && model.startsWith("gemini-2.5") ? { thinkingConfig: { thinkingBudget: 0 } } : {};
+    try {
+      return await ai.models.generateContent({
+        contents: request.contents,
+        model,
+        config: { ...request.config, ...thinking, abortSignal: AbortSignal.timeout(remaining) },
+      });
+    } catch (error) {
+      lastStatus = statusOf(error);
+      console.error(`Gemini ${model} failed: ${lastStatus || error?.name || "error"}`);
+      if (!RETRY_ON.has(lastStatus)) break;
+    }
+  }
+  const failure = new Error(
+    lastStatus === 429
+      ? "The AI is at its usage limit right now. Please try again later."
+      : "The AI didn't respond in time. Please try again in a moment."
+  );
+  failure.statusCode = 503;
+  failure.aiStatus = lastStatus;
+  throw failure;
+}
+
 // `fetcher` is safeFetch for addresses a user gave us, plain fetch for our own services.
 async function fetchWithTimeout(url, options = {}, timeoutMs = 12000, fetcher = fetch) {
   const controller = new AbortController();
@@ -143,7 +193,6 @@ function safeParseFaqs(resultText) {
 }
 
 export async function generateFaqsFromUrl(url, isDeepCrawl = false, aiTone = "") {
-  const ai = getAiClient();
   const requestHeaders = {
     "User-Agent":
       "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
@@ -265,15 +314,18 @@ export async function generateFaqsFromUrl(url, isDeepCrawl = false, aiTone = "")
       ${rules}
     `;
 
-  const aiResponse = await ai.models.generateContent({
-    model: "gemini-2.5-flash",
-    contents: prompt,
-    config: {
-      responseMimeType: "application/json",
-      // Low, so answers stick to the page instead of embellishing it.
-      temperature: 0.3,
+  const aiResponse = await generate(
+    FAQ_MODELS,
+    {
+      contents: prompt,
+      config: {
+        responseMimeType: "application/json",
+        // Low, so answers stick to the page instead of embellishing it.
+        temperature: 0.3,
+      },
     },
-  });
+    40_000
+  );
 
   const resultText = aiResponse.text;
   if (!resultText) {
@@ -285,9 +337,22 @@ export async function generateFaqsFromUrl(url, isDeepCrawl = false, aiTone = "")
 
 const LANGUAGE_NAMES = { en: "English", fr: "French", nl: "Dutch", de: "German", es: "Spanish" };
 
-export async function generateChatResponse(query, history, faqData, aiTone, language = "en") {
+/**
+ * A reply to a visitor from the chatbot's FAQs. Returns the reply and whether
+ * it answered their question, so the widget can offer a person or ask for an
+ * email in any language. `handoff` is what the widget offers when it can't
+ * answer: "email" (it asks for one), "human" (a contact button) or "none".
+ */
+export async function generateChatResponse({
+  query,
+  history = [],
+  faqData = [],
+  aiTone = "",
+  language = "en",
+  botName = "",
+  handoff = "none",
+}) {
   const chatbotLanguage = LANGUAGE_NAMES[language] || "English";
-  const ai = getAiClient();
 
   const contextStr = faqData
     .map((faq) => `Q: ${faq.question}\nA: ${faq.answer}`)
@@ -295,40 +360,71 @@ export async function generateChatResponse(query, history, faqData, aiTone, lang
 
   const historyStr = history
     .slice(-5)
-    .map((msg) => `${msg.sender === "user" ? "User" : "Agent"}: ${msg.text}`)
+    .map((msg) => `${msg.sender === "user" ? "Visitor" : "You"}: ${msg.text}`)
     .join("\n");
 
+  const whenUnknown = {
+    email: "say you don't know and that someone from the business can get back to them",
+    human: "say you don't know and that they can talk to a person with the button below your message",
+    none: "say you don't know and suggest they contact the business directly",
+  }[handoff] || "say you don't know";
+
   const prompt = `
-    You are an AI assistant for a website.
-    Here is your persona/instructions from the website owner:
-    "${aiTone || "You are helpful, concise, and friendly."}"
+    You are ${botName ? `"${botName}", ` : ""}the chat assistant on a business's website, answering visitors for the business.
 
-    Here is the official knowledge base (FAQs) you must use to answer questions:
-    -----
-    ${contextStr || "No FAQs provided."}
-    -----
+    The owner's instructions for your tone:
+    "${aiTone || "Helpful, concise and friendly."}"
 
-    Here is the recent conversation history:
+    Knowledge base, the only facts you may use:
     -----
-    ${historyStr}
+    ${contextStr || "(empty)"}
     -----
 
-    The user just said: "${query}"
+    Recent conversation:
+    -----
+    ${historyStr || "(none)"}
+    -----
 
-    Instructions:
-    1. Answer the user's question using only the information provided in the knowledge base.
-    2. If the user's question asks for information not found in the knowledge base, politely state that you don't know the answer and offer to connect them with a human agent.
-    3. Do not make up information.
-    4. Adopt the persona described above.
-    5. Reply in the language the user writes in. If you can't tell, reply in ${chatbotLanguage}.
+    The visitor just wrote: "${query}"
 
-    Provide your response below without markdown formatting or prefix.
+    How to reply:
+    - Greetings, thanks and small talk: reply briefly and naturally and offer to help. Don't recite the knowledge base. This counts as answered.
+    - Questions: use only facts from the knowledge base. If it covers only part of the question, answer that part and say plainly what you don't know.
+    - Never broaden a fact. "There is a free plan" doesn't mean "it's free"; give conditions, prices and limits exactly as the knowledge base states them.
+    - If the knowledge base doesn't cover the question, ${whenUnknown}. Don't guess. This counts as not answered.
+    - If asked who or what you are, you are ${botName ? `${botName}, ` : ""}the assistant for this website.
+    - One to three short sentences, plain text, no markdown, no hype, no exclamation marks.
+    - Reply in the visitor's language. If you can't tell, use ${chatbotLanguage}.
+
+    Return JSON: {"reply": "your reply", "answered": true or false}. "answered" is false only when you couldn't answer their question from the knowledge base.
   `;
 
-  const aiResponse = await ai.models.generateContent({
-    model: "gemini-2.5-flash",
-    contents: prompt,
-  });
+  const aiResponse = await generate(
+    CHAT_MODELS,
+    {
+      fast: true,
+      contents: prompt,
+      config: {
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: "object",
+          properties: { reply: { type: "string" }, answered: { type: "boolean" } },
+          required: ["reply", "answered"],
+        },
+        temperature: 0.3,
+      },
+    },
+    8000
+  );
 
-  return aiResponse.text;
+  const text = (aiResponse.text || "").trim();
+  try {
+    const parsed = JSON.parse(text);
+    if (typeof parsed?.reply === "string" && parsed.reply.trim()) {
+      return { reply: parsed.reply.trim(), answered: parsed.answered !== false };
+    }
+  } catch {
+    // Not JSON after all: use the text as the reply.
+  }
+  return { reply: text || null, answered: undefined };
 }

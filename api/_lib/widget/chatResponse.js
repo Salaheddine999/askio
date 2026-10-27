@@ -3,6 +3,7 @@ import { sendError } from "../response.js";
 import { assertChatbotAiAvailable } from "../plan.js";
 import { getMonthlyAiReplies, recordAiReply } from "../aiUsage.js";
 import { takeRateLimit, visitorKey } from "../rateLimit.js";
+import { reportError } from "../monitoring.js";
 
 const MAX_QUERY_CHARS = 1000;
 const MAX_HISTORY_MESSAGES = 6;
@@ -67,20 +68,30 @@ export default async function handler(req, res) {
       return sendFallback(res, "monthly_limit");
     }
 
-    const reply = await generateChatResponse(
-      String(query).slice(0, MAX_QUERY_CHARS),
-      trimHistory(history),
-      Array.isArray(chatbotData.faqData) ? chatbotData.faqData : [],
-      chatbotData.aiTone || "",
-      chatbotData.language || "en"
-    );
+    let result;
+    try {
+      result = await generateChatResponse({
+        query: String(query).slice(0, MAX_QUERY_CHARS),
+        history: trimHistory(history),
+        faqData: Array.isArray(chatbotData.faqData) ? chatbotData.faqData : [],
+        aiTone: chatbotData.aiTone || "",
+        language: chatbotData.language || "en",
+        botName: String(chatbotData.title || "").slice(0, 60),
+        handoff: chatbotData.enableLeadCapture === true ? "email" : chatbotData.liveChatLink ? "human" : "none",
+      });
+    } catch (error) {
+      // Out of quota, overloaded or slow: the widget answers from the FAQs.
+      if (error.statusCode !== 503) throw error;
+      reportError(error, { route: "chat-response", aiStatus: error.aiStatus });
+      return sendFallback(res, "ai_error");
+    }
 
     // Only replies the visitor actually receives count toward the limit.
-    if (reply) {
+    if (result.reply) {
       await recordAiReply(ownerUid);
     }
 
-    return res.status(200).json({ reply });
+    return res.status(200).json({ reply: result.reply, answered: result.answered });
   } catch (error) {
     console.error("Failed to generate AI chat response:", error);
     return sendError(res, error);
