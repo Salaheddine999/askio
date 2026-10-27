@@ -6,16 +6,24 @@ import { assertNotSuspended, getUserAccessProfile } from "../_lib/plan.js";
 import { withMonitoring } from "../_lib/monitoring.js";
 
 
-function normalizeFaqData(faqData) {
+// Owners can star up to this many questions for the widget to suggest.
+const MAX_SUGGESTED = 3;
+
+export function normalizeFaqData(faqData) {
   if (!Array.isArray(faqData)) return [];
 
+  let starred = 0;
   return faqData
     .filter((item) => item && typeof item.question === "string" && typeof item.answer === "string")
     .map((item) => ({
       question: item.question.trim(),
       answer: item.answer.trim(),
+      suggested: item.suggested === true,
     }))
-    .filter((item) => item.question && item.answer);
+    .filter((item) => item.question && item.answer)
+    .map(({ suggested, ...item }) =>
+      suggested && starred < MAX_SUGGESTED ? (starred++, { ...item, suggested: true }) : item
+    );
 }
 
 function normalizeChatbotPayload(payload, uid) {

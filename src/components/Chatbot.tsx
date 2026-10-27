@@ -12,7 +12,7 @@ import { LiveOrb } from "./LiveOrb";
 import { headerOrbPropsFor, orbPropsFor, type LauncherStyle } from "../utils/orbColors";
 import { isOwnerBrowsing } from "../utils/ownerSession";
 import { normalizeContactLink } from "../utils/links";
-import { SUGGESTED_QUESTIONS as MAX_SUGGESTIONS } from "../utils/suggestions";
+import { pickSuggested, SUGGESTED_QUESTIONS as MAX_SUGGESTIONS } from "../utils/suggestions";
 import { isLang, makeT, type Lang } from "../i18n";
 import { widgetMessages } from "../i18n/widget";
 
@@ -39,7 +39,7 @@ export interface ChatbotProps {
   position: "bottom-right" | "bottom-left" | "top-right" | "top-left";
   initialMessage: string;
   placeholder: string;
-  faqData: Array<{ question: string; answer: string }>;
+  faqData: Array<{ question: string; answer: string; suggested?: boolean }>;
   isEmbedded?: boolean;
   isPreview?: boolean;
   isActive?: boolean;
@@ -200,12 +200,9 @@ const Chatbot: React.FC<ChatbotProps> = ({
     setMessages([{ text: initialMessage, sender: "bot" }]);
   }, [initialMessage]);
 
-  // A few suggestions, not the whole list: the owner's first questions to
-  // start, and the closest ones after a question the bot couldn't answer.
-  const topQuestions = useMemo(
-    () => faqData.slice(0, MAX_SUGGESTIONS).map((faq) => faq.question),
-    [faqData]
-  );
+  // A few suggestions, not the whole list: the ones the owner starred (or
+  // the first ones) to start, and the closest ones after a missed question.
+  const topQuestions = useMemo(() => pickSuggested(faqData).map((faq) => faq.question), [faqData]);
   useEffect(() => {
     setSuggestions(topQuestions);
   }, [topQuestions]);

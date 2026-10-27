@@ -1,14 +1,14 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "react-hot-toast";
-import { ChevronDown, ChevronUp, GripVertical, MessageSquareText, Pencil, Plus, Search, Trash2 } from "lucide-react";
+import { ChevronDown, ChevronUp, GripVertical, MessageSquareText, Pencil, Plus, Search, Star, Trash2 } from "lucide-react";
 import { EmptyState, focusRing, primaryButton, secondaryButton, surface } from "../../pages/dashboard/ui";
 import { Field, inputClass } from "./controls";
 import { LIMITS } from "./types";
-import { SUGGESTED_QUESTIONS } from "../../utils/suggestions";
+import { pickSuggested, SUGGESTED_QUESTIONS } from "../../utils/suggestions";
 import { useT } from "../../i18n";
 import { editorMessages } from "../../i18n/messages/editor";
 
-type Faq = { question: string; answer: string };
+type Faq = { question: string; answer: string; suggested?: boolean };
 
 interface Props {
   faqs: Faq[];
@@ -138,8 +138,30 @@ const FaqTab: React.FC<Props> = ({ faqs, onChange, aiGenerator, initialQuestion 
   };
 
   const save = (index: number | "new", faq: Faq) => {
-    onChange(index === "new" ? [faq, ...faqs] : faqs.map((f, i) => (i === index ? faq : f)));
+    // Editing keeps a question's star.
+    onChange(index === "new" ? [faq, ...faqs] : faqs.map((f, i) => (i === index ? { ...f, ...faq } : f)));
     setEditing(null);
+  };
+
+  // What the widget suggests first: the starred questions, or the first ones.
+  const suggestedSet = useMemo(() => new Set(pickSuggested(faqs)), [faqs]);
+  const starredCount = faqs.filter((f) => f.suggested).length;
+  const toggleSuggested = (index: number) => {
+    const faq = faqs[index];
+    if (!faq.suggested && starredCount >= SUGGESTED_QUESTIONS) {
+      toast(t("suggestLimit", { count: SUGGESTED_QUESTIONS }));
+      return;
+    }
+    onChange(
+      faqs.map((f, i) => {
+        if (i !== index) return f;
+        if (f.suggested) {
+          const { suggested: _suggested, ...rest } = f; // eslint-disable-line @typescript-eslint/no-unused-vars
+          return rest;
+        }
+        return { ...f, suggested: true };
+      })
+    );
   };
 
   const remove = (index: number) => {
@@ -297,7 +319,7 @@ const FaqTab: React.FC<Props> = ({ faqs, onChange, aiGenerator, initialQuestion 
                 >
                   <p className="text-body-sm font-medium text-[#101723] dark:text-[#D7DFE5]">
                     {faq.question}
-                    {index < SUGGESTED_QUESTIONS && faqs.length > 1 && (
+                    {suggestedSet.has(faq) && faqs.length > 1 && (
                       <span className="ml-2 inline-block rounded-full bg-[#E7EDF6] px-2 py-px align-[1px] text-[11px] font-medium text-[#566273] dark:bg-[#273444] dark:text-[#9BAABD]">
                         {t("suggestedBadge")}
                       </span>
@@ -306,6 +328,22 @@ const FaqTab: React.FC<Props> = ({ faqs, onChange, aiGenerator, initialQuestion 
                   <p className="mt-1 line-clamp-2 text-body-sm text-[#566273] dark:text-[#9BAABD]">{faq.answer}</p>
                 </button>
                 <div className="flex shrink-0 items-center gap-0.5 sm:opacity-0 sm:transition-opacity sm:group-hover:opacity-100 sm:group-focus-within:opacity-100">
+                  {faqs.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => toggleSuggested(index)}
+                      aria-pressed={faq.suggested === true}
+                      aria-label={t(faq.suggested ? "unsuggestQuestion" : "suggestQuestion", { question: faq.question })}
+                      title={t(faq.suggested ? "unsuggestQuestion" : "suggestQuestion", { question: faq.question })}
+                      className={`flex h-8 w-8 items-center justify-center rounded-lg transition-colors hover:bg-[#E7EDF6] dark:hover:bg-[#273444] ${focusRing} ${
+                        faq.suggested
+                          ? "text-[#D7A43B]"
+                          : "text-[#647184] hover:text-[#101723] dark:text-[#9BAABD] dark:hover:text-[#D7DFE5]"
+                      }`}
+                    >
+                      <Star size={15} fill={faq.suggested ? "currentColor" : "none"} />
+                    </button>
+                  )}
                   {canReorder && (
                     <>
                       <button
