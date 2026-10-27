@@ -4,7 +4,7 @@ import { motion, useReducedMotion } from "framer-motion";
 import HatchStrip from "./HatchStrip";
 import brandLogo from "../../assets/logo.svg";
 import { ghostCta } from "./buttonStyles";
-import KioCta from "./KioCta";
+import MainCta from "./MainCta";
 
 const TRUST_POINTS = ["Free plan", "No credit card", "Live in minutes"];
 
@@ -62,7 +62,7 @@ export default function CTASection() {
             Start with your FAQs. Add your branding. Put your first chatbot on your website without writing code.
           </p>
           <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4">
-            <KioCta>Build my free chatbot</KioCta>
+            <MainCta>Build my free chatbot</MainCta>
             <a
               href="#how-it-works"
               className={ghostCta}
