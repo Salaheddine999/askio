@@ -228,7 +228,7 @@ const App: React.FC = () => {
           )}
           <div
             className={`flex-1 min-w-0 transition-all duration-300 ${
-              user ? `pt-14 lg:pt-0 ${sidebarOpen ? "lg:ml-64" : "lg:ml-[72px]"}` : ""
+              user ? `bg-[#F3F7FC] pt-14 dark:bg-[#141D2B] lg:pt-0 ${sidebarOpen ? "lg:ml-64" : "lg:ml-[72px]"}` : ""
             }`}
           >
             <RouteErrorBoundary>

@@ -314,7 +314,7 @@ const Transcript: React.FC<{
 
   return (
     <div className="flex h-full min-h-0 flex-col">
-      <div className="flex items-start gap-3 border-b border-[#E7EDF6] px-5 py-4 dark:border-[#2B3646]">
+      <div className="flex items-start gap-3 border-b border-[#E7EDF6] px-4 py-3 sm:px-5 sm:py-4 dark:border-[#2B3646]">
         <button
           type="button"
           onClick={onBack}
@@ -408,7 +408,7 @@ const Transcript: React.FC<{
         </div>
       )}
 
-      <div className="min-h-0 flex-1 space-y-3 overflow-y-auto bg-[#F3F7FC] px-5 py-5 [scrollbar-width:thin] dark:bg-[#141D2B]">
+      <div className="min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-contain bg-[#F3F7FC] px-4 py-4 sm:px-5 sm:py-5 [scrollbar-width:thin] dark:bg-[#141D2B]">
         {shown.map((m, i) => {
           const isVisitor = m.role === "visitor";
           const isAgent = m.role === "agent";
@@ -470,7 +470,7 @@ const Transcript: React.FC<{
             e.preventDefault();
             void send();
           }}
-          className="flex flex-wrap items-end gap-2 border-t border-[#E7EDF6] px-4 py-3 dark:border-[#2B3646]"
+          className="flex flex-wrap items-end gap-2 border-t border-[#E7EDF6] px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 dark:border-[#2B3646]"
         >
           {joinable && (
             <p className="w-full text-caption text-[#647184] dark:text-[#87909D]">
@@ -618,6 +618,17 @@ const Conversations: React.FC<{ testMode?: boolean }> = ({ testMode = false }) =
     if (!openId && items && items.length > 0 && window.matchMedia("(min-width: 1024px)").matches) setOpenId(items[0].id);
   }, [items, openId]);
 
+  // A chat open on a phone covers the page; keep the page behind it still.
+  const openOnPhone = Boolean(open);
+  useEffect(() => {
+    if (!openOnPhone || window.matchMedia("(min-width: 1024px)").matches) return;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previous;
+    };
+  }, [openOnPhone]);
+
   const remove = async (conversation: Conversation) => {
     try {
       if (testMode) setSamples((list) => list.filter((c) => c.id !== conversation.id));
@@ -706,7 +717,7 @@ const Conversations: React.FC<{ testMode?: boolean }> = ({ testMode = false }) =
     );
   } else {
     body = (
-      <div className={`${surface} grid h-[calc(100vh-13rem)] min-h-[480px] grid-cols-1 overflow-hidden lg:grid-cols-[minmax(280px,380px)_minmax(0,1fr)]`}>
+      <div className={`${surface} grid h-[calc(100dvh-13rem)] min-h-[420px] grid-cols-1 overflow-hidden lg:grid-cols-[minmax(280px,380px)_minmax(0,1fr)]`}>
         <div className={`flex min-h-0 flex-col border-[#E7EDF6] lg:border-r dark:border-[#2B3646] ${open ? "hidden lg:flex" : "flex"}`}>
           {liveItems.length > 0 && (
             <div className="border-b border-[#E7EDF6] bg-emerald-50/40 dark:border-[#2B3646] dark:bg-emerald-950/15">
@@ -800,7 +811,13 @@ const Conversations: React.FC<{ testMode?: boolean }> = ({ testMode = false }) =
           )}
         </div>
 
-        <div className={`min-h-0 ${open ? "flex" : "hidden lg:flex"} flex-col`}>
+        {/* On phones an open chat fills the screen under the top bar, like a
+            messaging app, so the reply box stays in reach. */}
+        <div
+          className={`min-h-0 flex-col ${
+            open ? "fixed inset-x-0 bottom-0 top-14 z-20 flex bg-[#F9FCFF] lg:static lg:z-auto dark:bg-[#1A2533] lg:dark:bg-transparent lg:bg-transparent" : "hidden lg:flex"
+          }`}
+        >
           {open ? (
             <Transcript
               conversation={open}

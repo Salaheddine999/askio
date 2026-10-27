@@ -1,5 +1,6 @@
 import React from "react";
 import { motion } from "framer-motion";
+import { useTabScroller } from "../hooks/useTabScroller";
 
 interface Tab {
   id: string;
@@ -16,8 +17,10 @@ interface TabsProps {
 }
 
 const Tabs: React.FC<TabsProps> = ({ tabs, activeTab, onChange, className = "" }) => {
+  const scroller = useTabScroller<HTMLDivElement>(activeTab);
   return (
     <div
+      ref={scroller}
       className={`-mx-4 scrollbar-hide overflow-x-auto border-b border-[#D8DFE9] px-4 sm:mx-0 sm:px-0 dark:border-[#2B3646] ${className}`}
     >
       <div role="tablist" className="flex min-w-max items-center gap-1">

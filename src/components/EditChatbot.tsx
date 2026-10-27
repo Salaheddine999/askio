@@ -21,6 +21,7 @@ import AppearanceTab from "./editor/AppearanceTab";
 import FaqTab from "./editor/FaqTab";
 import EmbedTab from "./editor/EmbedTab";
 import PreviewFrame from "./editor/PreviewFrame";
+import { useTabScroller } from "../hooks/useTabScroller";
 import { makeT, useLanguage, useT, type Lang } from "../i18n";
 import { widgetMessages } from "../i18n/widget";
 import { editorMessages } from "../i18n/messages/editor";
@@ -160,6 +161,7 @@ const EditChatbot: React.FC = () => {
   const requestedTab = searchParams.get("tab") as TabKey | null;
   const activeTab: TabKey =
     requestedTab && TABS.some((tab) => tab.key === requestedTab) ? requestedTab : faqQuestion ? "faq" : "general";
+  const tabScroller = useTabScroller<HTMLElement>(activeTab);
   const setActiveTab = useCallback(
     (tab: TabKey) =>
       setSearchParams(
@@ -453,6 +455,7 @@ const EditChatbot: React.FC = () => {
             </header>
 
             <nav
+              ref={tabScroller}
               role="tablist"
               aria-label={t("settingsTabs")}
               className="scrollbar-hide -mx-4 mt-6 flex gap-1 overflow-x-auto border-b border-[#D8DFE9] px-4 sm:mx-0 sm:px-0 dark:border-[#2B3646]"

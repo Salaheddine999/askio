@@ -40,7 +40,7 @@ const StatsCard: React.FC<StatsCardProps> = ({
               {icon}
             </span>
           )}
-          <span className="truncate">{title}</span>
+          <span className="line-clamp-2 sm:truncate">{title}</span>
         </h3>
         {trend && (
           <span

@@ -20,6 +20,7 @@ import OverviewTab, { type AdminTab } from "./admin/OverviewTab";
 import AccountsTab from "./admin/AccountsTab";
 import UsageTab from "./admin/UsageTab";
 import ActivityTab from "./admin/ActivityTab";
+import { useTabScroller } from "../hooks/useTabScroller";
 
 const TABS: { key: AdminTab; label: string }[] = [
   { key: "overview", label: "Overview" },
@@ -33,6 +34,7 @@ const Admin: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const requested = searchParams.get("tab") as AdminTab | null;
   const tab: AdminTab = requested && TABS.some((t) => t.key === requested) ? requested : "overview";
+  const tabScroller = useTabScroller<HTMLElement>(tab);
 
   const [overview, setOverview] = useState<Overview | null>(null);
   const [newest, setNewest] = useState<AdminUser[] | null>(null);
@@ -123,6 +125,7 @@ const Admin: React.FC = () => {
         </header>
 
         <nav
+          ref={tabScroller}
           role="tablist"
           aria-label="Admin sections"
           className="scrollbar-hide -mx-4 mt-6 flex gap-1 overflow-x-auto border-b border-[#D8DFE9] px-4 sm:mx-0 sm:px-0 dark:border-[#2B3646]"

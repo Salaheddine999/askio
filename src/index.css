@@ -38,4 +38,26 @@
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
+
+  /* A sideways tab bar with more tabs off screen fades out at that edge
+     (see useTabScroller). */
+  [data-more-end] {
+    mask-image: linear-gradient(to right, #000 calc(100% - 40px), transparent);
+  }
+  [data-more-start] {
+    mask-image: linear-gradient(to left, #000 calc(100% - 40px), transparent);
+  }
+  [data-more-start][data-more-end] {
+    mask-image: linear-gradient(to right, transparent, #000 40px, #000 calc(100% - 40px), transparent);
+  }
+}
+
+/* iPhone Safari zooms into any text field smaller than 16px when it's tapped,
+   pushing buttons like Send off screen. On touch screens, fields use 16px. */
+@media (pointer: coarse) {
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
 }
