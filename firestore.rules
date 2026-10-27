@@ -139,6 +139,12 @@ service cloud.firestore {
         && request.resource.data.liveStatus == 'active';
     }
 
+    // "Sara is typing…": only this one field, stamped with the server's time.
+    function isOwnerTyping() {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(['agentTypingAt'])
+        && request.resource.data.agentTypingAt == request.time;
+    }
+
     function isOwnerEndingChat() {
       return request.resource.data.diff(resource.data).affectedKeys().hasOnly(['liveStatus', 'liveEndedAt'])
         && request.resource.data.liveStatus == 'ended'
@@ -152,7 +158,8 @@ service cloud.firestore {
       allow get: if ownsRecord() || resource.data.get('liveStatus', null) != null;
       allow list: if ownsRecord();
       allow delete: if ownsRecord() && notSuspended();
-      allow update: if ownsRecord() && isProOwner() && ((canJoinLive() && isOwnerReply()) || isOwnerEndingChat());
+      allow update: if ownsRecord() && isProOwner()
+        && ((canJoinLive() && (isOwnerReply() || isOwnerTyping())) || isOwnerEndingChat());
       allow create: if false;
     }
 
@@ -162,9 +169,14 @@ service cloud.firestore {
       allow read: if true;
       allow create, update: if ownsUserDoc(userId)
         && notSuspended()
-        && request.resource.data.keys().hasOnly(['online', 'lastSeen'])
+        && request.resource.data.keys().hasOnly(['online', 'lastSeen', 'availableUntil'])
         && request.resource.data.online is bool
-        && request.resource.data.lastSeen == request.time;
+        && request.resource.data.lastSeen == request.time
+        // With phone notifications on, you stay reachable for a while after
+        // closing the dashboard, at most 12 hours ahead.
+        && (!('availableUntil' in request.resource.data)
+          || (request.resource.data.availableUntil is timestamp
+            && request.resource.data.availableUntil <= request.time + duration.value(12, 'h')));
       allow delete: if ownsUserDoc(userId);
     }
 

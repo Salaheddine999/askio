@@ -26,6 +26,10 @@ type Message = {
   name?: string;
 };
 
+/** How long a "typing" signal stays on screen, and how often one is sent. */
+const TYPING_SHOW_MS = 5000;
+const TYPING_SEND_MS = 3000;
+
 /** How long the launcher waits before showing the greeting bubble. */
 const GREETING_DELAY_MS = 4000;
 /** How long the orb looks at the bubble before following the pointer again. */
@@ -93,7 +97,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
   // Leads, analytics and ratings go through the server, which checks and
   // rate-limits them. The owner isn't a visitor: their preview, and their own
   // chats with the bot in a browser where they're signed in, record nothing.
-  const record = async (kind: "lead" | "event" | "unanswered" | "feedback" | "message", fields: Record<string, unknown>) => {
+  const record = async (kind: "lead" | "event" | "unanswered" | "feedback" | "message" | "typing", fields: Record<string, unknown>) => {
     if (!id || isPreview || isOwnerBrowsing(user_id)) return;
     await apiRequest("/api/ai/record", { body: { kind, chatbotId: id, ...fields } });
   };
@@ -159,6 +163,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
             text: message.text,
             sessionId,
             anonymousToken,
+            ...(message.sender === "user" && pageUrl.current ? { page: pageUrl.current } : {}),
           })
         )
         .then(() => setConversationSaved(true))
@@ -316,7 +321,9 @@ const Chatbot: React.FC<ChatbotProps> = ({
   const canTalkLive = liveChat && saveConversations && !!id && !!user_id && !isPreview && !isOwnerBrowsing(user_id);
   const [ownerOnline, setOwnerOnline] = useState(false);
   useEffect(() => {
-    if (!canTalkLive || !user_id) return;
+    // Only while the chat is open: most visitors never open it, and every
+    // listening page reads the owner's status again each minute.
+    if (!canTalkLive || !user_id || !isOpen) return;
     let latest: Record<string, unknown> | undefined;
     const update = () => setOwnerOnline(isPresenceOnline(latest));
     const unsubscribe = onSnapshot(
@@ -333,13 +340,27 @@ const Chatbot: React.FC<ChatbotProps> = ({
       unsubscribe();
       window.clearInterval(timer);
     };
-  }, [canTalkLive, user_id]);
+  }, [canTalkLive, user_id, isOpen]);
 
   const [live, setLive] = useState<{ status: LiveStatus; name: string } | null>(null);
   const liveRef = useRef(live);
   liveRef.current = live;
   const [liveFollowing, setLiveFollowing] = useState(false);
   const seenAgentMessages = useRef(0);
+  const lastAgentTyping = useRef(0);
+  const [agentTyping, setAgentTyping] = useState<{ name: string; until: number } | null>(null);
+  useEffect(() => {
+    if (!agentTyping) return;
+    const timer = window.setTimeout(() => setAgentTyping(null), Math.max(0, agentTyping.until - Date.now()));
+    return () => window.clearTimeout(timer);
+  }, [agentTyping]);
+  // While talking to a person, say "typing" at most every few seconds.
+  const lastTypingSent = useRef(0);
+  const sendTyping = () => {
+    if (!liveRef.current || !id || Date.now() - lastTypingSent.current < TYPING_SEND_MS) return;
+    lastTypingSent.current = Date.now();
+    void record("typing", { sessionId }).catch(() => undefined);
+  };
   const agentLabel = (name?: string) => name || t("teamName");
 
   /** `announce` adds "I'm asking someone to join"; skipped when the AI just said so. */
@@ -380,6 +401,14 @@ const Chatbot: React.FC<ChatbotProps> = ({
         const name = typeof data.agentName === "string" ? data.agentName : "";
         const current = liveRef.current;
         const added: Message[] = [];
+        // A fresh "typing" stamp shows the indicator for a few seconds; the
+        // reply itself, when it comes, takes its place.
+        const typingAt = data.agentTypingAt?.toMillis?.() ?? 0;
+        if (typingAt && typingAt !== lastAgentTyping.current) {
+          lastAgentTyping.current = typingAt;
+          if (!first) setAgentTyping({ name, until: Date.now() + TYPING_SHOW_MS });
+        }
+        if (fresh.length) setAgentTyping(null);
         if (data.liveStatus === "active" && current?.status !== "active") {
           added.push({ text: t("liveJoined", { name: agentLabel(name) }), sender: "notice" });
           react("happy");
@@ -671,6 +700,19 @@ const Chatbot: React.FC<ChatbotProps> = ({
     window.addEventListener("message", handleMessage);
     return () => window.removeEventListener("message", handleMessage);
   }, []);
+
+  // The page the visitor is on, from the embed script.
+  const pageUrl = useRef("");
+  useEffect(() => {
+    if (!isEmbedded) return;
+    const onPage = (event: MessageEvent) => {
+      if (event.source !== window.parent || event.data?.type !== "askioPage") return;
+      const url = event.data.url;
+      if (typeof url === "string" && /^https?:\/\//.test(url) && url.length <= 300) pageUrl.current = url;
+    };
+    window.addEventListener("message", onPage);
+    return () => window.removeEventListener("message", onPage);
+  }, [isEmbedded]);
 
   // The embed script forwards the host page's pointer so the orb's eyes can
   // follow it beyond this small iframe. Replaying it as a pointermove lets the
@@ -1146,7 +1188,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
             {useOrb ? (
               <div className="inline-flex items-center gap-2 py-1.5 pl-1.5 pr-3.5 rounded-2xl rounded-bl-md bg-[#E7EDF6] dark:bg-[#1A2533]">
                 <LiveOrb size={24} {...orbPropsFor(primaryColor)} mood="thinking" interactive={false} />
-                <span className="text-[12px] text-[#647184] dark:text-[#9BAABD]">Thinking…</span>
+                <span className="text-[12px] text-[#647184] dark:text-[#9BAABD]">{t("thinking")}</span>
               </div>
             ) : (
               <div className="inline-flex items-center gap-1 px-3.5 py-3 rounded-2xl rounded-bl-md bg-[#E7EDF6] dark:bg-[#1A2533]">
@@ -1156,6 +1198,18 @@ const Chatbot: React.FC<ChatbotProps> = ({
               </div>
             )}
           </motion.div>
+        )}
+        {agentTyping && (
+          <div className="flex justify-start" aria-live="polite">
+            <div className="inline-flex items-center gap-2 rounded-2xl rounded-bl-md bg-emerald-50 px-3.5 py-2 text-[12px] text-emerald-800 ring-1 ring-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-200 dark:ring-emerald-900/60">
+              <span className="flex gap-0.5" aria-hidden="true">
+                {[0, 1, 2].map((i) => (
+                  <span key={i} className="h-1.5 w-1.5 animate-bounce rounded-full bg-emerald-500 motion-reduce:animate-none" style={{ animationDelay: `${i * 0.15}s` }} />
+                ))}
+              </span>
+              {t("agentTyping", { name: agentLabel(agentTyping.name) })}
+            </div>
+          </div>
         )}
         <div ref={messagesEndRef} />
       </div>
@@ -1180,7 +1234,10 @@ const Chatbot: React.FC<ChatbotProps> = ({
             type="text"
             value={input}
             maxLength={MAX_MESSAGE_LENGTH}
-            onChange={(e) => setInput(e.target.value)}
+            onChange={(e) => {
+              setInput(e.target.value);
+              if (e.target.value) sendTyping();
+            }}
             onFocus={() => setInputFocused(true)}
             onBlur={() => setInputFocused(false)}
             className="flex-grow px-3.5 py-2 rounded-full bg-[#F9FCFF] dark:bg-[#1A2533] border border-[#D8DFE9] dark:border-[#2B3646] text-[13px] text-[#101723] dark:text-[#D7DFE5] placeholder-[#647184] dark:placeholder-[#87909D] focus:outline-none focus:border-[#101723]/30 dark:focus:border-[#9BAABD]/30 transition-colors"

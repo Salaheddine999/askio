@@ -65,6 +65,10 @@ interface Conversation {
   messages: ChatMessage[];
   liveStatus: LiveStatus | null;
   liveRequestedAt: Date | null;
+  /** The page the visitor last wrote from (address without query). */
+  lastPage: string | null;
+  /** When the visitor last said they're typing (live chat). */
+  visitorTypingAt: number | null;
 }
 
 const toDate = (value: unknown) => (value instanceof Timestamp ? value.toDate() : null);
@@ -84,6 +88,8 @@ function toConversation(d: DocumentSnapshot<DocumentData>): Conversation {
     messages: [...messages].sort((a, b) => a.at - b.at),
     liveStatus: data.liveStatus ?? null,
     liveRequestedAt: toDate(data.liveRequestedAt),
+    lastPage: typeof data.lastPage === "string" ? data.lastPage : null,
+    visitorTypingAt: data.visitorTypingAt instanceof Timestamp ? data.visitorTypingAt.toMillis() : null,
   };
 }
 
@@ -110,6 +116,8 @@ function sampleConversations(): Conversation[] {
       messages,
       liveStatus: (minutesAgo < 30 ? "idle" : null) as LiveStatus | null,
       liveRequestedAt: null,
+      lastPage: minutesAgo < 30 ? "https://yourstore.com/products/linen-shirt" : null,
+      visitorTypingAt: null,
     };
   };
   return [
@@ -267,6 +275,30 @@ const Transcript: React.FC<{
     );
   }, [conversation.messages]);
   useEffect(() => setPending([]), [conversation.id]);
+
+  // "Visitor is typing…" for a few seconds after each signal, until they send.
+  const [visitorTyping, setVisitorTyping] = useState(false);
+  const seenTyping = useRef<number | null>(conversation.visitorTypingAt);
+  useEffect(() => {
+    const at = conversation.visitorTypingAt;
+    if (!at || at === seenTyping.current) return;
+    seenTyping.current = at;
+    setVisitorTyping(true);
+    const timer = window.setTimeout(() => setVisitorTyping(false), 5000);
+    return () => window.clearTimeout(timer);
+  }, [conversation.visitorTypingAt]);
+  useEffect(() => {
+    const last = conversation.messages[conversation.messages.length - 1];
+    if (last?.role === "visitor") setVisitorTyping(false);
+  }, [conversation.messages]);
+
+  // Your "typing" signal, at most every few seconds, straight to Firestore.
+  const lastTypingSent = useRef(0);
+  const sendTyping = () => {
+    if (onLocalReply || Date.now() - lastTypingSent.current < 3000) return;
+    lastTypingSent.current = Date.now();
+    void updateDoc(doc(db, "conversations", conversation.id), { agentTypingAt: serverTimestamp() }).catch(() => undefined);
+  };
   const shown = [
     ...conversation.messages,
     ...pending.map((p) => ({ role: "agent" as const, text: p.text, at: p.at, pending: true })),
@@ -299,6 +331,17 @@ const Transcript: React.FC<{
             {" · "}
             {t.plural("messages", conversation.messageCount)}
           </p>
+          {conversation.lastPage && (
+            <a
+              href={conversation.lastPage}
+              target="_blank"
+              rel="noopener noreferrer"
+              title={conversation.lastPage}
+              className="mt-0.5 block truncate text-caption text-[#566273] underline-offset-2 hover:text-[#101723] hover:underline dark:text-[#9BAABD] dark:hover:text-[#D7DFE5]"
+            >
+              {t("onPage", { page: conversation.lastPage.replace(/^https?:\/\//, "") })}
+            </a>
+          )}
         </div>
         {confirming ? (
           <div className="flex shrink-0 items-center gap-1.5">
@@ -393,6 +436,16 @@ const Transcript: React.FC<{
             </div>
           );
         })}
+        {visitorTyping && (
+          <p className="flex items-center justify-end gap-2 text-caption text-[#647184] dark:text-[#87909D]" aria-live="polite">
+            <span className="flex gap-0.5" aria-hidden="true">
+              {[0, 1, 2].map((i) => (
+                <span key={i} className="h-1.5 w-1.5 animate-bounce rounded-full bg-[#87909D] motion-reduce:animate-none" style={{ animationDelay: `${i * 0.15}s` }} />
+              ))}
+            </span>
+            {t("visitorTyping")}
+          </p>
+        )}
         <div ref={bottom} />
       </div>
 
@@ -426,7 +479,10 @@ const Transcript: React.FC<{
           )}
           <textarea
             value={reply}
-            onChange={(e) => setReply(e.target.value)}
+            onChange={(e) => {
+              setReply(e.target.value);
+              if (e.target.value) sendTyping();
+            }}
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) {
                 e.preventDefault();

@@ -59,6 +59,7 @@ vi.mock("../api/_lib/plan.js", () => ({
   assertNotSuspended: () => undefined,
 }));
 vi.mock("../api/_lib/monitoring.js", () => ({ reportError: () => undefined }));
+vi.mock("../api/_lib/push.js", () => ({ pushLiveChatRequest: async () => 0 }));
 
 const { default: recordVisitor } = await import("../api/_lib/widget/recordVisitor.js");
 const { default: liveChat } = await import("../api/_lib/account/liveChat.js");
@@ -147,6 +148,31 @@ describe("conversations on a live-chat chatbot", () => {
       fakeRes()
     );
     expect(fake.state.conversations[CONVERSATION].liveStatus).toBeUndefined();
+  });
+});
+
+describe("typing and pages", () => {
+  const typing = () => ({ method: "POST", headers: {}, body: { kind: "typing", chatbotId: "bot1", sessionId: SESSION } });
+
+  it("the visitor's typing is noted only during a live chat", async () => {
+    fake.state.conversations[CONVERSATION] = { ownerId: "owner1", liveStatus: "idle", messages: [] };
+    await recordVisitor(typing(), fakeRes());
+    expect(fake.state.conversations[CONVERSATION].visitorTypingAt).toBeUndefined();
+    fake.state.conversations[CONVERSATION].liveStatus = "active";
+    await recordVisitor(typing(), fakeRes());
+    expect(fake.state.conversations[CONVERSATION].visitorTypingAt).toBe("now");
+  });
+
+  it("keeps the page a visitor wrote from, without its query or hash", async () => {
+    await recordVisitor(
+      {
+        method: "POST",
+        headers: {},
+        body: { kind: "message", chatbotId: "bot1", role: "visitor", text: "Hi", sessionId: SESSION, page: "https://shop.example/products/sofa?email=a@b.co#reviews" },
+      },
+      fakeRes()
+    );
+    expect(fake.state.conversations[CONVERSATION].lastPage).toBe("https://shop.example/products/sofa");
   });
 });
 

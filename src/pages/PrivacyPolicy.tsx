@@ -105,8 +105,10 @@ export default function PrivacyPolicy() {
           </li>
           <li>
             <Term>Conversations:</Term> if the business turns on conversation history (a Pro feature), the whole
-            conversation, meaning the visitor's messages and the chatbot's replies, is saved so the business can read it
-            and improve its answers. While it's on, the chat tells visitors that chats are saved.
+            conversation, meaning the visitor's messages, the chatbot's replies and any replies from the business in a
+            live chat, is saved so the business can read it and improve its answers. It also notes which page of the
+            business's website the visitor wrote from (the address only, without anything after a "?" or "#"). While
+            it's on, the chat tells visitors that chats are saved.
           </li>
           <li>
             <Term>Email address:</Term> if the business turns on lead capture and the visitor chooses to enter it.

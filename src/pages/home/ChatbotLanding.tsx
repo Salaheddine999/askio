@@ -38,8 +38,11 @@ export default function ChatbotLanding() {
   return (
     <div className="askio-home w-full min-h-screen bg-[#F3F7FC] dark:bg-[#141D2B] font-sans text-[#101723] overflow-x-hidden">
       <Helmet>
-        <title>Askio - Your Chatbot Builder</title>
-        <meta name="description" content="Create custom chatbots tailored to your brand. Effortlessly integrate them into your website." />
+        <title>Askio · A chatbot for your website that answers from your FAQs</title>
+        <meta
+          name="description"
+          content="Turn your FAQs into a chatbot that looks like your brand. Answer visitors instantly, capture leads and chat live. Free plan, no coding."
+        />
       </Helmet>
 
       <div className="relative mx-auto max-w-[1060px] px-4 sm:px-6 lg:px-0">

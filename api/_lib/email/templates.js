@@ -3,6 +3,8 @@
 
 const STRINGS = {
   en: {
+    pushLiveTitle: "A visitor wants to talk to you",
+    pushLiveBody: "Someone on {bot} is waiting. Tap to reply.",
     leadSubject: "New lead from {bot}: {email}",
     leadHeading: "A visitor left their email",
     leadIntro: "Someone chatting with {bot} would like you to get back to them.",
@@ -22,6 +24,8 @@ const STRINGS = {
     invalidBody: "It may be incomplete. You can change your email alerts in your Askio settings.",
   },
   fr: {
+    pushLiveTitle: "Un visiteur souhaite vous parler",
+    pushLiveBody: "Quelqu'un sur {bot} attend. Touchez pour répondre.",
     leadSubject: "Nouveau lead via {bot} : {email}",
     leadHeading: "Un visiteur a laissé son e-mail",
     leadIntro: "Une personne qui discutait avec {bot} aimerait que vous la recontactiez.",
@@ -41,6 +45,8 @@ const STRINGS = {
     invalidBody: "Il est peut-être incomplet. Vous pouvez modifier vos alertes dans les paramètres d'Askio.",
   },
   nl: {
+    pushLiveTitle: "Een bezoeker wil je spreken",
+    pushLiveBody: "Iemand op {bot} wacht. Tik om te antwoorden.",
     leadSubject: "Nieuwe lead via {bot}: {email}",
     leadHeading: "Een bezoeker heeft zijn e-mail achtergelaten",
     leadIntro: "Iemand die met {bot} chatte, wil graag dat je contact opneemt.",
@@ -60,6 +66,8 @@ const STRINGS = {
     invalidBody: "Misschien is hij onvolledig. Je kunt je e-mailmeldingen wijzigen in je Askio-instellingen.",
   },
   de: {
+    pushLiveTitle: "Ein Besucher möchte mit Ihnen sprechen",
+    pushLiveBody: "Jemand auf {bot} wartet. Tippen, um zu antworten.",
     leadSubject: "Neuer Lead über {bot}: {email}",
     leadHeading: "Ein Besucher hat seine E-Mail hinterlassen",
     leadIntro: "Jemand, der mit {bot} gechattet hat, möchte, dass Sie sich melden.",
@@ -79,6 +87,8 @@ const STRINGS = {
     invalidBody: "Er ist vielleicht unvollständig. Sie können Ihre E-Mail-Benachrichtigungen in den Askio-Einstellungen ändern.",
   },
   es: {
+    pushLiveTitle: "Un visitante quiere hablar contigo",
+    pushLiveBody: "Alguien en {bot} está esperando. Toca para responder.",
     leadSubject: "Nuevo lead desde {bot}: {email}",
     leadHeading: "Un visitante dejó su correo",
     leadIntro: "Alguien que chateaba con {bot} quiere que te pongas en contacto.",

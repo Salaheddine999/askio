@@ -234,6 +234,14 @@ describe("live chat", () => {
     await assertFails(updateDoc(doc(owner(), "conversations/r1"), reply("Hi")));
   });
 
+  it("the owner can say they're typing, and nothing else with it", async () => {
+    await assertSucceeds(updateDoc(doc(owner(), "conversations/bot1_livesession1"), { agentTypingAt: serverTimestamp() }));
+    await assertFails(
+      updateDoc(doc(owner(), "conversations/bot1_livesession1"), { agentTypingAt: serverTimestamp(), liveStatus: "ended" })
+    );
+    await assertFails(updateDoc(doc(stranger(), "conversations/bot1_livesession1"), { agentTypingAt: serverTimestamp() }));
+  });
+
   it("the owner ends a live chat", async () => {
     await assertSucceeds(
       updateDoc(doc(owner(), "conversations/bot1_livesession1"), { liveStatus: "ended", liveEndedAt: serverTimestamp() })
@@ -246,6 +254,12 @@ describe("live chat", () => {
 
   it("anyone can see whether an owner is online", async () => {
     await assertSucceeds(getDoc(doc(visitor(), "presence/owner1")));
+  });
+
+  it("with phone notifications, the owner can stay reachable for up to 12 hours", async () => {
+    const inHours = (h: number) => new Date(Date.now() + h * 3600_000);
+    await assertSucceeds(setDoc(doc(owner(), "presence/owner1"), { online: true, lastSeen: serverTimestamp(), availableUntil: inHours(8) }));
+    await assertFails(setDoc(doc(owner(), "presence/owner1"), { online: true, lastSeen: serverTimestamp(), availableUntil: inHours(48) }));
   });
 
   it("only the owner sets their status, with the server's time and nothing else", async () => {

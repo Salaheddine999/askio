@@ -3,6 +3,7 @@ import { adminDb } from "../firebaseAdmin.js";
 import { takeRateLimit, visitorKey } from "../rateLimit.js";
 import { getUserAccessProfile } from "../plan.js";
 import { sendLeadAlert, sendMissedChatAlert } from "../email/alerts.js";
+import { pushLiveChatRequest } from "../push.js";
 
 // Visitor records written by the chat widget: leads, analytics events,
 // unanswered questions and ratings. Visitors are anonymous, so these used to
@@ -21,6 +22,7 @@ const LIMITS = {
   feedback: [5, 60],
   message: [40, 1200],
   handoff: [4, 60],
+  typing: [30, 900],
 };
 
 const SESSION_ID = /^[A-Za-z0-9_-]{8,64}$/;
@@ -59,6 +61,18 @@ function token(value, { required = false } = {}) {
   return value;
 }
 
+/** A page address without its query or hash, which can hold private details. */
+function pageOf(value) {
+  if (typeof value !== "string" || value.length > 500) return null;
+  try {
+    const url = new URL(value);
+    if (url.protocol !== "https:" && url.protocol !== "http:") return null;
+    return `${url.origin}${url.pathname}`.slice(0, 300);
+  } catch {
+    return null;
+  }
+}
+
 /** The fields to store for each kind, checked the way the Firestore rules used to. */
 function fieldsFor(kind, body) {
   switch (kind) {
@@ -86,7 +100,11 @@ function fieldsFor(kind, body) {
         text: text(body.text, MAX_MESSAGE_CHARS, { required: true }),
         sessionId: body.sessionId,
         anonymousToken: token(body.anonymousToken),
+        page: pageOf(body.page),
       };
+    case "typing":
+      if (typeof body.sessionId !== "string" || !SESSION_ID.test(body.sessionId)) throw badRequest("Invalid session.");
+      return { sessionId: body.sessionId };
     case "handoff":
       if (!["request", "cancel"].includes(body.action)) throw badRequest("Invalid request.");
       if (typeof body.sessionId !== "string" || !SESSION_ID.test(body.sessionId)) throw badRequest("Invalid session.");
@@ -104,7 +122,7 @@ function fieldsFor(kind, body) {
  * turned on conversation history for this chatbot and is on an active paid
  * plan. Otherwise it's silently dropped: the widget doesn't need to know.
  */
-async function appendMessage(chatbotId, chatbot, { role, text: messageText, sessionId, anonymousToken }) {
+async function appendMessage(chatbotId, chatbot, { role, text: messageText, sessionId, anonymousToken, page }) {
   if (chatbot.saveConversations !== true) return;
   const { access } = await getUserAccessProfile(chatbot.user_id);
   if (access.plan === "free" || !access.isSubscriptionActive) return;
@@ -126,6 +144,7 @@ async function appendMessage(chatbotId, chatbot, { role, text: messageText, sess
         visitorMessages: role === "visitor" ? 1 : 0,
         preview: role === "visitor" ? messageText.slice(0, 200) : null,
         messages: [message],
+        ...(page ? { lastPage: page } : {}),
         // With live chat on, the owner can join any time; "idle" lets the
         // visitor's widget follow the conversation to see them arrive.
         ...(chatbot.liveChat === true ? { liveStatus: "idle" } : {}),
@@ -141,6 +160,7 @@ async function appendMessage(chatbotId, chatbot, { role, text: messageText, sess
     if (chatbot.liveChat === true && !snap.data().liveStatus) update.liveStatus = "idle";
     if (role === "visitor") {
       update.visitorMessages = FieldValue.increment(1);
+      if (page) update.lastPage = page;
       if (!snap.data().preview) update.preview = messageText.slice(0, 200);
     }
     transaction.update(ref, update);
@@ -178,7 +198,7 @@ async function handoff(chatbotId, chatbot, { action, sessionId, anonymousToken }
     throw error;
   }
 
-  return adminDb.runTransaction(async (transaction) => {
+  const status = await adminDb.runTransaction(async (transaction) => {
     const snap = await transaction.get(ref);
     if (snap.exists && snap.data().liveStatus === "active") return "active";
     const live = {
@@ -201,6 +221,11 @@ async function handoff(chatbotId, chatbot, { action, sessionId, anonymousToken }
       });
     return "waiting";
   });
+  if (status === "waiting") {
+    const preview = (await ref.get().catch(() => null))?.data()?.preview;
+    await pushLiveChatRequest({ chatbot, conversationId: ref.id, preview });
+  }
+  return status;
 }
 
 /** Marks a saved conversation as having left this email, if there is one. */
@@ -243,6 +268,15 @@ export default async function recordVisitor(req, res) {
 
     if (kind === "message") {
       await appendMessage(chatbotId, chatbot, fields);
+      return res.status(201).json({ ok: true });
+    }
+    if (kind === "typing") {
+      // Only during a live chat; otherwise nobody is there to see it.
+      const ref = adminDb.collection("conversations").doc(`${chatbotId}_${fields.sessionId}`);
+      const snap = await ref.get();
+      if (snap.exists && ["waiting", "active"].includes(snap.data().liveStatus)) {
+        await ref.update({ visitorTypingAt: FieldValue.serverTimestamp() });
+      }
       return res.status(201).json({ ok: true });
     }
     if (kind === "handoff") {

@@ -131,6 +131,23 @@
       // Reaching into the frame instead only works on our own domain and
       // throws a SecurityError on every other site.
 
+      // The page the visitor is on, so the owner can see it in Conversations.
+      var lastPage = "";
+      var reportingPage = false;
+      function reportPage() {
+        var page = window.location.origin + window.location.pathname;
+        if (page === lastPage || !iframe.contentWindow) return;
+        lastPage = page;
+        iframe.contentWindow.postMessage({ type: "askioPage", url: page }, frameOrigin);
+      }
+      function startPageReporting() {
+        if (reportingPage) return;
+        reportingPage = true;
+        reportPage();
+        // Single-page sites change the address without reloading.
+        window.setInterval(reportPage, 2000);
+      }
+
       window.addEventListener("message", function (event) {
         if (event.data.type === "chatbotReady") {
           if (event.data.config.isActive === false || event.data.config.suspended === true) {
@@ -143,6 +160,7 @@
           if (event.source === iframe.contentWindow && event.data.config.launcherStyle === "orb") {
             startPointerForwarding();
           }
+          if (event.source === iframe.contentWindow) startPageReporting();
         } else if (event.data.type === "chatbotState") {
           isOpen = event.data.isOpen;
           updatePosition(currentPosition, isOpen);

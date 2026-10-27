@@ -31,13 +31,26 @@ export function saveOnlineChoice(online: boolean) {
   }
 }
 
-export function writePresence(uid: string, online: boolean) {
-  return setDoc(doc(db, "presence", uid), { online, lastSeen: serverTimestamp() });
+/** With push notifications on, going online lasts this long without the dashboard. */
+export const PUSH_AVAILABLE_MS = 8 * 60 * 60_000;
+
+/**
+ * `availableFor` keeps you online that long after the dashboard closes (for
+ * a device with push notifications on, which rings when someone asks).
+ */
+export function writePresence(uid: string, online: boolean, availableFor = 0) {
+  return setDoc(doc(db, "presence", uid), {
+    online,
+    lastSeen: serverTimestamp(),
+    ...(online && availableFor > 0 ? { availableUntil: Timestamp.fromMillis(Date.now() + availableFor) } : {}),
+  });
 }
 
-/** Reads a presence document: online, and heard from recently. */
-export function isPresenceOnline(data: { online?: unknown; lastSeen?: unknown } | undefined) {
-  if (!data || data.online !== true || !(data.lastSeen instanceof Timestamp)) return false;
+/** Reads a presence document: online, and heard from recently or reachable by push. */
+export function isPresenceOnline(data: { online?: unknown; lastSeen?: unknown; availableUntil?: unknown } | undefined) {
+  if (!data || data.online !== true) return false;
+  if (data.availableUntil instanceof Timestamp && data.availableUntil.toMillis() > Date.now()) return true;
+  if (!(data.lastSeen instanceof Timestamp)) return false;
   return Date.now() - data.lastSeen.toMillis() < PRESENCE_FRESH_MS;
 }
 

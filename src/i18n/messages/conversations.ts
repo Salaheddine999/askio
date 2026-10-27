@@ -4,6 +4,8 @@ import { defineMessages } from "..";
 // The *Format keys are date-fns patterns.
 export const conversationsMessages = defineMessages({
   en: {
+    visitorTyping: "Visitor is typing…",
+    onPage: "On {page}",
     sending: "Sending…",
     joinHint: "This visitor wrote {time}. Reply to join the chat; they'll see it if their chat is still open.",
     visitorLeftHint: "This visitor left a while ago, so a reply here wouldn't reach them.",
@@ -60,6 +62,8 @@ export const conversationsMessages = defineMessages({
     dateTimeFormat: "MMM d, yyyy 'at' h:mm a",
   },
   fr: {
+    visitorTyping: "Le visiteur écrit…",
+    onPage: "Sur {page}",
     sending: "Envoi…",
     joinHint: "Ce visiteur a écrit {time}. Répondez pour rejoindre le chat ; il verra votre message si son chat est encore ouvert.",
     visitorLeftHint: "Ce visiteur est parti il y a un moment, une réponse ici ne lui parviendrait pas.",
@@ -116,6 +120,8 @@ export const conversationsMessages = defineMessages({
     dateTimeFormat: "d MMM yyyy 'à' HH:mm",
   },
   nl: {
+    visitorTyping: "Bezoeker typt…",
+    onPage: "Op {page}",
     sending: "Versturen…",
     joinHint: "Deze bezoeker schreef {time}. Antwoord om deel te nemen; ze zien het als hun chat nog open is.",
     visitorLeftHint: "Deze bezoeker is al even weg, dus een antwoord hier komt niet aan.",
@@ -172,6 +178,8 @@ export const conversationsMessages = defineMessages({
     dateTimeFormat: "d MMM yyyy 'om' HH:mm",
   },
   de: {
+    visitorTyping: "Besucher schreibt…",
+    onPage: "Auf {page}",
     sending: "Wird gesendet…",
     joinHint: "Dieser Besucher hat {time} geschrieben. Antworten Sie, um dem Chat beizutreten; er sieht es, wenn sein Chat noch offen ist.",
     visitorLeftHint: "Dieser Besucher ist schon eine Weile weg, eine Antwort hier würde ihn nicht erreichen.",
@@ -228,6 +236,8 @@ export const conversationsMessages = defineMessages({
     dateTimeFormat: "d. MMM yyyy 'um' HH:mm",
   },
   es: {
+    visitorTyping: "El visitante está escribiendo…",
+    onPage: "En {page}",
     sending: "Enviando…",
     joinHint: "Este visitante escribió {time}. Responde para unirte al chat; lo verá si su chat sigue abierto.",
     visitorLeftHint: "Este visitante se fue hace un rato, así que una respuesta aquí no le llegaría.",

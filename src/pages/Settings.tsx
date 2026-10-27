@@ -42,6 +42,7 @@ import type { Suspension } from "../hooks/useSuspension";
 import { useLanguage, useT } from "../i18n";
 import LanguageSelect from "../components/LanguageSelect";
 import { Switch } from "../components/editor/controls";
+import { pushState, turnOffPush, turnOnPush, type PushState } from "../utils/push";
 import { settingsMessages } from "../i18n/messages/settings";
 import { reviewEmailHref } from "../utils/support";
 
@@ -106,6 +107,24 @@ const Settings: React.FC<SettingsProps> = ({ darkMode, setDarkMode, suspension }
   const deleteAccountModal = useModal();
   const [user, setUser] = useState<User | null>(null);
   const [emailAlerts, setEmailAlerts] = useState({ leads: true, missedChats: true });
+  const [push, setPush] = useState<PushState | null>(null);
+  const [pushBusy, setPushBusy] = useState(false);
+  useEffect(() => {
+    void pushState().then(setPush, () => setPush("unsupported"));
+  }, []);
+  const togglePush = async (on: boolean) => {
+    const current = auth.currentUser;
+    if (!current) return;
+    setPushBusy(true);
+    try {
+      setPush(on ? await turnOnPush(current.uid) : await turnOffPush(current.uid));
+    } catch (error) {
+      console.error("Couldn't change push notifications:", error);
+      toast.error(t("pushFailed"));
+    } finally {
+      setPushBusy(false);
+    }
+  };
   const saveEmailAlert = async (type: "leads" | "missedChats", on: boolean) => {
     const user = auth.currentUser;
     if (!user) return;
@@ -449,6 +468,25 @@ const Settings: React.FC<SettingsProps> = ({ darkMode, setDarkMode, suspension }
               </Row>
               <Row label={t("alertMissed")} hint={t("alertMissedHint")}>
                 <Switch checked={emailAlerts.missedChats} onChange={(v) => void saveEmailAlert("missedChats", v)} label={t("alertMissed")} />
+              </Row>
+              <Row
+                label={t("pushTitle")}
+                hint={
+                  push === "blocked"
+                    ? t("pushBlocked")
+                    : push === "unsupported"
+                      ? t("pushUnsupported")
+                      : push === "unconfigured"
+                        ? t("pushUnconfigured")
+                        : t("pushHint")
+                }
+              >
+                <Switch
+                  checked={push === "on"}
+                  onChange={(v) => void togglePush(v)}
+                  label={t("pushTitle")}
+                  disabled={pushBusy || push === null || push === "unsupported" || push === "unconfigured" || push === "blocked"}
+                />
               </Row>
             </Section>
 

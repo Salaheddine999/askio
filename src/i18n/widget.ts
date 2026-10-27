@@ -4,6 +4,7 @@ import { defineMessages } from ".";
 // language setting, not the owner's app language.
 export const widgetMessages = defineMessages({
   en: {
+    agentTyping: "{name} is typing…",
     talkToPerson: "Talk to a person",
     chatWithPersonNow: "Chat with a person now",
     liveWaiting: "I'm asking someone from the team to join. This usually takes a minute.",
@@ -48,6 +49,7 @@ export const widgetMessages = defineMessages({
     defaultPlaceholder: "Type your message...",
   },
   fr: {
+    agentTyping: "{name} écrit…",
     talkToPerson: "Parler à une personne",
     chatWithPersonNow: "Parler à une personne maintenant",
     liveWaiting: "Je demande à quelqu'un de l'équipe de vous rejoindre. Cela prend généralement une minute.",
@@ -92,6 +94,7 @@ export const widgetMessages = defineMessages({
     defaultPlaceholder: "Écrivez votre message...",
   },
   nl: {
+    agentTyping: "{name} typt…",
     talkToPerson: "Praat met een medewerker",
     chatWithPersonNow: "Nu chatten met een medewerker",
     liveWaiting: "Ik vraag iemand van het team om erbij te komen. Dat duurt meestal een minuutje.",
@@ -136,6 +139,7 @@ export const widgetMessages = defineMessages({
     defaultPlaceholder: "Typ je bericht...",
   },
   de: {
+    agentTyping: "{name} schreibt…",
     talkToPerson: "Mit einem Mitarbeiter sprechen",
     chatWithPersonNow: "Jetzt mit einem Mitarbeiter chatten",
     liveWaiting: "Ich bitte jemanden aus dem Team dazu. Das dauert meist eine Minute.",
@@ -180,6 +184,7 @@ export const widgetMessages = defineMessages({
     defaultPlaceholder: "Nachricht eingeben...",
   },
   es: {
+    agentTyping: "{name} está escribiendo…",
     talkToPerson: "Hablar con una persona",
     chatWithPersonNow: "Hablar con una persona ahora",
     liveWaiting: "Le pido a alguien del equipo que se una. Suele tardar un minuto.",

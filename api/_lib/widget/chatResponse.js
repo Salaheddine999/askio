@@ -16,7 +16,8 @@ async function ownerOnlineForLiveChat(chatbot) {
   const snap = await adminDb.collection("presence").doc(chatbot.user_id).get();
   const data = snap.data();
   const seen = data?.lastSeen?.toMillis?.() ?? 0;
-  return data?.online === true && Date.now() - seen < PRESENCE_FRESH_MS;
+  const until = data?.availableUntil?.toMillis?.() ?? 0;
+  return data?.online === true && (until > Date.now() || Date.now() - seen < PRESENCE_FRESH_MS);
 }
 const MAX_HISTORY_MESSAGES = 6;
 const MAX_HISTORY_CHARS = 500;

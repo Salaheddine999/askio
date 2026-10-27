@@ -27,7 +27,8 @@ import {
 } from "lucide-react";
 import { collection, onSnapshot, query, where } from "firebase/firestore";
 import { toast } from "react-hot-toast";
-import { PRESENCE_HEARTBEAT_MS, playChime, readOnlineChoice, saveOnlineChoice, writePresence } from "../utils/liveChat";
+import { PRESENCE_HEARTBEAT_MS, PUSH_AVAILABLE_MS, playChime, readOnlineChoice, saveOnlineChoice, writePresence } from "../utils/liveChat";
+import { pushTokenOnThisDevice } from "../utils/push";
 import { db } from "../utils/db";
 import BotAvatar from "./BotAvatar";
 import { DUMMY_CHATBOTS } from "../utils/dummyData";
@@ -221,10 +222,15 @@ const Navbar: React.FC<NavbarProps> = ({
   const liveOn = liveOnline && canUseAi && !!uid && !testMode;
   useEffect(() => {
     if (!liveOn || !uid) return;
-    const beat = () => void writePresence(uid, true).catch(() => undefined);
+    // A device with push notifications rings when someone asks, so you stay
+    // reachable for a few hours after closing the tab.
+    const pushHere = !!pushTokenOnThisDevice();
+    const beat = () => void writePresence(uid, true, pushHere ? PUSH_AVAILABLE_MS : 0).catch(() => undefined);
     beat();
     const timer = window.setInterval(beat, PRESENCE_HEARTBEAT_MS);
-    const leave = () => void writePresence(uid, false).catch(() => undefined);
+    const leave = () => {
+      if (!pushHere) void writePresence(uid, false).catch(() => undefined);
+    };
     window.addEventListener("pagehide", leave);
     return () => {
       window.clearInterval(timer);
@@ -292,6 +298,8 @@ const Navbar: React.FC<NavbarProps> = ({
     const next = !liveOnline;
     setLiveOnline(next);
     saveOnlineChoice(next);
+    // Going offline on purpose ends the push window too.
+    if (!next && uid) void writePresence(uid, false).catch(() => undefined);
     if (next && typeof Notification !== "undefined" && Notification.permission === "default") {
       void Notification.requestPermission();
     }
