@@ -126,6 +126,9 @@ async function appendMessage(chatbotId, chatbot, { role, text: messageText, sess
         visitorMessages: role === "visitor" ? 1 : 0,
         preview: role === "visitor" ? messageText.slice(0, 200) : null,
         messages: [message],
+        // With live chat on, the owner can join any time; "idle" lets the
+        // visitor's widget follow the conversation to see them arrive.
+        ...(chatbot.liveChat === true ? { liveStatus: "idle" } : {}),
       });
       return;
     }
@@ -134,6 +137,8 @@ async function appendMessage(chatbotId, chatbot, { role, text: messageText, sess
       messageCount: FieldValue.increment(1),
       messages: FieldValue.arrayUnion(message),
     };
+    // A chat started before live chat was turned on becomes joinable too.
+    if (chatbot.liveChat === true && !snap.data().liveStatus) update.liveStatus = "idle";
     if (role === "visitor") {
       update.visitorMessages = FieldValue.increment(1);
       if (!snap.data().preview) update.preview = messageText.slice(0, 200);

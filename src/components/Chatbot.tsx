@@ -138,6 +138,8 @@ const Chatbot: React.FC<ChatbotProps> = ({
   // Send each new message once, in order, when the owner saves conversations.
   // The welcome message (index 0) isn't saved; it's the same for everyone.
   const savedCount = useRef(1);
+  // Set once a message is stored, so the conversation exists for live chat.
+  const [conversationSaved, setConversationSaved] = useState(false);
   const saveQueue = useRef<Promise<unknown>>(Promise.resolve());
   useEffect(() => {
     if (messages.length < savedCount.current) savedCount.current = Math.min(messages.length, 1);
@@ -159,6 +161,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
             anonymousToken,
           })
         )
+        .then(() => setConversationSaved(true))
         .catch(() => undefined);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -354,8 +357,12 @@ const Chatbot: React.FC<ChatbotProps> = ({
     }
   };
 
+  // With live chat on, the widget follows its conversation from the first
+  // saved message, so the owner can join at any time, asked or not.
+  const following = liveFollowing || (canTalkLive && conversationSaved);
   useEffect(() => {
-    if (!liveFollowing || !id) return;
+    if (!following || !id) return;
+    let first = true;
     return onSnapshot(
       doc(db, "conversations", `${id}_${sessionId}`),
       (snap) => {
@@ -364,28 +371,33 @@ const Chatbot: React.FC<ChatbotProps> = ({
         const agent = (Array.isArray(data.messages) ? data.messages : [])
           .filter((m: { role?: string }) => m.role === "agent")
           .sort((a: { at: number }, b: { at: number }) => a.at - b.at);
+        // The first look only counts replies from before (say, on another
+        // page of the site); everything after it is shown.
+        if (first && !liveRef.current) seenAgentMessages.current = agent.length;
+        first = false;
         const fresh = agent.slice(seenAgentMessages.current);
         seenAgentMessages.current = agent.length;
         const name = typeof data.agentName === "string" ? data.agentName : "";
         const current = liveRef.current;
         const added: Message[] = [];
-        if (data.liveStatus === "active" && current?.status === "waiting") {
+        if (data.liveStatus === "active" && current?.status !== "active") {
           added.push({ text: t("liveJoined", { name: agentLabel(name) }), sender: "notice" });
           react("happy");
         }
         for (const m of fresh) added.push({ text: m.text, sender: "agent", name: m.name || name });
-        if ((data.liveStatus === "ended" || data.liveStatus === "missed") && current) {
+        if (data.liveStatus === "active" || data.liveStatus === "waiting") {
+          setLive({ status: data.liveStatus, name });
+        } else if (current) {
+          // Ended, missed, or back to idle: the bot answers again.
           if (data.liveStatus === "ended") added.push({ text: t("liveEnded", { name: agentLabel(current.name || name) }), sender: "notice" });
           setLive(null);
           setLiveFollowing(false);
-        } else if (data.liveStatus === "active" || data.liveStatus === "waiting") {
-          setLive({ status: data.liveStatus, name });
         }
         if (added.length) setMessages((prev) => [...prev, ...added]);
       },
       () => undefined
     );
-  }, [liveFollowing, id, sessionId]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [following, id, sessionId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Nobody answered in time: let go, and offer the email form or contact link.
   useEffect(() => {

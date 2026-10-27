@@ -39,6 +39,7 @@ interface ChatbotInfo {
   secondaryColor?: string;
   launcherStyle?: string;
   saveConversations: boolean;
+  liveChat: boolean;
 }
 
 interface ChatMessage {
@@ -83,6 +84,9 @@ function toConversation(d: DocumentSnapshot<DocumentData>): Conversation {
 }
 
 const isLive = (c: Conversation | null | undefined) => c?.liveStatus === "waiting" || c?.liveStatus === "active";
+/** Matches the server: you can join a chat whose visitor wrote this recently. */
+const JOIN_WINDOW_MS = 30 * 60_000;
+const isRecent = (c: Conversation) => !!c.lastMessageAt && Date.now() - c.lastMessageAt.getTime() < JOIN_WINDOW_MS;
 
 // Test mode: a few believable chats so the page can be seen without real data.
 function sampleConversations(): Conversation[] {
@@ -100,7 +104,7 @@ function sampleConversations(): Conversation[] {
       lastMessageAt: new Date(messages[messages.length - 1].at),
       leadEmail,
       messages,
-      liveStatus: null,
+      liveStatus: (minutesAgo < 30 ? "idle" : null) as LiveStatus | null,
       liveRequestedAt: null,
     };
   };
@@ -176,13 +180,18 @@ const Transcript: React.FC<{
   chatbot?: ChatbotInfo;
   onBack: () => void;
   onDelete: () => void;
-}> = ({ conversation, chatbot, onBack, onDelete }) => {
+  /** Test mode: replies stay on the page instead of going to a visitor. */
+  onLocalReply?: (text: string) => void;
+}> = ({ conversation, chatbot, onBack, onDelete, onLocalReply }) => {
   const t = useT(conversationsMessages);
   const locale = dateLocale(t.lang);
   const [confirming, setConfirming] = useState(false);
   const bottom = useRef<HTMLDivElement>(null);
   const visitorColor = chatbot?.secondaryColor || chatbot?.primaryColor || "#243040";
   const live = isLive(conversation);
+  // Not live yet, but the visitor was here just now: replying joins the chat.
+  const joinable = !live && chatbot?.liveChat === true && conversation.liveStatus !== null && isRecent(conversation);
+  const canWrite = live || joinable;
   const [reply, setReply] = useState("");
   const [sending, setSending] = useState(false);
 
@@ -199,6 +208,11 @@ const Transcript: React.FC<{
   const send = async () => {
     const text = reply.trim();
     if (!text || sending) return;
+    if (onLocalReply) {
+      onLocalReply(text);
+      setReply("");
+      return;
+    }
     setSending(true);
     try {
       await apiRequest("/api/account/live-reply", { authRequired: true, body: { conversationId: conversation.id, text } });
@@ -332,14 +346,34 @@ const Transcript: React.FC<{
         <div ref={bottom} />
       </div>
 
-      {live && (
+      {!canWrite && (
+        <p className="border-t border-[#E7EDF6] px-5 py-3 text-caption text-[#647184] dark:border-[#2B3646] dark:text-[#87909D]">
+          {chatbot && !chatbot.liveChat ? (
+            <>
+              {t("liveOffHint")}{" "}
+              <Link to={`/configure/${chatbot.id}`} className="font-medium text-[#101723] underline underline-offset-2 dark:text-[#D7DFE5]">
+                {t("turnOnLiveChat")}
+              </Link>
+            </>
+          ) : (
+            t("visitorLeftHint")
+          )}
+        </p>
+      )}
+
+      {canWrite && (
         <form
           onSubmit={(e) => {
             e.preventDefault();
             void send();
           }}
-          className="flex items-end gap-2 border-t border-[#E7EDF6] px-4 py-3 dark:border-[#2B3646]"
+          className="flex flex-wrap items-end gap-2 border-t border-[#E7EDF6] px-4 py-3 dark:border-[#2B3646]"
         >
+          {joinable && (
+            <p className="w-full text-caption text-[#647184] dark:text-[#87909D]">
+              {t("joinHint", { time: conversation.lastMessageAt ? formatDistanceToNowStrict(conversation.lastMessageAt, { addSuffix: true, locale }) : t("justNow") })}
+            </p>
+          )}
           <textarea
             value={reply}
             onChange={(e) => setReply(e.target.value)}
@@ -393,7 +427,7 @@ const Conversations: React.FC<{ testMode?: boolean }> = ({ testMode = false }) =
   useEffect(() => {
     if (testMode) {
       setChatbots(
-        DUMMY_CHATBOTS.map((c) => ({ id: c.id, title: c.title, primaryColor: c.primaryColor, launcherStyle: c.launcherStyle, saveConversations: true }))
+        DUMMY_CHATBOTS.map((c) => ({ id: c.id, title: c.title, primaryColor: c.primaryColor, launcherStyle: c.launcherStyle, saveConversations: true, liveChat: true }))
       );
       return;
     }
@@ -408,6 +442,7 @@ const Conversations: React.FC<{ testMode?: boolean }> = ({ testMode = false }) =
             secondaryColor: d.data().secondaryColor,
             launcherStyle: d.data().launcherStyle,
             saveConversations: d.data().saveConversations === true,
+            liveChat: d.data().liveChat === true,
           }))
         )
       )
@@ -661,7 +696,24 @@ const Conversations: React.FC<{ testMode?: boolean }> = ({ testMode = false }) =
 
         <div className={`min-h-0 ${open ? "flex" : "hidden lg:flex"} flex-col`}>
           {open ? (
-            <Transcript conversation={open} chatbot={byId.get(open.chatbotId)} onBack={() => setOpenId(null)} onDelete={() => remove(open)} />
+            <Transcript
+              conversation={open}
+              chatbot={byId.get(open.chatbotId)}
+              onBack={() => setOpenId(null)}
+              onDelete={() => remove(open)}
+              onLocalReply={
+                testMode
+                  ? (text) =>
+                      setSamples((list) =>
+                        list.map((c) =>
+                          c.id === open.id
+                            ? { ...c, liveStatus: "active", messageCount: c.messageCount + 1, messages: [...c.messages, { role: "agent", text, at: Date.now(), name: "You" }] }
+                            : c
+                        )
+                      )
+                  : undefined
+              }
+            />
           ) : (
             <div className="flex flex-1 items-center justify-center">
               <EmptyState compact icon={MessagesSquare} title={t("selectTitle")} description={t("selectBody")} />

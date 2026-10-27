@@ -49,6 +49,7 @@ async function seed(extra: { suspended?: boolean } = {}) {
       await setDoc(doc(db, `${name}/r1`), record);
     }
     await setDoc(doc(db, "conversations/bot1_livesession1"), { ...record, liveStatus: "waiting" });
+    await setDoc(doc(db, "conversations/bot1_idlesession1"), { ...record, liveStatus: "idle" });
     await setDoc(doc(db, "presence/owner1"), { online: true, lastSeen: new Date() });
     await setDoc(doc(db, "ai_usage/owner1_2026-10"), { count: 3 });
     await setDoc(doc(db, "admin_log/e1"), { action: "suspend" });
@@ -183,6 +184,7 @@ describe("suspended owners", () => {
 describe("live chat", () => {
   it("a visitor can follow a conversation in live chat, but not an ordinary one", async () => {
     await assertSucceeds(getDoc(doc(visitor(), "conversations/bot1_livesession1")));
+    await assertSucceeds(getDoc(doc(visitor(), "conversations/bot1_idlesession1")));
     await assertFails(getDoc(doc(visitor(), "conversations/r1")));
   });
 

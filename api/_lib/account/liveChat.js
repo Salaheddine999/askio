@@ -12,6 +12,8 @@ const CONVERSATION_ID = /^[A-Za-z0-9_-]{1,64}_[A-Za-z0-9_-]{8,64}$/;
 const MAX_REPLY_CHARS = 1000;
 /** Same cap as visitor messages, well under Firestore's 1 MB document limit. */
 const MAX_MESSAGES = 200;
+/** The owner can join a chat whose visitor wrote within this long. */
+export const JOIN_WINDOW_MS = 30 * 60_000;
 
 function httpError(statusCode, message) {
   const error = new Error(message);
@@ -37,7 +39,16 @@ async function ownedLiveConversation(uid, conversationId) {
   const ref = adminDb.collection("conversations").doc(conversationId);
   const snap = await ref.get();
   if (!snap.exists || snap.data().ownerId !== uid) throw httpError(404, "Conversation not found.");
-  return ref;
+  return { ref, chatbotId: snap.data().chatbotId };
+}
+
+/** Whether the owner may write into this chat now. */
+function canReply(data) {
+  if (data.liveStatus === "waiting" || data.liveStatus === "active") return true;
+  // Otherwise only while the visitor is likely still there, on a chatbot whose
+  // widget follows the conversation (live chat on).
+  const last = data.lastMessageAt?.toMillis?.() ?? 0;
+  return data.liveStatus !== undefined && data.liveStatus !== null && Date.now() - last < JOIN_WINDOW_MS;
 }
 
 /** POST /api/account/live-reply { conversationId, text } and /api/account/live-end { conversationId }. */
@@ -49,7 +60,7 @@ export default async function liveChat(req, res, action) {
   try {
     const decoded = await requireUser(req);
     const { conversationId, text } = req.body || {};
-    const ref = await ownedLiveConversation(decoded.uid, conversationId);
+    const { ref, chatbotId } = await ownedLiveConversation(decoded.uid, conversationId);
 
     if (action === "end") {
       await ref.update({ liveStatus: "ended", liveEndedAt: FieldValue.serverTimestamp() });
@@ -63,8 +74,15 @@ export default async function liveChat(req, res, action) {
     await adminDb.runTransaction(async (transaction) => {
       const snap = await transaction.get(ref);
       const data = snap.data();
-      // You can reply while the visitor waits or chats with you, not after.
-      if (!["waiting", "active"].includes(data.liveStatus)) throw httpError(409, "This chat has ended.");
+      if (!canReply(data)) {
+        const chatbot = (await transaction.get(adminDb.collection("chatbot_configs").doc(chatbotId))).data();
+        throw httpError(
+          409,
+          chatbot?.liveChat === true
+            ? "This visitor left a while ago, so they won't see a reply here."
+            : "Turn on Live chat for this chatbot to reply to visitors."
+        );
+      }
       if ((Number(data.messageCount) || 0) >= MAX_MESSAGES) throw httpError(409, "This conversation is full.");
       transaction.update(ref, {
         messages: FieldValue.arrayUnion({ role: "agent", text: reply, at: Date.now(), name: agentName }),

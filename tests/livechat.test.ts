@@ -129,6 +129,27 @@ describe("a visitor asking for a person", () => {
   });
 });
 
+describe("conversations on a live-chat chatbot", () => {
+  it("start joinable, so the visitor's widget can follow them", async () => {
+    const res = fakeRes();
+    await recordVisitor(
+      { method: "POST", headers: {}, body: { kind: "message", chatbotId: "bot1", role: "visitor", text: "Hi", sessionId: SESSION } },
+      res
+    );
+    expect(res.statusCode).toBe(201);
+    expect(fake.state.conversations[CONVERSATION]).toMatchObject({ liveStatus: "idle", preview: "Hi" });
+  });
+
+  it("stay private when live chat is off", async () => {
+    fake.state.chatbots.bot1.liveChat = false;
+    await recordVisitor(
+      { method: "POST", headers: {}, body: { kind: "message", chatbotId: "bot1", role: "visitor", text: "Hi", sessionId: SESSION } },
+      fakeRes()
+    );
+    expect(fake.state.conversations[CONVERSATION].liveStatus).toBeUndefined();
+  });
+});
+
 describe("the owner replying live", () => {
   beforeEach(() => {
     fake.state.conversations[CONVERSATION] = { ownerId: "owner1", liveStatus: "waiting", messageCount: 2, messages: [] };
@@ -166,6 +187,33 @@ describe("the owner replying live", () => {
     const late = fakeRes();
     await liveChat(owner("Still there?"), late, "reply");
     expect(late.statusCode).toBe(409);
+  });
+
+  it("can join a chat the visitor wrote in just now, without being asked", async () => {
+    fake.state.conversations[CONVERSATION] = {
+      ownerId: "owner1",
+      liveStatus: "idle",
+      messageCount: 1,
+      messages: [],
+      lastMessageAt: { toMillis: () => Date.now() - 2 * 60_000 },
+    };
+    const res = fakeRes();
+    await liveChat(owner("Hi! Can I help with your order?"), res, "reply");
+    expect(res.statusCode).toBe(201);
+    expect(fake.state.conversations[CONVERSATION].liveStatus).toBe("active");
+  });
+
+  it("can't join a chat the visitor left long ago", async () => {
+    fake.state.conversations[CONVERSATION] = {
+      ownerId: "owner1",
+      liveStatus: "idle",
+      messageCount: 1,
+      messages: [],
+      lastMessageAt: { toMillis: () => Date.now() - 60 * 60_000 },
+    };
+    const res = fakeRes();
+    await liveChat(owner("Hello?"), res, "reply");
+    expect(res.statusCode).toBe(409);
   });
 
   it("rejects a malformed conversation id", async () => {
