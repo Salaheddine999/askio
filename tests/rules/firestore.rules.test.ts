@@ -74,6 +74,13 @@ describe("user profiles", () => {
     await assertSucceeds(updateDoc(doc(owner(), "users/owner1"), { language: "fr" }));
   });
 
+  it("older profiles missing billing fields can still save, but can't add them", async () => {
+    await env.withSecurityRulesDisabled((ctx) => setDoc(doc(ctx.firestore(), "users/owner1"), { email: "owner@example.com", plan: "free" }));
+    await assertSucceeds(updateDoc(doc(owner(), "users/owner1"), { pushTokens: ["device-token"] }));
+    await assertFails(updateDoc(doc(owner(), "users/owner1"), { aiChatbotLimit: 999 }));
+    await assertFails(updateDoc(doc(owner(), "users/owner1"), { isPro: true }));
+  });
+
   it.each([
     ["plan", "business"],
     ["subscriptionStatus", "active_forever"],

@@ -34,15 +34,12 @@ service cloud.firestore {
       allow read: if ownsUserDoc(userId) || isAdmin();
       allow create: if ownsUserDoc(userId) && !('suspended' in request.resource.data);
 
-      // Billing and limit fields are set by the server only.
+      // Billing, limit and suspension fields are set by the server only. Checked
+      // as "not touched", so older profiles missing some of them still save.
       allow update: if ownsUserDoc(userId)
-        && request.resource.data.plan == resource.data.plan
-        && request.resource.data.subscriptionStatus == resource.data.subscriptionStatus
-        && request.resource.data.aiChatbotLimit == resource.data.aiChatbotLimit
-        && request.resource.data.isPro == resource.data.isPro
-        && request.resource.data.get('aiReplyLimit', null) == resource.data.get('aiReplyLimit', null)
-        && suspensionUnchanged()
-        && request.resource.data.get('suspendedReason', null) == resource.data.get('suspendedReason', null);
+        && !request.resource.data.diff(resource.data).affectedKeys().hasAny([
+          'plan', 'subscriptionStatus', 'aiChatbotLimit', 'isPro', 'aiReplyLimit', 'suspended', 'suspendedReason'
+        ]);
 
       // Deleting the profile would drop a suspension, so suspended owners can't.
       allow delete: if ownsUserDoc(userId) && resource.data.get('suspended', false) != true;
