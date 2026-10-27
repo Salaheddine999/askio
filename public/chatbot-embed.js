@@ -43,10 +43,26 @@
 
       container.appendChild(iframe);
 
+      // The open frame: room for the widget (up to 360 x 600) and its
+      // shadow, never larger than the screen. The widget is told the same
+      // size, so it keeps its shape while the frame grows.
+      function openSize() {
+        // The frame sits 10px from the screen's edge.
+        return { width: Math.min(380, window.innerWidth - 10), height: Math.min(620, window.innerHeight - 10) };
+      }
+      function sendSpace() {
+        if (!iframe.contentWindow) return;
+        iframe.contentWindow.postMessage({ type: "askioSpace", width: openSize().width, height: openSize().height }, frameOrigin);
+      }
+      window.addEventListener("resize", function () {
+        sendSpace();
+        if (isOpen) updatePosition(currentPosition, true);
+      });
+
       function updatePosition(position, isOpen) {
         if (isOpen) {
-          iframe.style.width = "370px";
-          iframe.style.height = "540px";
+          iframe.style.width = openSize().width + "px";
+          iframe.style.height = openSize().height + "px";
           iframe.style.borderRadius = "0";
         } else if (greetingSize) {
           // Just enough room for the greeting bubble beside the launcher.
@@ -160,7 +176,10 @@
           if (event.source === iframe.contentWindow && event.data.config.launcherStyle === "orb") {
             startPointerForwarding();
           }
-          if (event.source === iframe.contentWindow) startPageReporting();
+          if (event.source === iframe.contentWindow) {
+            startPageReporting();
+            sendSpace();
+          }
         } else if (event.data.type === "chatbotState") {
           isOpen = event.data.isOpen;
           updatePosition(currentPosition, isOpen);
