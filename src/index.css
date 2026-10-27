@@ -26,3 +26,16 @@
     font-synthesis: none;
   }
 }
+
+@layer utilities {
+  /* Sideways-scrolling rows such as tab bars: scrollable by swipe or wheel,
+     without a scrollbar, and never vertically (an underline poking out of
+     the row would otherwise show a stray up/down scrollbar). */
+  .scrollbar-hide {
+    overflow-y: hidden;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+}

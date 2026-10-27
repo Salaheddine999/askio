@@ -18,7 +18,7 @@ interface TabsProps {
 const Tabs: React.FC<TabsProps> = ({ tabs, activeTab, onChange, className = "" }) => {
   return (
     <div
-      className={`-mx-4 overflow-x-auto border-b border-[#D8DFE9] px-4 [scrollbar-width:none] sm:mx-0 sm:px-0 dark:border-[#2B3646] ${className}`}
+      className={`-mx-4 scrollbar-hide overflow-x-auto border-b border-[#D8DFE9] px-4 sm:mx-0 sm:px-0 dark:border-[#2B3646] ${className}`}
     >
       <div role="tablist" className="flex min-w-max items-center gap-1">
         {tabs.map((tab) => {
