@@ -11,9 +11,8 @@ export const primaryCta = `group inline-flex h-[52px] items-center justify-cente
 
 export const ghostCta = `inline-flex h-12 items-center justify-center gap-2 rounded-full px-4 text-body-sm font-medium text-[#566273] transition-[background-color,color,transform] duration-150 ease-out hover:bg-[#E7EDF6]/70 hover:text-[#101723] active:bg-[#E7EDF6] dark:text-[#9BAABD] dark:hover:bg-[#243040]/70 dark:hover:text-[#D7DFE5] dark:active:bg-[#243040] ${focus} ${press}`;
 
-/** The round chip on primaryCta's right, clipping the icons that slide through it. */
-export const ctaChip =
-  "relative inline-flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-white/[0.14] dark:bg-[#101723]/[0.08]";
+/** The round chip on a main button's right, clipping the icons that slide through it (see ArrowBubble). */
+export const ctaChip = "relative inline-flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full";
 
 /** Small round icon buttons (carousel arrows, back to top). */
 export const iconPress = `transition-[background-color,color,transform] duration-150 ease-out ${press}`;

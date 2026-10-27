@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { ArrowRight, Check } from "lucide-react";
+import { ArrowBubble } from "./MainCta";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useInView } from "react-intersection-observer";
@@ -60,7 +61,15 @@ function PlanCard({
     ? "text-[#D7DFE5] dark:text-[#F3F7FC]"
     : "text-[#87909D] dark:text-[#9BAABD]";
 
-  const buttonContent = (
+  // The featured plan gets the main buttons' arrow-to-bubble chip at the
+  // right edge; a spacer of the same size on the left keeps the label centred.
+  const buttonContent = featured ? (
+    <span className="flex w-full items-center justify-between px-1.5">
+      <span className="h-9 w-9 shrink-0" aria-hidden="true" />
+      {ctaLabel}
+      <ArrowBubble className="bg-[#101723]/[0.08]" />
+    </span>
+  ) : (
     <>
       {ctaLabel}
       <ArrowRight className="ml-2 h-4 w-4" />
@@ -96,21 +105,21 @@ function PlanCard({
         {ctaAction ? (
           <button
             onClick={ctaAction}
-            className={`mt-10 inline-flex h-12 w-full items-center justify-center rounded-full text-button font-medium transition-[background-color,color,transform] duration-150 ease-out active:scale-[0.98] motion-reduce:transition-none motion-reduce:active:scale-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#87909D] ${buttonClass}`}
+            className={`group relative mt-10 inline-flex h-12 w-full items-center justify-center rounded-full text-button font-medium transition-[background-color,color,transform] duration-150 ease-out active:scale-[0.98] motion-reduce:transition-none motion-reduce:active:scale-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#87909D] ${buttonClass}`}
           >
             {buttonContent}
           </button>
         ) : external ? (
           <a
             href={ctaHref}
-            className={`mt-10 inline-flex h-12 w-full items-center justify-center rounded-full text-button font-medium transition-[background-color,color,transform] duration-150 ease-out active:scale-[0.98] motion-reduce:transition-none motion-reduce:active:scale-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#87909D] ${buttonClass}`}
+            className={`group relative mt-10 inline-flex h-12 w-full items-center justify-center rounded-full text-button font-medium transition-[background-color,color,transform] duration-150 ease-out active:scale-[0.98] motion-reduce:transition-none motion-reduce:active:scale-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#87909D] ${buttonClass}`}
           >
             {buttonContent}
           </a>
         ) : (
           <Link
             to={ctaHref}
-            className={`mt-10 inline-flex h-12 w-full items-center justify-center rounded-full text-button font-medium transition-[background-color,color,transform] duration-150 ease-out active:scale-[0.98] motion-reduce:transition-none motion-reduce:active:scale-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#87909D] ${buttonClass}`}
+            className={`group relative mt-10 inline-flex h-12 w-full items-center justify-center rounded-full text-button font-medium transition-[background-color,color,transform] duration-150 ease-out active:scale-[0.98] motion-reduce:transition-none motion-reduce:active:scale-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#87909D] ${buttonClass}`}
           >
             {buttonContent}
           </Link>

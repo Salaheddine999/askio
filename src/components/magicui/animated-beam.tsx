@@ -124,6 +124,14 @@ export function AnimatedBeam({
         <motion.linearGradient
           id={id}
           gradientUnits="userSpaceOnUse"
+          // Start from the first keyframe; without it the gradient renders
+          // once with undefined coordinates, which browsers log as errors.
+          initial={{
+            x1: gradientCoordinates.x1[0],
+            x2: gradientCoordinates.x2[0],
+            y1: gradientCoordinates.y1[0],
+            y2: gradientCoordinates.y2[0],
+          }}
           animate={gradientCoordinates}
           transition={{
             delay,

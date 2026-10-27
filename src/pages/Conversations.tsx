@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { markConversationsSeen } from "../utils/sidebarCounts";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { toast } from "react-hot-toast";
 import { format, formatDistanceToNowStrict } from "date-fns";
@@ -526,6 +526,37 @@ const Conversations: React.FC<{ testMode?: boolean }> = ({ testMode = false }) =
     setSearchParams(searchParams, { replace: true });
   }, [searchParams, setSearchParams]);
 
+  // On phones an open chat is its own step in the browser history (?chat=1),
+  // so the back gesture returns to the list instead of leaving the page.
+  const navigate = useNavigate();
+  const pushedChat = useRef(false);
+  const openChat = (id: string) => {
+    setOpenId(id);
+    if (pushedChat.current || window.matchMedia("(min-width: 1024px)").matches) return;
+    pushedChat.current = true;
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      next.set("chat", "1");
+      return next;
+    });
+  };
+  const closeChat = () => {
+    if (pushedChat.current) navigate(-1);
+    else setOpenId(null);
+  };
+  useEffect(() => {
+    if (searchParams.has("chat")) {
+      // Left over from a reload: there's no chat to go back from.
+      if (!pushedChat.current) {
+        searchParams.delete("chat");
+        setSearchParams(searchParams, { replace: true });
+      }
+    } else if (pushedChat.current) {
+      pushedChat.current = false;
+      setOpenId(null);
+    }
+  }, [searchParams, setSearchParams]);
+
   // Opening this page clears the sidebar's "new conversations" count.
   useEffect(() => {
     if (!testMode) markConversationsSeen();
@@ -653,7 +684,7 @@ const Conversations: React.FC<{ testMode?: boolean }> = ({ testMode = false }) =
         await deleteDoc(doc(db, "conversations", conversation.id));
         await list.reload();
       }
-      setOpenId(null);
+      closeChat();
       toast.success(t("deleted"));
     } catch (error) {
       console.error("Couldn't delete conversation:", error);
@@ -748,7 +779,7 @@ const Conversations: React.FC<{ testMode?: boolean }> = ({ testMode = false }) =
                     <li key={c.id}>
                       <button
                         type="button"
-                        onClick={() => setOpenId(c.id)}
+                        onClick={() => openChat(c.id)}
                         aria-current={c.id === openId ? "true" : undefined}
                         className={`flex w-full items-center gap-3 px-4 py-2.5 text-left transition-colors ${focusRing} ${
                           c.id === openId ? "bg-emerald-100/60 dark:bg-emerald-950/40" : "hover:bg-emerald-100/40 dark:hover:bg-emerald-950/30"
@@ -780,7 +811,7 @@ const Conversations: React.FC<{ testMode?: boolean }> = ({ testMode = false }) =
                 <li key={c.id}>
                   <button
                     type="button"
-                    onClick={() => setOpenId(c.id)}
+                    onClick={() => openChat(c.id)}
                     aria-current={selected ? "true" : undefined}
                     className={`flex w-full items-start gap-3 px-4 py-3.5 text-left transition-colors ${focusRing} ${
                       selected ? "bg-[#F3F7FC] dark:bg-[#141D2B]" : "hover:bg-[#F3F7FC]/70 dark:hover:bg-[#141D2B]/60"
@@ -839,7 +870,7 @@ const Conversations: React.FC<{ testMode?: boolean }> = ({ testMode = false }) =
             <Transcript
               conversation={open}
               chatbot={byId.get(open.chatbotId)}
-              onBack={() => setOpenId(null)}
+              onBack={closeChat}
               onDelete={() => remove(open)}
               onLocalReply={
                 testMode
