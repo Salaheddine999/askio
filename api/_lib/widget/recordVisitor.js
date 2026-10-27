@@ -251,15 +251,17 @@ export default async function recordVisitor(req, res) {
     const fields = fieldsFor(kind, body);
 
     const [perVisitor, perChatbot] = LIMITS[kind];
-    const [visitorOk, chatbotOk] = await Promise.all([
+    // The chatbot is read alongside the limits, so a live chat message
+    // reaches the owner one round trip sooner.
+    const [visitorOk, chatbotOk, chatbotSnap] = await Promise.all([
       takeRateLimit(`rec_${kind}_v_${visitorKey(req)}`, perVisitor),
       takeRateLimit(`rec_${kind}_c_${chatbotId}`, perChatbot),
+      adminDb.collection("chatbot_configs").doc(chatbotId).get(),
     ]);
     if (!visitorOk || !chatbotOk) {
       return res.status(429).json({ error: "Too many requests. Please try again in a minute." });
     }
 
-    const chatbotSnap = await adminDb.collection("chatbot_configs").doc(chatbotId).get();
     const chatbot = chatbotSnap.data();
     // Suspended or deleted chatbots take no new records.
     if (!chatbotSnap.exists || chatbot.suspended === true || !chatbot.user_id) {

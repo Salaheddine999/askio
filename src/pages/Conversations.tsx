@@ -14,6 +14,7 @@ import {
   serverTimestamp,
   updateDoc,
   getDocs,
+  limit,
   onSnapshot,
   orderBy,
   query,
@@ -556,20 +557,31 @@ const Conversations: React.FC<{ testMode?: boolean }> = ({ testMode = false }) =
   }, [uid, testMode]);
 
   const live = !testMode && isPro && !!uid;
-  const list = usePaged(
-    `${uid}|${filter}`,
-    () =>
-      filter === "all"
-        ? query(collection(db, "conversations"), where("ownerId", "==", uid), orderBy("lastMessageAt", "desc"))
-        : query(
-            collection(db, "conversations"),
-            where("ownerId", "==", uid),
-            where("chatbotId", "==", filter),
-            orderBy("lastMessageAt", "desc")
-          ),
-    toConversation,
-    live
-  );
+  const listQuery = () =>
+    filter === "all"
+      ? query(collection(db, "conversations"), where("ownerId", "==", uid), orderBy("lastMessageAt", "desc"))
+      : query(
+          collection(db, "conversations"),
+          where("ownerId", "==", uid),
+          where("chatbotId", "==", filter),
+          orderBy("lastMessageAt", "desc")
+        );
+  const list = usePaged(`${uid}|${filter}`, listQuery, toConversation, live);
+
+  // The newest page stays live, so a visitor starting a chat or writing in
+  // one you don't have open shows up without reloading. Older pages are
+  // loaded once.
+  const [firstPage, setFirstPage] = useState<Conversation[] | null>(null);
+  useEffect(() => {
+    setFirstPage(null);
+    if (!live) return;
+    return onSnapshot(
+      query(listQuery(), limit(PAGE_SIZE)),
+      (snap) => setFirstPage(snap.docs.map(toConversation)),
+      () => setFirstPage(null)
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [live, uid, filter]);
 
   // Visitors waiting for you or chatting with you right now, kept live.
   const [liveItems, setLiveItems] = useState<Conversation[]>([]);
@@ -606,8 +618,13 @@ const Conversations: React.FC<{ testMode?: boolean }> = ({ testMode = false }) =
     );
   }, [live, followId]);
 
-  const items = testMode ? samples.filter((c) => filter === "all" || c.chatbotId === filter) : list.items;
-  const total = testMode ? items?.length ?? 0 : list.total;
+  const items = testMode
+    ? samples.filter((c) => filter === "all" || c.chatbotId === filter)
+    : list.page === 1 && firstPage
+      ? firstPage
+      : list.items;
+  // A conversation that arrived since the count still counts.
+  const total = testMode ? items?.length ?? 0 : list.total === null ? null : Math.max(list.total, firstPage?.length ?? 0);
   const byId = useMemo(() => new Map((chatbots || []).map((c) => [c.id, c])), [chatbots]);
   const open = (followed && followed.id === openId ? followed : null) ?? items?.find((c) => c.id === openId) ?? null;
   const anySaving = testMode || (chatbots || []).some((c) => c.saveConversations);
