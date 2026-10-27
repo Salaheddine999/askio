@@ -29,6 +29,26 @@ export async function pushState(): Promise<PushState> {
   return pushTokenOnThisDevice() && Notification.permission === "granted" ? "on" : "off";
 }
 
+// A worker that was just installed isn't running yet, and subscribing through
+// it fails with "no active Service Worker" (often on phones, the first time).
+function untilActive(registration: ServiceWorkerRegistration) {
+  if (registration.active) return Promise.resolve();
+  const worker = registration.installing || registration.waiting;
+  if (!worker) return navigator.serviceWorker.ready.then(() => undefined);
+  return new Promise<void>((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error("The notification worker didn't start")), 15000);
+    worker.addEventListener("statechange", () => {
+      if (worker.state === "activated") {
+        clearTimeout(timer);
+        resolve();
+      } else if (worker.state === "redundant") {
+        clearTimeout(timer);
+        reject(new Error("The notification worker failed to install"));
+      }
+    });
+  });
+}
+
 async function messagingWithWorker() {
   const config = app.options;
   const query = new URLSearchParams({
@@ -38,6 +58,7 @@ async function messagingWithWorker() {
     appId: config.appId || "",
   });
   const registration = await navigator.serviceWorker.register(`/firebase-messaging-sw.js?${query}`);
+  await untilActive(registration);
   const { getMessaging } = await import("firebase/messaging");
   return { messaging: getMessaging(app), registration };
 }

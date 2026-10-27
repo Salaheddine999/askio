@@ -32,6 +32,7 @@ import ConfirmationModal from "../components/ConfirmationModal";
 import AiUsageMeter from "../components/AiUsageMeter";
 import { useModal } from "../hooks/useModal";
 import { toast } from "react-hot-toast";
+import { reportClientError } from "../utils/monitoring";
 import { useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { FormPageSkeleton } from "../components/Skeleton";
@@ -120,7 +121,10 @@ const Settings: React.FC<SettingsProps> = ({ darkMode, setDarkMode, suspension }
       setPush(on ? await turnOnPush(current.uid) : await turnOffPush(current.uid));
     } catch (error) {
       console.error("Couldn't change push notifications:", error);
-      toast.error(t("pushFailed"));
+      reportClientError(error, { area: "push" });
+      // The browser's own reason, so a failure on a phone can be told apart.
+      const reason = error instanceof Error ? error.message : "";
+      toast.error(reason ? `${t("pushFailed")} (${reason.slice(0, 120)})` : t("pushFailed"));
     } finally {
       setPushBusy(false);
     }
