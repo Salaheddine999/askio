@@ -49,6 +49,10 @@ const AiFaqGenerator: React.FC<AiFaqGeneratorProps> = ({
   const [isDeepCrawl, setIsDeepCrawl] = useState(false);
 
   const openGeneratedFaqs = (newFaqs: { question: string; answer: string }[]) => {
+    if (newFaqs.length === 0) {
+      toast.error(t("noFactsFound"));
+      return;
+    }
     const faqsWithState = newFaqs.map((faq) => ({
       ...faq,
       isOpen: false,

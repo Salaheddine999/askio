@@ -229,40 +229,40 @@ export async function generateFaqsFromUrl(url, isDeepCrawl = false, aiTone = "")
       ? `\nIMPORTANT PERSONA INSTRUCTION: The user has defined a specific persona: "${aiTone}". You must adopt this persona and tone when writing the answers.`
       : "";
 
+  // The chatbot repeats these answers to visitors word for word, so they
+  // must say only what the site says, plainly, without sales language.
+  const rules = `
+      Rules for every answer:
+      - State only facts the text says directly. Do not add features, numbers, prices, guarantees or promises that it doesn't state. If the text doesn't cover something, leave that question out instead of guessing.
+      - Write plainly and concretely, like a helpful shop assistant. No sales or hype language, such as "absolutely", "valuable insights", "seamless", "cutting-edge", "actionable" or "take your business to the next level". No exclamation marks.
+      - Answer the question in the first sentence, then add detail if the text gives it. Keep each answer to one to three short sentences.
+      - Prefer what a real visitor would ask: what it is, prices, how it works, delivery, opening hours, returns, contact.
+      - Write in the same language as the website text.
+      - Speak as the business, using "we" and "our".${toneInstruction}
+      - Fewer FAQs are better than invented ones. If the text has nothing factual to work with, return an empty array.
+
+      Return only a raw JSON array of objects, each exactly in this format:
+      {"question": "The question", "answer": "The answer"}
+  `;
+
   const prompt = isSpaFallback
     ? `
-      You are an expert customer support agent and business analyst.
-      I need you to generate FAQs for the website at this URL: ${url}
-
-      The website is a JavaScript-heavy Single Page Application, so we could only extract the following metadata and fragments:
+      You write the FAQ for a business's website chatbot.
+      The website at ${url} loads its content with JavaScript, so only this metadata and these fragments could be read:
 
       ${textContent}
 
-      Based on this metadata, determine what this business or website is about.
-      Then generate between 3 to 5 high-quality Frequently Asked Questions and their answers relevant for customers visiting this website.
-      The FAQs must be about the business, its services, or its products.
-      If the metadata suggests it's a French website, write the FAQs in French.${toneInstruction}
-      Assume the persona of the company answering a customer's question. Use "we" and "our" where appropriate.
-
-      Return only a raw JSON array of objects.
-      Each object must exactly match this format:
-      {"question": "The generated question", "answer": "The generated answer"}
+      Write up to 3 frequently asked questions that this text alone can answer.
+      ${rules}
     `
     : `
-      You are an expert customer support agent and business analyst.
-      First, analyze the following website content to figure out exactly what the company does and what services or products they provide.
-      Then, acting as a knowledgeable representative of that company, generate between 3 to 5 high-quality, common Frequently Asked Questions and answers.
-      The questions and answers must be highly specific to their actual business, products, or services based strictly on the provided text.
-      Assume the persona of the company answering a customer's question. Use "we" and "our" where appropriate.${toneInstruction}
-      Ignore irrelevant navigational text, privacy policies, cookie notices, or generic placeholder text.
-      Do not generate FAQs about the website's technology, frameworks, or development tools.
+      You write the FAQ for a business's website chatbot.
+      Read the website text below and write 3 to 5 frequently asked questions that its visitors would ask, answered only from this text.
+      Ignore navigation, cookie notices, privacy policies and placeholder text. Don't write questions about the website's technology.
 
-      Website Content:
+      Website text:
       ${textContent}
-
-      Return only a raw JSON array of objects.
-      Each object must exactly match this format:
-      {"question": "The generated question", "answer": "The generated answer"}
+      ${rules}
     `;
 
   const aiResponse = await ai.models.generateContent({
@@ -270,6 +270,8 @@ export async function generateFaqsFromUrl(url, isDeepCrawl = false, aiTone = "")
     contents: prompt,
     config: {
       responseMimeType: "application/json",
+      // Low, so answers stick to the page instead of embellishing it.
+      temperature: 0.3,
     },
   });
 

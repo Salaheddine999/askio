@@ -211,7 +211,8 @@ export const editorMessages = defineMessages({
     generate: "Generate",
     reviewTitle: "Review generated questions",
     reviewDesc:
-      "We've extracted the core information from the website. You can edit any text or remove irrelevant questions before adding them.",
+      "Check each answer before adding it: your chatbot repeats them to visitors word for word, and AI can get details wrong. Edit or remove anything that isn't right.",
+    noFactsFound: "We couldn't find clear facts on that page to turn into questions. Try your FAQ, pricing or about page.",
     removeFaq: "Remove FAQ",
     allClear: "You're all clear!",
     allClearDesc: "You've discarded all the generated questions. You can close this modal or generate again.",
@@ -425,7 +426,8 @@ export const editorMessages = defineMessages({
     generate: "Générer",
     reviewTitle: "Vérifiez les questions générées",
     reviewDesc:
-      "Nous avons extrait l'essentiel du site. Vous pouvez modifier n'importe quel texte ou retirer les questions inutiles avant de les ajouter.",
+      "Vérifiez chaque réponse avant de l'ajouter : votre chatbot la répète mot pour mot aux visiteurs, et l'IA peut se tromper sur des détails. Modifiez ou retirez ce qui n'est pas exact.",
+    noFactsFound: "Nous n'avons pas trouvé d'informations claires sur cette page pour en faire des questions. Essayez votre page FAQ, tarifs ou à propos.",
     removeFaq: "Retirer la question",
     allClear: "Tout est vide !",
     allClearDesc: "Vous avez retiré toutes les questions générées. Vous pouvez fermer cette fenêtre ou relancer la génération.",
@@ -637,7 +639,8 @@ export const editorMessages = defineMessages({
     generate: "Genereren",
     reviewTitle: "Gegenereerde vragen bekijken",
     reviewDesc:
-      "We hebben de belangrijkste informatie van de website gehaald. Je kunt elke tekst aanpassen of overbodige vragen weghalen voordat je ze toevoegt.",
+      "Controleer elk antwoord voordat je het toevoegt: je chatbot herhaalt het letterlijk aan bezoekers, en AI kan details verkeerd hebben. Pas aan of verwijder wat niet klopt.",
+    noFactsFound: "We vonden op die pagina geen duidelijke informatie om vragen van te maken. Probeer je FAQ-, prijs- of over-onspagina.",
     removeFaq: "Vraag weghalen",
     allClear: "Alles weggehaald!",
     allClearDesc: "Je hebt alle gegenereerde vragen weggehaald. Sluit dit venster of genereer opnieuw.",
@@ -850,7 +853,8 @@ export const editorMessages = defineMessages({
     generate: "Erstellen",
     reviewTitle: "Erstellte Fragen prüfen",
     reviewDesc:
-      "Wir haben die wichtigsten Informationen der Website zusammengetragen. Sie können jeden Text bearbeiten oder unpassende Fragen entfernen, bevor Sie sie hinzufügen.",
+      "Prüfen Sie jede Antwort, bevor Sie sie hinzufügen: Ihr Chatbot gibt sie wörtlich an Besucher weiter, und KI kann sich bei Details irren. Bearbeiten oder entfernen Sie, was nicht stimmt.",
+    noFactsFound: "Auf dieser Seite haben wir keine klaren Angaben gefunden, aus denen sich Fragen machen lassen. Versuchen Sie Ihre FAQ-, Preis- oder Über-uns-Seite.",
     removeFaq: "Frage entfernen",
     allClear: "Alles entfernt!",
     allClearDesc:
@@ -1063,7 +1067,8 @@ export const editorMessages = defineMessages({
     generate: "Generar",
     reviewTitle: "Revisa las preguntas generadas",
     reviewDesc:
-      "Hemos extraído la información principal del sitio. Puedes editar cualquier texto o quitar las preguntas que no sirvan antes de añadirlas.",
+      "Revisa cada respuesta antes de añadirla: tu chatbot la repite tal cual a los visitantes y la IA puede equivocarse en detalles. Edita o quita lo que no sea correcto.",
+    noFactsFound: "No encontramos datos claros en esa página para convertirlos en preguntas. Prueba con tu página de preguntas frecuentes, precios o sobre nosotros.",
     removeFaq: "Quitar pregunta",
     allClear: "¡No queda ninguna!",
     allClearDesc: "Has descartado todas las preguntas generadas. Puedes cerrar esta ventana o generar de nuevo.",
