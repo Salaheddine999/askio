@@ -339,11 +339,12 @@ const Chatbot: React.FC<ChatbotProps> = ({
   const seenAgentMessages = useRef(0);
   const agentLabel = (name?: string) => name || t("teamName");
 
-  const requestPerson = async () => {
+  /** `announce` adds "I'm asking someone to join"; skipped when the AI just said so. */
+  const requestPerson = async (announce = true) => {
     if (liveRef.current || !id) return;
     setLive({ status: "waiting", name: "" });
     setShowSuggestions(false);
-    setMessages((prev) => [...prev, { text: t("liveWaiting"), sender: "bot" }]);
+    if (announce) setMessages((prev) => [...prev, { text: t("liveWaiting"), sender: "bot" }]);
     try {
       await apiRequest("/api/ai/record", { body: { kind: "handoff", action: "request", chatbotId: id, sessionId, anonymousToken } });
       setLiveFollowing(true);
@@ -437,7 +438,12 @@ const Chatbot: React.FC<ChatbotProps> = ({
       let aiHandled = true;
       try {
         const historyContext = messages.filter(m => !m.isFallback && !m.isLeadCapture);
-        const { reply: aiResponseText, answered } = await apiRequest<{ reply: string | null; answered?: boolean; fallback?: string }>(
+        const { reply: aiResponseText, answered, live: ownerLive } = await apiRequest<{
+          reply: string | null;
+          answered?: boolean;
+          live?: boolean;
+          fallback?: string;
+        }>(
           "/api/ai/chat-response",
           {
             body: {
@@ -464,13 +470,20 @@ const Chatbot: React.FC<ChatbotProps> = ({
           const aiCouldNotAnswer =
             typeof answered === "boolean" ? !answered : cantAnswerPhrases.some((phrase) => lowerResponse.includes(phrase));
 
+          // You're online: the AI said it's getting you, so hand off instead
+          // of showing a link or asking for an email.
+          const handOff = aiCouldNotAnswer && canTalkLive && (ownerLive ?? ownerOnline) && !liveRef.current;
+
           setMessages((prev) => [
             ...prev,
-            { text: aiResponseText, sender: "bot", isFallback: aiCouldNotAnswer && !enableLeadCapture },
+            { text: aiResponseText, sender: "bot", isFallback: aiCouldNotAnswer && !enableLeadCapture && !handOff },
           ]);
 
-          // If the AI couldn't answer, show lead capture or live chat fallback
-          if (aiCouldNotAnswer) {
+          if (handOff) {
+            void requestPerson(false);
+            if (id) void record("unanswered", { query: input, anonymousToken }).catch(() => undefined);
+          } else if (aiCouldNotAnswer) {
+            // Otherwise show lead capture or the contact link.
             const isLeadCaptureEnabled = enableLeadCapture === true || (enableLeadCapture as unknown as string) === "true";
             if (isLeadCaptureEnabled) {
               setMessages((prev) => [
@@ -535,6 +548,11 @@ const Chatbot: React.FC<ChatbotProps> = ({
             console.error("Error tracking analytics event:", error);
           }
         }
+      } else if (canTalkLive && ownerOnline && !liveRef.current) {
+        // No answer, and you're online: get you instead of a link or form.
+        setIsTyping(false);
+        void requestPerson();
+        if (id) void record("unanswered", { query: input, anonymousToken }).catch(() => undefined);
       } else {
         const isLeadCaptureEnabled = enableLeadCapture === true || (enableLeadCapture as unknown as string) === "true";
         if (isLeadCaptureEnabled) {

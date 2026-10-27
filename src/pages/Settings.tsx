@@ -41,6 +41,7 @@ import { focusRing, primaryButton, secondaryButton, surface } from "./dashboard/
 import type { Suspension } from "../hooks/useSuspension";
 import { useLanguage, useT } from "../i18n";
 import LanguageSelect from "../components/LanguageSelect";
+import { Switch } from "../components/editor/controls";
 import { settingsMessages } from "../i18n/messages/settings";
 import { reviewEmailHref } from "../utils/support";
 
@@ -104,6 +105,18 @@ const Settings: React.FC<SettingsProps> = ({ darkMode, setDarkMode, suspension }
   const navigate = useNavigate();
   const deleteAccountModal = useModal();
   const [user, setUser] = useState<User | null>(null);
+  const [emailAlerts, setEmailAlerts] = useState({ leads: true, missedChats: true });
+  const saveEmailAlert = async (type: "leads" | "missedChats", on: boolean) => {
+    const user = auth.currentUser;
+    if (!user) return;
+    setEmailAlerts((current) => ({ ...current, [type]: on }));
+    try {
+      await updateDoc(doc(db, "users", user.uid), { [`emailAlerts.${type}`]: on });
+    } catch {
+      setEmailAlerts((current) => ({ ...current, [type]: !on }));
+      toast.error(t("alertSaveFailed"));
+    }
+  };
   const [loading, setLoading] = useState(true);
   const [isGoogleAccount, setIsGoogleAccount] = useState(false);
 
@@ -142,6 +155,7 @@ const Settings: React.FC<SettingsProps> = ({ darkMode, setDarkMode, suspension }
         setUserPlan(plan);
         setSubscriptionStatus(userData.subscriptionStatus || (plan === "free" ? "inactive" : "active"));
         setCurrentPeriodEnd(userData.currentPeriodEnd || null);
+        setEmailAlerts({ leads: userData.emailAlerts?.leads !== false, missedChats: userData.emailAlerts?.missedChats !== false });
         setHasSubscription(Boolean(userData.lemonSqueezySubscriptionId));
       }
       setLoading(false);
@@ -426,6 +440,16 @@ const Settings: React.FC<SettingsProps> = ({ darkMode, setDarkMode, suspension }
                   <AiUsageMeter />
                 </div>
               )}
+            </Section>
+
+            {/* Email alerts */}
+            <Section id="emails" title={t("sectionEmails")} description={t("emailsDescription")}>
+              <Row label={t("alertLeads")} hint={t("alertLeadsHint")}>
+                <Switch checked={emailAlerts.leads} onChange={(v) => void saveEmailAlert("leads", v)} label={t("alertLeads")} />
+              </Row>
+              <Row label={t("alertMissed")} hint={t("alertMissedHint")}>
+                <Switch checked={emailAlerts.missedChats} onChange={(v) => void saveEmailAlert("missedChats", v)} label={t("alertMissed")} />
+              </Row>
             </Section>
 
             {/* Appearance */}

@@ -3,6 +3,7 @@ import { defineMessages } from "..";
 // The sidebar and the mobile top bar.
 export const navMessages = defineMessages({
   en: {
+    liveReply: "Reply",
     liveOnline: "Live chat: online",
     liveOffline: "Live chat: offline",
     liveHint: "When you're online, visitors can ask to talk to you. Keep this tab open to hear them.",
@@ -51,6 +52,7 @@ export const navMessages = defineMessages({
     signOut: "Sign out",
   },
   fr: {
+    liveReply: "Répondre",
     liveOnline: "Chat en direct : en ligne",
     liveOffline: "Chat en direct : hors ligne",
     liveHint: "En ligne, les visiteurs peuvent demander à vous parler. Gardez cet onglet ouvert pour être prévenu.",
@@ -99,6 +101,7 @@ export const navMessages = defineMessages({
     signOut: "Se déconnecter",
   },
   nl: {
+    liveReply: "Antwoorden",
     liveOnline: "Livechat: online",
     liveOffline: "Livechat: offline",
     liveHint: "Als je online bent, kunnen bezoekers vragen om jou te spreken. Houd dit tabblad open om ze te horen.",
@@ -147,6 +150,7 @@ export const navMessages = defineMessages({
     signOut: "Uitloggen",
   },
   de: {
+    liveReply: "Antworten",
     liveOnline: "Live-Chat: online",
     liveOffline: "Live-Chat: offline",
     liveHint: "Wenn Sie online sind, können Besucher Sie sprechen wollen. Lassen Sie diesen Tab offen, um es mitzubekommen.",
@@ -195,6 +199,7 @@ export const navMessages = defineMessages({
     signOut: "Abmelden",
   },
   es: {
+    liveReply: "Responder",
     liveOnline: "Chat en vivo: en línea",
     liveOffline: "Chat en vivo: desconectado",
     liveHint: "Cuando estás en línea, los visitantes pueden pedir hablar contigo. Deja esta pestaña abierta para enterarte.",

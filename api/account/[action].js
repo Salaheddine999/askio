@@ -1,6 +1,7 @@
 import deleteOwnAccount from "../_lib/account/deleteAccount.js";
 import adminAction from "../_lib/account/adminActions.js";
 import liveChat from "../_lib/account/liveChat.js";
+import { emailUnsubscribe } from "../_lib/email/alerts.js";
 import { withMonitoring } from "../_lib/monitoring.js";
 
 // Account endpoints share one function to stay within Vercel's function limit:
@@ -10,6 +11,7 @@ import { withMonitoring } from "../_lib/monitoring.js";
 //   POST /api/account/admin-delete      admin only: delete an account and its data
 //   POST /api/account/live-reply        reply to a visitor who asked for a person
 //   POST /api/account/live-end          end that live chat
+//   GET|POST /api/account/email-unsubscribe   the signed link in alert emails
 const HANDLERS = {
   delete: deleteOwnAccount,
   "admin-suspend": (req, res) => adminAction(req, res, "suspend"),
@@ -17,6 +19,7 @@ const HANDLERS = {
   "admin-delete": (req, res) => adminAction(req, res, "delete"),
   "live-reply": (req, res) => liveChat(req, res, "reply"),
   "live-end": (req, res) => liveChat(req, res, "end"),
+  "email-unsubscribe": emailUnsubscribe,
 };
 
 function handler(req, res) {

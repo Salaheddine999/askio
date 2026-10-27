@@ -2,6 +2,7 @@ import { FieldValue } from "firebase-admin/firestore";
 import { adminDb } from "../firebaseAdmin.js";
 import { takeRateLimit, visitorKey } from "../rateLimit.js";
 import { getUserAccessProfile } from "../plan.js";
+import { sendLeadAlert, sendMissedChatAlert } from "../email/alerts.js";
 
 // Visitor records written by the chat widget: leads, analytics events,
 // unanswered questions and ratings. Visitors are anonymous, so these used to
@@ -150,11 +151,14 @@ async function appendMessage(chatbotId, chatbot, { role, text: messageText, sess
 async function handoff(chatbotId, chatbot, { action, sessionId, anonymousToken }) {
   const ref = adminDb.collection("conversations").doc(`${chatbotId}_${sessionId}`);
   if (action === "cancel") {
-    await adminDb.runTransaction(async (transaction) => {
+    const missed = await adminDb.runTransaction(async (transaction) => {
       const snap = await transaction.get(ref);
-      if (snap.exists && snap.data().liveStatus === "waiting") transaction.update(ref, { liveStatus: "missed" });
+      if (!snap.exists || snap.data().liveStatus !== "waiting") return false;
+      transaction.update(ref, { liveStatus: "missed" });
+      return true;
     });
-    return "missed";
+    if (missed) await sendMissedChatAlert({ chatbotId, chatbot, sessionId });
+    return missed ? "missed" : "unchanged";
   }
 
   if (chatbot.liveChat !== true || chatbot.saveConversations !== true) {
@@ -262,7 +266,10 @@ export default async function recordVisitor(req, res) {
     } else {
       await collection.add(record);
     }
-    if (kind === "lead") await tagConversationLead(chatbotId, body.sessionId, fields.email);
+    if (kind === "lead") {
+      await tagConversationLead(chatbotId, body.sessionId, fields.email);
+      await sendLeadAlert({ chatbotId, chatbot, email: fields.email, sessionId: body.sessionId });
+    }
 
     return res.status(201).json({ ok: true });
   } catch (error) {

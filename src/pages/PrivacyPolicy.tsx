@@ -218,6 +218,11 @@ export default function PrivacyPolicy() {
             addresses.
           </li>
           <li>
+            <Term>Resend:</Term> sends our emails to you, such as alerts about a new lead or a missed live chat. It receives
+            your email address and each email's content, which for a lead alert includes the visitor's email address and
+            what they asked.
+          </li>
+          <li>
             <Term>Shopify:</Term> only if you connect a store.
           </li>
         </List>

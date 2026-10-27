@@ -343,8 +343,9 @@ const LANGUAGE_NAMES = { en: "English", fr: "French", nl: "Dutch", de: "German",
 /**
  * A reply to a visitor from the chatbot's FAQs. Returns the reply and whether
  * it answered their question, so the widget can offer a person or ask for an
- * email in any language. `handoff` is what the widget offers when it can't
- * answer: "email" (it asks for one), "human" (a contact button) or "none".
+ * email in any language. `handoff` is what the widget does when it can't
+ * answer: "live" (the owner is online and joins), "email" (it asks for one),
+ * "human" (a contact button) or "none".
  */
 export async function generateChatResponse({
   query,
@@ -367,6 +368,7 @@ export async function generateChatResponse({
     .join("\n");
 
   const whenUnknown = {
+    live: "say you don't know, and that you're asking someone from the team to join this chat now, so they should wait a moment",
     email: "say you don't know and that someone from the business can get back to them",
     human: "say you don't know and that they can talk to a person with the button below your message",
     none: "say you don't know and suggest they contact the business directly",

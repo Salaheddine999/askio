@@ -26,6 +26,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { collection, onSnapshot, query, where } from "firebase/firestore";
+import { toast } from "react-hot-toast";
 import { PRESENCE_HEARTBEAT_MS, playChime, readOnlineChoice, saveOnlineChoice, writePresence } from "../utils/liveChat";
 import { db } from "../utils/db";
 import BotAvatar from "./BotAvatar";
@@ -250,6 +251,29 @@ const Navbar: React.FC<NavbarProps> = ({
         seenWaiting.current = ids;
         if (fresh.length === 0) return;
         playChime();
+        // Shown in the dashboard too, in case browser notifications are blocked.
+        const first = fresh[0];
+        toast(
+          (item) => (
+            <span className="flex items-center gap-3 text-body-sm">
+              <span className="h-2 w-2 shrink-0 rounded-full bg-emerald-500" aria-hidden />
+              <span className="min-w-0">
+                <span className="block font-medium">{t("liveNotifyTitle")}</span>
+                {first.data().preview && <span className="block truncate text-caption opacity-70">{first.data().preview}</span>}
+              </span>
+              <button
+                className="shrink-0 rounded-md bg-[#101723] px-2.5 py-1 text-caption font-medium text-white dark:bg-[#D7DFE5] dark:text-[#141D2B]"
+                onClick={() => {
+                  toast.dismiss(item.id);
+                  navigate(`/conversations?open=${first.id}`);
+                }}
+              >
+                {t("liveReply")}
+              </button>
+            </span>
+          ),
+          { id: `live-${first.id}`, duration: 15_000 }
+        );
         if (typeof Notification !== "undefined" && Notification.permission === "granted") {
           const preview = fresh[0].data().preview;
           const note = new Notification(t("liveNotifyTitle"), { body: preview || t("liveNotifyBody"), tag: fresh[0].id });

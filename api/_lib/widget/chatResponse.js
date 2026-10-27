@@ -4,8 +4,20 @@ import { assertChatbotAiAvailable } from "../plan.js";
 import { getMonthlyAiReplies, recordAiReply } from "../aiUsage.js";
 import { takeRateLimit, visitorKey } from "../rateLimit.js";
 import { reportError } from "../monitoring.js";
+import { adminDb } from "../firebaseAdmin.js";
 
 const MAX_QUERY_CHARS = 1000;
+/** Matches the dashboard heartbeat: older than this, the owner is offline. */
+const PRESENCE_FRESH_MS = 150_000;
+
+/** Whether the owner is online for live chat right now. */
+async function ownerOnlineForLiveChat(chatbot) {
+  if (chatbot.liveChat !== true || chatbot.saveConversations !== true || !chatbot.user_id) return false;
+  const snap = await adminDb.collection("presence").doc(chatbot.user_id).get();
+  const data = snap.data();
+  const seen = data?.lastSeen?.toMillis?.() ?? 0;
+  return data?.online === true && Date.now() - seen < PRESENCE_FRESH_MS;
+}
 const MAX_HISTORY_MESSAGES = 6;
 const MAX_HISTORY_CHARS = 500;
 /** AI requests per minute. A visitor types far slower than this. */
@@ -68,6 +80,9 @@ export default async function handler(req, res) {
       return sendFallback(res, "monthly_limit");
     }
 
+    // When the owner is online, a question the bot can't answer goes to them.
+    const live = await ownerOnlineForLiveChat(chatbotData).catch(() => false);
+
     let result;
     try {
       result = await generateChatResponse({
@@ -77,7 +92,7 @@ export default async function handler(req, res) {
         aiTone: chatbotData.aiTone || "",
         language: chatbotData.language || "en",
         botName: String(chatbotData.title || "").slice(0, 60),
-        handoff: chatbotData.enableLeadCapture === true ? "email" : chatbotData.liveChatLink ? "human" : "none",
+        handoff: live ? "live" : chatbotData.enableLeadCapture === true ? "email" : chatbotData.liveChatLink ? "human" : "none",
       });
     } catch (error) {
       // Out of quota, overloaded or slow: the widget answers from the FAQs.
@@ -91,7 +106,7 @@ export default async function handler(req, res) {
       await recordAiReply(ownerUid);
     }
 
-    return res.status(200).json({ reply: result.reply, answered: result.answered });
+    return res.status(200).json({ reply: result.reply, answered: result.answered, live });
   } catch (error) {
     console.error("Failed to generate AI chat response:", error);
     return sendError(res, error);

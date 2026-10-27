@@ -1,0 +1,115 @@
+import crypto from "node:crypto";
+import { adminDb } from "../firebaseAdmin.js";
+import { takeRateLimit } from "../rateLimit.js";
+import { reportError } from "../monitoring.js";
+import { emailConfigured, sendEmail } from "./send.js";
+import { leadEmail, missedChatEmail, unsubscribePage } from "./templates.js";
+
+// Email alerts for chatbot owners: a new lead, a missed live chat. Each type
+// can be turned off in Settings or with the link in every email, and an
+// account gets at most DAILY_CAP alerts a day, so fake leads can't flood it.
+
+export const ALERT_TYPES = ["leads", "missedChats"];
+const DAILY_CAP = 50;
+const DAY_MS = 86_400_000;
+const UID = /^[A-Za-z0-9]{1,128}$/;
+
+const appUrl = () => (process.env.APP_URL || "https://www.getaskio.xyz").replace(/\/$/, "");
+// Unsubscribe links are signed so nobody can turn off someone else's alerts.
+const signingSecret = () => process.env.EMAIL_SIGNING_SECRET || process.env.CRON_SECRET || process.env.RESEND_API_KEY || "";
+
+export function unsubscribeSignature(uid, type) {
+  return crypto.createHmac("sha256", signingSecret()).update(`${uid}:${type}`).digest("base64url").slice(0, 32);
+}
+
+export function verifyUnsubscribe(uid, type, signature) {
+  if (!signingSecret() || typeof uid !== "string" || !UID.test(uid) || !ALERT_TYPES.includes(type)) return false;
+  if (typeof signature !== "string" || signature.length !== 32) return false;
+  return crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(unsubscribeSignature(uid, type)));
+}
+
+export function unsubscribeUrl(uid, type) {
+  return `${appUrl()}/api/account/email-unsubscribe?u=${encodeURIComponent(uid)}&t=${type}&s=${unsubscribeSignature(uid, type)}`;
+}
+
+/** The owner to email, unless they turned this alert off or can't receive it. */
+async function recipientFor(chatbot, type) {
+  const snap = await adminDb.collection("users").doc(chatbot.user_id).get();
+  const user = snap.data();
+  if (!user?.email || user.suspended === true || user.emailAlerts?.[type] === false) return null;
+  return { uid: chatbot.user_id, email: user.email, lang: user.language || chatbot.language || "en" };
+}
+
+/** What the visitor last asked, from the saved conversation (Pro), if any. */
+async function visitorQuestions(chatbotId, sessionId, max = 3) {
+  if (typeof sessionId !== "string" || !sessionId) return [];
+  try {
+    const snap = await adminDb.collection("conversations").doc(`${chatbotId}_${sessionId}`).get();
+    const messages = Array.isArray(snap.data()?.messages) ? snap.data().messages : [];
+    return messages
+      .filter((m) => m.role === "visitor" && typeof m.text === "string")
+      .slice(-max)
+      .map((m) => m.text.slice(0, 500));
+  } catch {
+    return [];
+  }
+}
+
+/** Sends one alert; never throws, so a visitor's request never fails over email. */
+async function deliver(chatbot, type, build) {
+  if (!emailConfigured() || !chatbot?.user_id) return false;
+  try {
+    const recipient = await recipientFor(chatbot, type);
+    if (!recipient) return false;
+    if (!(await takeRateLimit(`email_${recipient.uid}`, DAILY_CAP, DAY_MS))) return false;
+    const unsubscribe = unsubscribeUrl(recipient.uid, type);
+    const message = build({ lang: recipient.lang, appUrl: appUrl(), unsubscribe, botName: chatbot.title });
+    await sendEmail({
+      to: recipient.email,
+      ...message,
+      // One-click unsubscribe, as Gmail and Yahoo expect.
+      headers: { "List-Unsubscribe": `<${unsubscribe}>`, "List-Unsubscribe-Post": "List-Unsubscribe=One-Click" },
+    });
+    return true;
+  } catch (error) {
+    console.error(`Couldn't send the ${type} email:`, error.message);
+    if (!error.expected) reportError(error, { route: "email", type });
+    return false;
+  }
+}
+
+export async function sendLeadAlert({ chatbotId, chatbot, email, sessionId }) {
+  const asked = await visitorQuestions(chatbotId, sessionId);
+  return deliver(chatbot, "leads", (ctx) => leadEmail({ ...ctx, leadEmail: email, asked }));
+}
+
+export async function sendMissedChatAlert({ chatbotId, chatbot, sessionId }) {
+  const asked = await visitorQuestions(chatbotId, sessionId);
+  const conversationId = `${chatbotId}_${sessionId}`;
+  return deliver(chatbot, "missedChats", (ctx) => missedChatEmail({ ...ctx, asked, conversationId }));
+}
+
+/**
+ * GET /api/account/email-unsubscribe?u&t&s from the email's link, and the
+ * POST mail apps send for one-click unsubscribe. Turns that alert type off.
+ */
+export async function emailUnsubscribe(req, res) {
+  if (req.method !== "GET" && req.method !== "POST") {
+    res.setHeader("Allow", "GET, POST");
+    return res.status(405).json({ error: "Method not allowed." });
+  }
+  const { u: uid, t: type, s: signature } = req.query || {};
+  const ok = verifyUnsubscribe(uid, type, signature);
+  let lang = "en";
+  if (ok) {
+    const ref = adminDb.collection("users").doc(uid);
+    const snap = await ref.get();
+    if (snap.exists) {
+      lang = snap.data().language || "en";
+      await ref.set({ emailAlerts: { [type]: false } }, { merge: true });
+    }
+  }
+  if (req.method === "POST") return res.status(ok ? 200 : 400).json({ ok });
+  res.setHeader("Content-Type", "text/html; charset=utf-8");
+  return res.status(ok ? 200 : 400).send(unsubscribePage({ lang, appUrl: appUrl(), ok }));
+}
