@@ -28,6 +28,9 @@ export default defineConfig(({ mode }) => {
               org: process.env.SENTRY_ORG || env.SENTRY_ORG || "eddy-tech",
               project: process.env.SENTRY_PROJECT || env.SENTRY_PROJECT,
               authToken: sentryToken,
+              // The organization lives in Sentry's EU region; without this a
+              // personal token talks to the US servers and finds no project.
+              url: process.env.SENTRY_URL || env.SENTRY_URL || "https://de.sentry.io/",
               release: { name: process.env.VERCEL_GIT_COMMIT_SHA },
               sourcemaps: { filesToDeleteAfterUpload: ["./dist/**/*.map"] },
               telemetry: false,
