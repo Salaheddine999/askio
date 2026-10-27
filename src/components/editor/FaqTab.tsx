@@ -1,9 +1,10 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "react-hot-toast";
-import { MessageSquareText, Pencil, Plus, Search, Trash2 } from "lucide-react";
+import { ChevronDown, ChevronUp, GripVertical, MessageSquareText, Pencil, Plus, Search, Trash2 } from "lucide-react";
 import { EmptyState, focusRing, primaryButton, secondaryButton, surface } from "../../pages/dashboard/ui";
 import { Field, inputClass } from "./controls";
 import { LIMITS } from "./types";
+import { SUGGESTED_QUESTIONS } from "../../utils/suggestions";
 import { useT } from "../../i18n";
 import { editorMessages } from "../../i18n/messages/editor";
 
@@ -105,6 +106,23 @@ const FaqTab: React.FC<Props> = ({ faqs, onChange, aiGenerator, initialQuestion 
   const [editing, setEditing] = useState<number | "new" | null>(initialQuestion ? "new" : null);
   const [newDraft, setNewDraft] = useState<Faq>({ question: initialQuestion || "", answer: "" });
   const [query, setQuery] = useState("");
+  // Drag to reorder. The order matters: the first questions are the ones the
+  // widget suggests, so it's off while searching or editing.
+  const [dragIndex, setDragIndex] = useState<number | null>(null);
+  const [overIndex, setOverIndex] = useState<number | null>(null);
+  const canReorder = faqs.length > 1 && !query.trim() && editing === null;
+
+  const move = (from: number, to: number) => {
+    if (from === to || to < 0 || to >= faqs.length) return;
+    const next = [...faqs];
+    const [item] = next.splice(from, 1);
+    next.splice(to, 0, item);
+    onChange(next);
+  };
+  const endDrag = () => {
+    setDragIndex(null);
+    setOverIndex(null);
+  };
 
   const visible = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -162,6 +180,7 @@ const FaqTab: React.FC<Props> = ({ faqs, onChange, aiGenerator, initialQuestion 
           </h2>
           <p className="mt-0.5 text-body-sm text-[#647184] dark:text-[#87909D]">
             {t("qaDesc")}
+            {faqs.length > 1 && <> {t("reorderHint", { count: SUGGESTED_QUESTIONS })}</>}
           </p>
         </div>
         <div className="flex shrink-0 flex-wrap items-center gap-2">
@@ -236,16 +255,79 @@ const FaqTab: React.FC<Props> = ({ faqs, onChange, aiGenerator, initialQuestion 
                 />
               </li>
             ) : (
-              <li key={`${index}-${faq.question}`} className="group flex items-start gap-3 px-5 py-4 sm:px-6">
+              <li
+                key={`${index}-${faq.question}`}
+                draggable={canReorder}
+                onDragStart={(e) => {
+                  setDragIndex(index);
+                  e.dataTransfer.effectAllowed = "move";
+                }}
+                onDragOver={(e) => {
+                  if (dragIndex === null) return;
+                  e.preventDefault();
+                  if (overIndex !== index) setOverIndex(index);
+                }}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  if (dragIndex !== null) move(dragIndex, index);
+                  endDrag();
+                }}
+                onDragEnd={endDrag}
+                className={`group relative flex items-start gap-3 px-5 py-4 sm:px-6 ${dragIndex === index ? "opacity-50" : ""} ${
+                  overIndex === index && dragIndex !== null && dragIndex !== index
+                    ? dragIndex > index
+                      ? "shadow-[inset_0_2px_0_#101723] dark:shadow-[inset_0_2px_0_#D7DFE5]"
+                      : "shadow-[inset_0_-2px_0_#101723] dark:shadow-[inset_0_-2px_0_#D7DFE5]"
+                    : ""
+                }`}
+              >
+                {canReorder && (
+                  <span
+                    aria-hidden
+                    title={t("dragToReorder")}
+                    className="-ml-2 mt-0.5 hidden shrink-0 cursor-grab text-[#B8C2CF] active:cursor-grabbing sm:block dark:text-[#4A5A6E]"
+                  >
+                    <GripVertical size={16} />
+                  </span>
+                )}
                 <button
                   type="button"
                   onClick={() => setEditing(index)}
                   className={`min-w-0 flex-1 rounded-md text-left ${focusRing}`}
                 >
-                  <p className="text-body-sm font-medium text-[#101723] dark:text-[#D7DFE5]">{faq.question}</p>
+                  <p className="text-body-sm font-medium text-[#101723] dark:text-[#D7DFE5]">
+                    {faq.question}
+                    {index < SUGGESTED_QUESTIONS && faqs.length > 1 && (
+                      <span className="ml-2 inline-block rounded-full bg-[#E7EDF6] px-2 py-px align-[1px] text-[11px] font-medium text-[#566273] dark:bg-[#273444] dark:text-[#9BAABD]">
+                        {t("suggestedBadge")}
+                      </span>
+                    )}
+                  </p>
                   <p className="mt-1 line-clamp-2 text-body-sm text-[#566273] dark:text-[#9BAABD]">{faq.answer}</p>
                 </button>
                 <div className="flex shrink-0 items-center gap-0.5 sm:opacity-0 sm:transition-opacity sm:group-hover:opacity-100 sm:group-focus-within:opacity-100">
+                  {canReorder && (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => move(index, index - 1)}
+                        disabled={index === 0}
+                        aria-label={t("moveUp", { question: faq.question })}
+                        className={`flex h-8 w-8 items-center justify-center rounded-lg text-[#647184] transition-colors hover:bg-[#E7EDF6] hover:text-[#101723] disabled:pointer-events-none disabled:opacity-30 dark:text-[#9BAABD] dark:hover:bg-[#273444] dark:hover:text-[#D7DFE5] ${focusRing}`}
+                      >
+                        <ChevronUp size={15} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => move(index, index + 1)}
+                        disabled={index === faqs.length - 1}
+                        aria-label={t("moveDown", { question: faq.question })}
+                        className={`flex h-8 w-8 items-center justify-center rounded-lg text-[#647184] transition-colors hover:bg-[#E7EDF6] hover:text-[#101723] disabled:pointer-events-none disabled:opacity-30 dark:text-[#9BAABD] dark:hover:bg-[#273444] dark:hover:text-[#D7DFE5] ${focusRing}`}
+                      >
+                        <ChevronDown size={15} />
+                      </button>
+                    </>
+                  )}
                   <button
                     type="button"
                     onClick={() => setEditing(index)}

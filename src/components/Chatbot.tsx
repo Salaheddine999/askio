@@ -12,6 +12,7 @@ import { LiveOrb } from "./LiveOrb";
 import { headerOrbPropsFor, orbPropsFor, type LauncherStyle } from "../utils/orbColors";
 import { isOwnerBrowsing } from "../utils/ownerSession";
 import { normalizeContactLink } from "../utils/links";
+import { SUGGESTED_QUESTIONS as MAX_SUGGESTIONS } from "../utils/suggestions";
 import { isLang, makeT, type Lang } from "../i18n";
 import { widgetMessages } from "../i18n/widget";
 
@@ -199,10 +200,21 @@ const Chatbot: React.FC<ChatbotProps> = ({
     setMessages([{ text: initialMessage, sender: "bot" }]);
   }, [initialMessage]);
 
+  // A few suggestions, not the whole list: the owner's first questions to
+  // start, and the closest ones after a question the bot couldn't answer.
+  const topQuestions = useMemo(
+    () => faqData.slice(0, MAX_SUGGESTIONS).map((faq) => faq.question),
+    [faqData]
+  );
   useEffect(() => {
-    // Initialize suggestions with all FAQ questions
-    setSuggestions(faqData.map((faq) => faq.question));
-  }, [faqData]);
+    setSuggestions(topQuestions);
+  }, [topQuestions]);
+  // Looser than the answer matcher, and reads the answers too, so "related"
+  // finds questions near a miss rather than exact matches.
+  const relatedFuse = useMemo(
+    () => new Fuse(faqData, { keys: [{ name: "question", weight: 2 }, "answer"], threshold: 0.6, ignoreLocation: true }),
+    [faqData]
+  );
 
   useEffect(() => {
     const fuseInstance = new Fuse(faqData, {
@@ -483,18 +495,11 @@ const Chatbot: React.FC<ChatbotProps> = ({
   };
 
   const updateSuggestions = (userInput: string) => {
-    // Filter suggestions based on user input
-    const filteredSuggestions = faqData
-      .filter((faq) =>
-        faq.question.toLowerCase().includes(userInput.toLowerCase())
-      )
-      .map((faq) => faq.question);
-
-    setSuggestions(
-      filteredSuggestions.length > 0
-        ? filteredSuggestions
-        : faqData.map((faq) => faq.question)
-    );
+    const related = relatedFuse
+      .search(userInput.trim())
+      .slice(0, MAX_SUGGESTIONS)
+      .map((r) => r.item.question);
+    setSuggestions(related.length > 0 ? related : topQuestions);
   };
 
   const handleSuggestionClick = (event: React.MouseEvent, question: string) => {
