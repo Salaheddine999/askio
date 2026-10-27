@@ -111,10 +111,29 @@
         if (!pointerFrame) pointerFrame = window.requestAnimationFrame(sendPointer);
       }
 
+      // Touch screens have no hovering pointer: taps count as a look, and
+      // scrolling points the eyes down (or up) the page.
+      var touchOnly = window.matchMedia && window.matchMedia("(hover: none)").matches;
+      var lastScrollY = window.scrollY;
+
+      function onScroll() {
+        var delta = window.scrollY - lastScrollY;
+        lastScrollY = window.scrollY;
+        if (Math.abs(delta) < 2) return;
+        var rect = iframe.getBoundingClientRect();
+        lastPointer = {
+          x: rect.left + rect.width / 2,
+          y: rect.top + rect.height / 2 + (delta > 0 ? 320 : -320),
+        };
+        if (!pointerFrame) pointerFrame = window.requestAnimationFrame(sendPointer);
+      }
+
       function startPointerForwarding() {
         if (forwardingPointer) return;
         forwardingPointer = true;
         window.addEventListener("pointermove", onPointerMove, { passive: true });
+        window.addEventListener("pointerdown", onPointerMove, { passive: true });
+        if (touchOnly) window.addEventListener("scroll", onScroll, { passive: true });
       }
 
       iframe.addEventListener("load", function () {

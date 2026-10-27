@@ -152,11 +152,10 @@ const App: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    if (darkMode) {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
+    // "light" too, so things that follow the page theme (Kio) don't fall
+    // back to the system setting while the app is in light mode.
+    document.documentElement.classList.toggle("dark", darkMode);
+    document.documentElement.classList.toggle("light", !darkMode);
     writeStorage("darkMode", darkMode.toString());
   }, [darkMode]);
 

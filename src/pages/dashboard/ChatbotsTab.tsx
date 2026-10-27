@@ -124,6 +124,7 @@ const ChatbotsTab: React.FC<ChatbotsTabProps> = ({
       ) : !hasChatbots ? (
         <div className="rounded-xl border border-dashed border-[#C9D3E0] dark:border-[#39485B]">
           <EmptyState
+            kio
             icon={Bot}
             title={t("noChatbotsTitle")}
             description={t("noChatbotsDesc")}

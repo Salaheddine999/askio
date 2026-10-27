@@ -1,4 +1,4 @@
-import React from "react";
+import React, { lazy, Suspense } from "react";
 import { Link } from "react-router-dom";
 import { Menu } from "@headlessui/react";
 import {
@@ -249,21 +249,34 @@ export const Pagination: React.FC<{
   );
 };
 
+// Kio is loaded only where an empty state shows it.
+const LiveOrb = lazy(() => import("../../components/LiveOrb").then((m) => ({ default: m.LiveOrb })));
+
 export const EmptyState: React.FC<{
   icon: LucideIcon;
   title: string;
   description: string;
   action?: React.ReactNode;
   compact?: boolean;
-}> = ({ icon: Icon, title, description, action, compact }) => (
+  /** Show Kio, looking around, instead of the icon: for "nothing yet" moments. */
+  kio?: boolean;
+}> = ({ icon: Icon, title, description, action, compact, kio }) => (
   <div
     className={`flex flex-col items-center justify-center px-6 text-center ${
       compact ? "py-10" : "py-16"
     }`}
   >
-    <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl border border-[#D8DFE9] bg-[#F3F7FC] dark:border-[#2B3646] dark:bg-[#141D2B]">
-      <Icon size={22} className="text-[#566273] dark:text-[#9BAABD]" strokeWidth={1.75} />
-    </div>
+    {kio ? (
+      <div className="mb-4 h-12 w-12">
+        <Suspense fallback={null}>
+          <LiveOrb size={48} />
+        </Suspense>
+      </div>
+    ) : (
+      <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl border border-[#D8DFE9] bg-[#F3F7FC] dark:border-[#2B3646] dark:bg-[#141D2B]">
+        <Icon size={22} className="text-[#566273] dark:text-[#9BAABD]" strokeWidth={1.75} />
+      </div>
+    )}
     <h3 className="text-body font-semibold text-[#101723] dark:text-[#D7DFE5]">{title}</h3>
     <p className="mt-1 max-w-sm text-body-sm text-[#566273] dark:text-[#9BAABD]">{description}</p>
     {action && <div className="mt-6">{action}</div>}

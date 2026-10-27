@@ -404,7 +404,7 @@ const Conversations: React.FC<{ testMode?: boolean }> = ({ testMode = false }) =
     body = (
       <div className={surface}>
         {anySaving ? (
-          <EmptyState icon={MessagesSquare} title={t("emptyTitle")} description={t("emptyBody")} />
+          <EmptyState kio icon={MessagesSquare} title={t("emptyTitle")} description={t("emptyBody")} />
         ) : (
           <EmptyState
             icon={MessagesSquare}

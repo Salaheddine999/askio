@@ -133,6 +133,7 @@ const NotificationsTab: React.FC<NotificationsTabProps> = ({ notifications, load
           <RowsSkeleton rows={5} />
         ) : filtered.length === 0 ? (
           <EmptyState
+            kio
             icon={BellOff}
             title={filter === "all" ? t("allCaughtUp") : t("nothingHereYet")}
             description={t("notificationsEmptyDesc")}

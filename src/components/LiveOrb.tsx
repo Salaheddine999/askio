@@ -11,7 +11,9 @@
  * supersampling, lighting for depth (`depth`), and a gaze that eases with
  * distance so it tracks the pointer across the page, plus `mood` so a host
  * can make the orb look like it is thinking or listening, and `lookAt` to aim
- * the gaze at something on purpose (with a blink as it turns).
+ * the gaze at something on purpose (with a blink as it turns). `happy` and
+ * `unsure` are short reactions: arched, smiling eyes, or a glance down and
+ * away. On touch screens the eyes turn toward taps and the scroll direction.
  */
 
 import { useEffect, useRef, useState } from "react"
@@ -21,7 +23,7 @@ export type LiveOrbVariant = "white" | "black" | "webgl" | "custom"
 
 export type LiveOrbTheme = "light" | "dark" | "auto"
 
-export type LiveOrbMood = "idle" | "thinking" | "listening"
+export type LiveOrbMood = "idle" | "thinking" | "listening" | "happy" | "unsure"
 
 export type LiveOrbOptions = {
   /**
@@ -52,7 +54,9 @@ export type LiveOrbOptions = {
   depth?: boolean
   /**
    * `thinking` glances up and from side to side, `listening` looks down
-   * (toward an input below). Both take over from the pointer. Default `idle`.
+   * (toward an input below), `happy` arches the eyes into a smile and
+   * `unsure` glances down and away, squinting one eye. All take over from
+   * the pointer. Default `idle`.
    */
   mood?: LiveOrbMood
   /**
@@ -133,6 +137,8 @@ uniform float u_time;
 uniform float u_speed;
 uniform vec2 u_look;
 uniform float u_blink;
+uniform float u_happy;
+uniform float u_unsure;
 uniform float u_mode;
 uniform float u_depth;
 uniform vec3 u_body;
@@ -179,12 +185,17 @@ vec3 orient(vec3 p, vec2 look) {
   return vec3(q.x * cy + q.z * sy, q.y, -q.x * sy + q.z * cy);
 }
 
-float eyeMask(vec3 n, vec3 e, vec3 right, vec3 up, float halfH, float rad, float aa) {
+float eyeMask(vec3 n, vec3 e, vec3 right, vec3 up, float halfH, float rad, float aa, float happy) {
   float facing = dot(n, e);
   float x = dot(n, right) - dot(e, right);
-  float y = dot(n, up) - dot(e, up);
-  y -= clamp(y, -halfH, halfH);
-  float d = length(vec2(x, y)) - rad;
+  float y0 = dot(n, up) - dot(e, up);
+  float y = y0 - clamp(y0, -halfH, halfH);
+  float capsule = length(vec2(x, y)) - rad;
+  // Happy eyes: the upper half of a ring, like ^ ^. The two shapes blend,
+  // so the eyes morph into the smile and back.
+  vec2 q = vec2(x, y0 + 0.06);
+  float arch = max(abs(length(q) - 0.13) - 0.048, -q.y);
+  float d = mix(capsule, arch, happy);
   float fill = 1.0 - smoothstep(-aa, aa, d);
   return fill * smoothstep(0.12, 0.32, facing);
 }
@@ -232,9 +243,11 @@ void main() {
 
   float halfH = mix(0.128, 0.012, u_blink);
   float rad = mix(0.054, 0.062, u_blink);
+  // Unsure squints one eye, like a raised eyebrow on the other.
+  float halfL = halfH * (1.0 - 0.6 * u_unsure);
   float eyes = max(
-    eyeMask(n, eL, right, up, halfH, rad, aa),
-    eyeMask(n, eR, right, up, halfH, rad, aa)
+    eyeMask(n, eL, right, up, halfL, rad, aa, u_happy),
+    eyeMask(n, eR, right, up, halfH, rad, aa, u_happy)
   );
 
   vec3 body = u_mode > 0.5 ? wash(n, u_time * u_speed) : u_body;
@@ -359,6 +372,12 @@ const MAX_LOOK = 0.72
 const LISTEN_LOOK = { x: 0, y: -0.5 }
 /** Where a thinking gaze holds under reduced motion. */
 const THINK_REST_LOOK = { x: 0.3, y: 0.45 }
+/** A smile looks straight at you, a touch up. */
+const HAPPY_LOOK = { x: 0, y: 0.14 }
+/** Unsure looks down and away, like someone who doesn't know. */
+const UNSURE_LOOK = { x: -0.36, y: -0.34 }
+/** How far, in CSS pixels, a scroll "points" the gaze on touch screens. */
+const SCROLL_LOOK_PX = 320
 
 /**
  * Evenly lit sphere with two capsule eyes that follow the pointer and look
@@ -404,6 +423,8 @@ export function createLiveOrb(
   let uSpeed: WebGLUniformLocation | null = null
   let uLook: WebGLUniformLocation | null = null
   let uBlink: WebGLUniformLocation | null = null
+  let uHappy: WebGLUniformLocation | null = null
+  let uUnsure: WebGLUniformLocation | null = null
   let uMode: WebGLUniformLocation | null = null
   let uDepth: WebGLUniformLocation | null = null
   let uBody: WebGLUniformLocation | null = null
@@ -451,6 +472,8 @@ export function createLiveOrb(
     uSpeed = gl.getUniformLocation(prog, "u_speed")
     uLook = gl.getUniformLocation(prog, "u_look")
     uBlink = gl.getUniformLocation(prog, "u_blink")
+    uHappy = gl.getUniformLocation(prog, "u_happy")
+    uUnsure = gl.getUniformLocation(prog, "u_unsure")
     uMode = gl.getUniformLocation(prog, "u_mode")
     uDepth = gl.getUniformLocation(prog, "u_depth")
     uBody = gl.getUniformLocation(prog, "u_body")
@@ -481,6 +504,9 @@ export function createLiveOrb(
   let pointerAt = -Infinity
   // Set when `lookAt` starts, so the next frame schedules a blink.
   let blinkSoon = false
+  // How far the face is into each reaction, eased from 0 to 1 and back.
+  let happy = 0
+  let unsure = 0
 
   /** Returns whether the backing size changed (which clears the canvas). */
   const resize = () => {
@@ -526,14 +552,15 @@ export function createLiveOrb(
     tick(last)
   }
 
-  const onMove = (e: PointerEvent) => {
+  /** Aims the gaze at a point on the page, in viewport pixels. */
+  const lookToward = (clientX: number, clientY: number) => {
     if (!options.interactive) return
     const parent = canvas.parentElement
     if (!parent) return
     const rect = parent.getBoundingClientRect()
     if (rect.width <= 0 || rect.height <= 0) return
-    const dx = e.clientX - (rect.left + rect.width / 2)
-    const dy = rect.top + rect.height / 2 - e.clientY
+    const dx = clientX - (rect.left + rect.width / 2)
+    const dy = rect.top + rect.height / 2 - clientY
     const dist = Math.hypot(dx, dy)
     // The gaze strengthens with distance instead of maxing out just outside
     // the orb, so the eyes keep tracking the pointer across the page.
@@ -545,7 +572,33 @@ export function createLiveOrb(
     // While moving the loop is already queued; a still frame follows the gaze.
     if (onScreen) wake()
   }
+  const onMove = (e: PointerEvent) => lookToward(e.clientX, e.clientY)
   window.addEventListener("pointermove", onMove, { passive: true })
+
+  // Touch screens have no hovering pointer, so the eyes turn toward taps and
+  // follow the scroll: down while the page moves on, up when it comes back.
+  const touchOnly = window.matchMedia("(hover: none)")
+  const onTap = (e: PointerEvent) => {
+    if (e.pointerType !== "mouse") lookToward(e.clientX, e.clientY)
+  }
+  window.addEventListener("pointerdown", onTap, { passive: true })
+  let lastScrollY = window.scrollY
+  let scrollFrame = 0
+  const onScroll = () => {
+    if (scrollFrame) return
+    scrollFrame = requestAnimationFrame(() => {
+      scrollFrame = 0
+      const delta = window.scrollY - lastScrollY
+      lastScrollY = window.scrollY
+      if (!touchOnly.matches || Math.abs(delta) < 2) return
+      const rect = canvas.getBoundingClientRect()
+      lookToward(
+        rect.left + rect.width / 2,
+        rect.top + rect.height / 2 + Math.sign(delta) * SCROLL_LOOK_PX
+      )
+    })
+  }
+  window.addEventListener("scroll", onScroll, { passive: true })
 
   const tick = (now: number) => {
     raf = 0
@@ -585,7 +638,14 @@ export function createLiveOrb(
       goal = reduce
         ? THINK_REST_LOOK
         : { x: Math.sin(clock / 650) * 0.42, y: 0.45 + Math.sin(clock / 1100) * 0.06 }
+    } else if (mood === "happy") {
+      goal = HAPPY_LOOK
+    } else if (mood === "unsure") {
+      goal = UNSURE_LOOK
     }
+    const react = live ? 0.18 : 1
+    happy += ((mood === "happy" ? 1 : 0) - happy) * react
+    unsure += ((mood === "unsure" ? 1 : 0) - unsure) * react
     // A still frame skips the easing and shows where the gaze settles.
     const ease = live ? (steering ? 0.16 : 0.1) : 1
     look.x += (goal.x - look.x) * ease
@@ -606,6 +666,8 @@ export function createLiveOrb(
       else if (bt < 0.1) b = 1
       else if (bt < 0.18) b = 1 - (bt - 0.1) / 0.08
     }
+    // No blinking mid-smile.
+    b *= 1 - happy
     const body = hexToRgb(resolved.body)
     const eye = hexToRgb(resolved.eye)
     const palette = [0, 1, 2].map((i) =>
@@ -621,6 +683,8 @@ export function createLiveOrb(
     gl.uniform1f(uSpeed, reduce ? 0 : 0.55)
     gl.uniform2f(uLook, look.x, look.y)
     gl.uniform1f(uBlink, b)
+    gl.uniform1f(uHappy, happy)
+    gl.uniform1f(uUnsure, unsure)
     gl.uniform1f(uMode, resolved.mode)
     gl.uniform1f(uDepth, options.depth === false ? 0 : 1)
     gl.uniform3f(uBody, body[0], body[1], body[2])
@@ -696,6 +760,9 @@ export function createLiveOrb(
       mqReduce.removeEventListener("change", onReduce)
       unwatchTheme()
       window.removeEventListener("pointermove", onMove)
+      window.removeEventListener("pointerdown", onTap)
+      window.removeEventListener("scroll", onScroll)
+      cancelAnimationFrame(scrollFrame)
       canvas.removeEventListener("webglcontextlost", onLost)
       canvas.removeEventListener("webglcontextrestored", onRestored)
       if (lost) canvas.style.visibility = ""

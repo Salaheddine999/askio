@@ -411,6 +411,7 @@ export default function Analytics({ testMode = false }: AnalyticsProps) {
         {chatbots.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-[#C9D3E0] bg-[#F9FCFF]/60 dark:border-[#39485B] dark:bg-[#1A2533]/40">
             <EmptyState
+              kio
               icon={BarChart3}
               title={t("noChatbotsTitle")}
               description={t("noChatbotsDescription")}
@@ -652,6 +653,7 @@ export default function Analytics({ testMode = false }: AnalyticsProps) {
               ) : (
                 <EmptyState
                   compact
+                  kio
                   icon={Inbox}
                   title={t("noLeadsTitle")}
                   description={t("noLeadsDescription")}

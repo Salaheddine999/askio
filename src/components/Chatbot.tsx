@@ -96,6 +96,24 @@ const Chatbot: React.FC<ChatbotProps> = ({
   // misses in a row don't repeat the button.
   const lastFallbackIndex = messages.reduce((last, m, i) => (m.isFallback ? i : last), -1);
 
+  // Kio reacts for a moment: a smile for a thumbs up or a sent email, an
+  // unsure glance when it can't answer.
+  const [reaction, setReaction] = useState<"happy" | "unsure" | null>(null);
+  const reactionTimer = useRef<number>();
+  const react = (next: "happy" | "unsure") => {
+    window.clearTimeout(reactionTimer.current);
+    setReaction(next);
+    reactionTimer.current = window.setTimeout(() => setReaction(null), 1800);
+  };
+  useEffect(() => () => window.clearTimeout(reactionTimer.current), []);
+  const seenMessages = useRef(0);
+  useEffect(() => {
+    const added = messages.length > seenMessages.current;
+    seenMessages.current = messages.length;
+    const last = messages[messages.length - 1];
+    if (added && last?.sender === "bot" && (last.isFallback || last.isLeadCapture)) react("unsure");
+  }, [messages]);
+
   // One conversation per chatbot per browser tab, so moving between pages of
   // the owner's site continues the same saved conversation.
   const sessionId = useMemo(() => {
@@ -258,6 +276,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
         await record("lead", { email: leadEmail.trim(), anonymousToken, sessionId });
       }
       setIsTyping(false);
+      react("happy");
       setMessages((prev) => [
         ...prev,
         { text: t("leadThanks"), sender: "bot" }
@@ -660,6 +679,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
 
       localStorage.setItem(`feedback_${id}`, "true");
       setHasFeedback(true);
+      react(isPositive ? "happy" : "unsure");
       toast.success(t("feedbackThanks"));
       setShowFeedback(false);
     } catch (error) {
@@ -676,7 +696,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
 
   // With the orb launcher, the orb carries into the chat as the bot's face.
   const useOrb = launcherStyle === "orb";
-  const orbMood = isTyping ? "thinking" : inputFocused && input.trim() ? "listening" : "idle";
+  const orbMood = isTyping ? "thinking" : reaction ?? (inputFocused && input.trim() ? "listening" : "idle");
   const statusText = !useOrb ? t("readyToChat") : orbMood === "thinking" ? t("thinking") : orbMood === "listening" ? t("listening") : t("readyToChat");
 
   const isLeftPosition = position.endsWith("left");
