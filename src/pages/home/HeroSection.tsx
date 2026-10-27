@@ -1,9 +1,7 @@
 import { ArrowRight } from "lucide-react";
-import { Link } from "react-router-dom";
-import { FaGithub } from "react-icons/fa";
 import { motion } from "framer-motion";
 import brandLogo from "../../assets/logo.svg";
-import { ghostCta, primaryCta } from "./buttonStyles";
+import KioCta from "./KioCta";
 
 export default function HeroSection() {
   const sectionBorder = "border-b border-[rgba(16,23,35,0.12)] dark:border-[#2B3646]";
@@ -39,24 +37,10 @@ export default function HeroSection() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.2 }}
-        className="w-full flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-5 px-6 mb-10 sm:mb-14"
+        className="w-full flex flex-col items-center justify-center gap-3 px-6 mb-10 sm:mb-14"
       >
-        <Link
-          to="/auth"
-          className={`${primaryCta} w-full max-w-[264px] sm:w-auto`}
-          aria-label="Start using Askio for free"
-        >
-          Start for free
-          <ArrowRight className="h-4 w-4" />
-        </Link>
-        <Link
-          to="https://github.com/Salaheddine999/askio"
-          className={ghostCta}
-          aria-label="Star Askio on GitHub"
-        >
-          <FaGithub className="h-4 w-4" />
-          Star on GitHub
-        </Link>
+        <KioCta className="w-full max-w-[280px] sm:w-auto">Create your chatbot</KioCta>
+        <p className="text-caption text-[#647184] dark:text-[#9BAABD]">Free plan · No credit card needed</p>
       </motion.div>
 
       {/* Dashboard Screenshot */}

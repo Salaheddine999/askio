@@ -1,10 +1,10 @@
-import { ArrowRight, Check } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Check } from "lucide-react";
 import { useInView } from "react-intersection-observer";
 import { motion, useReducedMotion } from "framer-motion";
 import HatchStrip from "./HatchStrip";
 import brandLogo from "../../assets/logo.svg";
-import { ghostCta, primaryCta } from "./buttonStyles";
+import { ghostCta } from "./buttonStyles";
+import KioCta from "./KioCta";
 
 const TRUST_POINTS = ["Free plan", "No credit card", "Live in minutes"];
 
@@ -62,14 +62,7 @@ export default function CTASection() {
             Start with your FAQs. Add your branding. Put your first chatbot on your website without writing code.
           </p>
           <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4">
-            <Link
-              to="/auth"
-              className={primaryCta}
-              aria-label="Get started with Askio for free"
-            >
-              Build my free chatbot
-              <ArrowRight className="h-4 w-4" />
-            </Link>
+            <KioCta>Build my free chatbot</KioCta>
             <a
               href="#how-it-works"
               className={ghostCta}

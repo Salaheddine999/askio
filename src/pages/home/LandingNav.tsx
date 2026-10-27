@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { Menu, X } from "lucide-react";
+import { Menu, Star, X } from "lucide-react";
+import { FaGithub } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import BrandLogo from "../../components/BrandLogo";
@@ -9,6 +10,7 @@ export default function LandingNav() {
   const [scrolled, setScrolled] = useState(false);
   const reduceMotion = useReducedMotion();
   const focusRing = "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#87909D]";
+  const githubUrl = "https://github.com/Salaheddine999/askio";
 
   const navLinks = [
     { label: "Features", href: "#features" },
@@ -65,6 +67,17 @@ export default function LandingNav() {
           ))}
         </div>
         <div className="ml-auto flex items-center gap-1 md:ml-0 md:justify-self-end">
+          <a
+            href={githubUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Star Askio on GitHub"
+            title="Star Askio on GitHub"
+            className={`group inline-flex h-8 items-center gap-1 rounded-full px-2 text-[#566273] hover:bg-[#E7EDF6]/80 hover:text-[#101723] dark:text-[#9BAABD] dark:hover:bg-[#243040] dark:hover:text-[#D7DFE5] transition-colors duration-150 motion-reduce:transition-none ${focusRing}`}
+          >
+            <FaGithub className="h-[18px] w-[18px]" />
+            <Star className="h-3.5 w-3.5 transition-colors group-hover:fill-[#E3A008] group-hover:text-[#E3A008]" />
+          </a>
           <Link
             to="/auth"
             className="inline-flex h-8 items-center justify-center px-4 bg-[#F9FCFF] dark:bg-[#1A2533] shadow-[0_1px_2px_rgba(16,23,35,0.06)] dark:shadow-none rounded-full text-[#101723] dark:text-[#D7DFE5] text-button font-medium hover:bg-[#E7EDF6] dark:hover:bg-[#243040] transition-colors duration-200 border border-[#D8DFE9]/70 dark:border-[#2B3646] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#87909D]"
