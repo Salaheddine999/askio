@@ -1,7 +1,9 @@
 import { ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
 import brandLogo from "../../assets/logo.svg";
-import KioCta from "./KioCta";
+import { Link } from "react-router-dom";
+import { BrandIcon } from "../../components/BrandLogo";
+import { ctaChip, primaryCta } from "./buttonStyles";
 
 export default function HeroSection() {
   const sectionBorder = "border-b border-[rgba(16,23,35,0.12)] dark:border-[#2B3646]";
@@ -39,7 +41,17 @@ export default function HeroSection() {
         transition={{ duration: 0.5, delay: 0.2 }}
         className="w-full flex flex-col items-center justify-center gap-3 px-6 mb-10 sm:mb-14"
       >
-        <KioCta className="w-full max-w-[280px] sm:w-auto">Create your chatbot</KioCta>
+        <Link to="/auth" className={primaryCta}>
+          Create your chatbot
+          {/* On hover the arrow slides out and Askio's bubble slides in, as if
+              a chat is starting. */}
+          <span className={ctaChip} aria-hidden="true">
+            <ArrowRight className="h-4 w-4 transition-[transform,opacity] duration-300 ease-out group-hover:translate-x-6 group-hover:opacity-0 group-focus-visible:translate-x-6 group-focus-visible:opacity-0 motion-reduce:transition-none" />
+            <span className="absolute inset-0 flex -translate-x-6 items-center justify-center opacity-0 transition-[transform,opacity] duration-300 ease-out group-hover:translate-x-0 group-hover:opacity-100 group-focus-visible:translate-x-0 group-focus-visible:opacity-100 motion-reduce:transition-none">
+              <BrandIcon size={13} />
+            </span>
+          </span>
+        </Link>
         <p className="text-caption text-[#647184] dark:text-[#9BAABD]">Free plan · No credit card needed</p>
       </motion.div>
 
