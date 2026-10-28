@@ -2,7 +2,6 @@ import { useEffect } from "react";
 import { Helmet } from "react-helmet-async";
 import LandingNav from "./LandingNav";
 import HeroSection from "./HeroSection";
-import DemoSection from "./DemoSection";
 import FeaturesSection from "./FeaturesSection";
 import LiveOrbSection from "./LiveOrbSection";
 import PlansSection from "./PlansSection";
@@ -57,8 +56,6 @@ export default function ChatbotLanding() {
         <LiveOrbSection />
         <PlansSection />
         <HowItWorks />
-        {/* Right after the three steps: watch them happen on your own site. */}
-        <DemoSection />
         <TestimonialsSection />
         <FAQSection />
         <CTASection />

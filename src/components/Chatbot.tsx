@@ -54,8 +54,6 @@ export interface ChatbotProps {
   faqData: Array<{ question: string; answer: string; suggested?: boolean; buttonLabel?: string; buttonUrl?: string }>;
   isEmbedded?: boolean;
   isPreview?: boolean;
-  /** Open the chat right away instead of showing the launcher (the homepage demo). */
-  startOpen?: boolean;
   isActive?: boolean;
   customPositionClass?: string;
   gradientStart?: string;
@@ -114,7 +112,6 @@ const Chatbot: React.FC<ChatbotProps> = ({
   greetingBubble = false,
   pageGreetings,
   isPreview = false,
-  startOpen = false,
   language,
   saveConversations = false,
   liveChat = false,
@@ -213,7 +210,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [messages]);
   const [input, setInput] = useState("");
-  const [isOpen, setIsOpen] = useState(!isEmbedded || startOpen);
+  const [isOpen, setIsOpen] = useState(!isEmbedded);
   // The widget opens on a home screen (greeting, popular questions); the
   // chat takes over once the visitor asks something.
   const [view, setView] = useState<"home" | "chat">("home");

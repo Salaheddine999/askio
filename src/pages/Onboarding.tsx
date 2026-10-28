@@ -1,5 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
-import { DEMO_KEY } from "../utils/demo";
+import React, { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { toast } from "react-hot-toast";
@@ -114,32 +113,6 @@ const Onboarding: React.FC = () => {
   const [scanning, setScanning] = useState(false);
   const [saving, setSaving] = useState(false);
   const [showErrors, setShowErrors] = useState(false);
-
-  // Came from the homepage demo: start from what it built on their site,
-  // at the questions step.
-  useEffect(() => {
-    let demo: { host?: string; site?: { title?: string; color?: string }; faqs?: { question: string; answer: string }[]; savedAt?: number } | null = null;
-    try {
-      demo = JSON.parse(localStorage.getItem(DEMO_KEY) || "null");
-      localStorage.removeItem(DEMO_KEY);
-    } catch {
-      demo = null;
-    }
-    if (!demo?.faqs?.length || Date.now() - (demo.savedAt ?? 0) > 86_400_000) return;
-    const name = (demo.site?.title || demo.host || "").slice(0, LIMITS.name);
-    const color = /^#[0-9a-f]{6}$/i.test(demo.site?.color || "") ? demo.site!.color! : null;
-    setBusinessName(name);
-    setWebsite(demo.host || "");
-    setFaqs(demo.faqs.map((f) => ({ question: f.question, answer: f.answer, selected: true })));
-    setConfig((c) => ({
-      ...c,
-      name: name,
-      title: name.slice(0, LIMITS.title),
-      launcherStyle: "orb",
-      ...(color ? { primaryColor: color, secondaryColor: color } : {}),
-    }));
-    setStep(2);
-  }, []);
 
   const selected = faqs.filter((f) => f.selected);
   const unfinished = selected.filter((f) => hasPlaceholder(f.question) || hasPlaceholder(f.answer)).length;

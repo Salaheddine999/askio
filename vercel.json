@@ -4,7 +4,7 @@
       "maxDuration": 60
     },
     "api/ai/[action].js": {
-      "maxDuration": 60
+      "maxDuration": 20
     }
   },
   "regions": [
