@@ -309,8 +309,8 @@ export default function PrivacyPolicy() {
 
       <Section id="children" title="11. Children">
         <p>
-          Askio is a service for businesses and isn't intended for anyone under 16. We don't knowingly collect data from
-          children. If you think a child has given us personal data, contact us and we'll delete it.
+          Askio is a service for businesses, and you must be at least 18 to create an account. We don't knowingly collect
+          data from children. If you think a child has given us personal data, contact us and we'll delete it.
         </p>
       </Section>
 
