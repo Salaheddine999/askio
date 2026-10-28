@@ -53,11 +53,12 @@ export default function ChatbotLanding() {
         <LandingNav />
         <HeroSection />
         <MarqueeStrip />
-        <DemoSection />
         <FeaturesSection />
         <LiveOrbSection />
         <PlansSection />
         <HowItWorks />
+        {/* Right after the three steps: watch them happen on your own site. */}
+        <DemoSection />
         <TestimonialsSection />
         <FAQSection />
         <CTASection />

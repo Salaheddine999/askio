@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { useInView } from "react-intersection-observer";
 import { Globe, Loader2 } from "lucide-react";
 import Badge from "./Badge";
-import { ArrowBubble } from "./MainCta";
+import MainCta, { ArrowBubble } from "./MainCta";
 import { primaryCta } from "./buttonStyles";
 import { DEMO_KEY, type DemoResult } from "../../utils/demo";
 
@@ -21,6 +21,8 @@ export default function DemoSection() {
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState(0);
   const [error, setError] = useState("");
+  // The demo can't run right now (daily limit, AI busy): offer sign-up instead.
+  const [busy, setBusy] = useState("");
   const [result, setResult] = useState<DemoResult | null>(null);
 
   useEffect(() => {
@@ -37,6 +39,7 @@ export default function DemoSection() {
       return;
     }
     setError("");
+    setBusy("");
     setLoading(true);
     try {
       const response = await fetch("/api/ai/demo", {
@@ -45,10 +48,16 @@ export default function DemoSection() {
         body: JSON.stringify({ url: address }),
       });
       const data = await response.json().catch(() => ({}));
+      if (data.busy || response.status === 429 || response.status >= 500) {
+        setBusy(data.error || "The demo is busy right now.");
+        return;
+      }
       if (!response.ok) throw new Error(data.error || "That didn't work. Try again in a moment.");
       setResult(data as DemoResult);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "That didn't work. Try again in a moment.");
+      // Offline or the server unreachable reads as busy too.
+      if (!(err instanceof Error) || err.name === "TypeError") setBusy("The demo is busy right now.");
+      else setError(err.message);
     } finally {
       setLoading(false);
     }
@@ -120,6 +129,18 @@ export default function DemoSection() {
             ) : null}
           </p>
         </div>
+
+        {busy && !result && (
+          <div className="mx-auto mt-8 flex max-w-[520px] flex-col items-center gap-4 rounded-2xl border border-[#D8DFE9] bg-[#F9FCFF] px-6 py-7 text-center dark:border-[#2B3646] dark:bg-[#1A2533]">
+            <div>
+              <p className="text-body font-semibold text-[#101723] dark:text-[#E7EDF6]">{busy}</p>
+              <p className="mt-1 text-body-sm text-[#566273] dark:text-[#9BAABD]">
+                Create your chatbot free instead. It takes a few minutes, with no coding.
+              </p>
+            </div>
+            <MainCta>Create your chatbot</MainCta>
+          </div>
+        )}
 
         {result && (
           <div className="mx-auto mt-10 max-w-[900px]">

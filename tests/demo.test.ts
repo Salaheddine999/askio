@@ -8,6 +8,7 @@ const fake = vi.hoisted(() => ({
   faqs: [] as unknown[],
   html: "",
   generated: 0,
+  aiDown: false,
 }));
 
 vi.mock("firebase-admin/firestore", () => ({ FieldValue: { serverTimestamp: () => ({ toMillis: () => Date.now() }) } }));
@@ -25,6 +26,7 @@ vi.mock("../api/_lib/firebaseAdmin.js", () => ({
 vi.mock("../api/_lib/ai.js", () => ({
   generateFaqsFromUrl: async () => {
     fake.generated++;
+    if (fake.aiDown) throw Object.assign(new Error("The AI is at its usage limit right now."), { statusCode: 503, aiStatus: 429, expected: true });
     return fake.faqs;
   },
 }));
@@ -52,6 +54,8 @@ beforeEach(() => {
   fake.faqs = [{ question: "Do you ship to Belgium?", answer: "Yes, in 2 to 3 days." }];
   fake.html = `<html><head><title>Fallback</title><meta property="og:site_name" content="Sofa &amp; Co"><meta property="og:image" content="/hero.jpg"><meta name="theme-color" content="#2a6"><link rel="icon" href="https://shop.example/icon.png"></head></html>`;
   fake.generated = 0;
+  fake.aiDown = false;
+  delete process.env.DEMO_DAILY_LIMIT;
 });
 
 describe("demoUrl", () => {
@@ -101,6 +105,15 @@ describe("POST /api/ai/demo", () => {
     const limited = res();
     await demo(ask("other.example"), limited);
     expect(limited.statusCode).toBe(429);
+    expect(limited.body).toMatchObject({ busy: true });
+  });
+
+  it("answers busy, not with an error, when the AI can't help right now", async () => {
+    fake.aiDown = true;
+    const r = res();
+    await demo(ask("busy.example"), r);
+    expect(r.statusCode).toBe(503);
+    expect(r.body).toEqual({ busy: true, error: "The demo is busy right now." });
   });
 
   it("says so when there's nothing to write answers from", async () => {

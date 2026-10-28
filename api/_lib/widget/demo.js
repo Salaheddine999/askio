@@ -5,6 +5,7 @@ import { assertPublicUrl, safeFetch } from "../safeFetch.js";
 import { takeRateLimit, visitorKey } from "../rateLimit.js";
 import { sendError } from "../response.js";
 import { noteAiFailure } from "../aiHealth.js";
+import { reportError } from "../monitoring.js";
 
 // POST /api/ai/demo { url }: the homepage's "see it on your website". Reads a
 // visitor's site and returns what Askio would look like there: its name,
@@ -14,7 +15,12 @@ import { noteAiFailure } from "../aiHealth.js";
 
 const DAY_MS = 86_400_000;
 const PER_VISITOR = 3;
-const PER_DAY = 100;
+// New sites a day across all visitors. DEMO_DAILY_LIMIT raises it once Gemini
+// billing is on; the default stays within the free tier's few dozen calls.
+const perDay = () => {
+  const n = Number.parseInt(process.env.DEMO_DAILY_LIMIT || "", 10);
+  return Number.isFinite(n) && n >= 0 ? n : 15;
+};
 const CACHE_MS = 7 * DAY_MS;
 const MAX_FAQS = 6;
 
@@ -109,10 +115,14 @@ export default async function demo(req, res) {
 
     const [visitorOk, dayOk] = await Promise.all([
       takeRateLimit(`demo_v_${visitorKey(req)}`, PER_VISITOR, DAY_MS),
-      takeRateLimit("demo_all", PER_DAY, DAY_MS),
+      takeRateLimit("demo_all", perDay(), DAY_MS),
     ]);
-    if (!visitorOk || !dayOk) {
-      return res.status(429).json({ error: "You've tried a few sites already today. Sign up free to keep going." });
+    // "busy" tells the page to offer sign-up instead of a dead end.
+    if (!visitorOk) {
+      return res.status(429).json({ busy: true, error: "You've tried a few sites already today." });
+    }
+    if (!dayOk) {
+      return res.status(429).json({ busy: true, error: "The demo is busy right now." });
     }
 
     let faqs;
@@ -134,6 +144,13 @@ export default async function demo(req, res) {
     return res.status(200).json({ host: target.host, site, faqs: cleaned });
   } catch (error) {
     console.error("Demo failed:", error.message);
+    // Our side failed (the AI out of quota, slow, or a bug): the same
+    // friendly way out as a busy day. Real bugs still reach Sentry.
+    const status = error.statusCode || 500;
+    if (status >= 500) {
+      if (status !== 503 && !error.expected) reportError(error, { route: "demo" });
+      return res.status(503).json({ busy: true, error: "The demo is busy right now." });
+    }
     return sendError(res, error);
   }
 }
