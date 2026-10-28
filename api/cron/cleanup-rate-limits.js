@@ -30,6 +30,7 @@ async function deleteWhere(query, budget) {
  * needing a Google Cloud billing account. It deletes:
  * - rate-limit records (hashed IP and chatbot counters) whose `expiresAt` has passed;
  * - hourly AI failure counters, the same way;
+ * - homepage demo results older than a week;
  * - saved conversations with no message for 90 days.
  * It also emails owners whose new chatbot isn't on a website yet.
  *
@@ -52,13 +53,18 @@ async function handler(req, res) {
       adminDb.collection("ops").where("expiresAt", "<", Timestamp.now()),
       MAX_PER_RUN - rateLimits
     );
+    // Homepage demo results, kept a week per site (see widget/demo.js).
+    const demos = await deleteWhere(
+      adminDb.collection("demo_cache").where("createdAt", "<", Timestamp.fromMillis(Date.now() - 7 * 86_400_000)),
+      MAX_PER_RUN - rateLimits - aiCounters
+    );
     const cutoff = Timestamp.fromMillis(Date.now() - CONVERSATION_DAYS * 86_400_000);
     const conversations = await deleteWhere(
       adminDb.collection("conversations").where("lastMessageAt", "<", cutoff),
-      MAX_PER_RUN - rateLimits - aiCounters
+      MAX_PER_RUN - rateLimits - aiCounters - demos
     );
     const setupReminders = await sendSetupReminders();
-    return res.status(200).json({ deleted: rateLimits + aiCounters + conversations, rateLimits, aiCounters, conversations, setupReminders });
+    return res.status(200).json({ deleted: rateLimits + aiCounters + demos + conversations, rateLimits, aiCounters, demos, conversations, setupReminders });
   } catch (error) {
     console.error("Cleanup failed:", error);
     return sendError(res, error);

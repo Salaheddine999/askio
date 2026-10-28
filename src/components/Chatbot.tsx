@@ -1,6 +1,8 @@
 import brandLogo from "../assets/logo.svg";
 import React, { useState, useEffect, useRef, useMemo } from "react";
-import { X, ThumbsUp, ThumbsDown, MessageSquare, Sparkles, Bot, UserRound, ArrowUp, ChevronLeft, ChevronRight, CircleCheck } from "lucide-react";
+import { FaFacebookMessenger, FaInstagram, FaTelegramPlane, FaWhatsapp } from "react-icons/fa";
+import { pageGreetingFor, type PageGreeting } from "../utils/pageGreetings";
+import { X, ThumbsUp, ThumbsDown, MessageSquare, Sparkles, Bot, UserRound, ArrowUp, ChevronLeft, ChevronRight, CircleCheck, ExternalLink } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Fuse from "fuse.js";
 import { db } from "../utils/db";
@@ -12,7 +14,7 @@ import { LiveOrb } from "./LiveOrb";
 import { headerOrbPropsFor, orbPropsFor, type LauncherStyle } from "../utils/orbColors";
 import { isOwnerBrowsing } from "../utils/ownerSession";
 import { isPresenceOnline, LIVE_WAIT_MS, type LiveStatus } from "../utils/liveChat";
-import { normalizeContactLink } from "../utils/links";
+import { contactChannel, normalizeContactLink, withWhatsAppText, type ContactChannel } from "../utils/links";
 import { pickSuggested, SUGGESTED_QUESTIONS as MAX_SUGGESTIONS } from "../utils/suggestions";
 import { isLang, makeT, type Lang } from "../i18n";
 import { widgetMessages } from "../i18n/widget";
@@ -26,6 +28,8 @@ type Message = {
   name?: string;
   /** The FAQ question an answer came from, shown under it. */
   source?: string;
+  /** That FAQ's button ("Track my order"), shown under the answer. */
+  action?: { label: string; href: string };
 };
 
 /** How long a "typing" signal stays on screen, and how often one is sent. */
@@ -47,9 +51,11 @@ export interface ChatbotProps {
   position: "bottom-right" | "bottom-left" | "top-right" | "top-left";
   initialMessage: string;
   placeholder: string;
-  faqData: Array<{ question: string; answer: string; suggested?: boolean }>;
+  faqData: Array<{ question: string; answer: string; suggested?: boolean; buttonLabel?: string; buttonUrl?: string }>;
   isEmbedded?: boolean;
   isPreview?: boolean;
+  /** Open the chat right away instead of showing the launcher (the homepage demo). */
+  startOpen?: boolean;
   isActive?: boolean;
   customPositionClass?: string;
   gradientStart?: string;
@@ -61,6 +67,8 @@ export interface ChatbotProps {
   aiEnabled?: boolean;
   launcherStyle?: LauncherStyle;
   greetingBubble?: boolean;
+  /** Greetings for specific pages, shown beside the launcher and on the home screen. */
+  pageGreetings?: PageGreeting[];
   /** Set by an admin when the owner's account is suspended; the widget stays hidden. */
   suspended?: boolean;
   /** The owner saves conversations (Pro): messages are sent to be stored, and visitors are told. */
@@ -72,6 +80,19 @@ export interface ChatbotProps {
   /** The chatbot owner's uid, from the saved config. */
   user_id?: string;
 }
+
+/** The chat apps a "talk to a human" link can open, with their brand colour. */
+const CHANNELS: Record<ContactChannel, { name: string; color: string }> = {
+  whatsapp: { name: "WhatsApp", color: "#1FAF55" },
+  telegram: { name: "Telegram", color: "#229ED9" },
+  messenger: { name: "Messenger", color: "#0084FF" },
+  instagram: { name: "Instagram", color: "#E1306C" },
+};
+
+const channelIcon = (channel: ContactChannel, size: number) => {
+  const Icon = { whatsapp: FaWhatsapp, telegram: FaTelegramPlane, messenger: FaFacebookMessenger, instagram: FaInstagram }[channel];
+  return <Icon size={size} aria-hidden="true" />;
+};
 
 const Chatbot: React.FC<ChatbotProps> = ({
   id,
@@ -91,13 +112,25 @@ const Chatbot: React.FC<ChatbotProps> = ({
   aiEnabled,
   launcherStyle = "classic",
   greetingBubble = false,
+  pageGreetings,
   isPreview = false,
+  startOpen = false,
   language,
   saveConversations = false,
   liveChat = false,
 }) => {
   const t = useMemo(() => makeT(widgetMessages, isLang(language) ? language : "en"), [language]);
   const contactHref = normalizeContactLink(liveChatLink);
+  // A chat app link (WhatsApp, Telegram, Messenger, Instagram) gets its own
+  // button and home card. WhatsApp can take the visitor's question typed in;
+  // the others can't, so tapping copies it for them to paste.
+  const channel = contactChannel(contactHref);
+  /** The button the owner put on an FAQ's answer, if it has a working link. */
+  const actionFor = (question?: string) => {
+    const faq = question ? faqData.find((f) => f.question === question) : undefined;
+    const href = normalizeContactLink(faq?.buttonUrl);
+    return faq?.buttonLabel && href ? { label: faq.buttonLabel, href } : undefined;
+  };
 
   // Leads, analytics and ratings go through the server, which checks and
   // rate-limits them. The owner isn't a visitor: their preview, and their own
@@ -180,7 +213,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [messages]);
   const [input, setInput] = useState("");
-  const [isOpen, setIsOpen] = useState(!isEmbedded);
+  const [isOpen, setIsOpen] = useState(!isEmbedded || startOpen);
   // The widget opens on a home screen (greeting, popular questions); the
   // chat takes over once the visitor asks something.
   const [view, setView] = useState<"home" | "chat">("home");
@@ -549,6 +582,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
               sender: "bot",
               isFallback: aiCouldNotAnswer && !enableLeadCapture && !handOff,
               source: aiCouldNotAnswer ? undefined : sources?.[0],
+              action: aiCouldNotAnswer ? undefined : actionFor(sources?.[0]),
             },
           ]);
 
@@ -609,7 +643,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
       if (matchedFaq) {
         setMessages((prev) => [
           ...prev,
-          { text: matchedFaq.answer, sender: "bot", source: matchedFaq.question },
+          { text: matchedFaq.answer, sender: "bot", source: matchedFaq.question, action: actionFor(matchedFaq.question) },
         ]);
         setIsTyping(false);
         
@@ -689,7 +723,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
       setTimeout(async () => {
         setMessages((prev) => [
           ...prev,
-          { text: matchedFaq.answer, sender: "bot", source: matchedFaq.question },
+          { text: matchedFaq.answer, sender: "bot", source: matchedFaq.question, action: actionFor(matchedFaq.question) },
         ]);
         setShowSuggestions(false);
         setIsTyping(false);
@@ -709,6 +743,16 @@ const Chatbot: React.FC<ChatbotProps> = ({
   // Reopening goes back to where the visitor was: the chat once they've
   // asked something, the home screen before that.
   const hasConversation = messages.some((m) => m.sender === "user" || m.sender === "agent");
+  const lastVisitorQuestion = [...messages].reverse().find((m) => m.sender === "user")?.text ?? "";
+  // For apps whose links can't carry a message: the question goes on the
+  // clipboard so the visitor only has to paste it.
+  const copyQuestion = () => {
+    if (!lastVisitorQuestion || !navigator.clipboard) return;
+    navigator.clipboard.writeText(lastVisitorQuestion).then(
+      () => toast.success(t("questionCopied")),
+      () => undefined
+    );
+  };
   const toggleChatbot = () => {
     if (!isOpen) setView(hasConversation ? "chat" : "home");
     setIsOpen(!isOpen);
@@ -752,6 +796,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
 
   // The page the visitor is on, from the embed script.
   const pageUrl = useRef("");
+  const [pageAddress, setPageAddress] = useState("");
   useEffect(() => {
     if (!isEmbedded) return;
     const onPage = (event: MessageEvent) => {
@@ -760,6 +805,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
       if (typeof url !== "string" || !/^https?:\/\//.test(url) || url.length > 300) return;
       const first = !pageUrl.current;
       pageUrl.current = url;
+      setPageAddress(url);
       // Tells the dashboard this chatbot is on a website, once a day per browser.
       if (first) {
         const key = `askio-seen:${id}`;
@@ -803,8 +849,31 @@ const Chatbot: React.FC<ChatbotProps> = ({
     }
   };
 
+  const pageGreeting = useMemo(() => pageGreetingFor(pageGreetings, pageAddress), [pageGreetings, pageAddress]);
+  const [greetingText, setGreetingText] = useState<string | null>(null);
   useEffect(() => {
-    if (!isEmbedded || !greetingBubble || isOpen) return;
+    if (!isEmbedded || !pageGreeting || isOpen) return;
+    const key = `askio-page-greeting-seen:${id}:${pageGreeting.match}`;
+    try {
+      if (localStorage.getItem(key) === "1") return;
+    } catch {
+      // Unreadable storage: show it, at worst once per page load.
+    }
+    const timer = window.setTimeout(() => {
+      setGreetingText(pageGreeting.message);
+      setShowGreeting(true);
+      try {
+        localStorage.setItem(key, "1");
+      } catch {
+        // Blocked storage; it may show again.
+      }
+    }, GREETING_DELAY_MS);
+    return () => window.clearTimeout(timer);
+  }, [isEmbedded, pageGreeting, isOpen, id]);
+
+  useEffect(() => {
+    // A page greeting takes this page's bubble instead.
+    if (!isEmbedded || !greetingBubble || isOpen || pageGreeting) return;
     try {
       if (localStorage.getItem(greetingSeenKey) === "1") return;
     } catch {
@@ -816,7 +885,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
     }, GREETING_DELAY_MS);
     return () => window.clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isEmbedded, greetingBubble, isOpen, greetingSeenKey]);
+  }, [isEmbedded, greetingBubble, isOpen, greetingSeenKey, pageGreeting]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -991,7 +1060,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
         }}
         className="whitespace-nowrap rounded-full py-2 pl-3.5 pr-1 text-[13px] font-medium text-[#101723] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#87909D]"
       >
-        {t("greeting")}
+        <span className="block max-w-[260px] truncate">{greetingText || t("greeting")}</span>
       </button>
       <button
         type="button"
@@ -1054,7 +1123,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
           )}
         </div>
         <p className="relative mt-7 text-[24px] font-semibold leading-[1.2] tracking-[-0.02em] text-white/55">{t("homeHello")}</p>
-        <p className="relative text-[24px] font-semibold leading-[1.2] tracking-[-0.02em]">{t("homeHeading")}</p>
+        <p className="relative text-[24px] font-semibold leading-[1.2] tracking-[-0.02em] [text-wrap:balance]">{pageGreeting?.message || t("homeHeading")}</p>
       </div>
 
       <div className="relative z-10 -mt-9 flex flex-col gap-2.5 px-3.5 pb-3.5">
@@ -1080,6 +1149,27 @@ const Chatbot: React.FC<ChatbotProps> = ({
             </span>
             <span className="text-[12px] leading-snug text-[#3B4656] dark:text-[#B8C3D1]">{t("teamOnline")}</span>
           </div>
+        )}
+
+        {contactHref && channel && !(canTalkLive && ownerOnline) && (
+          <a
+            href={contactHref}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={`${homeCard} flex items-center gap-3 px-4 py-3 transition-colors hover:border-[#C9D3E0] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#87909D] dark:hover:border-[#39485B]`}
+          >
+            <span
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full"
+              style={{ background: `${CHANNELS[channel].color}26`, color: CHANNELS[channel].color }}
+            >
+              {channelIcon(channel, 18)}
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block text-[13px] font-semibold text-[#101723] dark:text-[#E7EDF6]">{t("messageUsOn", { app: CHANNELS[channel].name })}</span>
+              <span className="mt-0.5 block text-[12px] text-[#647184] dark:text-[#9BAABD]">{t("channelCardHint")}</span>
+            </span>
+            <ChevronRight size={15} className="shrink-0 text-[#87909D]" aria-hidden="true" />
+          </a>
         )}
 
         {topQuestions.length > 0 && (
@@ -1237,13 +1327,20 @@ const Chatbot: React.FC<ChatbotProps> = ({
                 {message.isFallback && index === lastFallbackIndex && contactHref && !(canTalkLive && ownerOnline && !live) && (
                   <div className="mt-2.5 flex justify-start">
                     <a
-                      href={contactHref}
+                      href={channel === "whatsapp" ? withWhatsAppText(contactHref, lastVisitorQuestion) : contactHref}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center justify-center bg-[#F9FCFF] dark:bg-[#273444] hover:bg-[#F3F7FC] dark:hover:bg-[#39485B] text-[#101723] dark:text-[#D7DFE5] text-[12px] font-medium py-1.5 px-3 rounded-md shadow-sm border border-[#D8DFE9] dark:border-[#39485B] transition-colors gap-1.5"
+                      onClick={() => {
+                        if (channel && channel !== "whatsapp") copyQuestion();
+                      }}
+                      className="inline-flex items-center justify-center bg-[#F9FCFF] dark:bg-[#273444] hover:bg-[#F3F7FC] dark:hover:bg-[#39485B] text-[#101723] dark:text-[#D7DFE5] text-[12px] font-medium py-1.5 px-3 rounded-full shadow-sm border border-[#D8DFE9] dark:border-[#39485B] transition-colors gap-1.5"
                     >
-                      <MessageSquare size={14} className="text-emerald-500" />
-                      {t("chatWithHuman")}
+                      {channel ? (
+                        <span style={{ color: CHANNELS[channel].color }}>{channelIcon(channel, 14)}</span>
+                      ) : (
+                        <MessageSquare size={14} className="text-emerald-500" />
+                      )}
+                      {channel ? t("continueOn", { app: CHANNELS[channel].name }) : t("chatWithHuman")}
                     </a>
                   </div>
                 )}
@@ -1293,6 +1390,18 @@ const Chatbot: React.FC<ChatbotProps> = ({
                   </div>
                 )}
               </div>
+              {message.sender === "bot" && message.action && (
+                <a
+                  href={message.action.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-1.5 inline-flex max-w-full items-center gap-1.5 rounded-full px-3.5 py-2 text-[12.5px] font-medium text-white transition-opacity hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#87909D]"
+                  style={buttonStyle}
+                >
+                  <span className="truncate">{message.action.label}</span>
+                  <ExternalLink size={12} className="shrink-0" aria-hidden="true" />
+                </a>
+              )}
               {/* Which FAQ the answer came from: proof it isn't made up. */}
               {message.sender === "bot" && message.source && showSources !== false && (
                 <span className="mt-1.5 inline-flex max-w-full items-start gap-1 rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] leading-snug text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-200">

@@ -9,17 +9,53 @@ import { withMonitoring } from "../_lib/monitoring.js";
 // Owners can star up to this many questions for the widget to suggest.
 const MAX_SUGGESTED = 3;
 
+/** A button link on an FAQ answer: a web page, email, phone or WhatsApp. */
+export function normalizeButtonUrl(value) {
+  const raw = typeof value === "string" ? value.trim() : "";
+  if (!raw || raw.length > 500) return null;
+  if (/^mailto:[^@\s]+@[^@\s]+\.[^@\s]+$/i.test(raw)) return raw;
+  if (/^[^@\s/:]+@[^@\s]+\.[^@\s]+$/.test(raw)) return `mailto:${raw}`;
+  if (/^tel:\+?[\d\s().-]{5,}$/i.test(raw)) return raw.replace(/\s+/g, "");
+  try {
+    const url = new URL(/^[a-z][a-z\d+.-]*:/i.test(raw) ? raw : `https://${raw}`);
+    if (!["http:", "https:"].includes(url.protocol) || !url.hostname.includes(".")) return null;
+    return url.toString();
+  } catch {
+    return null;
+  }
+}
+
+export const MAX_PAGE_GREETINGS = 10;
+
+/** Greetings for pages whose address contains `match`, e.g. "/pricing". */
+export function normalizePageGreetings(value) {
+  if (!Array.isArray(value)) return [];
+  return value
+    .map((item) => ({
+      match: typeof item?.match === "string" ? item.match.trim().toLowerCase().slice(0, 100) : "",
+      message: typeof item?.message === "string" ? item.message.trim().slice(0, 50) : "",
+    }))
+    .filter((item) => item.match && item.message)
+    .slice(0, MAX_PAGE_GREETINGS);
+}
+
 export function normalizeFaqData(faqData) {
   if (!Array.isArray(faqData)) return [];
 
   let starred = 0;
   return faqData
     .filter((item) => item && typeof item.question === "string" && typeof item.answer === "string")
-    .map((item) => ({
-      question: item.question.trim(),
-      answer: item.answer.trim(),
-      suggested: item.suggested === true,
-    }))
+    .map((item) => {
+      const buttonLabel = typeof item.buttonLabel === "string" ? item.buttonLabel.trim().slice(0, 40) : "";
+      const buttonUrl = normalizeButtonUrl(item.buttonUrl);
+      return {
+        question: item.question.trim(),
+        answer: item.answer.trim(),
+        suggested: item.suggested === true,
+        // An optional button under the answer ("Track my order"); both parts or neither.
+        ...(buttonLabel && buttonUrl ? { buttonLabel, buttonUrl } : {}),
+      };
+    })
     .filter((item) => item.question && item.answer)
     .map(({ suggested, ...item }) =>
       suggested && starred < MAX_SUGGESTED ? (starred++, { ...item, suggested: true }) : item
@@ -37,6 +73,7 @@ function normalizeChatbotPayload(payload, uid) {
     position: String(payload.position || "bottom-right"),
     launcherStyle: payload.launcherStyle === "orb" ? "orb" : "classic",
     greetingBubble: payload.greetingBubble === true,
+    pageGreetings: normalizePageGreetings(payload.pageGreetings),
     initialMessage: String(payload.initialMessage || "Hello! How can I help you today?"),
     placeholder: String(payload.placeholder || "Type your message..."),
     language: ["en", "fr", "nl", "de", "es"].includes(payload.language) ? payload.language : "en",

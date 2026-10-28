@@ -1,14 +1,15 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "react-hot-toast";
-import { ChevronDown, ChevronUp, GripVertical, MessageSquareText, Pencil, Plus, Search, Star, Trash2 } from "lucide-react";
+import { ChevronDown, ChevronUp, ExternalLink, GripVertical, MessageSquareText, Pencil, Plus, Search, Star, Trash2 } from "lucide-react";
 import { EmptyState, focusRing, primaryButton, secondaryButton, surface } from "../../pages/dashboard/ui";
 import { Field, inputClass } from "./controls";
 import { LIMITS } from "./types";
+import { normalizeContactLink } from "../../utils/links";
 import { pickSuggested, SUGGESTED_QUESTIONS } from "../../utils/suggestions";
 import { useT } from "../../i18n";
 import { editorMessages } from "../../i18n/messages/editor";
 
-type Faq = { question: string; answer: string; suggested?: boolean };
+type Faq = { question: string; answer: string; suggested?: boolean; buttonLabel?: string; buttonUrl?: string };
 
 interface Props {
   faqs: Faq[];
@@ -41,13 +42,18 @@ const FaqEditor: React.FC<{
 
   const question = draft.question.trim();
   const answer = draft.answer.trim();
+  const buttonLabel = (draft.buttonLabel || "").trim();
+  const buttonUrl = normalizeContactLink(draft.buttonUrl) || "";
+  // A button needs both parts; half of one is a mistake, not "no button".
+  const buttonIncomplete = (buttonLabel.length > 0) !== (buttonUrl.length > 0) || (!!(draft.buttonUrl || "").trim() && !buttonUrl);
   const duplicate =
     question.length > 0 && others.some((f) => f.question.trim().toLowerCase() === question.toLowerCase());
-  const canSave = question.length > 0 && answer.length > 0;
+  const canSave = question.length > 0 && answer.length > 0 && !buttonIncomplete;
+  const [showButton, setShowButton] = useState(Boolean(initial.buttonLabel || initial.buttonUrl));
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (canSave) onSave({ question, answer });
+    if (canSave) onSave({ question, answer, ...(buttonLabel && buttonUrl ? { buttonLabel, buttonUrl } : {}) });
   };
 
   return (
@@ -89,6 +95,47 @@ const FaqEditor: React.FC<{
           }}
         />
       </Field>
+      {showButton ? (
+        <div className="space-y-3 rounded-xl border border-[#D8DFE9] bg-[#F9FCFF] p-4 dark:border-[#2B3646] dark:bg-[#1A2533]">
+          <div>
+            <p className="text-body-sm font-medium text-[#101723] dark:text-[#D7DFE5]">{t("buttonSection")}</p>
+            <p className="mt-0.5 text-caption text-[#647184] dark:text-[#87909D]">{t("buttonHint")}</p>
+          </div>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <Field label={t("buttonLabel")} htmlFor="faq-button-label">
+              <input
+                id="faq-button-label"
+                className={`${inputClass} h-10`}
+                placeholder={t("buttonLabelPlaceholder")}
+                maxLength={40}
+                value={draft.buttonLabel || ""}
+                onChange={(e) => setDraft((d) => ({ ...d, buttonLabel: e.target.value }))}
+              />
+            </Field>
+            <Field label={t("buttonUrl")} htmlFor="faq-button-url">
+              <input
+                id="faq-button-url"
+                className={`${inputClass} h-10`}
+                placeholder={t("buttonUrlPlaceholder")}
+                autoComplete="off"
+                spellCheck={false}
+                value={draft.buttonUrl || ""}
+                onChange={(e) => setDraft((d) => ({ ...d, buttonUrl: e.target.value }))}
+              />
+            </Field>
+          </div>
+          {buttonIncomplete && <p className="text-caption text-amber-700 dark:text-amber-300">{t("buttonIncomplete")}</p>}
+        </div>
+      ) : (
+        <button
+          type="button"
+          onClick={() => setShowButton(true)}
+          className={`inline-flex items-center gap-1.5 rounded-md text-caption font-medium text-[#566273] hover:text-[#101723] dark:text-[#9BAABD] dark:hover:text-[#D7DFE5] ${focusRing}`}
+        >
+          <Plus size={13} />
+          {t("buttonSection")}
+        </button>
+      )}
       <div className="flex items-center justify-end gap-2">
         <button type="button" onClick={onCancel} className={secondaryButton}>
           {t("cancel")}
@@ -139,7 +186,8 @@ const FaqTab: React.FC<Props> = ({ faqs, onChange, aiGenerator, initialQuestion 
 
   const save = (index: number | "new", faq: Faq) => {
     // Editing keeps a question's star.
-    onChange(index === "new" ? [faq, ...faqs] : faqs.map((f, i) => (i === index ? { ...f, ...faq } : f)));
+    // The new version replaces the old one's button (or lack of one).
+    onChange(index === "new" ? [faq, ...faqs] : faqs.map((f, i) => (i === index ? { ...(f.suggested ? { suggested: true } : {}), ...faq } : f)));
     setEditing(null);
   };
 
@@ -326,6 +374,12 @@ const FaqTab: React.FC<Props> = ({ faqs, onChange, aiGenerator, initialQuestion 
                     )}
                   </p>
                   <p className="mt-1 line-clamp-2 text-body-sm text-[#566273] dark:text-[#9BAABD]">{faq.answer}</p>
+                  {faq.buttonLabel && faq.buttonUrl && (
+                    <span className="mt-1.5 inline-flex items-center gap-1 rounded-full bg-[#E7EDF6] px-2 py-0.5 text-[11px] font-medium text-[#566273] dark:bg-[#273444] dark:text-[#9BAABD]">
+                      <ExternalLink size={10} aria-hidden="true" />
+                      {t("buttonBadge", { label: faq.buttonLabel })}
+                    </span>
+                  )}
                 </button>
                 <div className="flex shrink-0 items-center gap-0.5 sm:opacity-0 sm:transition-opacity sm:group-hover:opacity-100 sm:group-focus-within:opacity-100">
                   {faqs.length > 1 && (

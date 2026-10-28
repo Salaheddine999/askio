@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { assertPublicUrl, isPublicAddress } from "../api/_lib/safeFetch.js";
-import { normalizeContactLink } from "../src/utils/links";
+import { contactChannel, isWhatsAppLink, normalizeContactLink, withWhatsAppText } from "../src/utils/links";
 
 describe("isPublicAddress (AI website scraper)", () => {
   it.each([
@@ -59,4 +59,45 @@ describe("normalizeContactLink (talk to a human)", () => {
   it.each(["", "   ", "not a link", "javascript:alert(1)", "mailto:nope", "localhost"])("rejects %j", (input) => {
     expect(normalizeContactLink(input)).toBeNull();
   });
+});
+
+describe("WhatsApp handoff", () => {
+  it("recognises WhatsApp chat links, not other pages", () => {
+    expect(isWhatsAppLink("https://wa.me/212600000000")).toBe(true);
+    expect(isWhatsAppLink("https://api.whatsapp.com/send?phone=212600000000")).toBe(true);
+    expect(isWhatsAppLink("https://whatsapp.com")).toBe(false);
+    expect(isWhatsAppLink("https://example.com/wa.me")).toBe(false);
+    expect(isWhatsAppLink(null)).toBe(false);
+  });
+
+  it("types the visitor's question into the WhatsApp message", () => {
+    expect(withWhatsAppText("https://wa.me/212600000000", "Do you ship to Belgium?")).toBe(
+      "https://wa.me/212600000000?text=Do%20you%20ship%20to%20Belgium%3F"
+    );
+    expect(withWhatsAppText("https://wa.me/212600000000", "  ")).toBe("https://wa.me/212600000000");
+    expect(withWhatsAppText("https://api.whatsapp.com/send?phone=212600000000&text=old", "Hi")).toBe(
+      "https://api.whatsapp.com/send?phone=212600000000&text=Hi"
+    );
+  });
+});
+
+describe("contactChannel (which chat app a link opens)", () => {
+  it.each([
+    ["https://wa.me/31612345678", "whatsapp"],
+    ["https://t.me/sofaandco", "telegram"],
+    ["https://telegram.me/sofaandco", "telegram"],
+    ["https://m.me/sofaandco", "messenger"],
+    ["https://www.messenger.com/t/sofaandco", "messenger"],
+    ["https://ig.me/m/sofaandco", "instagram"],
+    ["https://www.instagram.com/sofaandco/", "instagram"],
+  ])("%s opens %s", (href, channel) => {
+    expect(contactChannel(href)).toBe(channel);
+  });
+
+  it.each(["https://t.me/share/url?url=x", "https://t.me", "https://m.me", "https://www.instagram.com/p/abc123/", "https://shop.example/contact", "mailto:help@shop.com", null])(
+    "%s isn't a chat with someone",
+    (href) => {
+      expect(contactChannel(href)).toBeNull();
+    }
+  );
 });

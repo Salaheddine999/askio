@@ -23,10 +23,13 @@ const Auth: React.FC = () => {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [mode, setMode] = useState<"login" | "register" | "reset">("login");
-  const [resetSent, setResetSent] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  // "?mode=register" (e.g. from the homepage demo) opens on sign-up.
+  const [mode, setMode] = useState<"login" | "register" | "reset">(() =>
+    new URLSearchParams(location.search).get("mode") === "register" ? "register" : "login"
+  );
+  const [resetSent, setResetSent] = useState(false);
 
   /** New accounts go to the guided first-chatbot setup; returning ones to the dashboard. */
   const handlePostAuthRedirect = async (isNewAccount = false) => {

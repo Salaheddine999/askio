@@ -28,6 +28,8 @@
       }
       if (params.length) iframe.src += "?" + params.join("&");
       var frameOrigin = new URL(iframe.src, window.location.href).origin;
+      // Lets "Continue on Telegram" (and others) copy the visitor's question.
+      iframe.allow = "clipboard-write";
       iframe.style.position = "fixed";
       iframe.style.border = "none";
       iframe.style.zIndex = "10000";

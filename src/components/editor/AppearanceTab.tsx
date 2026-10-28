@@ -1,11 +1,12 @@
 import React from "react";
-import { Check } from "lucide-react";
+import { Check, Plus, Trash2 } from "lucide-react";
 import { focusRing } from "../../pages/dashboard/ui";
 import { LiveOrb } from "../LiveOrb";
 import { orbPropsFor } from "../../utils/orbColors";
 import chatIcon from "../../assets/chat1.svg";
-import { ColorField, Panel, PanelBody, Row, Segmented, Switch } from "./controls";
+import { ColorField, Panel, PanelBody, Row, Segmented, Switch, inputClass } from "./controls";
 import { ChatbotConfig, ConfigChange } from "./types";
+import type { PageGreeting } from "../../utils/pageGreetings";
 import { isLang, makeT, useT } from "../../i18n";
 import { widgetMessages } from "../../i18n/widget";
 import { editorMessages } from "../../i18n/messages/editor";
@@ -134,6 +135,62 @@ const AppearanceTab: React.FC<Props> = ({ config, onChange }) => {
             label={t("greetingBubble")}
           />
         </Row>
+      </Panel>
+
+      <Panel title={t("pageGreetings")} description={t("pageGreetingsDesc")}>
+        <PanelBody className="space-y-3">
+          {(config.pageGreetings || []).map((rule, i) => {
+            const update = (patch: Partial<PageGreeting>) =>
+              onChange(
+                "pageGreetings",
+                (config.pageGreetings || []).map((r, j) => (j === i ? { ...r, ...patch } : r))
+              );
+            return (
+              <div key={i} className="flex items-end gap-2">
+                <label className="block w-[38%] shrink-0">
+                  <span className="text-caption font-medium text-[#566273] dark:text-[#9BAABD]">{t("pageMatch")}</span>
+                  <input
+                    className={`${inputClass} mt-1 h-10`}
+                    placeholder={t("pageMatchPlaceholder")}
+                    maxLength={100}
+                    spellCheck={false}
+                    value={rule.match}
+                    onChange={(e) => update({ match: e.target.value })}
+                  />
+                </label>
+                <label className="block min-w-0 flex-1">
+                  <span className="text-caption font-medium text-[#566273] dark:text-[#9BAABD]">{t("pageMessage")}</span>
+                  <input
+                    className={`${inputClass} mt-1 h-10`}
+                    placeholder={t("pageMessagePlaceholder")}
+                    maxLength={50}
+                    value={rule.message}
+                    onChange={(e) => update({ message: e.target.value })}
+                  />
+                </label>
+                <button
+                  type="button"
+                  aria-label={t("removePageGreeting")}
+                  title={t("removePageGreeting")}
+                  onClick={() => onChange("pageGreetings", (config.pageGreetings || []).filter((_, j) => j !== i))}
+                  className={`mb-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-[#87909D] hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/30 ${focusRing}`}
+                >
+                  <Trash2 size={15} />
+                </button>
+              </div>
+            );
+          })}
+          {(config.pageGreetings || []).length < 10 && (
+            <button
+              type="button"
+              onClick={() => onChange("pageGreetings", [...(config.pageGreetings || []), { match: "", message: "" }])}
+              className={`inline-flex items-center gap-1.5 rounded-md text-body-sm font-medium text-[#101723] hover:underline dark:text-[#D7DFE5] ${focusRing}`}
+            >
+              <Plus size={14} />
+              {t("addPageGreeting")}
+            </button>
+          )}
+        </PanelBody>
       </Panel>
 
       <Panel

@@ -33,4 +33,19 @@ describe("normalizeFaqData (saving a chatbot)", () => {
       { question: "e", answer: "A" },
     ]);
   });
+
+  it("keeps an answer's button only when it has both text and a working link", () => {
+    const saved = normalizeFaqData([
+      { question: "a", answer: "A", buttonLabel: " Track my order ", buttonUrl: "yourstore.com/track" },
+      { question: "b", answer: "A", buttonLabel: "Email us", buttonUrl: "help@shop.com" },
+      { question: "c", answer: "A", buttonLabel: "No link" },
+      { question: "d", answer: "A", buttonLabel: "Bad", buttonUrl: "javascript:alert(1)" },
+    ]);
+    expect(saved).toEqual([
+      { question: "a", answer: "A", buttonLabel: "Track my order", buttonUrl: "https://yourstore.com/track" },
+      { question: "b", answer: "A", buttonLabel: "Email us", buttonUrl: "mailto:help@shop.com" },
+      { question: "c", answer: "A" },
+      { question: "d", answer: "A" },
+    ]);
+  });
 });
