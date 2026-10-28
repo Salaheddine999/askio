@@ -10,7 +10,6 @@ import TestimonialsSection from "./TestimonialsSection";
 import FAQSection from "./FAQSection";
 import CTASection from "./CTASection";
 import Footer from "./Footer";
-import ScrollToTop from "./ScrollToTop";
 import MarqueeStrip from "./MarqueeStrip";
 
 export default function ChatbotLanding() {
@@ -36,7 +35,7 @@ export default function ChatbotLanding() {
   }, []);
 
   return (
-    <div className="askio-home w-full min-h-screen bg-[#F3F7FC] dark:bg-[#141D2B] font-sans text-[#101723] overflow-x-hidden">
+    <div className="askio-home w-full min-h-screen bg-[#F3F7FC] dark:bg-[#141D2B] font-sans text-[#101723] overflow-x-clip">
       <Helmet>
         <title>Askio · A chatbot for your website that answers from your FAQs</title>
         <meta
@@ -61,8 +60,6 @@ export default function ChatbotLanding() {
         <CTASection />
         <Footer />
       </div>
-
-      <ScrollToTop />
     </div>
   );
 }

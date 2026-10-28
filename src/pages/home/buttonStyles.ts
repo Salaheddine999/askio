@@ -14,5 +14,5 @@ export const ghostCta = `inline-flex h-12 items-center justify-center gap-2 roun
 /** The round chip on a main button's right, clipping the icons that slide through it (see ArrowBubble). */
 export const ctaChip = "relative inline-flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full";
 
-/** Small round icon buttons (carousel arrows, back to top). */
+/** Small round icon buttons (the testimonial arrows). */
 export const iconPress = `transition-[background-color,color,transform] duration-150 ease-out ${press}`;

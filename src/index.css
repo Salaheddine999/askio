@@ -16,6 +16,8 @@
   }
 
   html {
+    /* Anchor links (#pricing…) stop below the homepage's sticky navbar. */
+    scroll-padding-top: 80px;
     font-family: 'Inter', system-ui, sans-serif;
     scroll-behavior: smooth;
     @apply text-body text-[#101723] dark:text-[#D7DFE5] antialiased;

@@ -40,11 +40,17 @@ export default function LandingNav() {
   }, [isMobileMenuOpen]);
 
   return (
-    <header className="relative z-50 flex justify-center pt-3 pb-4">
-      <div className="absolute left-0 right-0 top-[36px] h-0 border-t border-[rgba(16,23,35,0.10)] dark:border-[#2B3646] hidden lg:block" />
+    // Sticks to the top as the page scrolls. The empty space around the pill
+    // lets clicks through to the page; the line it sits on fades away.
+    <header className="pointer-events-none sticky top-0 z-50 flex justify-center pt-3 pb-4">
+      <div
+        className={`absolute left-0 right-0 top-[36px] h-0 border-t border-[rgba(16,23,35,0.10)] transition-opacity duration-200 dark:border-[#2B3646] hidden lg:block ${
+          scrolled ? "opacity-0" : ""
+        }`}
+      />
       <nav
         aria-label="Main navigation"
-        className={`relative z-30 flex w-full max-w-[720px] items-center justify-between h-12 pl-4 pr-2 backdrop-blur-xl rounded-full border border-white/90 dark:border-[#2B3646] ring-1 ring-[#D8DFE9]/40 dark:ring-white/5 transition-[background-color,box-shadow] duration-200 motion-reduce:transition-none md:grid md:grid-cols-[1fr_auto_1fr] ${
+        className={`pointer-events-auto relative z-30 flex w-full max-w-[720px] items-center justify-between h-12 pl-4 pr-2 backdrop-blur-xl rounded-full border border-white/90 dark:border-[#2B3646] ring-1 ring-[#D8DFE9]/40 dark:ring-white/5 transition-[background-color,box-shadow] duration-200 motion-reduce:transition-none md:grid md:grid-cols-[1fr_auto_1fr] ${
           scrolled
             ? "bg-[#F3F7FC]/95 dark:bg-[#141D2B]/95 shadow-[0_6px_20px_-12px_rgba(16,23,35,0.22)]"
             : "bg-[#F3F7FC]/90 dark:bg-[#141D2B]/90 shadow-[0_2px_8px_-4px_rgba(16,23,35,0.12),inset_0_1px_0_rgba(255,255,255,0.65)] dark:shadow-none"
@@ -106,7 +112,7 @@ export default function LandingNav() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: reduceMotion ? 0 : -6 }}
             transition={{ duration: reduceMotion ? 0 : 0.15 }}
-            className="md:hidden absolute top-[68px] left-0 right-0 bg-[#F9FCFF]/95 dark:bg-[#1A2533]/95 backdrop-blur-xl rounded-2xl shadow-[0_12px_32px_-16px_rgba(16,23,35,0.25)] z-50 p-2 border border-[#D8DFE9] dark:border-[#2B3646]"
+            className="pointer-events-auto md:hidden absolute top-[68px] left-0 right-0 bg-[#F9FCFF]/95 dark:bg-[#1A2533]/95 backdrop-blur-xl rounded-2xl shadow-[0_12px_32px_-16px_rgba(16,23,35,0.25)] z-50 p-2 border border-[#D8DFE9] dark:border-[#2B3646]"
           >
             <nav aria-label="Mobile navigation" className="flex flex-col gap-1">
               {navLinks.map((item) => (
