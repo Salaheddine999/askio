@@ -80,6 +80,26 @@ export interface ChatbotProps {
 }
 
 /** The chat apps a "talk to a human" link can open, with their brand colour. */
+/** A random id from the browser's secure generator: `length` characters, 5 bits each. */
+const randomId = (length: number) =>
+  Array.from(crypto.getRandomValues(new Uint8Array(length)), (b) => (b & 31).toString(32)).join("");
+
+// Storage can be unavailable in a third-party iframe; the widget works without it.
+const readStored = (key: string) => {
+  try {
+    return localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+};
+const writeStored = (key: string, value: string) => {
+  try {
+    localStorage.setItem(key, value);
+  } catch {
+    // Not kept; the visitor may be asked again next time.
+  }
+};
+
 const CHANNELS: Record<ContactChannel, { name: string; color: string }> = {
   whatsapp: { name: "WhatsApp", color: "#1FAF55" },
   telegram: { name: "Telegram", color: "#229ED9" },
@@ -164,16 +184,18 @@ const Chatbot: React.FC<ChatbotProps> = ({
 
   // One conversation per chatbot per browser tab, so moving between pages of
   // the owner's site continues the same saved conversation.
+  // The id is the visitor's only key to their conversation, so it's always
+  // random from the browser's secure generator, even when storage is blocked.
   const sessionId = useMemo(() => {
     const key = `askio-chat-session:${id}`;
     try {
       const existing = sessionStorage.getItem(key);
       if (existing) return existing;
-      const created = Array.from(crypto.getRandomValues(new Uint8Array(12)), (b) => b.toString(36).padStart(2, "0")).join("");
+      const created = randomId(24);
       sessionStorage.setItem(key, created);
       return created;
     } catch {
-      return Math.random().toString(36).slice(2, 14).padEnd(12, "0");
+      return randomId(24);
     }
   }, [id]);
 
@@ -292,27 +314,28 @@ const Chatbot: React.FC<ChatbotProps> = ({
   }, [faqData]);
 
   useEffect(() => {
-    // Generate or retrieve the anonymous token
-    const storedToken = localStorage.getItem("anonymousToken");
-    if (storedToken) {
-      setAnonymousToken(storedToken);
-    } else {
-      const newToken = generateAnonymousToken();
+    // Kept across visits when the browser allows storage; a fresh one per
+    // visit when it doesn't (third-party iframes often can't store anything).
+    try {
+      const storedToken = localStorage.getItem("anonymousToken");
+      if (storedToken) {
+        setAnonymousToken(storedToken);
+        return;
+      }
+      const newToken = randomId(16);
       localStorage.setItem("anonymousToken", newToken);
       setAnonymousToken(newToken);
+    } catch {
+      setAnonymousToken(randomId(16));
     }
   }, []);
-
-  const generateAnonymousToken = () => {
-    return Math.random().toString(36).substr(2, 9);
-  };
 
   useEffect(() => {
     const checkPreviousFeedback = async () => {
       if (!anonymousToken || !id) return;
 
       const feedbackKey = `feedback_${id}`;
-      const storedFeedback = localStorage.getItem(feedbackKey);
+      const storedFeedback = readStored(feedbackKey);
       if (storedFeedback) {
         setHasFeedback(true);
         return;
@@ -324,7 +347,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
         );
         if (feedbackDoc.exists()) {
           setHasFeedback(true);
-          localStorage.setItem(feedbackKey, "true");
+          writeStored(feedbackKey, "true");
         }
       } catch (error) {
         console.error("Error checking previous feedback:", error);
@@ -971,14 +994,14 @@ const Chatbot: React.FC<ChatbotProps> = ({
     try {
       await record("feedback", { isPositive, anonymousToken });
 
-      localStorage.setItem(`feedback_${id}`, "true");
+      writeStored(`feedback_${id}`, "true");
       setHasFeedback(true);
       react(isPositive ? "happy" : "unsure");
       toast.success(t("feedbackThanks"));
       setShowFeedback(false);
     } catch (error) {
       if (error instanceof Error && /already rated/i.test(error.message)) {
-        localStorage.setItem(`feedback_${id}`, "true");
+        writeStored(`feedback_${id}`, "true");
         setHasFeedback(true);
         setShowFeedback(false);
         return;
