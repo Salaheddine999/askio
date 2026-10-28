@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Bot, SearchX } from "lucide-react";
+import { Bot, SearchX } from "../../components/icons";
 import ChatbotCard from "../../components/ChatbotCard";
 import ChatbotTable from "./ChatbotTable";
 import {
@@ -122,7 +122,7 @@ const ChatbotsTab: React.FC<ChatbotsTabProps> = ({
       ) : loading ? (
         <ChatbotGridSkeleton count={8} />
       ) : !hasChatbots ? (
-        <div className="rounded-xl border border-dashed border-[#C9D3E0] dark:border-[#39485B]">
+        <div className="rounded-xl border border-dashed border-ink-165 dark:border-ink-710">
           <EmptyState
             kio
             icon={Bot}
@@ -132,7 +132,7 @@ const ChatbotsTab: React.FC<ChatbotsTabProps> = ({
           />
         </div>
       ) : filtered.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-[#C9D3E0] dark:border-[#39485B]">
+        <div className="rounded-xl border border-dashed border-ink-165 dark:border-ink-710">
           <EmptyState
             icon={SearchX}
             title={t("noMatchesTitle")}

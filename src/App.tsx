@@ -105,7 +105,7 @@ function RouteFallback() {
   return isAppRoute(window.location.pathname) ? (
     <PageSkeleton tiles={4} />
   ) : (
-    <div className="min-h-screen bg-[#F3F7FC] dark:bg-[#141D2B]" />
+    <div className="min-h-screen bg-ink-30 dark:bg-ink-875" />
   );
 }
 
@@ -184,11 +184,11 @@ const App: React.FC = () => {
 
   if (waitForAuth) {
     return (
-      <div className={`min-h-screen ${darkMode ? "dark" : ""} bg-[#F3F7FC] dark:bg-[#141D2B]`}>
+      <div className={`min-h-screen ${darkMode ? "dark" : ""} bg-ink-30 dark:bg-ink-875`}>
         {(wasSignedIn || isAppRoute(window.location.pathname)) && (
           <div className="flex">
             <div
-              className={`hidden h-screen shrink-0 border-r border-[#D8DFE9] bg-[#EDF2F8] p-3 lg:block dark:border-[#2B3646] dark:bg-[#17212F] ${
+              className={`hidden h-screen shrink-0 border-r border-ink-120 bg-ink-55 p-3 lg:block dark:border-ink-780 dark:bg-ink-865 ${
                 sidebarOpen ? "w-64" : "w-[72px]"
               }`}
             >
@@ -228,7 +228,7 @@ const App: React.FC = () => {
           )}
           <div
             className={`flex-1 min-w-0 transition-all duration-300 ${
-              user ? `bg-[#F3F7FC] pt-14 dark:bg-[#141D2B] lg:pt-0 ${sidebarOpen ? "lg:ml-64" : "lg:ml-[72px]"}` : ""
+              user ? `bg-ink-30 pt-14 dark:bg-ink-875 lg:pt-0 ${sidebarOpen ? "lg:ml-64" : "lg:ml-[72px]"}` : ""
             }`}
           >
             <RouteErrorBoundary>

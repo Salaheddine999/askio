@@ -1,6 +1,6 @@
 import React, { useRef } from "react";
 import { Link } from "react-router-dom";
-import { MessagesSquare, Sparkles } from "lucide-react";
+import { MessagesSquare } from "../icons";
 import { focusRing, primaryButton } from "../../pages/dashboard/ui";
 import { Field, Panel, PanelBody, Row, Switch, inputClass, invalidInput } from "./controls";
 import { ChatbotConfig, ConfigChange, LIMITS, Plan } from "./types";
@@ -8,6 +8,7 @@ import { isLang, makeT, useT } from "../../i18n";
 import LanguageSelect from "../LanguageSelect";
 import { widgetMessages } from "../../i18n/widget";
 import { editorMessages } from "../../i18n/messages/editor";
+import { AiIcon } from "../icons";
 
 type EditorKey = keyof (typeof editorMessages)["en"];
 
@@ -178,23 +179,23 @@ const GeneralTab: React.FC<Props> = ({ config, onChange, errors, onLinkBlur, can
                   onClick={() => onChange("position", p.value)}
                   className={`group rounded-xl border p-2 text-left transition-colors ${focusRing} ${
                     selected
-                      ? "border-[#101723] bg-[#F3F7FC] dark:border-[#D7DFE5] dark:bg-[#141D2B]"
-                      : "border-[#D8DFE9] hover:border-[#9BAABD] dark:border-[#2B3646] dark:hover:border-[#566273]"
+                      ? "border-ink-900 bg-ink-30 dark:border-ink-130 dark:bg-ink-875"
+                      : "border-ink-120 hover:border-ink-325 dark:border-ink-780 dark:hover:border-ink-605"
                   }`}
                 >
-                  <span className="relative block h-14 rounded-lg border border-[#E7EDF6] bg-[#F9FCFF] dark:border-[#2B3646] dark:bg-[#1A2533]">
-                    <span className="absolute left-2 right-8 top-2.5 h-1 rounded-full bg-[#E7EDF6] dark:bg-[#273444]" />
-                    <span className="absolute left-2 right-12 top-5 h-1 rounded-full bg-[#E7EDF6] dark:bg-[#273444]" />
+                  <span className="relative block h-14 rounded-lg border border-ink-70 bg-ink-25 dark:border-ink-780 dark:bg-ink-850">
+                    <span className="absolute left-2 right-8 top-2.5 h-1 rounded-full bg-ink-70 dark:bg-ink-790" />
+                    <span className="absolute left-2 right-12 top-5 h-1 rounded-full bg-ink-70 dark:bg-ink-790" />
                     <span
                       className={`absolute h-3.5 w-3.5 rounded-full transition-colors ${p.dot} ${
-                        selected ? "" : "bg-[#C9D2DE] group-hover:bg-[#9BAABD] dark:bg-[#39485B]"
+                        selected ? "" : "bg-ink-170 group-hover:bg-ink-325 dark:bg-ink-710"
                       }`}
                       style={selected ? { background: config.primaryColor } : undefined}
                     />
                   </span>
                   <span
                     className={`mt-2 block px-0.5 text-caption font-medium ${
-                      selected ? "text-[#101723] dark:text-[#E7EDF6]" : "text-[#566273] dark:text-[#9BAABD]"
+                      selected ? "text-ink-900 dark:text-ink-70" : "text-fg-muted"
                     }`}
                   >
                     {t(p.label)}
@@ -220,22 +221,22 @@ const GeneralTab: React.FC<Props> = ({ config, onChange, errors, onLinkBlur, can
                   onClick={() => chooseFallback(f.value)}
                   className={`flex w-full items-start gap-3 rounded-xl border px-4 py-3 text-left transition-colors ${focusRing} ${
                     selected
-                      ? "border-[#101723] bg-[#F3F7FC] dark:border-[#D7DFE5] dark:bg-[#141D2B]"
-                      : "border-[#D8DFE9] hover:border-[#9BAABD] dark:border-[#2B3646] dark:hover:border-[#566273]"
+                      ? "border-ink-900 bg-ink-30 dark:border-ink-130 dark:bg-ink-875"
+                      : "border-ink-120 hover:border-ink-325 dark:border-ink-780 dark:hover:border-ink-605"
                   }`}
                 >
                   <span
                     className={`mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full border ${
                       selected
-                        ? "border-[#101723] dark:border-[#D7DFE5]"
-                        : "border-[#C9D2DE] dark:border-[#39485B]"
+                        ? "border-ink-900 dark:border-ink-130"
+                        : "border-ink-170 dark:border-ink-710"
                     }`}
                   >
-                    {selected && <span className="h-2 w-2 rounded-full bg-[#101723] dark:bg-[#D7DFE5]" />}
+                    {selected && <span className="h-2 w-2 rounded-full bg-ink-900 dark:bg-ink-130" />}
                   </span>
                   <span className="min-w-0">
-                    <span className="block text-body-sm font-medium text-[#101723] dark:text-[#D7DFE5]">{t(f.label)}</span>
-                    <span className="mt-0.5 block text-caption text-[#647184] dark:text-[#87909D]">{t(f.hint, { button: widgetT("chatWithHuman") })}</span>
+                    <span className="block text-body-sm font-medium text-fg">{t(f.label)}</span>
+                    <span className="mt-0.5 block text-caption text-fg-subtle">{t(f.hint, { button: widgetT("chatWithHuman") })}</span>
                   </span>
                 </button>
               );
@@ -281,12 +282,12 @@ const GeneralTab: React.FC<Props> = ({ config, onChange, errors, onLinkBlur, can
         ) : (
           <div className="flex flex-col gap-4 px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
             <div className="flex min-w-0 items-start gap-3">
-              <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-[#D8DFE9] bg-[#F3F7FC] text-[#566273] dark:border-[#2B3646] dark:bg-[#141D2B] dark:text-[#9BAABD]">
-                <Sparkles size={15} />
+              <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-ink-120 bg-ink-30 text-ink-605 dark:border-ink-780 dark:bg-ink-875 dark:text-ink-325">
+                <AiIcon size={15} />
               </span>
               <div>
-                <p className="text-body-sm font-medium text-[#101723] dark:text-[#D7DFE5]">{t("aiProTitle")}</p>
-                <p className="mt-0.5 text-caption text-[#647184] dark:text-[#87909D]">
+                <p className="text-body-sm font-medium text-fg">{t("aiProTitle")}</p>
+                <p className="mt-0.5 text-caption text-fg-subtle">
                   {t("aiProText")}
                 </p>
               </div>
@@ -324,12 +325,12 @@ const GeneralTab: React.FC<Props> = ({ config, onChange, errors, onLinkBlur, can
         ) : (
           <div className="flex flex-col gap-4 px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
             <div className="flex min-w-0 items-start gap-3">
-              <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-[#D8DFE9] bg-[#F3F7FC] text-[#566273] dark:border-[#2B3646] dark:bg-[#141D2B] dark:text-[#9BAABD]">
+              <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-ink-120 bg-ink-30 text-ink-605 dark:border-ink-780 dark:bg-ink-875 dark:text-ink-325">
                 <MessagesSquare size={15} />
               </span>
               <div>
-                <p className="text-body-sm font-medium text-[#101723] dark:text-[#D7DFE5]">{t("historyProTitle")}</p>
-                <p className="mt-0.5 text-caption text-[#647184] dark:text-[#87909D]">{t("historyProText")}</p>
+                <p className="text-body-sm font-medium text-fg">{t("historyProTitle")}</p>
+                <p className="mt-0.5 text-caption text-fg-subtle">{t("historyProText")}</p>
               </div>
             </div>
             <Link to="/plans" className={`${primaryButton} shrink-0 self-start sm:self-auto`}>

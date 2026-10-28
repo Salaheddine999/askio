@@ -2,7 +2,7 @@ import brandLogo from "../assets/logo.svg";
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { FaFacebookMessenger, FaInstagram, FaTelegramPlane, FaWhatsapp } from "react-icons/fa";
 import { pageGreetingFor, type PageGreeting } from "../utils/pageGreetings";
-import { X, ThumbsUp, ThumbsDown, MessageSquare, Sparkles, Bot, UserRound, ArrowUp, ChevronLeft, ChevronRight, CircleCheck, ExternalLink } from "lucide-react";
+import { X, ThumbsUp, ThumbsDown, MessageSquare, Bot, UserRound, ArrowUp, ChevronLeft, ChevronRight, CircleCheck, ExternalLink } from "./icons";
 import { motion, AnimatePresence } from "framer-motion";
 import Fuse from "fuse.js";
 import { db } from "../utils/db";
@@ -18,6 +18,7 @@ import { contactChannel, normalizeContactLink, withWhatsAppText, type ContactCha
 import { pickSuggested, SUGGESTED_QUESTIONS as MAX_SUGGESTIONS } from "../utils/suggestions";
 import { isLang, makeT, type Lang } from "../i18n";
 import { widgetMessages } from "../i18n/widget";
+import { AiIcon } from "./icons";
 
 type Message = {
   text: string;
@@ -1036,7 +1037,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
     <motion.button
       onClick={toggleChatbot}
       aria-label={t("openChat")}
-      className={`relative w-16 h-16 flex items-center justify-center rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#87909D]`}
+      className={`relative w-16 h-16 flex items-center justify-center rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink-425`}
       style={{ filter: "drop-shadow(0 6px 12px rgba(16, 23, 35, 0.22))" }}
       whileHover={{ scale: 1.06 }}
       whileTap={{ scale: 0.95 }}
@@ -1075,7 +1076,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
       exit={{ opacity: 0, x: isLeftPosition ? -6 : 6, scale: 0.96 }}
       transition={{ duration: 0.25, ease: "easeOut" }}
       style={{ transformOrigin: isLeftPosition ? "left center" : "right center" }}
-      className="flex items-center rounded-full border border-[#D8DFE9] bg-[#F9FCFF] shadow-[0_8px_24px_-12px_rgba(16,23,35,0.35)]"
+      className="flex items-center rounded-full border border-ink-120 bg-ink-25 shadow-[0_8px_24px_-12px_rgba(16,23,35,0.35)]"
     >
       <button
         type="button"
@@ -1085,7 +1086,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
           setView(hasConversation ? "chat" : "home");
           setIsOpen(true);
         }}
-        className="whitespace-nowrap rounded-full py-2 pl-3.5 pr-1 text-[13px] font-medium text-[#101723] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#87909D]"
+        className="whitespace-nowrap rounded-full py-2 pl-3.5 pr-1 text-[13px] font-medium text-ink-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ink-425"
       >
         <span className="block max-w-[260px] truncate">{greetingText || t("greeting")}</span>
       </button>
@@ -1096,7 +1097,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
           e.stopPropagation();
           setShowGreeting(false);
         }}
-        className="mr-1.5 flex h-6 w-6 items-center justify-center rounded-full text-[#87909D] transition-colors hover:bg-[#E7EDF6] hover:text-[#101723] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#87909D]"
+        className="mr-1.5 flex h-6 w-6 items-center justify-center rounded-full text-ink-425 transition-colors hover:bg-ink-70 hover:text-ink-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ink-425"
       >
         <X size={12} strokeWidth={2.5} />
       </button>
@@ -1129,7 +1130,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
     );
 
   const homeCard =
-    "rounded-2xl border border-[#E3E8EF] bg-[#FFFFFF] dark:border-[#243040] dark:bg-[#17212F]";
+    "rounded-2xl border border-ink-90 bg-[#FFFFFF] dark:border-ink-805 dark:bg-ink-865";
   const homeView = (
     <div className="flex min-h-0 flex-1 flex-col overflow-y-auto [scrollbar-width:thin]">
       <div className="relative flex-shrink-0 px-5 pb-14 pt-5 text-white" style={headerStyle}>
@@ -1157,11 +1158,11 @@ const Chatbot: React.FC<ChatbotProps> = ({
         <button
           type="button"
           onClick={startChat}
-          className={`${homeCard} group flex items-center justify-between gap-3 px-4 py-3.5 text-left shadow-[0_6px_20px_-12px_rgba(16,23,35,0.25)] transition-colors hover:border-[#C9D3E0] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#87909D] dark:hover:border-[#39485B]`}
+          className={`${homeCard} group flex items-center justify-between gap-3 px-4 py-3.5 text-left shadow-[0_6px_20px_-12px_rgba(16,23,35,0.25)] transition-colors hover:border-ink-165 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ink-425 dark:hover:border-ink-710`}
         >
           <span className="min-w-0">
-            <span className="block text-[14px] font-semibold text-[#101723] dark:text-[#E7EDF6]">{t("askQuestion")}</span>
-            <span className="mt-0.5 block text-[12px] text-[#647184] dark:text-[#9BAABD]">{t("askQuestionHint")}</span>
+            <span className="block text-[14px] font-semibold text-ink-900 dark:text-ink-70">{t("askQuestion")}</span>
+            <span className="mt-0.5 block text-[12px] text-ink-545 dark:text-ink-325">{t("askQuestionHint")}</span>
           </span>
           <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-white transition-transform group-hover:translate-x-0.5" style={buttonStyle}>
             <ArrowUp size={16} strokeWidth={2.5} className="rotate-90" />
@@ -1171,10 +1172,9 @@ const Chatbot: React.FC<ChatbotProps> = ({
         {canTalkLive && ownerOnline && (
           <div className={`${homeCard} flex items-center gap-2.5 px-4 py-3`}>
             <span className="relative flex h-2.5 w-2.5 shrink-0" aria-hidden="true">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-50 motion-reduce:hidden" />
               <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500" />
             </span>
-            <span className="text-[12px] leading-snug text-[#3B4656] dark:text-[#B8C3D1]">{t("teamOnline")}</span>
+            <span className="text-[12px] leading-snug text-ink-715 dark:text-ink-230">{t("teamOnline")}</span>
           </div>
         )}
 
@@ -1183,7 +1183,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
             href={contactHref}
             target="_blank"
             rel="noopener noreferrer"
-            className={`${homeCard} flex items-center gap-3 px-4 py-3 transition-colors hover:border-[#C9D3E0] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#87909D] dark:hover:border-[#39485B]`}
+            className={`${homeCard} flex items-center gap-3 px-4 py-3 transition-colors hover:border-ink-165 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ink-425 dark:hover:border-ink-710`}
           >
             <span
               className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full"
@@ -1192,26 +1192,26 @@ const Chatbot: React.FC<ChatbotProps> = ({
               {channelIcon(channel, 18)}
             </span>
             <span className="min-w-0 flex-1">
-              <span className="block text-[13px] font-semibold text-[#101723] dark:text-[#E7EDF6]">{t("messageUsOn", { app: CHANNELS[channel].name })}</span>
-              <span className="mt-0.5 block text-[12px] text-[#647184] dark:text-[#9BAABD]">{t("channelCardHint")}</span>
+              <span className="block text-[13px] font-semibold text-ink-900 dark:text-ink-70">{t("messageUsOn", { app: CHANNELS[channel].name })}</span>
+              <span className="mt-0.5 block text-[12px] text-ink-545 dark:text-ink-325">{t("channelCardHint")}</span>
             </span>
-            <ChevronRight size={15} className="shrink-0 text-[#87909D]" aria-hidden="true" />
+            <ChevronRight size={15} className="shrink-0 text-ink-425" aria-hidden="true" />
           </a>
         )}
 
         {topQuestions.length > 0 && (
           <div className={`${homeCard} py-1.5`}>
-            <p className="px-4 pb-1 pt-2 text-[11px] font-medium text-[#87909D]">{t("popularQuestions")}</p>
+            <p className="px-4 pb-1 pt-2 text-caption font-medium text-ink-425">{t("popularQuestions")}</p>
             <ul>
               {topQuestions.map((question, i) => (
-                <li key={question} className={i > 0 ? "border-t border-[#EEF1F5] dark:border-[#243040]" : ""}>
+                <li key={question} className={i > 0 ? "border-t border-ink-65 dark:border-ink-805" : ""}>
                   <button
                     type="button"
                     onClick={() => askSuggested(question)}
-                    className="flex w-full items-center justify-between gap-3 px-4 py-2.5 text-left text-[13px] text-[#101723] transition-colors hover:bg-[#F5F7FA] focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[#87909D] dark:text-[#D7DFE5] dark:hover:bg-[#1D2938]"
+                    className="flex w-full items-center justify-between gap-3 px-4 py-2.5 text-left text-[13px] text-ink-900 transition-colors hover:bg-ink-35 focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ink-425 dark:text-ink-130 dark:hover:bg-ink-835"
                   >
                     <span className="min-w-0 [text-wrap:pretty]">{question}</span>
-                    <ChevronRight size={15} className="shrink-0 text-[#87909D]" aria-hidden="true" />
+                    <ChevronRight size={15} className="shrink-0 text-ink-425" aria-hidden="true" />
                   </button>
                 </li>
               ))}
@@ -1233,7 +1233,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
       transition={{ duration: 0.3 }}
       className={`${
         isEmbedded ? `fixed ${combinedPositionClass} z-50` : "w-full h-full"
-      } bg-[#F5F7FA] dark:bg-[#111924] flex flex-col overflow-hidden ${
+      } bg-ink-35 dark:bg-ink-895 flex flex-col overflow-hidden ${
         onSite
           ? space.fullscreen
             ? ""
@@ -1246,23 +1246,23 @@ const Chatbot: React.FC<ChatbotProps> = ({
     >
       {view === "home" ? homeView : (<>
       {/* Chat header: back to the home screen, who's answering, and how. */}
-      <div className="flex flex-shrink-0 items-center gap-2.5 border-b border-[#E3E8EF] bg-[#FFFFFF] px-3 py-3 dark:border-[#243040] dark:bg-[#17212F]">
+      <div className="flex flex-shrink-0 items-center gap-2.5 border-b border-ink-90 bg-[#FFFFFF] px-3 py-3 dark:border-ink-805 dark:bg-ink-865">
         <button
           type="button"
           onClick={() => setView("home")}
           aria-label={t("back")}
-          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[#566273] transition-colors hover:bg-[#EEF2F7] hover:text-[#101723] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#87909D] dark:text-[#9BAABD] dark:hover:bg-[#243040] dark:hover:text-[#E7EDF6]"
+          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-ink-605 transition-colors hover:bg-ink-60 hover:text-ink-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ink-425 dark:text-ink-325 dark:hover:bg-ink-805 dark:hover:text-ink-70"
         >
           <ChevronLeft size={18} strokeWidth={2.25} />
         </button>
         <div className="relative shrink-0">
           {botFace(34)}
-          <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-white bg-emerald-400 dark:border-[#17212F]" aria-hidden="true" />
+          <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-white bg-emerald-400 dark:border-ink-865" aria-hidden="true" />
         </div>
         <div className="min-w-0 flex-1">
-          <h2 className="truncate text-[14px] font-semibold leading-tight tracking-[-0.01em] text-[#101723] dark:text-[#E7EDF6]">{title || "Askio Assistant"}</h2>
+          <h2 className="truncate text-[14px] font-semibold leading-tight tracking-[-0.01em] text-ink-900 dark:text-ink-70">{title || "Askio Assistant"}</h2>
           {/* Visitors should always know they aren't talking to a person (EU AI Act, art. 50). */}
-          <div className="mt-0.5 flex min-w-0 items-center gap-1.5 whitespace-nowrap text-[11px]">
+          <div className="mt-0.5 flex min-w-0 items-center gap-1.5 whitespace-nowrap text-caption">
             {live?.status === "active" ? (
               <span className="flex min-w-0 items-center gap-1 font-medium text-emerald-700 dark:text-emerald-300" aria-live="polite">
                 <UserRound size={11} strokeWidth={2.25} className="shrink-0" aria-hidden="true" />
@@ -1270,16 +1270,16 @@ const Chatbot: React.FC<ChatbotProps> = ({
               </span>
             ) : (
               <>
-                <span className="flex shrink-0 items-center gap-1 font-medium text-[#566273] dark:text-[#9BAABD]">
+                <span className="flex shrink-0 items-center gap-1 font-medium text-fg-muted">
                   {aiEnabled ? (
-                    <Sparkles size={11} strokeWidth={2.25} className="shrink-0" aria-hidden="true" />
+                    <AiIcon size={12} className="shrink-0" />
                   ) : (
                     <Bot size={12} strokeWidth={2.25} className="shrink-0" aria-hidden="true" />
                   )}
                   {aiEnabled ? t("aiAssistant") : t("automatedAssistant")}
                 </span>
-                <span className="shrink-0 text-[#B8C3D1] dark:text-[#4A5A6E]">·</span>
-                <span className="min-w-0 truncate text-[#87909D]" aria-live="polite">
+                <span className="shrink-0 text-ink-230 dark:text-ink-640">·</span>
+                <span className="min-w-0 truncate text-ink-425" aria-live="polite">
                   {canTalkLive && ownerOnline && !live ? t("teamCanJoin") : statusText}
                 </span>
               </>
@@ -1290,7 +1290,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
           <button
             onClick={toggleChatbot}
             aria-label={t("closeChat")}
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[#566273] transition-colors hover:bg-[#EEF2F7] hover:text-[#101723] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#87909D] dark:text-[#9BAABD] dark:hover:bg-[#243040] dark:hover:text-[#E7EDF6]"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-ink-605 transition-colors hover:bg-ink-60 hover:text-ink-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ink-425 dark:text-ink-325 dark:hover:bg-ink-805 dark:hover:text-ink-70"
           >
             <X size={16} strokeWidth={2.25} />
           </button>
@@ -1306,7 +1306,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
                 key={index}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="text-center text-[11px] text-[#647184] dark:text-[#9BAABD]"
+                className="text-center text-caption text-ink-545 dark:text-ink-325"
               >
                 {message.text}
               </motion.p>
@@ -1327,13 +1327,13 @@ const Chatbot: React.FC<ChatbotProps> = ({
                   message.sender === "user"
                     ? "text-white rounded-[18px] rounded-br-[6px]"
                     : message.sender === "agent"
-                      ? "bg-emerald-50 dark:bg-emerald-950/30 ring-1 ring-emerald-200 dark:ring-emerald-900/60 text-[#101723] dark:text-[#D7DFE5] rounded-[18px] rounded-bl-[6px]"
-                      : "bg-[#FFFFFF] dark:bg-[#1A2533] ring-1 ring-[#E3E8EF] dark:ring-[#243040] text-[#101723] dark:text-[#D7DFE5] rounded-[18px] rounded-bl-[6px]"
+                      ? "bg-emerald-50 dark:bg-emerald-950/30 ring-1 ring-emerald-200 dark:ring-emerald-900/60 text-fg rounded-[18px] rounded-bl-[6px]"
+                      : "bg-[#FFFFFF] dark:bg-ink-850 ring-1 ring-ink-90 dark:ring-ink-805 text-fg rounded-[18px] rounded-bl-[6px]"
                 }`}
                 style={message.sender === "user" ? userMessageStyle : {}}
               >
                 {message.sender === "agent" && (
-                  <span className="mb-0.5 flex items-center gap-1 text-[11px] font-semibold text-emerald-700 dark:text-emerald-300">
+                  <span className="mb-0.5 flex items-center gap-1 text-caption font-semibold text-emerald-700 dark:text-emerald-300">
                     <UserRound size={11} aria-hidden="true" />
                     {agentLabel(message.name)}
                   </span>
@@ -1349,7 +1349,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
                         e.stopPropagation();
                         void requestPerson();
                       }}
-                      className="inline-flex items-center justify-center bg-[#F9FCFF] dark:bg-[#273444] hover:bg-[#F3F7FC] dark:hover:bg-[#39485B] text-[#101723] dark:text-[#D7DFE5] text-[12px] font-medium py-1.5 px-3 rounded-md shadow-sm border border-[#D8DFE9] dark:border-[#39485B] transition-colors gap-1.5"
+                      className="inline-flex items-center justify-center bg-ink-25 dark:bg-ink-790 hover:bg-ink-30 dark:hover:bg-ink-710 text-fg text-[12px] font-medium py-1.5 px-3 rounded-md shadow-sm border border-ink-120 dark:border-ink-710 transition-colors gap-1.5"
                     >
                       <span className="h-2 w-2 rounded-full bg-emerald-500" aria-hidden="true" />
                       {t("chatWithPersonNow")}
@@ -1365,7 +1365,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
                       onClick={() => {
                         if (channel && channel !== "whatsapp") copyQuestion();
                       }}
-                      className="inline-flex items-center justify-center bg-[#F9FCFF] dark:bg-[#273444] hover:bg-[#F3F7FC] dark:hover:bg-[#39485B] text-[#101723] dark:text-[#D7DFE5] text-[12px] font-medium py-1.5 px-3 rounded-full shadow-sm border border-[#D8DFE9] dark:border-[#39485B] transition-colors gap-1.5"
+                      className="inline-flex items-center justify-center bg-ink-25 dark:bg-ink-790 hover:bg-ink-30 dark:hover:bg-ink-710 text-fg text-[12px] font-medium py-1.5 px-3 rounded-full shadow-sm border border-ink-120 dark:border-ink-710 transition-colors gap-1.5"
                     >
                       {channel ? (
                         <span style={{ color: CHANNELS[channel].color }}>{channelIcon(channel, 14)}</span>
@@ -1393,7 +1393,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
                         value={leadEmail}
                         onChange={(e) => setLeadEmail(e.target.value)}
                         placeholder={t("emailPlaceholder")}
-                        className="w-full px-3 py-2 rounded-md bg-[#F9FCFF] dark:bg-[#1A2533] border border-[#D8DFE9] dark:border-[#39485B] text-[13px] text-[#101723] dark:text-[#D7DFE5] placeholder-[#647184] focus:outline-none focus:border-emerald-500 transition-colors"
+                        className="w-full px-3 py-2 rounded-md bg-ink-25 dark:bg-ink-850 border border-ink-120 dark:border-ink-710 text-[13px] text-fg placeholder-ink-545 focus:outline-none focus:border-emerald-500 transition-colors"
                         required
                         onClick={(e) => e.stopPropagation()}
                       />
@@ -1406,13 +1406,13 @@ const Chatbot: React.FC<ChatbotProps> = ({
                       </button>
                     </form>
                     {contactHref && (
-                      <div className="mt-2 text-center text-[11px] text-[#647184]">
+                      <div className="mt-2 text-center text-caption text-ink-545">
                         {t("preferToTalk")}{" "}
                         <a
                           href={contactHref}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="underline hover:text-[#101723] dark:hover:text-[#D7DFE5]"
+                          className="underline hover:text-fg"
                           onClick={(e) => e.stopPropagation()}
                         >
                           {t("chatWithHuman")}
@@ -1427,7 +1427,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
                   href={message.action.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="mt-1.5 inline-flex max-w-full items-center gap-1.5 rounded-full px-3.5 py-2 text-[12.5px] font-medium text-white transition-opacity hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#87909D]"
+                  className="mt-1.5 inline-flex max-w-full items-center gap-1.5 rounded-full px-3.5 py-2 text-[12.5px] font-medium text-white transition-opacity hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink-425"
                   style={buttonStyle}
                 >
                   <span className="truncate">{message.action.label}</span>
@@ -1436,7 +1436,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
               )}
               {/* Which FAQ the answer came from: proof it isn't made up. */}
               {message.sender === "bot" && message.source && showSources !== false && (
-                <span className="mt-1.5 inline-flex max-w-full items-start gap-1 rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] leading-snug text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-200">
+                <span className="mt-1.5 inline-flex max-w-full items-start gap-1 rounded-full bg-emerald-50 px-2.5 py-1 text-caption leading-snug text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-200">
                   <CircleCheck size={12} className="mt-px shrink-0" aria-hidden="true" />
                   <span className="min-w-0">{t("answeredFrom", { source: message.source })}</span>
                 </span>
@@ -1463,7 +1463,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
                       key={idx}
                       whileTap={{ scale: 0.98 }}
                       onClick={(e) => handleSuggestionClick(e, question)}
-                      className="max-w-[88%] text-[12.5px] leading-snug [text-wrap:pretty] bg-[#FFFFFF] dark:bg-[#1A2533] hover:bg-[#EEF2F7] dark:hover:bg-[#243040] text-[#101723] dark:text-[#D7DFE5] py-2 px-3.5 rounded-[18px] transition-colors duration-150 ring-1 ring-[#D8DFE9] hover:ring-[#C9D3E0] dark:ring-[#2B3646] dark:hover:ring-[#39485B] text-left"
+                      className="max-w-[88%] text-[12.5px] leading-snug [text-wrap:pretty] bg-[#FFFFFF] dark:bg-ink-850 hover:bg-ink-60 dark:hover:bg-ink-805 text-fg py-2 px-3.5 rounded-[18px] transition-colors duration-150 ring-1 ring-ink-120 hover:ring-ink-165 dark:ring-ink-780 dark:hover:ring-ink-710 text-left"
                     >
                       {question}
                     </motion.button>
@@ -1481,15 +1481,15 @@ const Chatbot: React.FC<ChatbotProps> = ({
             className="flex justify-start"
           >
             {useOrb ? (
-              <div className="inline-flex items-center gap-2 py-1.5 pl-1.5 pr-3.5 rounded-[18px] rounded-bl-[6px] bg-[#FFFFFF] ring-1 ring-[#E3E8EF] dark:bg-[#1A2533] dark:ring-[#243040]">
+              <div className="inline-flex items-center gap-2 py-1.5 pl-1.5 pr-3.5 rounded-[18px] rounded-bl-[6px] bg-[#FFFFFF] ring-1 ring-ink-90 dark:bg-ink-850 dark:ring-ink-805">
                 <LiveOrb size={24} {...orbPropsFor(primaryColor)} mood="thinking" interactive={false} />
-                <span className="text-[12px] text-[#647184] dark:text-[#9BAABD]">{t("thinking")}</span>
+                <span className="text-[12px] text-ink-545 dark:text-ink-325">{t("thinking")}</span>
               </div>
             ) : (
-              <div className="inline-flex items-center gap-1 px-3.5 py-3 rounded-[18px] rounded-bl-[6px] bg-[#FFFFFF] ring-1 ring-[#E3E8EF] dark:bg-[#1A2533] dark:ring-[#243040]">
-                <span className="h-1.5 w-1.5 bg-[#9BAABD] dark:bg-[#647184] rounded-full animate-bounce" style={{ animationDelay: "0s" }}></span>
-                <span className="h-1.5 w-1.5 bg-[#9BAABD] dark:bg-[#647184] rounded-full animate-bounce" style={{ animationDelay: "0.15s" }}></span>
-                <span className="h-1.5 w-1.5 bg-[#9BAABD] dark:bg-[#647184] rounded-full animate-bounce" style={{ animationDelay: "0.3s" }}></span>
+              <div className="inline-flex items-center gap-1 px-3.5 py-3 rounded-[18px] rounded-bl-[6px] bg-[#FFFFFF] ring-1 ring-ink-90 dark:bg-ink-850 dark:ring-ink-805">
+                <span className="h-1.5 w-1.5 bg-ink-325 dark:bg-ink-545 rounded-full animate-bounce" style={{ animationDelay: "0s" }}></span>
+                <span className="h-1.5 w-1.5 bg-ink-325 dark:bg-ink-545 rounded-full animate-bounce" style={{ animationDelay: "0.15s" }}></span>
+                <span className="h-1.5 w-1.5 bg-ink-325 dark:bg-ink-545 rounded-full animate-bounce" style={{ animationDelay: "0.3s" }}></span>
               </div>
             )}
           </motion.div>
@@ -1509,7 +1509,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
       </div>
 
       {/* Input Area */}
-      <div className="flex-shrink-0 border-t border-[#E3E8EF] bg-[#FFFFFF] px-3 pb-3 pt-2.5 dark:border-[#243040] dark:bg-[#17212F]">
+      <div className="flex-shrink-0 border-t border-ink-90 bg-[#FFFFFF] px-3 pb-3 pt-2.5 dark:border-ink-805 dark:bg-ink-865">
         {canTalkLive && ownerOnline && !live && (
           <button
             type="button"
@@ -1517,13 +1517,13 @@ const Chatbot: React.FC<ChatbotProps> = ({
               e.stopPropagation();
               void requestPerson();
             }}
-            className="mb-2 inline-flex items-center gap-1.5 rounded-full text-[12px] font-medium text-[#566273] transition-colors hover:text-[#101723] dark:text-[#9BAABD] dark:hover:text-[#D7DFE5]"
+            className="mb-2 inline-flex items-center gap-1.5 rounded-full text-[12px] font-medium text-ink-605 transition-colors hover:text-ink-900 dark:text-ink-325 dark:hover:text-ink-130"
           >
             <span className="h-2 w-2 rounded-full bg-emerald-500" aria-hidden="true" />
             {t("talkToPerson")}
           </button>
         )}
-        <form onSubmit={handleSend} className="flex items-center gap-1.5 rounded-full bg-[#F1F4F8] py-1.5 pl-4 pr-1.5 ring-1 ring-transparent transition-shadow focus-within:ring-[#C9D3E0] dark:bg-[#1D2938] dark:focus-within:ring-[#39485B]">
+        <form onSubmit={handleSend} className="flex items-center gap-1.5 rounded-full bg-ink-45 py-1.5 pl-4 pr-1.5 ring-1 ring-transparent transition-shadow focus-within:ring-ink-165 dark:bg-ink-835 dark:focus-within:ring-ink-710">
           <input
             ref={inputRef}
             type="text"
@@ -1535,7 +1535,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
             }}
             onFocus={() => setInputFocused(true)}
             onBlur={() => setInputFocused(false)}
-            className="min-w-0 flex-grow bg-transparent py-1 text-[13px] text-[#101723] placeholder-[#87909D] focus:outline-none dark:text-[#D7DFE5]"
+            className="min-w-0 flex-grow bg-transparent py-1 text-[13px] text-ink-900 placeholder-ink-425 focus:outline-none dark:text-ink-130"
             placeholder={placeholder}
           />
           <motion.button
@@ -1554,17 +1554,17 @@ const Chatbot: React.FC<ChatbotProps> = ({
 
       {/* Feedback prompt */}
       {!hasFeedback && !showFeedback && messages.length > 1 && (
-        <div className="bg-[#FFFFFF] px-4 pb-1 text-center dark:bg-[#17212F]">
+        <div className="bg-[#FFFFFF] px-4 pb-1 text-center dark:bg-ink-865">
           <button
             onClick={handleFeedbackClick}
-            className="text-[11px] text-[#647184] dark:text-[#9BAABD] hover:text-[#101723] dark:hover:text-[#D7DFE5] transition-colors duration-200"
+            className="text-caption text-ink-545 dark:text-ink-325 hover:text-fg transition-colors duration-200"
           >
             {t("wasHelpful")}
           </button>
         </div>
       )}
       {showFeedback && !hasFeedback && (
-        <div className="flex items-center justify-center gap-4 bg-[#FFFFFF] px-4 pb-1.5 dark:bg-[#17212F]">
+        <div className="flex items-center justify-center gap-4 bg-[#FFFFFF] px-4 pb-1.5 dark:bg-ink-865">
           <button
             onClick={(e) => handleFeedback(true, e)}
             className="flex items-center gap-1 text-[12px] text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300 transition-colors duration-200"
@@ -1572,7 +1572,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
             <ThumbsUp size={14} />
             <span>{t("helpful")}</span>
           </button>
-          <div className="w-px h-4 bg-[#D8DFE9] dark:bg-[#273444]"></div>
+          <div className="w-px h-4 bg-ink-120 dark:bg-ink-790"></div>
           <button
             onClick={(e) => handleFeedback(false, e)}
             className="flex items-center gap-1 text-[12px] text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300 transition-colors duration-200"
@@ -1586,14 +1586,14 @@ const Chatbot: React.FC<ChatbotProps> = ({
       </>)}
 
       {/* Footer */}
-      <div className={`flex-shrink-0 pb-2.5 pt-1.5 text-center text-[10px] text-[#87909D] ${view === "home" ? "bg-[#F5F7FA] dark:bg-[#111924]" : "bg-[#FFFFFF] dark:bg-[#17212F]"}`}>
+      <div className={`flex-shrink-0 pb-2.5 pt-1.5 text-center text-caption text-ink-425 ${view === "home" ? "bg-ink-35 dark:bg-ink-895" : "bg-[#FFFFFF] dark:bg-ink-865"}`}>
         {saveConversations && <p className="mb-0.5 px-4">{t("chatSaved")}</p>}
         {t("poweredBy")}{" "}
         <a
           href="https://getaskio.xyz/"
           target="_blank"
           rel="noopener noreferrer"
-          className="font-semibold text-[#566273] dark:text-[#9BAABD] hover:text-[#101723] dark:hover:text-[#D7DFE5] transition-colors"
+          className="font-semibold text-fg-muted hover:text-fg transition-colors"
         >
           Askio
         </a>

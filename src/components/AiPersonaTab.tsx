@@ -1,10 +1,11 @@
 import React from "react";
-import { Anchor, Briefcase, Check, Cpu, Leaf, LucideIcon, Sparkles, Sun, Zap } from "lucide-react";
+import { Anchor, Briefcase, Check, Cpu, Leaf, LucideIcon, Sun, Zap } from "./icons";
 import { focusRing, surface } from "../pages/dashboard/ui";
 import { Field, inputClass } from "./editor/controls";
 import { LIMITS } from "./editor/types";
 import { useT } from "../i18n";
 import { personaMessages } from "../i18n/messages/persona";
+import { AiIcon } from "./icons";
 
 type PersonaKey = keyof (typeof personaMessages)["en"];
 
@@ -33,8 +34,8 @@ const DEFAULT_VOICE: Character = {
   id: "default",
   name: "",
   tagline: "defaultTagline",
-  icon: Sparkles,
-  tint: "border border-[#D8DFE9] bg-[#F9FCFF] text-[#566273] dark:border-[#2B3646] dark:bg-[#1A2533] dark:text-[#9BAABD]",
+  icon: AiIcon,
+  tint: "border border-ink-120 bg-ink-25 text-ink-605 dark:border-ink-780 dark:bg-ink-850 dark:text-ink-325",
   prompt: "",
   sampleResponse: "defaultSample",
 };
@@ -112,9 +113,9 @@ const AiPersonaTab: React.FC<AiPersonaTabProps> = ({ aiTone, onChange, accentCol
   return (
     <div className="space-y-5">
       <section className={surface}>
-        <div className="border-b border-[#E7EDF6] px-5 py-4 sm:px-6 dark:border-[#2B3646]">
-          <h2 className="text-body font-semibold text-[#101723] dark:text-[#E7EDF6]">{t("voice")}</h2>
-          <p className="mt-0.5 text-body-sm text-[#647184] dark:text-[#87909D]">
+        <div className="border-b border-ink-70 px-5 py-4 sm:px-6 dark:border-ink-780">
+          <h2 className="text-body font-semibold text-ink-900 dark:text-ink-70">{t("voice")}</h2>
+          <p className="mt-0.5 text-body-sm text-fg-subtle">
             {t("voiceDesc")}
           </p>
         </div>
@@ -132,20 +133,20 @@ const AiPersonaTab: React.FC<AiPersonaTabProps> = ({ aiTone, onChange, accentCol
                   onClick={() => onChange(char.prompt)}
                   className={`flex items-center gap-3 rounded-xl border p-3 text-left transition-colors ${focusRing} ${
                     selected
-                      ? "border-[#101723] bg-[#F3F7FC] dark:border-[#D7DFE5] dark:bg-[#141D2B]"
-                      : "border-[#D8DFE9] hover:border-[#9BAABD] dark:border-[#2B3646] dark:hover:border-[#566273]"
+                      ? "border-ink-900 bg-ink-30 dark:border-ink-130 dark:bg-ink-875"
+                      : "border-ink-120 hover:border-ink-325 dark:border-ink-780 dark:hover:border-ink-605"
                   }`}
                 >
                   <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${char.tint}`}>
                     <char.icon size={18} strokeWidth={1.9} />
                   </span>
                   <span className="min-w-0 flex-1">
-                    <span className="block text-body-sm font-medium text-[#101723] dark:text-[#D7DFE5]">{char.name || t("defaultName")}</span>
-                    <span className="block truncate text-caption text-[#647184] dark:text-[#87909D]">{t(char.tagline)}</span>
+                    <span className="block text-body-sm font-medium text-fg">{char.name || t("defaultName")}</span>
+                    <span className="block truncate text-caption text-fg-subtle">{t(char.tagline)}</span>
                   </span>
                   {selected && (
-                    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#101723] dark:bg-[#D7DFE5]">
-                      <Check size={12} strokeWidth={3} className="text-white dark:text-[#141D2B]" />
+                    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-ink-900 dark:bg-ink-130">
+                      <Check size={12} strokeWidth={3} className="text-white dark:text-ink-875" />
                     </span>
                   )}
                 </button>
@@ -153,8 +154,8 @@ const AiPersonaTab: React.FC<AiPersonaTabProps> = ({ aiTone, onChange, accentCol
             })}
           </div>
 
-          <div className="mt-5 rounded-xl border border-[#E7EDF6] bg-[#F3F7FC] p-4 dark:border-[#2B3646] dark:bg-[#141D2B]">
-            <p className="text-caption font-medium text-[#647184] dark:text-[#87909D]">
+          <div className="mt-5 rounded-xl border border-ink-70 bg-ink-30 p-4 dark:border-ink-780 dark:bg-ink-875">
+            <p className="text-caption font-medium text-fg-subtle">
               {active ? t("soundsLike", { name: active.name || t("defaultName") }) : t("yourOwnVoice")}
             </p>
             <div className="mt-3 space-y-2.5">
@@ -167,7 +168,7 @@ const AiPersonaTab: React.FC<AiPersonaTabProps> = ({ aiTone, onChange, accentCol
                 </span>
               </div>
               <div className="flex justify-start">
-                <span className="max-w-[85%] whitespace-pre-line rounded-2xl rounded-bl-md bg-[#F9FCFF] px-3.5 py-2 text-body-sm text-[#101723] ring-1 ring-[#E7EDF6] dark:bg-[#1A2533] dark:text-[#D7DFE5] dark:ring-[#2B3646]">
+                <span className="max-w-[85%] whitespace-pre-line rounded-2xl rounded-bl-md bg-ink-25 px-3.5 py-2 text-body-sm text-ink-900 ring-1 ring-ink-70 dark:bg-ink-850 dark:text-ink-130 dark:ring-ink-780">
                   {active
                     ? t(active.sampleResponse)
                     : t("customSample")}
@@ -179,16 +180,16 @@ const AiPersonaTab: React.FC<AiPersonaTabProps> = ({ aiTone, onChange, accentCol
       </section>
 
       <section className={surface}>
-        <div className="border-b border-[#E7EDF6] px-5 py-4 sm:px-6 dark:border-[#2B3646]">
-          <h2 className="flex items-center gap-2 text-body font-semibold text-[#101723] dark:text-[#E7EDF6]">
+        <div className="border-b border-ink-70 px-5 py-4 sm:px-6 dark:border-ink-780">
+          <h2 className="flex items-center gap-2 text-body font-semibold text-ink-900 dark:text-ink-70">
             {t("instructions")}
             {isCustom && (
-              <span className="rounded-full bg-[#E7EDF6] px-2 py-0.5 text-caption font-medium text-[#566273] dark:bg-[#273444] dark:text-[#9BAABD]">
+              <span className="rounded-full bg-ink-70 px-2 py-0.5 text-caption font-medium text-ink-605 dark:bg-ink-790 dark:text-ink-325">
                 {t("custom")}
               </span>
             )}
           </h2>
-          <p className="mt-0.5 text-body-sm text-[#647184] dark:text-[#87909D]">
+          <p className="mt-0.5 text-body-sm text-fg-subtle">
             {t("instructionsDesc")}
           </p>
         </div>

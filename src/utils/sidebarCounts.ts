@@ -2,13 +2,17 @@ import { collection, doc, getCountFromServer, getDoc, orderBy, query, where } fr
 import { db } from "./db";
 
 // The sidebar's "new" counts. Each is measured against the last time the
-// owner looked, stored per browser: the dashboard's notifications tab for
-// leads and unanswered questions, the Conversations page for chats.
+// owner looked, stored per browser: for leads and unanswered questions, the
+// notifications popover; for chats, the Conversations page.
 export const NOTIFICATIONS_SEEN_KEY = "askio_notifications_last_seen";
 const CONVERSATIONS_SEEN_KEY = "askio_conversations_last_seen";
 
 /** Fired when the owner has just looked, so the sidebar clears its count. */
 export const SEEN_EVENT = "askio:seen";
+
+/** Opens the notifications popover in the sidebar from anywhere. */
+export const OPEN_NOTIFICATIONS_EVENT = "askio:open-notifications";
+export const openNotifications = () => window.dispatchEvent(new Event(OPEN_NOTIFICATIONS_EVENT));
 
 function readDate(key: string) {
   try {
@@ -31,7 +35,7 @@ function markSeen(key: string) {
 export const markNotificationsSeen = () => markSeen(NOTIFICATIONS_SEEN_KEY);
 export const markConversationsSeen = () => markSeen(CONVERSATIONS_SEEN_KEY);
 
-export type SidebarCounts = { dashboard: number; conversations: number };
+export type SidebarCounts = { notifications: number; conversations: number };
 
 export async function fetchSidebarCounts(uid: string): Promise<SidebarCounts> {
   // First visit on this browser: count only the last week, not all history.
@@ -51,7 +55,7 @@ export async function fetchSidebarCounts(uid: string): Promise<SidebarCounts> {
       query(...owned("conversations"), where("lastMessageAt", ">", conversationsSince), orderBy("lastMessageAt", "desc"))
     ),
   ]);
-  return { dashboard: leads + questions, conversations };
+  return { notifications: leads + questions, conversations };
 }
 
 export type AiUsage = { used: number; limit: number | null };

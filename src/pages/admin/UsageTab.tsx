@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { Sparkles } from "lucide-react";
+import {  } from "../../components/icons";
 import { EmptyState, focusRing } from "../dashboard/ui";
 import { UsageRow, toUsageRow, usageMonth, usageQuery } from "./data";
 import { Card, FilterChips, Pager, PlanBadge, RowsLoading, UsageBar } from "./parts";
 import { PAGE_SIZE, rangeSummary, usePaged } from "../../hooks/usePaged";
+import { AiIcon } from "../../components/icons";
 
 const monthLabel = (month: string) =>
   new Date(`${month}-01T00:00:00Z`).toLocaleDateString("en-US", { month: "long", year: "numeric", timeZone: "UTC" });
@@ -13,14 +14,14 @@ export const UsageItem: React.FC<{ row: UsageRow; rank?: number; onOpen: (uid: s
     <button
       type="button"
       onClick={() => onOpen(row.uid)}
-      className={`flex w-full items-center gap-4 px-5 py-3 text-left transition-colors hover:bg-[#F3F7FC] sm:px-6 dark:hover:bg-[#141D2B] ${focusRing}`}
+      className={`flex w-full items-center gap-4 px-5 py-3 text-left transition-colors hover:bg-ink-30 sm:px-6 dark:hover:bg-ink-875 ${focusRing}`}
     >
       {rank !== undefined && (
-        <span className="w-6 shrink-0 text-right text-caption tabular-nums text-[#87909D]">{rank}</span>
+        <span className="w-6 shrink-0 text-right text-caption tabular-nums text-ink-425">{rank}</span>
       )}
       <span className="min-w-0 flex-1">
         <span className="mb-1.5 flex min-w-0 items-center gap-2">
-          <span className="truncate text-body-sm font-medium text-[#101723] dark:text-[#D7DFE5]" title={row.user?.email}>
+          <span className="truncate text-body-sm font-medium text-fg" title={row.user?.email}>
             {row.user?.email || row.uid}
           </span>
           {row.user && <PlanBadge user={row.user} />}
@@ -61,10 +62,10 @@ const UsageTab: React.FC<{ onOpen: (uid: string) => void; version: number }> = (
       ) : list.items === null ? (
         <RowsLoading rows={6} height="h-10" />
       ) : list.items.length === 0 ? (
-        <EmptyState compact icon={Sparkles} title="No AI replies" description={`Nobody used AI replies in ${monthLabel(month)}.`} />
+        <EmptyState compact icon={AiIcon} title="No AI replies" description={`Nobody used AI replies in ${monthLabel(month)}.`} />
       ) : (
         <div className={`transition-opacity ${list.loading ? "opacity-60" : ""}`}>
-          <ul className="divide-y divide-[#E7EDF6] dark:divide-[#2B3646]">
+          <ul className="divide-y divide-ink-70 dark:divide-ink-780">
             {list.items.map((row, i) => (
               <UsageItem key={row.uid} row={row} rank={(list.page - 1) * PAGE_SIZE + i + 1} onOpen={onOpen} />
             ))}

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
-import { Check, Copy, MessageCircle, Plus, Send } from "lucide-react";
+import { Check, Copy, MessageCircle, Plus, Send } from "../../components/icons";
+import KioMark from "../../components/KioMark";
 
 // Each illustration mounts when its step becomes active and plays a short
 // timeline from there. With reduced motion it renders the finished state.
@@ -28,14 +29,14 @@ function Caret() {
 
 function TabBar({ tabs, active }: { tabs: string[]; active: string }) {
   return (
-    <div className="flex items-center gap-4 border-b border-[#D8DFE9] bg-[#F3F7FC] px-4 pt-2.5 dark:border-[#2B3646] dark:bg-[#141D2B]">
+    <div className="flex items-center gap-4 border-b border-ink-120 bg-ink-30 px-4 pt-2.5 dark:border-ink-780 dark:bg-ink-875">
       {tabs.map((tab) => (
         <span
           key={tab}
           className={`pb-2 text-caption font-sans ${
             tab === active
-              ? "border-b-2 border-[#101723] font-semibold text-[#101723] dark:border-[#D7DFE5] dark:text-[#D7DFE5]"
-              : "font-medium text-[#647184]"
+              ? "border-b-2 border-ink-900 font-semibold text-ink-900 dark:border-ink-130 dark:text-ink-130"
+              : "font-medium text-ink-545"
           }`}
         >
           {tab}
@@ -66,12 +67,12 @@ export function ConfigureIllustration() {
         {FAQ_SEED.map((item, index) => (
           <div
             key={item.q}
-            className={`rounded-lg border border-[#D8DFE9] bg-[#F9FCFF] px-3 py-2.5 dark:border-[#2B3646] dark:bg-[#1A2533] ${
+            className={`rounded-lg border border-ink-120 bg-ink-25 px-3 py-2.5 dark:border-ink-780 dark:bg-ink-850 ${
               index === 0 ? "hidden sm:block" : ""
             }`}
           >
-            <p className="text-caption font-medium text-[#101723] dark:text-[#D7DFE5]">{item.q}</p>
-            <p className="mt-0.5 text-[11px] text-[#647184] dark:text-[#9BAABD]">{item.a}</p>
+            <p className="text-caption font-medium text-fg">{item.q}</p>
+            <p className="mt-0.5 text-caption text-ink-545 dark:text-ink-325">{item.a}</p>
           </div>
         ))}
 
@@ -79,28 +80,28 @@ export function ConfigureIllustration() {
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3, delay: 0.2 }}
-          className={`space-y-2 rounded-lg border bg-[#F9FCFF] p-3 transition-colors duration-300 dark:bg-[#1A2533] ${
+          className={`space-y-2 rounded-lg border bg-ink-25 p-3 transition-colors duration-300 dark:bg-ink-850 ${
             saved
-              ? "border-[#D8DFE9] dark:border-[#2B3646]"
-              : "border-[#101723] shadow-[0_0_0_3px_rgba(16,23,35,0.06)] dark:border-[#D7DFE5]"
+              ? "border-ink-120 dark:border-ink-780"
+              : "border-ink-900 shadow-[0_0_0_3px_rgba(16,23,35,0.06)] dark:border-ink-130"
           }`}
         >
-          <div className="flex h-8 items-center rounded-md border border-[#D8DFE9] bg-[#F3F7FC] px-2.5 dark:border-[#2B3646] dark:bg-[#141D2B]">
-            <span className={`text-caption font-medium ${question ? "text-[#101723] dark:text-[#D7DFE5]" : "text-[#9BAABD]"}`}>
+          <div className="flex h-8 items-center rounded-md border border-ink-120 bg-ink-30 px-2.5 dark:border-ink-780 dark:bg-ink-875">
+            <span className={`text-caption font-medium ${question ? "text-fg" : "text-ink-325"}`}>
               {question || "Question"}
             </span>
             {typingQuestion ? <Caret /> : null}
           </div>
-          <div className="flex h-8 items-center rounded-md border border-[#D8DFE9] bg-[#F3F7FC] px-2.5 dark:border-[#2B3646] dark:bg-[#141D2B]">
-            <span className={`text-[11px] ${answer ? "text-[#566273] dark:text-[#9BAABD]" : "text-[#9BAABD]"}`}>
+          <div className="flex h-8 items-center rounded-md border border-ink-120 bg-ink-30 px-2.5 dark:border-ink-780 dark:bg-ink-875">
+            <span className={`text-caption ${answer ? "text-fg-muted" : "text-ink-325"}`}>
               {answer || "Answer"}
             </span>
             {typingAnswer ? <Caret /> : null}
           </div>
         </motion.div>
       </div>
-      <div className="flex items-center justify-between border-t border-[#D8DFE9] bg-[#F3F7FC] px-4 py-2.5 dark:border-[#2B3646] dark:bg-[#141D2B]">
-        <span className="flex items-center gap-1.5 text-caption text-[#566273] dark:text-[#9BAABD]">
+      <div className="flex items-center justify-between border-t border-ink-120 bg-ink-30 px-4 py-2.5 dark:border-ink-780 dark:bg-ink-875">
+        <span className="flex items-center gap-1.5 text-caption text-fg-muted">
           {saved ? (
             <motion.span
               initial={{ scale: 0.6, opacity: 0 }}
@@ -114,7 +115,7 @@ export function ConfigureIllustration() {
           )}
           {saved ? "3 answers saved" : "Unsaved changes"}
         </span>
-        <span className="flex items-center gap-1 rounded-md bg-[#101723] px-3 py-1.5 text-caption font-medium text-white dark:bg-[#D7DFE5] dark:text-[#141D2B]">
+        <span className="flex items-center gap-1 rounded-md bg-ink-900 px-3 py-1.5 text-caption font-medium text-white dark:bg-ink-130 dark:text-ink-875">
           <Plus className="h-3 w-3" /> Add Q&amp;A
         </span>
       </div>
@@ -129,7 +130,7 @@ function accent(index: number) {
   const color = DESIGN_COLORS[index];
   return color
     ? { className: "text-white", style: { backgroundColor: color } }
-    : { className: "bg-[#101723] text-white dark:bg-[#D7DFE5] dark:text-[#141D2B]", style: {} };
+    : { className: "bg-ink-900 text-white dark:bg-ink-130 dark:text-ink-875", style: {} };
 }
 
 export function DesignIllustration() {
@@ -140,10 +141,10 @@ export function DesignIllustration() {
 
   return (
     <div className="flex h-full">
-      <div className="flex w-[38%] flex-col gap-4 border-r border-[#D8DFE9] bg-[#F3F7FC] p-3 sm:w-1/3 sm:p-5 dark:border-[#2B3646] dark:bg-[#141D2B]">
-        <div className="text-caption font-semibold text-[#101723] dark:text-[#D7DFE5]">Appearance</div>
+      <div className="flex w-[38%] flex-col gap-4 border-r border-ink-120 bg-ink-30 p-3 sm:w-1/3 sm:p-5 dark:border-ink-780 dark:bg-ink-875">
+        <div className="text-caption font-semibold text-fg">Appearance</div>
         <div className="space-y-2">
-          <div className="text-[10px] font-medium text-[#566273] dark:text-[#9BAABD]">Theme color</div>
+          <div className="text-caption font-medium text-fg-muted">Theme color</div>
           <div className="flex gap-1 sm:gap-2">
             {DESIGN_COLORS.map((_, index) => {
               const swatch = accent(index);
@@ -153,7 +154,7 @@ export function DesignIllustration() {
                     <motion.span
                       layoutId="design-swatch-ring"
                       transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                      className="absolute inset-0 rounded-full ring-2 ring-[#101723] dark:ring-[#D7DFE5]"
+                      className="absolute inset-0 rounded-full ring-2 ring-ink-900 dark:ring-ink-130"
                     />
                   ) : null}
                   <span className={`size-3.5 rounded-full sm:size-4 ${swatch.className}`} style={swatch.style} />
@@ -163,8 +164,8 @@ export function DesignIllustration() {
           </div>
         </div>
         <div className="space-y-2">
-          <div className="text-[10px] font-medium text-[#566273] dark:text-[#9BAABD]">Position</div>
-          <div className="relative flex rounded-md border border-[#D8DFE9] p-0.5 dark:border-[#2B3646]">
+          <div className="text-caption font-medium text-fg-muted">Position</div>
+          <div className="relative flex rounded-md border border-ink-120 p-0.5 dark:border-ink-780">
             {["Left", "Right"].map((side) => {
               const selected = (side === "Left") === onLeft;
               return (
@@ -173,12 +174,12 @@ export function DesignIllustration() {
                     <motion.span
                       layoutId="design-position-pill"
                       transition={{ type: "spring", stiffness: 400, damping: 32 }}
-                      className="absolute inset-0 rounded bg-[#101723] dark:bg-[#D7DFE5]"
+                      className="absolute inset-0 rounded bg-ink-900 dark:bg-ink-130"
                     />
                   ) : null}
                   <span
-                    className={`relative text-[9px] font-medium transition-colors duration-200 ${
-                      selected ? "text-white dark:text-[#141D2B]" : "text-[#566273] dark:text-[#9BAABD]"
+                    className={`relative text-caption font-medium transition-colors duration-200 ${
+                      selected ? "text-white dark:text-ink-875" : "text-fg-muted"
                     }`}
                   >
                     {side}
@@ -188,21 +189,34 @@ export function DesignIllustration() {
             })}
           </div>
         </div>
+        {/* The editor's two launcher styles; Classic is the one in the preview. */}
         <div className="hidden space-y-2 sm:block">
-          <div className="text-[10px] font-medium text-[#566273] dark:text-[#9BAABD]">Corner radius</div>
-          <div className="h-1.5 w-full rounded-full bg-[#D8DFE9] dark:bg-[#2B3646]">
-            <div className="h-full w-3/4 rounded-full bg-[#101723] dark:bg-[#D7DFE5]" />
+          <div className="text-caption font-medium text-fg-muted">Launcher</div>
+          <div className="grid grid-cols-2 gap-1.5">
+            <span className="flex flex-col items-center gap-1 rounded-md border border-ink-900 bg-ink-25 py-1.5 dark:border-ink-130 dark:bg-ink-850">
+              <span
+                className={`flex size-5 items-center justify-center rounded-full transition-colors duration-500 ${theme.className}`}
+                style={theme.style}
+              >
+                <MessageCircle className="h-2.5 w-2.5" />
+              </span>
+              <span className="text-caption font-medium text-fg">Classic</span>
+            </span>
+            <span className="flex flex-col items-center gap-1 rounded-md border border-ink-120 py-1.5 dark:border-ink-780">
+              <KioMark size={20} className="text-ink-900 dark:text-ink-130" />
+              <span className="text-caption font-medium text-fg-muted">Kio</span>
+            </span>
           </div>
         </div>
       </div>
 
-      <div className="relative flex flex-1 flex-col bg-[#F3F7FC] p-3 sm:p-5 dark:bg-[#141D2B]">
-        <div className="mb-3 hidden text-[10px] font-medium tracking-wide text-[#647184] sm:block">PREVIEW</div>
+      <div className="relative flex flex-1 flex-col bg-ink-30 p-3 sm:p-5 dark:bg-ink-875">
+        <div className="mb-3 hidden text-caption font-medium tracking-wide text-ink-545 sm:block">PREVIEW</div>
         {/* A blank page sketch behind the widget */}
         <div className="hidden space-y-2 opacity-60 sm:block" aria-hidden="true">
-          <div className="h-2 w-2/5 rounded-full bg-[#D8DFE9] dark:bg-[#2B3646]" />
-          <div className="h-2 w-4/5 rounded-full bg-[#E7EDF6] dark:bg-[#202C3C]" />
-          <div className="h-2 w-3/5 rounded-full bg-[#E7EDF6] dark:bg-[#202C3C]" />
+          <div className="h-2 w-2/5 rounded-full bg-ink-120 dark:bg-ink-780" />
+          <div className="h-2 w-4/5 rounded-full bg-ink-70 dark:bg-ink-820" />
+          <div className="h-2 w-3/5 rounded-full bg-ink-70 dark:bg-ink-820" />
         </div>
         <div className={`mt-auto flex ${onLeft ? "justify-start" : "justify-end"}`}>
           <motion.div
@@ -210,28 +224,28 @@ export function DesignIllustration() {
             transition={{ type: "spring", stiffness: 260, damping: 28 }}
             className={`flex flex-col gap-2 ${onLeft ? "items-start" : "items-end"}`}
           >
-            <div className="w-[170px] space-y-2.5 rounded-xl bg-[#F9FCFF] p-3 shadow-lg sm:w-[210px] dark:bg-[#1A2533]">
-              <div className="flex items-center gap-2 border-b border-[#D8DFE9] pb-2 dark:border-[#2B3646]">
+            <div className="w-[170px] space-y-2.5 rounded-xl bg-ink-25 p-3 shadow-lg sm:w-[210px] dark:bg-ink-850">
+              <div className="flex items-center gap-2 border-b border-ink-120 pb-2 dark:border-ink-780">
                 <span
                   className={`flex size-6 items-center justify-center rounded-full transition-colors duration-500 ${theme.className}`}
                   style={theme.style}
                 >
                   <MessageCircle className="h-3 w-3" />
                 </span>
-                <span className="text-caption font-semibold text-[#101723] dark:text-[#D7DFE5]">Askio Bot</span>
+                <span className="text-caption font-semibold text-fg">Askio Bot</span>
                 <span className="ml-auto size-1.5 rounded-full bg-[#10B981]" />
               </div>
-              <p className="w-fit rounded-lg rounded-bl-none bg-[#F3F7FC] px-2.5 py-1.5 text-[10px] text-[#101723] dark:bg-[#2B3646] dark:text-[#D7DFE5]">
+              <p className="w-fit rounded-lg rounded-bl-none bg-ink-30 px-2.5 py-1.5 text-caption text-ink-900 dark:bg-ink-780 dark:text-ink-130">
                 Hi there! How can I help?
               </p>
               <p
-                className={`ml-auto w-fit rounded-lg rounded-br-none px-2.5 py-1.5 text-[10px] transition-colors duration-500 ${theme.className}`}
+                className={`ml-auto w-fit rounded-lg rounded-br-none px-2.5 py-1.5 text-caption transition-colors duration-500 ${theme.className}`}
                 style={theme.style}
               >
                 Where's my order?
               </p>
-              <div className="flex items-center gap-1.5 rounded-lg bg-[#F3F7FC] p-1.5 dark:bg-[#2B3646]">
-                <span className="flex-1 px-1 text-[9px] text-[#647184]">Type a message...</span>
+              <div className="flex items-center gap-1.5 rounded-lg bg-ink-30 p-1.5 dark:bg-ink-780">
+                <span className="flex-1 px-1 text-caption text-ink-545">Type a message...</span>
                 <span
                   className={`flex size-5 items-center justify-center rounded transition-colors duration-500 ${theme.className}`}
                   style={theme.style}
@@ -262,10 +276,10 @@ const EMBED_LINES: { text: string; tone: "tag" | "attr" | "string" | "plain" }[]
   [{ text: "  async", tone: "attr" }, { text: "></script>", tone: "tag" }],
 ];
 const TONE_CLASS = {
-  tag: "text-[#566273] dark:text-[#9BAABD]",
-  attr: "text-[#647184] dark:text-[#87909D]",
-  string: "text-[#101723] dark:text-[#D7DFE5]",
-  plain: "font-semibold text-[#101723] dark:text-[#D7DFE5]",
+  tag: "text-fg-muted",
+  attr: "text-fg-subtle",
+  string: "text-fg",
+  plain: "font-semibold text-fg",
 };
 
 export function EmbedIllustration() {
@@ -276,11 +290,11 @@ export function EmbedIllustration() {
 
   return (
     <div className="relative flex h-full flex-col">
-      <div className="flex items-center justify-between border-b border-[#D8DFE9] bg-[#F3F7FC] px-4 py-2.5 dark:border-[#2B3646] dark:bg-[#141D2B]">
-        <span className="font-mono text-caption font-medium text-[#101723] dark:text-[#D7DFE5]">index.html</span>
-        <span className="text-[10px] text-[#647184]">Paste before &lt;/body&gt;</span>
+      <div className="flex items-center justify-between border-b border-ink-120 bg-ink-30 px-4 py-2.5 dark:border-ink-780 dark:bg-ink-875">
+        <span className="font-mono text-caption font-medium text-fg">index.html</span>
+        <span className="text-caption text-ink-545">Paste before &lt;/body&gt;</span>
       </div>
-      <div className="flex-1 overflow-hidden bg-[#F9FCFF] px-3 py-3 font-mono text-[10px] leading-[20px] sm:px-5 sm:py-4 sm:text-[12px] sm:leading-[24px] dark:bg-[#1A2533]">
+      <div className="flex-1 overflow-hidden bg-ink-25 px-3 py-3 font-mono text-caption leading-[20px] sm:px-5 sm:py-4 sm:text-[12px] sm:leading-[24px] dark:bg-ink-850">
         {EMBED_LINES.map((tokens, index) => (
           <motion.div
             key={index}
@@ -289,7 +303,7 @@ export function EmbedIllustration() {
             transition={{ duration: 0.2 }}
             className="flex whitespace-nowrap"
           >
-            <span className="mr-3 w-4 shrink-0 select-none text-right text-[#B8C2CF] sm:mr-4 dark:text-[#3A4657]">{index + 1}</span>
+            <span className="mr-3 w-4 shrink-0 select-none text-right text-ink-235 sm:mr-4 dark:text-ink-720">{index + 1}</span>
             <span className="truncate">
               {tokens.map((token, i) => (
                 <span key={i} className={TONE_CLASS[token.tone]}>
@@ -300,16 +314,16 @@ export function EmbedIllustration() {
           </motion.div>
         ))}
       </div>
-      <div className="flex items-center justify-between border-t border-[#D8DFE9] bg-[#F3F7FC] px-3 py-2.5 sm:px-5 dark:border-[#2B3646] dark:bg-[#141D2B]">
-        <span className="flex items-center gap-2 text-caption text-[#566273] dark:text-[#9BAABD]">
-          <span className={`size-2 rounded-full transition-colors duration-300 ${live ? "bg-[#10B981]" : "bg-[#D8DFE9] dark:bg-[#2B3646]"}`} />
+      <div className="flex items-center justify-between border-t border-ink-120 bg-ink-30 px-3 py-2.5 sm:px-5 dark:border-ink-780 dark:bg-ink-875">
+        <span className="flex items-center gap-2 text-caption text-fg-muted">
+          <span className={`size-2 rounded-full transition-colors duration-300 ${live ? "bg-[#10B981]" : "bg-ink-120 dark:bg-ink-780"}`} />
           {live ? "Live on yourstore.com" : "Waiting for install"}
         </span>
         <span
           className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-caption font-medium transition-colors duration-300 ${
             copied
               ? "bg-[#0F9D74] text-white"
-              : "bg-[#101723] text-white dark:bg-[#D7DFE5] dark:text-[#141D2B]"
+              : "bg-ink-900 text-white dark:bg-ink-130 dark:text-ink-875"
           }`}
         >
           {copied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
@@ -322,21 +336,21 @@ export function EmbedIllustration() {
         initial={{ opacity: 0, y: 24 }}
         animate={live ? { opacity: 1, y: 0 } : { opacity: 0, y: 24 }}
         transition={{ type: "spring", stiffness: 220, damping: 24 }}
-        className="absolute bottom-14 right-3 w-[150px] overflow-hidden rounded-lg border border-[#D8DFE9] bg-[#F9FCFF] shadow-[0_12px_32px_-12px_rgba(16,23,35,0.35)] sm:bottom-16 sm:right-5 sm:w-[200px] dark:border-[#2B3646] dark:bg-[#202C3C]"
+        className="absolute bottom-14 right-3 w-[150px] overflow-hidden rounded-lg border border-ink-120 bg-ink-25 shadow-[0_12px_32px_-12px_rgba(16,23,35,0.35)] sm:bottom-16 sm:right-5 sm:w-[200px] dark:border-ink-780 dark:bg-ink-820"
         aria-hidden="true"
       >
-        <div className="flex items-center gap-1 border-b border-[#D8DFE9] bg-[#F3F7FC] px-2 py-1.5 dark:border-[#2B3646] dark:bg-[#141D2B]">
-          <span className="truncate rounded bg-[#F9FCFF] px-1.5 text-[8px] text-[#647184] sm:text-[9px] dark:bg-[#1A2533]">yourstore.com</span>
+        <div className="flex items-center gap-1 border-b border-ink-120 bg-ink-30 px-2 py-1.5 dark:border-ink-780 dark:bg-ink-875">
+          <span className="truncate rounded bg-ink-25 px-1.5 text-[8px] text-ink-545 sm:text-caption dark:bg-ink-850">yourstore.com</span>
         </div>
         <div className="relative h-[64px] space-y-1.5 p-2 sm:h-[84px]">
-          <div className="h-1.5 w-1/2 rounded-full bg-[#D8DFE9] dark:bg-[#2B3646]" />
-          <div className="h-1.5 w-4/5 rounded-full bg-[#E7EDF6] dark:bg-[#1A2533]" />
-          <div className="h-1.5 w-3/5 rounded-full bg-[#E7EDF6] dark:bg-[#1A2533]" />
+          <div className="h-1.5 w-1/2 rounded-full bg-ink-120 dark:bg-ink-780" />
+          <div className="h-1.5 w-4/5 rounded-full bg-ink-70 dark:bg-ink-850" />
+          <div className="h-1.5 w-3/5 rounded-full bg-ink-70 dark:bg-ink-850" />
           <motion.span
             initial={{ scale: 0 }}
             animate={live ? { scale: 1 } : { scale: 0 }}
             transition={{ type: "spring", stiffness: 420, damping: 18, delay: 0.25 }}
-            className="absolute bottom-2 right-2 flex size-6 items-center justify-center rounded-full bg-[#101723] text-white shadow-md sm:size-7 dark:bg-[#D7DFE5] dark:text-[#141D2B]"
+            className="absolute bottom-2 right-2 flex size-6 items-center justify-center rounded-full bg-ink-900 text-white shadow-md sm:size-7 dark:bg-ink-130 dark:text-ink-875"
           >
             <MessageCircle className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
           </motion.span>

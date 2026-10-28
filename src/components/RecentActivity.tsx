@@ -1,6 +1,6 @@
 import React from "react";
 import { format, formatDistanceToNowStrict } from "date-fns";
-import { MessageSquareHeart, ThumbsDown, ThumbsUp } from "lucide-react";
+import { MessageSquareHeart, ThumbsDown, ThumbsUp } from "./icons";
 import { dateLocale, useT } from "../i18n";
 import { dashboardMessages } from "../i18n/messages/dashboard";
 import { commonMessages } from "../i18n/messages/common";
@@ -22,25 +22,25 @@ const RecentActivity: React.FC<RecentActivityProps> = ({ activities, onViewAll }
   const tc = useT(commonMessages);
   const locale = dateLocale(t.lang);
   return (
-    <div className="flex h-full flex-col rounded-xl border border-[#D8DFE9] bg-[#F9FCFF] text-[#101723] shadow-[0_1px_2px_rgba(16,23,35,0.04)] dark:border-[#2B3646] dark:bg-[#1A2533] dark:text-[#D7DFE5]">
-      <div className="flex items-start justify-between gap-3 border-b border-[#E7EDF6] px-5 pt-5 pb-4 sm:px-6 dark:border-[#2B3646]">
+    <div className="flex h-full flex-col rounded-xl border border-ink-120 bg-ink-25 text-ink-900 shadow-[0_1px_2px_rgba(16,23,35,0.04)] dark:border-ink-780 dark:bg-ink-850 dark:text-ink-130">
+      <div className="flex items-start justify-between gap-3 border-b border-ink-70 px-5 pt-5 pb-4 sm:px-6 dark:border-ink-780">
         <div>
           <h3 className="text-body font-semibold tracking-tight">{t("recentTitle")}</h3>
-          <p className="mt-0.5 text-body-sm text-[#566273] dark:text-[#9BAABD]">
+          <p className="mt-0.5 text-body-sm text-fg-muted">
             {t("recentDesc")}
           </p>
         </div>
         {onViewAll && activities.length > 0 && (
           <button
             onClick={onViewAll}
-            className="shrink-0 rounded text-body-sm font-medium text-[#566273] underline-offset-4 hover:text-[#101723] hover:underline dark:text-[#9BAABD] dark:hover:text-[#D7DFE5]"
+            className="shrink-0 rounded text-body-sm font-medium text-ink-605 underline-offset-4 hover:text-ink-900 hover:underline dark:text-ink-325 dark:hover:text-ink-130"
           >
             {t("viewAll")}
           </button>
         )}
       </div>
       {activities.length > 0 ? (
-        <ul className="flex-1 divide-y divide-[#E7EDF6] dark:divide-[#2B3646]">
+        <ul className="flex-1 divide-y divide-ink-70 dark:divide-ink-780">
           {activities.map((activity) => {
             const positive = activity.type === "positive";
             const Icon = positive ? ThumbsUp : ThumbsDown;
@@ -57,14 +57,14 @@ const RecentActivity: React.FC<RecentActivityProps> = ({ activities, onViewAll }
                 </span>
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-body-sm font-medium">{activity.chatbotName}</p>
-                  <p className="text-caption text-[#647184] dark:text-[#87909D]">
+                  <p className="text-caption text-fg-subtle">
                     {positive ? t("positiveRating") : t("negativeRating")}
                   </p>
                 </div>
                 <time
                   dateTime={activity.date.toISOString()}
                   title={format(activity.date, tc("dateTimeFormat"), { locale })}
-                  className="shrink-0 text-caption tabular-nums text-[#647184] dark:text-[#87909D]"
+                  className="shrink-0 text-caption tabular-nums text-fg-subtle"
                 >
                   {activity.date.getTime() === 0
                     ? "—"
@@ -76,9 +76,9 @@ const RecentActivity: React.FC<RecentActivityProps> = ({ activities, onViewAll }
         </ul>
       ) : (
         <div className="flex flex-1 flex-col items-center justify-center px-6 py-12 text-center">
-          <MessageSquareHeart size={26} className="text-[#87909D]" strokeWidth={1.5} />
+          <MessageSquareHeart size={26} className="text-ink-425" strokeWidth={1.5} />
           <p className="mt-3 text-body-sm font-medium">{t("noActivityTitle")}</p>
-          <p className="mt-1 max-w-xs text-caption text-[#647184] dark:text-[#87909D]">
+          <p className="mt-1 max-w-xs text-caption text-fg-subtle">
             {t("noActivityDesc")}
           </p>
         </div>

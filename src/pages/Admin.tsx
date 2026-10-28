@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
-import { RefreshCw, ShieldCheck } from "lucide-react";
+import { RefreshCw, ShieldCheck } from "../components/icons";
 import { PageSkeleton } from "../components/Skeleton";
 import { useIsAdmin } from "../hooks/useIsAdmin";
 import { EmptyState, focusRing, secondaryButton } from "./dashboard/ui";
@@ -88,7 +88,7 @@ const Admin: React.FC = () => {
 
   if (!isAdmin) {
     return (
-      <div className="min-h-screen bg-[#F3F7FC] px-4 py-16 dark:bg-[#141D2B]">
+      <div className="min-h-screen bg-ink-30 px-4 py-16 dark:bg-ink-875">
         <EmptyState
           icon={ShieldCheck}
           title="This page isn't available"
@@ -104,7 +104,7 @@ const Admin: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#F3F7FC] font-sans text-[#101723] dark:bg-[#141D2B]">
+    <div className="min-h-screen bg-ink-30 font-sans text-ink-900 dark:bg-ink-875">
       <Helmet>
         <title>Admin | Askio</title>
         <meta name="robots" content="noindex" />
@@ -113,8 +113,8 @@ const Admin: React.FC = () => {
       <div className="w-full px-4 py-6 sm:px-6 sm:py-8 lg:px-8 xl:px-10">
         <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <h1 className="font-serif text-h2 tracking-tight text-[#101723] sm:text-h1 dark:text-[#D7DFE5]">Admin</h1>
-            <p className="mt-1 text-body-sm text-[#566273] dark:text-[#9BAABD]">
+            <h1 className="font-display text-h2 tracking-tight text-ink-900 sm:text-h1 dark:text-ink-130">Admin</h1>
+            <p className="mt-1 text-body-sm text-fg-muted">
               Every account on Askio. Only admins can see this page.
             </p>
           </div>
@@ -128,7 +128,7 @@ const Admin: React.FC = () => {
           ref={tabScroller}
           role="tablist"
           aria-label="Admin sections"
-          className="scrollbar-hide -mx-4 mt-6 flex gap-1 overflow-x-auto border-b border-[#D8DFE9] px-4 sm:mx-0 sm:px-0 dark:border-[#2B3646]"
+          className="scrollbar-hide -mx-4 mt-6 flex gap-1 overflow-x-auto border-b border-ink-120 px-4 sm:mx-0 sm:px-0 dark:border-ink-780"
         >
           {TABS.map((t) => {
             const isActive = tab === t.key;
@@ -141,8 +141,8 @@ const Admin: React.FC = () => {
                 onClick={() => setTab(t.key)}
                 className={`relative -mb-px shrink-0 whitespace-nowrap border-b-2 px-3 pb-3 pt-1 text-body-sm font-medium transition-colors ${focusRing} ${
                   isActive
-                    ? "border-[#101723] text-[#101723] dark:border-[#D7DFE5] dark:text-[#E7EDF6]"
-                    : "border-transparent text-[#647184] hover:text-[#101723] dark:text-[#87909D] dark:hover:text-[#D7DFE5]"
+                    ? "border-ink-900 text-ink-900 dark:border-ink-130 dark:text-ink-70"
+                    : "border-transparent text-ink-545 hover:text-ink-900 dark:text-ink-425 dark:hover:text-ink-130"
                 }`}
               >
                 {t.label}

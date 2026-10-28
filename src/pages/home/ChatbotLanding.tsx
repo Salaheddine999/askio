@@ -35,7 +35,7 @@ export default function ChatbotLanding() {
   }, []);
 
   return (
-    <div className="askio-home w-full min-h-screen bg-[#F3F7FC] dark:bg-[#141D2B] font-sans text-[#101723] overflow-x-clip">
+    <div className="askio-home w-full min-h-screen bg-ink-30 dark:bg-ink-875 font-sans text-ink-900 overflow-x-clip">
       <Helmet>
         <title>Askio · A chatbot for your website that answers from your FAQs</title>
         <meta
@@ -45,17 +45,17 @@ export default function ChatbotLanding() {
       </Helmet>
 
       <div className="relative mx-auto max-w-[1060px] px-4 sm:px-6 lg:px-0">
-        <div className="hidden lg:block w-[1px] h-full absolute left-0 top-0 bg-[rgba(16,23,35,0.12)] dark:bg-[#2B3646]" />
-        <div className="hidden lg:block w-[1px] h-full absolute right-0 top-0 bg-[rgba(16,23,35,0.12)] dark:bg-[#2B3646]" />
+        <div className="hidden lg:block w-[1px] h-full absolute left-0 top-0 bg-[rgba(16,23,35,0.12)] dark:bg-ink-780" />
+        <div className="hidden lg:block w-[1px] h-full absolute right-0 top-0 bg-[rgba(16,23,35,0.12)] dark:bg-ink-780" />
 
         <LandingNav />
         <HeroSection />
         <MarqueeStrip />
         <FeaturesSection />
-        <LiveOrbSection />
-        <PlansSection />
         <HowItWorks />
+        <LiveOrbSection />
         <TestimonialsSection />
+        <PlansSection />
         <FAQSection />
         <CTASection />
         <Footer />

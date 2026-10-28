@@ -1,5 +1,5 @@
 import React from "react";
-import { Download, FileSpreadsheet, HelpCircle, LoaderCircle, LucideIcon, UserPlus } from "lucide-react";
+import { Download, FileSpreadsheet, HelpCircle, LoaderCircle, LucideIcon, UserPlus } from "../../components/icons";
 import { SectionHeader, secondaryButton, surface } from "./ui";
 import { useT } from "../../i18n";
 import { dashboardMessages } from "../../i18n/messages/dashboard";
@@ -40,15 +40,15 @@ const ReportCard: React.FC<ReportCardProps> = ({
     <span className={`flex h-10 w-10 items-center justify-center rounded-xl ring-1 ring-inset ${tone}`}>
       <Icon size={19} strokeWidth={1.75} />
     </span>
-    <h3 className="mt-4 text-body font-semibold tracking-tight text-[#101723] dark:text-[#D7DFE5]">
+    <h3 className="mt-4 text-body font-semibold tracking-tight text-fg">
       {title}
     </h3>
-    <p className="mt-1 flex-1 text-body-sm text-[#566273] dark:text-[#9BAABD]">{description}</p>
+    <p className="mt-1 flex-1 text-body-sm text-fg-muted">{description}</p>
     <div className="mt-4 flex flex-wrap gap-1.5">
       {columns.map((column) => (
         <span
           key={column}
-          className="rounded-md bg-[#F3F7FC] px-1.5 py-0.5 font-mono text-[11px] text-[#566273] ring-1 ring-inset ring-[#D8DFE9] dark:bg-[#141D2B] dark:text-[#9BAABD] dark:ring-[#2B3646]"
+          className="rounded-md bg-ink-30 px-1.5 py-0.5 font-mono text-caption text-ink-605 ring-1 ring-inset ring-ink-120 dark:bg-ink-875 dark:text-ink-325 dark:ring-ink-780"
         >
           {column}
         </span>
@@ -57,7 +57,7 @@ const ReportCard: React.FC<ReportCardProps> = ({
     <button
       onClick={onDownload}
       disabled={generating || disabled}
-      className={`${secondaryButton} mt-5 w-full text-[#101723] dark:text-[#D7DFE5]`}
+      className={`${secondaryButton} mt-5 w-full text-fg`}
     >
       {generating ? <LoaderCircle size={15} className="animate-spin" /> : <Download size={15} />}
       {generating ? t("preparing") : t("downloadCsv")}
@@ -84,7 +84,7 @@ const ReportsTab: React.FC<ReportsTabProps> = ({
     <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
       <ReportCard
         icon={FileSpreadsheet}
-        tone="bg-[#E7EDF6] text-[#243040] ring-[#D8DFE9] dark:bg-[#243040] dark:text-[#D7DFE5] dark:ring-[#39485B]"
+        tone="bg-ink-70 text-ink-805 ring-ink-120 dark:bg-ink-805 dark:text-ink-130 dark:ring-ink-710"
         title={t("perfTitle")}
         description={t("perfDesc")}
         columns={[t("chipName"), t("chipPositive"), t("chipNegative"), t("chipCreated"), t("chipUpdated")]}

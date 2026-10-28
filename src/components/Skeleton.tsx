@@ -6,10 +6,10 @@ import { commonMessages } from "../i18n/messages/common";
 export const Skeleton: React.FC<{ className?: string; style?: React.CSSProperties }> = ({
   className = "",
   style,
-}) => <div aria-hidden style={style} className={`animate-pulse rounded-md bg-[#E2E8F1] dark:bg-[#243040] ${className}`} />;
+}) => <div aria-hidden style={style} className={`animate-pulse rounded-md bg-ink-85 dark:bg-ink-805 ${className}`} />;
 
 const card =
-  "rounded-xl border border-[#D8DFE9] bg-[#F9FCFF] dark:border-[#2B3646] dark:bg-[#1A2533]";
+  "rounded-xl border border-ink-120 bg-ink-25 dark:border-ink-780 dark:bg-ink-850";
 
 export const SkeletonCard: React.FC<{ className?: string; children?: React.ReactNode }> = ({
   className = "",
@@ -37,7 +37,7 @@ export const StatTilesSkeleton: React.FC<{ count?: number }> = ({ count = 4 }) =
 );
 
 export const ListSkeleton: React.FC<{ rows?: number; className?: string }> = ({ rows = 4, className = "" }) => (
-  <div className={`divide-y divide-[#E7EDF6] dark:divide-[#2B3646] ${className}`}>
+  <div className={`divide-y divide-ink-70 dark:divide-ink-780 ${className}`}>
     {Array.from({ length: rows }).map((_, i) => (
       <div key={i} className="flex items-center gap-3 px-5 py-3.5 sm:px-6">
         <Skeleton className="h-9 w-9 shrink-0 rounded-lg" />
@@ -55,7 +55,7 @@ export const ListSkeleton: React.FC<{ rows?: number; className?: string }> = ({ 
 export const PageSkeleton: React.FC<{ tiles?: number }> = ({ tiles = 3 }) => {
   const t = useT(commonMessages);
   return (
-  <div className="min-h-screen bg-[#F3F7FC] dark:bg-[#141D2B]" aria-busy="true" aria-label={t("loading")}>
+  <div className="min-h-screen bg-ink-30 dark:bg-ink-875" aria-busy="true" aria-label={t("loading")}>
     <div className="w-full space-y-6 px-4 py-6 sm:px-6 sm:py-8 lg:px-8 xl:px-10">
       <PageHeaderSkeleton />
       {tiles > 0 && (
@@ -75,7 +75,7 @@ export const PageSkeleton: React.FC<{ tiles?: number }> = ({ tiles = 3 }) => {
               <Skeleton className="h-4 w-40" />
               <Skeleton className="h-3 w-56 max-w-full" />
             </div>
-            <ListSkeleton rows={4} className="border-t border-[#E7EDF6] dark:border-[#2B3646]" />
+            <ListSkeleton rows={4} className="border-t border-ink-70 dark:border-ink-780" />
           </SkeletonCard>
         ))}
       </div>
@@ -88,12 +88,12 @@ export const PageSkeleton: React.FC<{ tiles?: number }> = ({ tiles = 3 }) => {
 export const FormPageSkeleton: React.FC = () => {
   const t = useT(commonMessages);
   return (
-  <div className="min-h-screen bg-[#F3F7FC] dark:bg-[#141D2B]" aria-busy="true" aria-label={t("loading")}>
+  <div className="min-h-screen bg-ink-30 dark:bg-ink-875" aria-busy="true" aria-label={t("loading")}>
     <div className="w-full max-w-[1000px] space-y-6 px-4 py-8 sm:px-6 lg:px-10 lg:py-12 xl:px-16">
       <Skeleton className="h-10 w-40" />
       {[0, 1, 2].map((i) => (
         <SkeletonCard key={i}>
-          <div className="border-b border-[#E7EDF6] px-6 py-4 dark:border-[#2B3646]">
+          <div className="border-b border-ink-70 px-6 py-4 dark:border-ink-780">
             <Skeleton className="h-4 w-28" />
           </div>
           <div className="space-y-4 p-6">

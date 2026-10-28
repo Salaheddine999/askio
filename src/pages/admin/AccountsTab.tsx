@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { format } from "date-fns";
-import { Users } from "lucide-react";
+import { Users } from "../../components/icons";
 import { EmptyState, SearchInput, focusRing } from "../dashboard/ui";
 import { AccountFilter, AdminUser, accountsQuery, toAccount } from "./data";
 import { Card, FilterChips, Pager, PlanBadge, RowsLoading } from "./parts";
@@ -25,26 +25,26 @@ export const AccountRow: React.FC<{ user: AdminUser; onOpen: (uid: string) => vo
     <button
       type="button"
       onClick={() => onOpen(user.uid)}
-      className={`grid w-full gap-1.5 px-5 py-3 text-left transition-colors hover:bg-[#F3F7FC] sm:px-6 dark:hover:bg-[#141D2B] ${
+      className={`grid w-full gap-1.5 px-5 py-3 text-left transition-colors hover:bg-ink-30 sm:px-6 dark:hover:bg-ink-875 ${
         compact ? "grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3" : `grid-cols-1 md:items-center md:gap-4 ${COLUMNS}`
       } ${focusRing}`}
     >
       <span className="min-w-0">
-        <span className="block truncate text-body-sm font-medium text-[#101723] dark:text-[#D7DFE5]" title={user.email}>
+        <span className="block truncate text-body-sm font-medium text-fg" title={user.email}>
           {user.email || user.uid}
         </span>
         {user.displayName && (
-          <span className="block truncate text-caption text-[#647184] dark:text-[#87909D]">{user.displayName}</span>
+          <span className="block truncate text-caption text-fg-subtle">{user.displayName}</span>
         )}
       </span>
       {compact ? (
-        <span className="text-right text-caption tabular-nums text-[#647184] dark:text-[#87909D]">
+        <span className="text-right text-caption tabular-nums text-fg-subtle">
           {user.createdAt ? format(user.createdAt, "MMM d") : "—"}
         </span>
       ) : (
         <>
           <PlanBadge user={user} />
-          <span className="text-caption tabular-nums text-[#647184] md:text-right dark:text-[#87909D]">
+          <span className="text-caption tabular-nums text-ink-545 md:text-right dark:text-ink-425">
             {user.createdAt ? format(user.createdAt, "MMM d, yyyy") : "—"}
           </span>
         </>
@@ -86,10 +86,10 @@ const AccountsTab: React.FC<{ onOpen: (uid: string) => void; version: number }> 
       }
       action={<SearchInput value={search} onChange={setSearch} placeholder="Search by email" />}
     >
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#E7EDF6] px-5 py-3 sm:px-6 dark:border-[#2B3646]">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-ink-70 px-5 py-3 sm:px-6 dark:border-ink-780">
         <FilterChips label="Filter accounts" value={filter} onChange={setFilter} options={FILTERS} />
         {list.total !== null && (
-          <span className="text-caption tabular-nums text-[#647184] dark:text-[#87909D]">
+          <span className="text-caption tabular-nums text-fg-subtle">
             {list.total.toLocaleString()} {list.total === 1 ? "account" : "accounts"}
           </span>
         )}
@@ -111,13 +111,13 @@ const AccountsTab: React.FC<{ onOpen: (uid: string) => void; version: number }> 
       ) : (
         <div className={`transition-opacity ${list.loading ? "opacity-60" : ""}`}>
           <div
-            className={`sticky top-0 z-10 hidden gap-4 border-b border-[#E7EDF6] bg-[#F9FCFF] px-6 py-2 text-caption font-medium uppercase tracking-wider text-[#87909D] md:grid dark:border-[#2B3646] dark:bg-[#1A2533] ${COLUMNS}`}
+            className={`sticky top-0 z-10 hidden gap-4 border-b border-ink-70 bg-ink-25 px-6 py-2 text-caption font-medium text-ink-425 md:grid dark:border-ink-780 dark:bg-ink-850 ${COLUMNS}`}
           >
             <span>Account</span>
             <span>Plan</span>
             <span className="text-right">Joined</span>
           </div>
-          <ul className="divide-y divide-[#E7EDF6] dark:divide-[#2B3646]">
+          <ul className="divide-y divide-ink-70 dark:divide-ink-780">
             {list.items.map((u) => (
               <AccountRow key={u.uid} user={u} onOpen={onOpen} />
             ))}

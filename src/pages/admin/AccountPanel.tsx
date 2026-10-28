@@ -2,12 +2,13 @@ import React, { useEffect, useState } from "react";
 import { Dialog, DialogBackdrop, DialogPanel, DialogTitle } from "@headlessui/react";
 import { format } from "date-fns";
 import { toast } from "react-hot-toast";
-import { Ban, Copy, RotateCcw, Sparkles, Trash2, X } from "lucide-react";
+import { Ban, Copy, RotateCcw, Trash2, X } from "../../components/icons";
 import { apiRequest } from "../../utils/api";
 import { Skeleton } from "../../components/Skeleton";
 import { focusRing, primaryButton, secondaryButton } from "../dashboard/ui";
 import { AdminChatbot, AdminUser, fetchAccountDetail, fetchUser } from "./data";
 import { PlanBadge, UsageBar } from "./parts";
+import { AiIcon } from "../../components/icons";
 
 type Confirm = "suspend" | "delete" | null;
 
@@ -15,19 +16,19 @@ type Confirm = "suspend" | "delete" | null;
 const BOTS_SHOWN = 8;
 
 const inputClass =
-  "w-full rounded-lg border border-[#D8DFE9] bg-[#F9FCFF] px-3 text-body-sm text-[#101723] placeholder:text-[#87909D] focus:border-[#101723] focus:outline-none focus:ring-2 focus:ring-[#101723]/10 dark:border-[#2B3646] dark:bg-[#141D2B] dark:text-[#D7DFE5] dark:focus:border-[#9BAABD]";
+  "w-full rounded-lg border border-ink-120 bg-ink-25 px-3 text-body-sm text-ink-900 placeholder:text-ink-425 focus:border-ink-900 focus:outline-none focus:ring-2 focus:ring-ink-900/10 dark:border-ink-780 dark:bg-ink-875 dark:text-ink-130 dark:focus:border-ink-325";
 
 const Detail: React.FC<{ label: string; children: React.ReactNode; copy?: string }> = ({ label, children, copy }) => (
   <div className="flex items-start justify-between gap-4 py-2.5">
-    <dt className="shrink-0 text-body-sm text-[#647184] dark:text-[#87909D]">{label}</dt>
-    <dd className="flex min-w-0 items-center gap-1.5 text-right text-body-sm text-[#101723] dark:text-[#D7DFE5]">
+    <dt className="shrink-0 text-body-sm text-fg-subtle">{label}</dt>
+    <dd className="flex min-w-0 items-center gap-1.5 text-right text-body-sm text-fg">
       <span className="truncate">{children}</span>
       {copy && (
         <button
           type="button"
           aria-label={`Copy ${label}`}
           onClick={() => navigator.clipboard.writeText(copy).then(() => toast.success("Copied"), () => undefined)}
-          className={`shrink-0 rounded p-0.5 text-[#87909D] hover:text-[#101723] dark:hover:text-[#D7DFE5] ${focusRing}`}
+          className={`shrink-0 rounded p-0.5 text-ink-425 hover:text-fg ${focusRing}`}
         >
           <Copy size={13} />
         </button>
@@ -109,19 +110,19 @@ const AccountPanel: React.FC<Props> = ({ uid, onClose, onChanged }) => {
 
   return (
     <Dialog open={uid !== null} onClose={onClose} className="relative z-50">
-      <DialogBackdrop className="fixed inset-0 bg-[#101723]/30 backdrop-blur-[1px]" />
+      <DialogBackdrop className="fixed inset-0 bg-ink-900/30" />
       <div className="fixed inset-0 flex justify-end">
-        <DialogPanel className="flex h-full w-full max-w-md flex-col border-l border-[#D8DFE9] bg-[#F9FCFF] shadow-2xl dark:border-[#2B3646] dark:bg-[#1A2533]">
-          <div className="flex items-start justify-between gap-4 border-b border-[#E7EDF6] px-5 py-4 dark:border-[#2B3646]">
+        <DialogPanel className="flex h-full w-full max-w-md flex-col border-l border-ink-120 bg-ink-25 shadow-lg dark:border-ink-780 dark:bg-ink-850">
+          <div className="flex items-start justify-between gap-4 border-b border-ink-70 px-5 py-4 dark:border-ink-780">
             <div className="min-w-0">
-              <DialogTitle className="truncate text-body font-semibold text-[#101723] dark:text-[#E7EDF6]">
+              <DialogTitle className="truncate text-body font-semibold text-ink-900 dark:text-ink-70">
                 {user?.email || (loading ? "Loading…" : "Account")}
               </DialogTitle>
               {user && (
                 <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
                   <PlanBadge user={user} />
                   {user.displayName && (
-                    <span className="truncate text-caption text-[#647184] dark:text-[#87909D]">{user.displayName}</span>
+                    <span className="truncate text-caption text-fg-subtle">{user.displayName}</span>
                   )}
                 </div>
               )}
@@ -130,7 +131,7 @@ const AccountPanel: React.FC<Props> = ({ uid, onClose, onChanged }) => {
               type="button"
               onClick={onClose}
               aria-label="Close"
-              className={`rounded-lg p-1.5 text-[#647184] hover:bg-[#E7EDF6] hover:text-[#101723] dark:text-[#9BAABD] dark:hover:bg-[#273444] ${focusRing}`}
+              className={`rounded-lg p-1.5 text-ink-545 hover:bg-ink-70 hover:text-ink-900 dark:text-ink-325 dark:hover:bg-ink-790 ${focusRing}`}
             >
               <X size={18} />
             </button>
@@ -153,7 +154,7 @@ const AccountPanel: React.FC<Props> = ({ uid, onClose, onChanged }) => {
                   </div>
                 )}
 
-                <dl className="divide-y divide-[#E7EDF6] dark:divide-[#2B3646]">
+                <dl className="divide-y divide-ink-70 dark:divide-ink-780">
                   <Detail label="Joined">{user.createdAt ? format(user.createdAt, "MMM d, yyyy") : "—"}</Detail>
                   <Detail label="Subscription">
                     {user.subscriptionStatus.charAt(0).toUpperCase() + user.subscriptionStatus.slice(1).replace("_", " ")}
@@ -179,30 +180,30 @@ const AccountPanel: React.FC<Props> = ({ uid, onClose, onChanged }) => {
                 </dl>
 
                 <div>
-                  <p className="mb-2 text-label text-[#101723] dark:text-[#D7DFE5]">AI replies this month</p>
+                  <p className="mb-2 text-label text-fg">AI replies this month</p>
                   <UsageBar used={aiReplies} limit={user.aiReplyLimit} />
                 </div>
 
                 <div>
-                  <p className="mb-2 text-label text-[#101723] dark:text-[#D7DFE5]">
-                    Chatbots <span className="font-normal text-[#87909D]">· {chatbots?.length ?? 0}</span>
+                  <p className="mb-2 text-label text-fg">
+                    Chatbots <span className="font-normal text-ink-425">· {chatbots?.length ?? 0}</span>
                   </p>
                   {chatbots && chatbots.length > 0 ? (
-                    <ul className="divide-y divide-[#E7EDF6] rounded-xl border border-[#E7EDF6] dark:divide-[#2B3646] dark:border-[#2B3646]">
+                    <ul className="divide-y divide-ink-70 rounded-xl border border-ink-70 dark:divide-ink-780 dark:border-ink-780">
                       {(showAllBots ? chatbots : chatbots.slice(0, BOTS_SHOWN)).map((bot) => (
                         <li key={bot.id} className="flex items-center justify-between gap-3 px-3.5 py-2.5">
                           <div className="min-w-0">
-                            <p className="truncate text-body-sm font-medium text-[#101723] dark:text-[#D7DFE5]" title={bot.name}>
+                            <p className="truncate text-body-sm font-medium text-fg" title={bot.name}>
                               {bot.name}
                             </p>
-                            <p className="truncate text-caption text-[#647184] dark:text-[#87909D]">
+                            <p className="truncate text-caption text-fg-subtle">
                               {bot.faqCount} questions
                               {bot.lastUpdated ? ` · edited ${format(bot.lastUpdated, "MMM d")}` : ""}
                             </p>
                           </div>
                           {bot.aiEnabled && (
-                            <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-[#E7EDF6] px-2 py-0.5 text-caption text-[#566273] dark:bg-[#273444] dark:text-[#9BAABD]">
-                              <Sparkles size={11} /> AI
+                            <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-ink-70 px-2 py-0.5 text-caption text-ink-605 dark:bg-ink-790 dark:text-ink-325">
+                              <AiIcon size={11} /> AI
                             </span>
                           )}
                         </li>
@@ -212,7 +213,7 @@ const AccountPanel: React.FC<Props> = ({ uid, onClose, onChanged }) => {
                           <button
                             type="button"
                             onClick={() => setShowAllBots((v) => !v)}
-                            className={`w-full px-3.5 py-2.5 text-left text-caption font-medium text-[#566273] hover:text-[#101723] dark:text-[#9BAABD] dark:hover:text-[#D7DFE5] ${focusRing}`}
+                            className={`w-full px-3.5 py-2.5 text-left text-caption font-medium text-ink-605 hover:text-ink-900 dark:text-ink-325 dark:hover:text-ink-130 ${focusRing}`}
                           >
                             {showAllBots ? "Show fewer" : `Show all ${chatbots.length}`}
                           </button>
@@ -220,19 +221,19 @@ const AccountPanel: React.FC<Props> = ({ uid, onClose, onChanged }) => {
                       )}
                     </ul>
                   ) : (
-                    <p className="text-body-sm text-[#647184] dark:text-[#87909D]">No chatbots yet.</p>
+                    <p className="text-body-sm text-fg-subtle">No chatbots yet.</p>
                   )}
                 </div>
 
                 {confirm === "suspend" && (
-                  <div className="space-y-3 rounded-xl border border-[#D8DFE9] p-4 dark:border-[#2B3646]">
-                    <p className="text-body-sm text-[#101723] dark:text-[#D7DFE5]">
+                  <div className="space-y-3 rounded-xl border border-ink-120 p-4 dark:border-ink-780">
+                    <p className="text-body-sm text-fg">
                       Their chatbots stop showing on their sites and they can't make changes. They can still sign in,
                       where they'll see the reason below and how to contact you, and manage billing or delete their
                       account. Billing isn't touched; cancel or refund in Lemon Squeezy if needed.
                     </p>
-                    <p className="text-label text-[#101723] dark:text-[#D7DFE5]">
-                      Reason <span className="font-normal text-[#87909D]">· shown to them</span>
+                    <p className="text-label text-fg">
+                      Reason <span className="font-normal text-ink-425">· shown to them</span>
                     </p>
                     <textarea
                       rows={3}
@@ -261,7 +262,7 @@ const AccountPanel: React.FC<Props> = ({ uid, onClose, onChanged }) => {
 
                 {confirm === "delete" && (
                   <div className="space-y-3 rounded-xl border border-red-200 p-4 dark:border-red-900/60">
-                    <p className="text-body-sm text-[#101723] dark:text-[#D7DFE5]">
+                    <p className="text-body-sm text-fg">
                       This cancels their subscription and permanently deletes the account, its chatbots and all
                       visitor data. It can't be undone. Type <span className="font-medium">{user.email}</span> to confirm.
                     </p>
@@ -292,7 +293,7 @@ const AccountPanel: React.FC<Props> = ({ uid, onClose, onChanged }) => {
           </div>
 
           {user && !loading && confirm === null && (
-            <div className="flex flex-wrap justify-end gap-2 border-t border-[#E7EDF6] px-5 py-3 dark:border-[#2B3646]">
+            <div className="flex flex-wrap justify-end gap-2 border-t border-ink-70 px-5 py-3 dark:border-ink-780">
               {user.suspended ? (
                 <button type="button" disabled={busy} onClick={() => run("admin-unsuspend")} className={secondaryButton}>
                   <RotateCcw size={15} />

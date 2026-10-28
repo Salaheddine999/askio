@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "react-hot-toast";
-import { ChevronDown, ChevronUp, ExternalLink, GripVertical, MessageSquareText, Pencil, Plus, Search, Star, Trash2 } from "lucide-react";
+import { ChevronDown, ChevronUp, ExternalLink, GripVertical, MessageSquareText, Pencil, Plus, Search, Star, Trash2 } from "../icons";
 import { EmptyState, focusRing, primaryButton, secondaryButton, surface } from "../../pages/dashboard/ui";
 import { Field, inputClass } from "./controls";
 import { LIMITS } from "./types";
@@ -62,7 +62,7 @@ const FaqEditor: React.FC<{
       onKeyDown={(e) => {
         if (e.key === "Escape") onCancel();
       }}
-      className="space-y-4 bg-[#F3F7FC] px-5 py-5 sm:px-6 dark:bg-[#141D2B]"
+      className="space-y-4 bg-ink-30 px-5 py-5 sm:px-6 dark:bg-ink-875"
     >
       <Field
         label={t("question")}
@@ -96,10 +96,10 @@ const FaqEditor: React.FC<{
         />
       </Field>
       {showButton ? (
-        <div className="space-y-3 rounded-xl border border-[#D8DFE9] bg-[#F9FCFF] p-4 dark:border-[#2B3646] dark:bg-[#1A2533]">
+        <div className="space-y-3 rounded-xl border border-ink-120 bg-ink-25 p-4 dark:border-ink-780 dark:bg-ink-850">
           <div>
-            <p className="text-body-sm font-medium text-[#101723] dark:text-[#D7DFE5]">{t("buttonSection")}</p>
-            <p className="mt-0.5 text-caption text-[#647184] dark:text-[#87909D]">{t("buttonHint")}</p>
+            <p className="text-body-sm font-medium text-fg">{t("buttonSection")}</p>
+            <p className="mt-0.5 text-caption text-fg-subtle">{t("buttonHint")}</p>
           </div>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <Field label={t("buttonLabel")} htmlFor="faq-button-label">
@@ -130,7 +130,7 @@ const FaqEditor: React.FC<{
         <button
           type="button"
           onClick={() => setShowButton(true)}
-          className={`inline-flex items-center gap-1.5 rounded-md text-caption font-medium text-[#566273] hover:text-[#101723] dark:text-[#9BAABD] dark:hover:text-[#D7DFE5] ${focusRing}`}
+          className={`inline-flex items-center gap-1.5 rounded-md text-caption font-medium text-ink-605 hover:text-ink-900 dark:text-ink-325 dark:hover:text-ink-130 ${focusRing}`}
         >
           <Plus size={13} />
           {t("buttonSection")}
@@ -238,17 +238,17 @@ const FaqTab: React.FC<Props> = ({ faqs, onChange, aiGenerator, initialQuestion 
 
   return (
     <section className={surface}>
-      <div className="flex flex-col gap-4 border-b border-[#E7EDF6] px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6 dark:border-[#2B3646]">
+      <div className="flex flex-col gap-4 border-b border-ink-70 px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6 dark:border-ink-780">
         <div className="min-w-0">
-          <h2 className="flex items-center gap-2 text-body font-semibold text-[#101723] dark:text-[#E7EDF6]">
+          <h2 className="flex items-center gap-2 text-body font-semibold text-ink-900 dark:text-ink-70">
             {t("qaTitle")}
             {faqs.length > 0 && (
-              <span className="rounded-full bg-[#E7EDF6] px-2 py-0.5 text-caption font-medium tabular-nums text-[#566273] dark:bg-[#273444] dark:text-[#9BAABD]">
+              <span className="inline-flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full px-1.5 text-caption font-semibold leading-none tabular-nums bg-ink-70 text-ink-605 dark:bg-ink-790 dark:text-ink-325">
                 {faqs.length}
               </span>
             )}
           </h2>
-          <p className="mt-0.5 text-body-sm text-[#647184] dark:text-[#87909D]">
+          <p className="mt-0.5 text-body-sm text-fg-subtle">
             {t("qaDesc")}
             {faqs.length > 1 && <> {t("reorderHint", { count: SUGGESTED_QUESTIONS })}</>}
           </p>
@@ -263,11 +263,11 @@ const FaqTab: React.FC<Props> = ({ faqs, onChange, aiGenerator, initialQuestion 
       </div>
 
       {faqs.length >= SEARCH_FROM && (
-        <div className="border-b border-[#E7EDF6] px-5 py-3 sm:px-6 dark:border-[#2B3646]">
+        <div className="border-b border-ink-70 px-5 py-3 sm:px-6 dark:border-ink-780">
           <div className="relative">
             <Search
               size={15}
-              className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#87909D]"
+              className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ink-425"
             />
             <input
               type="search"
@@ -282,7 +282,7 @@ const FaqTab: React.FC<Props> = ({ faqs, onChange, aiGenerator, initialQuestion 
       )}
 
       {editing === "new" && (
-        <div className="border-b border-[#E7EDF6] dark:border-[#2B3646]">
+        <div className="border-b border-ink-70 dark:border-ink-780">
           <FaqEditor
             key="new"
             initial={newDraft}
@@ -308,11 +308,11 @@ const FaqTab: React.FC<Props> = ({ faqs, onChange, aiGenerator, initialQuestion 
           }
         />
       ) : visible.length === 0 && faqs.length > 0 ? (
-        <p className="px-6 py-10 text-center text-body-sm text-[#647184] dark:text-[#87909D]">
+        <p className="px-6 py-10 text-center text-body-sm text-fg-subtle">
           {t("noMatch", { query: query.trim() })}
         </p>
       ) : (
-        <ul className="divide-y divide-[#E7EDF6] dark:divide-[#2B3646]">
+        <ul className="divide-y divide-ink-70 dark:divide-ink-780">
           {visible.map(({ faq, index }) =>
             editing === index ? (
               <li key={`edit-${index}`}>
@@ -355,7 +355,7 @@ const FaqTab: React.FC<Props> = ({ faqs, onChange, aiGenerator, initialQuestion 
                   <span
                     aria-hidden
                     title={t("dragToReorder")}
-                    className="-ml-2 mt-0.5 hidden shrink-0 cursor-grab text-[#B8C2CF] active:cursor-grabbing sm:block dark:text-[#4A5A6E]"
+                    className="-ml-2 mt-0.5 hidden shrink-0 cursor-grab text-ink-235 active:cursor-grabbing sm:block dark:text-ink-640"
                   >
                     <GripVertical size={16} />
                   </span>
@@ -365,17 +365,17 @@ const FaqTab: React.FC<Props> = ({ faqs, onChange, aiGenerator, initialQuestion 
                   onClick={() => setEditing(index)}
                   className={`min-w-0 flex-1 rounded-md text-left ${focusRing}`}
                 >
-                  <p className="text-body-sm font-medium text-[#101723] dark:text-[#D7DFE5]">
+                  <p className="text-body-sm font-medium text-fg">
                     {faq.question}
                     {suggestedSet.has(faq) && faqs.length > 1 && (
-                      <span className="ml-2 inline-block rounded-full bg-[#E7EDF6] px-2 py-px align-[1px] text-[11px] font-medium text-[#566273] dark:bg-[#273444] dark:text-[#9BAABD]">
+                      <span className="ml-2 inline-block rounded-full bg-ink-70 px-2 py-px align-[1px] text-caption font-medium text-ink-605 dark:bg-ink-790 dark:text-ink-325">
                         {t("suggestedBadge")}
                       </span>
                     )}
                   </p>
-                  <p className="mt-1 line-clamp-2 text-body-sm text-[#566273] dark:text-[#9BAABD]">{faq.answer}</p>
+                  <p className="mt-1 line-clamp-2 text-body-sm text-fg-muted">{faq.answer}</p>
                   {faq.buttonLabel && faq.buttonUrl && (
-                    <span className="mt-1.5 inline-flex items-center gap-1 rounded-full bg-[#E7EDF6] px-2 py-0.5 text-[11px] font-medium text-[#566273] dark:bg-[#273444] dark:text-[#9BAABD]">
+                    <span className="mt-1.5 inline-flex items-center gap-1 rounded-full bg-ink-70 px-2 py-0.5 text-caption font-medium text-ink-605 dark:bg-ink-790 dark:text-ink-325">
                       <ExternalLink size={10} aria-hidden="true" />
                       {t("buttonBadge", { label: faq.buttonLabel })}
                     </span>
@@ -389,10 +389,10 @@ const FaqTab: React.FC<Props> = ({ faqs, onChange, aiGenerator, initialQuestion 
                       aria-pressed={faq.suggested === true}
                       aria-label={t(faq.suggested ? "unsuggestQuestion" : "suggestQuestion", { question: faq.question })}
                       title={t(faq.suggested ? "unsuggestQuestion" : "suggestQuestion", { question: faq.question })}
-                      className={`flex h-8 w-8 items-center justify-center rounded-lg transition-colors hover:bg-[#E7EDF6] dark:hover:bg-[#273444] ${focusRing} ${
+                      className={`flex h-8 w-8 items-center justify-center rounded-lg transition-colors hover:bg-ink-70 dark:hover:bg-ink-790 ${focusRing} ${
                         faq.suggested
                           ? "text-[#D7A43B]"
-                          : "text-[#647184] hover:text-[#101723] dark:text-[#9BAABD] dark:hover:text-[#D7DFE5]"
+                          : "text-ink-545 hover:text-ink-900 dark:text-ink-325 dark:hover:text-ink-130"
                       }`}
                     >
                       <Star size={15} fill={faq.suggested ? "currentColor" : "none"} />
@@ -405,7 +405,7 @@ const FaqTab: React.FC<Props> = ({ faqs, onChange, aiGenerator, initialQuestion 
                         onClick={() => move(index, index - 1)}
                         disabled={index === 0}
                         aria-label={t("moveUp", { question: faq.question })}
-                        className={`flex h-8 w-8 items-center justify-center rounded-lg text-[#647184] transition-colors hover:bg-[#E7EDF6] hover:text-[#101723] disabled:pointer-events-none disabled:opacity-30 dark:text-[#9BAABD] dark:hover:bg-[#273444] dark:hover:text-[#D7DFE5] ${focusRing}`}
+                        className={`flex h-8 w-8 items-center justify-center rounded-lg text-ink-545 transition-colors hover:bg-ink-70 hover:text-ink-900 disabled:pointer-events-none disabled:opacity-30 dark:text-ink-325 dark:hover:bg-ink-790 dark:hover:text-ink-130 ${focusRing}`}
                       >
                         <ChevronUp size={15} />
                       </button>
@@ -414,7 +414,7 @@ const FaqTab: React.FC<Props> = ({ faqs, onChange, aiGenerator, initialQuestion 
                         onClick={() => move(index, index + 1)}
                         disabled={index === faqs.length - 1}
                         aria-label={t("moveDown", { question: faq.question })}
-                        className={`flex h-8 w-8 items-center justify-center rounded-lg text-[#647184] transition-colors hover:bg-[#E7EDF6] hover:text-[#101723] disabled:pointer-events-none disabled:opacity-30 dark:text-[#9BAABD] dark:hover:bg-[#273444] dark:hover:text-[#D7DFE5] ${focusRing}`}
+                        className={`flex h-8 w-8 items-center justify-center rounded-lg text-ink-545 transition-colors hover:bg-ink-70 hover:text-ink-900 disabled:pointer-events-none disabled:opacity-30 dark:text-ink-325 dark:hover:bg-ink-790 dark:hover:text-ink-130 ${focusRing}`}
                       >
                         <ChevronDown size={15} />
                       </button>
@@ -424,7 +424,7 @@ const FaqTab: React.FC<Props> = ({ faqs, onChange, aiGenerator, initialQuestion 
                     type="button"
                     onClick={() => setEditing(index)}
                     aria-label={t("editQuestion", { question: faq.question })}
-                    className={`flex h-8 w-8 items-center justify-center rounded-lg text-[#647184] transition-colors hover:bg-[#E7EDF6] hover:text-[#101723] dark:text-[#9BAABD] dark:hover:bg-[#273444] dark:hover:text-[#D7DFE5] ${focusRing}`}
+                    className={`flex h-8 w-8 items-center justify-center rounded-lg text-ink-545 transition-colors hover:bg-ink-70 hover:text-ink-900 dark:text-ink-325 dark:hover:bg-ink-790 dark:hover:text-ink-130 ${focusRing}`}
                   >
                     <Pencil size={14} />
                   </button>
@@ -432,7 +432,7 @@ const FaqTab: React.FC<Props> = ({ faqs, onChange, aiGenerator, initialQuestion 
                     type="button"
                     onClick={() => remove(index)}
                     aria-label={t("deleteQuestion", { question: faq.question })}
-                    className={`flex h-8 w-8 items-center justify-center rounded-lg text-[#647184] transition-colors hover:bg-red-50 hover:text-red-600 dark:text-[#9BAABD] dark:hover:bg-red-950/30 dark:hover:text-red-400 ${focusRing}`}
+                    className={`flex h-8 w-8 items-center justify-center rounded-lg text-ink-545 transition-colors hover:bg-red-50 hover:text-red-600 dark:text-ink-325 dark:hover:bg-red-950/30 dark:hover:text-red-400 ${focusRing}`}
                   >
                     <Trash2 size={14} />
                   </button>

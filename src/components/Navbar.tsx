@@ -23,8 +23,7 @@ import {
   ShieldCheck,
   MessagesSquare,
   LifeBuoy,
-  Sparkles,
-} from "lucide-react";
+} from "./icons";
 import { collection, onSnapshot, query, where } from "firebase/firestore";
 import { toast } from "react-hot-toast";
 import { PRESENCE_HEARTBEAT_MS, PUSH_AVAILABLE_MS, playChime, readOnlineChoice, saveOnlineChoice, writePresence } from "../utils/liveChat";
@@ -38,6 +37,8 @@ import { useIsAdmin } from "../hooks/useIsAdmin";
 import { useT } from "../i18n";
 import { navMessages } from "../i18n/messages/nav";
 import { fetchAiUsage, fetchSidebarCounts, SEEN_EVENT, type AiUsage, type SidebarCounts } from "../utils/sidebarCounts";
+import { FreeIcon, ProIcon } from "./icons";
+import NotificationsPopover from "./NotificationsPopover";
 
 interface NavbarProps {
   darkMode: boolean;
@@ -50,11 +51,11 @@ interface NavbarProps {
 }
 
 type NavKey = "dashboard" | "analytics" | "conversations" | "integrations" | "helpCenter" | "settings" | "admin";
-type NavItem = { title: NavKey; href: string; icon: LucideIcon; count?: keyof SidebarCounts };
+type NavItem = { title: NavKey; href: string; icon: LucideIcon; count?: "conversations" };
 
 // Titles are keys into navMessages. `count` shows how many new items wait there.
 const WORKSPACE: NavItem[] = [
-  { title: "dashboard", href: "/dashboard", icon: LayoutDashboard, count: "dashboard" },
+  { title: "dashboard", href: "/dashboard", icon: LayoutDashboard },
   { title: "analytics", href: "/analytics", icon: BarChart2 },
   { title: "conversations", href: "/conversations", icon: MessagesSquare, count: "conversations" },
   { title: "integrations", href: "/integrations", icon: Blocks },
@@ -66,14 +67,14 @@ const FOOTER_LINKS: NavItem[] = [
   { title: "settings", href: "/settings", icon: Settings },
 ];
 
-const NO_COUNTS: SidebarCounts = { dashboard: 0, conversations: 0 };
+const NO_COUNTS: SidebarCounts = { notifications: 0, conversations: 0 };
 
 // The owner's chatbots, most recently edited first; the rest are on the dashboard.
 const MAX_SIDEBAR_BOTS = 5;
 type SidebarBot = { id: string; title: string; isActive: boolean; primaryColor?: string; launcherStyle?: string; updated: number };
 
 const focusRing =
-  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#101723]/25 dark:focus-visible:ring-[#D7DFE5]/40";
+  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink-900/25 dark:focus-visible:ring-ink-130/40";
 
 const isDesktop = () => window.matchMedia("(min-width: 1024px)").matches;
 
@@ -94,7 +95,7 @@ const Avatar: React.FC<{ size?: string }> = ({ size = "h-8 w-8" }) => {
     />
   ) : (
     <span
-      className={`${size} flex shrink-0 items-center justify-center rounded-full bg-[#101723] text-[11px] font-semibold text-white dark:bg-[#D7DFE5] dark:text-[#141D2B]`}
+      className={`${size} flex shrink-0 items-center justify-center rounded-full bg-ink-900 text-caption font-semibold text-white dark:bg-ink-130 dark:text-ink-875`}
     >
       {initials(user?.displayName, user?.email)}
     </span>
@@ -167,8 +168,8 @@ const Navbar: React.FC<NavbarProps> = ({
       collapsed ? "lg:justify-center lg:px-0" : ""
     } ${
       isActive
-        ? "bg-[#F9FCFF] text-[#101723] ring-1 ring-[#D8DFE9] dark:bg-[#243040] dark:text-[#F3F7FC] dark:ring-[#2B3646]"
-        : "text-[#566273] hover:bg-[#E0E7F0] hover:text-[#101723] dark:text-[#9BAABD] dark:hover:bg-[#1F2B3A] dark:hover:text-[#D7DFE5]"
+        ? "bg-ink-25 text-ink-900 ring-1 ring-ink-120 dark:bg-ink-805 dark:text-ink-30 dark:ring-ink-780"
+        : "text-ink-605 hover:bg-ink-95 hover:text-ink-900 dark:text-ink-325 dark:hover:bg-ink-825 dark:hover:text-ink-130"
     }`;
 
   // Live list of the owner's chatbots, so a rename or a new bot shows at once.
@@ -268,7 +269,7 @@ const Navbar: React.FC<NavbarProps> = ({
                 {first.data().preview && <span className="block truncate text-caption opacity-70">{first.data().preview}</span>}
               </span>
               <button
-                className="shrink-0 rounded-md bg-[#101723] px-2.5 py-1 text-caption font-medium text-white dark:bg-[#D7DFE5] dark:text-[#141D2B]"
+                className="shrink-0 rounded-md bg-ink-900 px-2.5 py-1 text-caption font-medium text-white dark:bg-ink-130 dark:text-ink-875"
                 onClick={() => {
                   toast.dismiss(item.id);
                   navigate(`/conversations?open=${first.id}`);
@@ -321,18 +322,18 @@ const Navbar: React.FC<NavbarProps> = ({
 
   const renderPlanCard = () => {
     if (planLoading) return null;
-    const card = `rounded-xl bg-[#F9FCFF] p-3 ring-1 ring-[#D8DFE9] dark:bg-[#1F2B3A] dark:ring-[#2B3646] ${collapsed ? "lg:hidden" : ""}`;
-    const button = `mt-2.5 flex h-8 items-center justify-center rounded-lg bg-[#101723] text-caption font-medium text-white transition-colors hover:bg-[#243040] dark:bg-[#D7DFE5] dark:text-[#141D2B] dark:hover:bg-[#E7EDF6] ${focusRing}`;
+    const card = `rounded-xl bg-ink-25 p-3 ring-1 ring-ink-120 dark:bg-ink-825 dark:ring-ink-780 ${collapsed ? "lg:hidden" : ""}`;
+    const button = `mt-2.5 flex h-8 items-center justify-center rounded-lg bg-ink-900 text-caption font-medium text-white transition-colors hover:bg-ink-805 dark:bg-ink-130 dark:text-ink-875 dark:hover:bg-ink-70 ${focusRing}`;
     if (!canUseAi) {
       // Free, or a Pro whose payment failed.
       const lapsed = plan !== "free";
       return (
         <div className={card}>
-          <p className="flex items-center gap-1.5 text-body-sm font-medium text-[#101723] dark:text-[#D7DFE5]">
-            <Sparkles size={14} className="shrink-0" />
+          <p className="flex items-center gap-1.5 text-body-sm font-medium text-fg">
+            {lapsed ? <ProIcon size={15} className="shrink-0" /> : <FreeIcon size={15} className="shrink-0" />}
             {t(lapsed ? "proPlan" : "freePlan")}
           </p>
-          <p className="mt-1 text-caption text-[#647184] dark:text-[#87909D]">{t(lapsed ? "paymentIssue" : "freePlanBody")}</p>
+          <p className="mt-1 text-caption text-fg-subtle">{t(lapsed ? "paymentIssue" : "freePlanBody")}</p>
           <Link to={lapsed ? "/settings" : "/plans"} className={button}>
             {t(lapsed ? "updateBilling" : "upgrade")}
           </Link>
@@ -347,26 +348,26 @@ const Navbar: React.FC<NavbarProps> = ({
         ? "bg-[#C2410C]"
         : ratio >= AI_USAGE_WARNING_RATIO
           ? "bg-[#D7A43B]"
-          : "bg-[#101723] dark:bg-[#D7DFE5]";
+          : "bg-ink-900 dark:bg-ink-130";
     return (
-      <Link to="/settings" className={`block transition-colors hover:ring-[#B8C2CF] dark:hover:ring-[#39485B] ${card} ${focusRing}`}>
+      <Link to="/settings" className={`block transition-colors hover:ring-ink-235 dark:hover:ring-ink-710 ${card} ${focusRing}`}>
         <div className="flex items-baseline justify-between gap-2">
-          <p className="flex items-center gap-1.5 text-body-sm font-medium text-[#101723] dark:text-[#D7DFE5]">
-            <Sparkles size={14} className="shrink-0" />
+          <p className="flex items-center gap-1.5 text-body-sm font-medium text-fg">
+            <ProIcon size={15} className="shrink-0" />
             {t("proPlan")}
           </p>
-          <span className="shrink-0 text-caption font-medium tabular-nums text-[#101723] dark:text-[#D7DFE5]">
+          <span className="shrink-0 text-caption font-medium tabular-nums text-fg">
             {limit === null
               ? t("repliesUsedUnlimited", { used: used.toLocaleString(t.lang) })
               : t("repliesUsed", { used: used.toLocaleString(t.lang), limit: limit.toLocaleString(t.lang) })}
           </span>
         </div>
         {limit !== null && (
-          <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-[#E0E7F0] dark:bg-[#2B3646]">
+          <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-ink-95 dark:bg-ink-780">
             <div className={`h-full rounded-full ${bar}`} style={{ width: `${Math.max(ratio * 100, used > 0 ? 2 : 0)}%` }} />
           </div>
         )}
-        <p className="mt-1.5 text-caption text-[#647184] dark:text-[#87909D]">{t("aiReplies")}</p>
+        <p className="mt-1.5 text-caption text-fg-subtle">{t("aiReplies")}</p>
       </Link>
     );
   };
@@ -387,8 +388,8 @@ const Navbar: React.FC<NavbarProps> = ({
                 <Icon size={18} strokeWidth={isActive ? 2.1 : 1.8} className={isActive ? "" : "opacity-80"} />
                 {n > 0 && collapsed && (
                   <span
-                    className={`absolute -right-1 -top-1 hidden h-2 w-2 rounded-full ring-2 ring-[#EDF2F8] lg:block dark:ring-[#17212F] ${
-                      live ? "bg-emerald-500" : "bg-[#101723] dark:bg-[#D7DFE5]"
+                    className={`absolute -right-1 -top-1 hidden h-2 w-2 rounded-full ring-2 ring-ink-55 lg:block dark:ring-ink-865 ${
+                      live ? "bg-emerald-500" : "bg-ink-900 dark:bg-ink-130"
                     }`}
                   />
                 )}
@@ -396,10 +397,10 @@ const Navbar: React.FC<NavbarProps> = ({
               <span className={`flex-1 truncate ${hideWhenCollapsed}`}>{t(title)}</span>
               {n > 0 && (
                 <span
-                  className={`min-w-[22px] rounded-full px-1.5 text-center text-[11px] font-semibold leading-5 ${hideWhenCollapsed} ${
+                  className={`inline-flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full px-1.5 text-caption font-semibold leading-none tabular-nums ${hideWhenCollapsed} ${
                     live
                       ? "bg-emerald-500 text-white"
-                      : "bg-[#101723] text-white dark:bg-[#D7DFE5] dark:text-[#141D2B]"
+                      : "bg-ink-900 text-white dark:bg-ink-130 dark:text-ink-875"
                   }`}
                 >
                   <span aria-hidden>{n > 99 ? "99+" : n}</span>
@@ -416,33 +417,40 @@ const Navbar: React.FC<NavbarProps> = ({
   const menuItem = (active: boolean) =>
     `flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-body-sm ${
       active
-        ? "bg-[#F3F7FC] text-[#101723] dark:bg-[#273444] dark:text-[#D7DFE5]"
-        : "text-[#566273] dark:text-[#9BAABD]"
+        ? "bg-ink-30 text-ink-900 dark:bg-ink-790 dark:text-ink-130"
+        : "text-fg-muted"
     }`;
 
   return (
     <>
       {/* Mobile top bar */}
-      <header className="fixed inset-x-0 top-0 z-30 flex h-14 items-center gap-2 border-b border-[#D8DFE9]/80 bg-[#F3F7FC]/85 px-3 backdrop-blur-md lg:hidden dark:border-[#2B3646] dark:bg-[#141D2B]/85">
+      <header className="fixed inset-x-0 top-0 z-30 flex h-14 items-center gap-2 border-b border-ink-120/80 bg-ink-30 px-3 lg:hidden dark:border-ink-780 dark:bg-ink-875">
         <button
           onClick={toggleSidebar}
           aria-label={t("openNavigation")}
-          className={`rounded-lg p-2 text-[#566273] hover:bg-[#E7EDF6] hover:text-[#101723] dark:text-[#9BAABD] dark:hover:bg-[#273444] dark:hover:text-[#D7DFE5] ${focusRing}`}
+          className={`rounded-lg p-2 text-ink-605 hover:bg-ink-70 hover:text-ink-900 dark:text-ink-325 dark:hover:bg-ink-790 dark:hover:text-ink-130 ${focusRing}`}
         >
           <MenuIcon size={20} />
         </button>
         <Link to="/dashboard" className={`flex items-center rounded-lg ${focusRing}`}>
-          <BrandLogo size={18} className="text-[#101723] dark:text-[#D7DFE5]" />
+          <BrandLogo size={18} className="text-fg" />
         </Link>
         {testMode && (
-          <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-medium text-amber-800 dark:bg-amber-900/30 dark:text-amber-200">
+          <span className="rounded-full bg-amber-100 px-2 py-0.5 text-caption font-medium text-amber-800 dark:bg-amber-900/30 dark:text-amber-200">
             Test mode
           </span>
         )}
+        <NotificationsPopover
+          unread={counts.notifications}
+          testMode={testMode}
+          anchor="bottom end"
+          label={t("notifications")}
+          className="ml-auto"
+        />
         <Link
           to="/configure"
           aria-label={t("newChatbot")}
-          className={`ml-auto flex h-9 w-9 items-center justify-center rounded-lg bg-[#101723] text-white dark:bg-[#D7DFE5] dark:text-[#141D2B] ${focusRing}`}
+          className={`flex h-9 w-9 items-center justify-center rounded-lg bg-ink-900 text-white dark:bg-ink-130 dark:text-ink-875 ${focusRing}`}
         >
           <Plus size={18} />
         </Link>
@@ -459,32 +467,32 @@ const Navbar: React.FC<NavbarProps> = ({
         leaveFrom="opacity-100"
         leaveTo="opacity-0"
       >
-        <div className="fixed inset-0 z-40 bg-[#101723]/40 backdrop-blur-[2px] lg:hidden" onClick={closeSidebar} />
+        <div className="fixed inset-0 z-40 bg-ink-900/40 lg:hidden" onClick={closeSidebar} />
       </Transition>
 
       <nav
         aria-label={t("mainNavigation")}
-        className={`fixed left-0 top-0 z-50 flex h-[100dvh] flex-col border-r border-[#D8DFE9] bg-[#EDF2F8] transition-[width,transform] duration-300 ease-in-out dark:border-[#2B3646] dark:bg-[#17212F] ${
+        className={`fixed left-0 top-0 z-50 flex h-[100dvh] flex-col border-r border-ink-120 bg-ink-55 transition-[width,transform] duration-300 ease-in-out dark:border-ink-780 dark:bg-ink-865 ${
           sidebarOpen ? "w-64 translate-x-0" : "w-64 -translate-x-full lg:w-[72px] lg:translate-x-0"
         }`}
       >
         {/* Brand */}
         <div className={`flex h-16 shrink-0 items-center px-4 ${collapsed ? "lg:justify-center lg:px-0" : ""}`}>
           <Link to="/dashboard" className={`flex items-center rounded-lg ${focusRing}`} title="Askio">
-            <BrandLogo size={20} className="text-[#101723] dark:text-[#D7DFE5]" wordClassName={hideWhenCollapsed} />
+            <BrandLogo size={20} className="text-fg" wordClassName={hideWhenCollapsed} />
           </Link>
           <button
             onClick={toggleSidebar}
             aria-label={t("collapseSidebar")}
             title={t("collapseSidebar")}
-            className={`ml-auto hidden rounded-lg p-1.5 text-[#647184] hover:bg-[#E0E7F0] hover:text-[#101723] lg:block dark:text-[#87909D] dark:hover:bg-[#273444] dark:hover:text-[#D7DFE5] ${focusRing} ${hideWhenCollapsed}`}
+            className={`ml-auto hidden rounded-lg p-1.5 text-ink-545 hover:bg-ink-95 hover:text-ink-900 lg:block dark:text-ink-425 dark:hover:bg-ink-790 dark:hover:text-ink-130 ${focusRing} ${hideWhenCollapsed}`}
           >
             <PanelLeftClose size={17} />
           </button>
           <button
             onClick={closeSidebar}
             aria-label={t("closeNavigation")}
-            className={`ml-auto rounded-lg p-1.5 text-[#566273] lg:hidden dark:text-[#9BAABD] ${focusRing}`}
+            className={`ml-auto rounded-lg p-1.5 text-ink-605 lg:hidden dark:text-ink-325 ${focusRing}`}
           >
             <X size={18} />
           </button>
@@ -495,7 +503,7 @@ const Navbar: React.FC<NavbarProps> = ({
           <Link
             to="/configure"
             title={collapsed ? t("newChatbot") : undefined}
-            className={`flex h-9 items-center justify-center gap-2 rounded-lg bg-[#101723] text-button text-white shadow-sm transition-colors hover:bg-[#243040] dark:bg-[#D7DFE5] dark:text-[#141D2B] dark:hover:bg-[#E7EDF6] ${focusRing}`}
+            className={`flex h-9 items-center justify-center gap-2 rounded-lg bg-ink-900 text-button text-white shadow-sm transition-colors hover:bg-ink-805 dark:bg-ink-130 dark:text-ink-875 dark:hover:bg-ink-70 ${focusRing}`}
           >
             <Plus size={16} className="shrink-0" />
             <span className={hideWhenCollapsed}>{t("newChatbot")}</span>
@@ -505,7 +513,7 @@ const Navbar: React.FC<NavbarProps> = ({
               onClick={toggleSidebar}
               aria-label={t("expandSidebar")}
               title={t("expandSidebar")}
-              className={`mt-2 hidden h-9 w-full items-center justify-center rounded-lg text-[#647184] hover:bg-[#E0E7F0] hover:text-[#101723] lg:flex dark:text-[#87909D] dark:hover:bg-[#273444] dark:hover:text-[#D7DFE5] ${focusRing}`}
+              className={`mt-2 hidden h-9 w-full items-center justify-center rounded-lg text-ink-545 hover:bg-ink-95 hover:text-ink-900 lg:flex dark:text-ink-425 dark:hover:bg-ink-790 dark:hover:text-ink-130 ${focusRing}`}
             >
               <PanelLeftOpen size={17} />
             </button>
@@ -514,17 +522,17 @@ const Navbar: React.FC<NavbarProps> = ({
 
         {/* Navigation */}
         <div className="flex-1 overflow-y-auto px-3 py-3">
-          <h2 className={`mb-1.5 px-2.5 text-caption font-medium text-[#87909D] dark:text-[#647184] ${hideWhenCollapsed}`}>
+          <h2 className={`mb-1.5 px-2.5 text-caption font-medium text-ink-425 dark:text-ink-545 ${hideWhenCollapsed}`}>
             {t("workspace")}
           </h2>
           <ul className="space-y-0.5">{WORKSPACE.map(renderLink)}</ul>
 
           {bots.length > 0 && (
             <div className="mt-5">
-              <h2 className={`mb-1.5 px-2.5 text-caption font-medium text-[#87909D] dark:text-[#647184] ${hideWhenCollapsed}`}>
+              <h2 className={`mb-1.5 px-2.5 text-caption font-medium text-ink-425 dark:text-ink-545 ${hideWhenCollapsed}`}>
                 {t("chatbots")}
               </h2>
-              {collapsed && <div className="mx-auto mb-2 hidden h-px w-6 bg-[#D8DFE9] lg:block dark:bg-[#2B3646]" />}
+              {collapsed && <div className="mx-auto mb-2 hidden h-px w-6 bg-ink-120 lg:block dark:bg-ink-780" />}
               <ul className="space-y-0.5">
                 {bots.slice(0, MAX_SIDEBAR_BOTS).map((bot) => (
                   <li key={bot.id}>
@@ -536,7 +544,7 @@ const Navbar: React.FC<NavbarProps> = ({
                       <BotAvatar color={bot.primaryColor} launcherStyle={bot.launcherStyle} size={20} muted={!bot.isActive} />
                       <span className={`flex-1 truncate ${hideWhenCollapsed}`}>{bot.title}</span>
                       {!bot.isActive && (
-                        <span className={`shrink-0 text-caption font-normal text-[#87909D] ${hideWhenCollapsed}`}>{t("paused")}</span>
+                        <span className={`shrink-0 text-caption font-normal text-ink-425 ${hideWhenCollapsed}`}>{t("paused")}</span>
                       )}
                     </NavLink>
                   </li>
@@ -545,7 +553,7 @@ const Navbar: React.FC<NavbarProps> = ({
               {bots.length > MAX_SIDEBAR_BOTS && (
                 <Link
                   to="/dashboard"
-                  className={`mt-1 flex h-8 items-center rounded-lg px-2.5 text-caption font-medium text-[#647184] transition-colors hover:text-[#101723] dark:text-[#87909D] dark:hover:text-[#D7DFE5] ${focusRing} ${hideWhenCollapsed}`}
+                  className={`mt-1 flex h-8 items-center rounded-lg px-2.5 text-caption font-medium text-ink-545 transition-colors hover:text-ink-900 dark:text-ink-425 dark:hover:text-ink-130 ${focusRing} ${hideWhenCollapsed}`}
                 >
                   {t("viewAll", { count: bots.length })}
                 </Link>
@@ -563,13 +571,13 @@ const Navbar: React.FC<NavbarProps> = ({
               aria-checked={liveOnline}
               onClick={toggleLive}
               title={collapsed ? t(liveOnline ? "liveOnline" : "liveOffline") : t("liveHint")}
-              className={`flex h-9 w-full items-center gap-2.5 rounded-lg px-2.5 text-body-sm text-[#566273] transition-colors hover:bg-[#E0E7F0] hover:text-[#101723] dark:text-[#9BAABD] dark:hover:bg-[#1F2B3A] dark:hover:text-[#D7DFE5] ${focusRing} ${
+              className={`flex h-9 w-full items-center gap-2.5 rounded-lg px-2.5 text-body-sm text-ink-605 transition-colors hover:bg-ink-95 hover:text-ink-900 dark:text-ink-325 dark:hover:bg-ink-825 dark:hover:text-ink-130 ${focusRing} ${
                 collapsed ? "lg:justify-center lg:px-0" : ""
               }`}
             >
               <span
                 aria-hidden
-                className={`h-2.5 w-2.5 shrink-0 rounded-full ${liveOnline ? "bg-emerald-500 ring-4 ring-emerald-500/15" : "bg-[#B8C2CF] dark:bg-[#4A5A6E]"}`}
+                className={`h-2.5 w-2.5 shrink-0 rounded-full ${liveOnline ? "bg-emerald-500 ring-4 ring-emerald-500/15" : "bg-ink-235 dark:bg-ink-640"}`}
               />
               <span className={`flex-1 truncate text-left font-medium ${hideWhenCollapsed}`}>
                 {t(liveOnline ? "liveOnline" : "liveOffline")}
@@ -577,7 +585,7 @@ const Navbar: React.FC<NavbarProps> = ({
               <span
                 aria-hidden
                 className={`relative h-4 w-7 shrink-0 rounded-full transition-colors ${hideWhenCollapsed} ${
-                  liveOnline ? "bg-emerald-500" : "bg-[#D7DFE5] dark:bg-[#39485B]"
+                  liveOnline ? "bg-emerald-500" : "bg-ink-130 dark:bg-ink-710"
                 }`}
               >
                 <span
@@ -602,42 +610,44 @@ const Navbar: React.FC<NavbarProps> = ({
             </button>
           )}
 
-          <Menu as="div" className="relative">
+          {/* The account card, with the notifications bell beside it (above it on the rail). */}
+          <div className={`flex items-center gap-1 ${collapsed ? "lg:flex-col-reverse lg:gap-2" : ""}`}>
+          <Menu as="div" className="relative min-w-0 flex-1 lg:w-full">
             <Menu.Button
-              className={`flex w-full items-center gap-2.5 rounded-xl bg-[#F9FCFF] p-2 text-left ring-1 ring-[#D8DFE9] transition-colors hover:ring-[#B8C2CF] dark:bg-[#1F2B3A] dark:ring-[#2B3646] dark:hover:ring-[#39485B] ${focusRing} ${
+              className={`flex w-full items-center gap-2.5 rounded-xl bg-ink-25 p-2 text-left ring-1 ring-ink-120 transition-colors hover:ring-ink-235 dark:bg-ink-825 dark:ring-ink-780 dark:hover:ring-ink-710 ${focusRing} ${
                 collapsed ? "lg:justify-center lg:bg-transparent lg:p-1.5 lg:ring-0 dark:lg:bg-transparent" : ""
               }`}
               title={collapsed ? user?.displayName || t("account") : undefined}
             >
               <Avatar />
               <span className={`min-w-0 flex-1 ${hideWhenCollapsed}`}>
-                <span className="block truncate text-body-sm font-medium text-[#101723] dark:text-[#D7DFE5]">
+                <span className="block truncate text-body-sm font-medium text-fg">
                   {user?.displayName || t("yourAccount")}
                 </span>
-                <span className="block truncate text-caption text-[#647184] dark:text-[#87909D]">
+                <span className="block truncate text-caption text-fg-subtle">
                   {user?.email}
                 </span>
               </span>
-              <ChevronsUpDown size={15} className={`shrink-0 text-[#87909D] ${hideWhenCollapsed}`} />
+              <ChevronsUpDown size={15} className={`shrink-0 text-ink-425 ${hideWhenCollapsed}`} />
             </Menu.Button>
                           <Menu.Items
                 anchor={collapsed && isDesktop() ? "right end" : "top start"}
                 modal={false}
                 transition
-                className={`z-[60] rounded-xl border border-[#D8DFE9] bg-[#F9FCFF] p-1.5 shadow-xl transition duration-100 ease-out data-[closed]:scale-95 data-[closed]:opacity-0 [--anchor-gap:8px] focus:outline-none dark:border-[#2B3646] dark:bg-[#1A2533] ${
+                className={`z-[60] rounded-xl border border-ink-120 bg-ink-25 p-1.5 shadow-lg transition duration-100 ease-out data-[closed]:scale-95 data-[closed]:opacity-0 [--anchor-gap:8px] focus:outline-none dark:border-ink-780 dark:bg-ink-850 ${
                   collapsed ? "w-60" : "w-[var(--button-width)]"
                 }`}
               >
                 <div className="flex items-center gap-2.5 px-2.5 py-2">
                   <Avatar size="h-9 w-9" />
                   <div className="min-w-0">
-                    <p className="truncate text-body-sm font-medium text-[#101723] dark:text-[#D7DFE5]">
+                    <p className="truncate text-body-sm font-medium text-fg">
                       {user?.displayName || t("yourAccount")}
                     </p>
-                    <p className="truncate text-caption text-[#647184] dark:text-[#87909D]">{user?.email}</p>
+                    <p className="truncate text-caption text-fg-subtle">{user?.email}</p>
                   </div>
                 </div>
-                <div className="my-1 h-px bg-[#E7EDF6] dark:bg-[#2B3646]" />
+                <div className="my-1 h-px bg-ink-70 dark:bg-ink-780" />
                 <Menu.Item>
                   {({ active }) => (
                     <Link to="/settings" className={menuItem(active)}>
@@ -661,7 +671,7 @@ const Navbar: React.FC<NavbarProps> = ({
                       <span className="flex-1 text-left">{t("testMode")}</span>
                       <span
                         className={`relative h-4 w-7 rounded-full transition-colors ${
-                          testMode ? "bg-amber-500" : "bg-[#D7DFE5] dark:bg-[#39485B]"
+                          testMode ? "bg-amber-500" : "bg-ink-130 dark:bg-ink-710"
                         }`}
                       >
                         <span
@@ -673,7 +683,7 @@ const Navbar: React.FC<NavbarProps> = ({
                     </button>
                   )}
                 </Menu.Item>
-                <div className="my-1 h-px bg-[#E7EDF6] dark:bg-[#2B3646]" />
+                <div className="my-1 h-px bg-ink-70 dark:bg-ink-780" />
                 <Menu.Item>
                   {({ active }) => (
                     <button onClick={handleSignOut} className={menuItem(active)}>
@@ -684,6 +694,14 @@ const Navbar: React.FC<NavbarProps> = ({
                 </Menu.Item>
               </Menu.Items>
           </Menu>
+          <NotificationsPopover
+            unread={counts.notifications}
+            testMode={testMode}
+            anchor="right end"
+            label={t("notifications")}
+            className="hidden shrink-0 lg:block"
+          />
+          </div>
         </div>
       </nav>
     </>

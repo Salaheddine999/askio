@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { toast } from "react-hot-toast";
 import { Link } from "react-router-dom";
 import { Listbox, ListboxButton, ListboxOption, ListboxOptions } from "@headlessui/react";
-import { ArrowRight, Check, ChevronDown, Code2, Copy, Globe, Info, Send } from "lucide-react";
+import { ArrowRight, Check, ChevronDown, Code2, Copy, Globe, Info, Send } from "../icons";
 import { EmptyState, focusRing, primaryButton } from "../../pages/dashboard/ui";
 import { Panel, PanelBody, inputClass } from "./controls";
 import { PLATFORMS, guideFor, otherSiteLabel, tagManagerCodeFor, type PlatformId } from "./installGuides";
@@ -46,13 +46,13 @@ const CopyButton: React.FC<{ text: string; label: string; className?: string }> 
 
 /** A dark code box with a copy button. */
 const CodeBlock: React.FC<{ code: string; label: string }> = ({ code, label }) => (
-  <div className="overflow-hidden rounded-xl border border-[#1F2A3A] bg-[#101723]">
+  <div className="overflow-hidden rounded-xl border border-ink-830 bg-ink-900">
     <div className="flex items-center justify-between border-b border-white/10 py-1.5 pl-4 pr-1.5">
-      <span className="text-caption font-medium text-[#9BAABD]">HTML</span>
-      <CopyButton text={code} label={label} className="text-[#D7DFE5] hover:bg-white/10 hover:text-white" />
+      <span className="text-caption font-medium text-ink-325">HTML</span>
+      <CopyButton text={code} label={label} className="text-ink-130 hover:bg-white/10 hover:text-white" />
     </div>
     {/* Wrapped, so the whole line shows without scrolling sideways. */}
-    <pre className="whitespace-pre-wrap break-all px-4 py-4 font-mono text-[12.5px] leading-relaxed text-[#E7EDF6]">
+    <pre className="whitespace-pre-wrap break-all px-4 py-4 font-mono text-[12.5px] leading-relaxed text-ink-70">
       <code>{code}</code>
     </pre>
   </div>
@@ -81,7 +81,7 @@ const SendToDeveloper: React.FC<{ chatbotId: string }> = ({ chatbotId }) => {
   return (
     <form onSubmit={send} className="flex flex-col gap-2 sm:flex-row sm:items-end">
       <label className="block min-w-0 flex-1">
-        <span className="text-caption font-medium text-[#566273] dark:text-[#9BAABD]">{t("devEmailLabel")}</span>
+        <span className="text-caption font-medium text-fg-muted">{t("devEmailLabel")}</span>
         <input
           type="email"
           required
@@ -115,26 +115,26 @@ const PlatformSelect: React.FC<{ value: PlatformId | ""; onChange: (id: Platform
     <Listbox value={value} onChange={onChange}>
       <ListboxButton
         aria-label={label}
-        className={`inline-flex h-9 w-full items-center gap-2 rounded-lg border border-[#D8DFE9] bg-[#F9FCFF] pl-3 pr-2.5 text-left text-body-sm transition-colors hover:border-[#B8C3D1] sm:w-56 dark:border-[#2B3646] dark:bg-[#141D2B] dark:hover:border-[#39485B] ${focusRing}`}
+        className={`inline-flex h-9 w-full items-center gap-2 rounded-lg border border-ink-120 bg-ink-25 pl-3 pr-2.5 text-left text-body-sm transition-colors hover:border-ink-230 sm:w-56 dark:border-ink-780 dark:bg-ink-875 dark:hover:border-ink-710 ${focusRing}`}
       >
-        <Globe size={15} className="shrink-0 text-[#647184] dark:text-[#87909D]" />
-        <span className={`min-w-0 flex-1 truncate ${current ? "text-[#101723] dark:text-[#D7DFE5]" : "text-[#87909D]"}`}>
+        <Globe size={15} className="shrink-0 text-fg-subtle" />
+        <span className={`min-w-0 flex-1 truncate ${current ? "text-fg" : "text-ink-425"}`}>
           {current ? current.name : placeholder}
         </span>
-        <ChevronDown size={15} className="ml-1 shrink-0 text-[#87909D]" />
+        <ChevronDown size={15} className="ml-1 shrink-0 text-ink-425" />
       </ListboxButton>
       {/* Anchored and non-modal, like the other pickers, so the page doesn't lock or shift. */}
       <ListboxOptions
         anchor="bottom start"
         modal={false}
         transition
-        className="z-50 w-[var(--button-width)] min-w-48 rounded-xl border border-[#D8DFE9] bg-[#F9FCFF] p-1.5 shadow-xl transition duration-100 ease-out [--anchor-gap:6px] focus:outline-none data-[closed]:-translate-y-1 data-[closed]:opacity-0 dark:border-[#2B3646] dark:bg-[#1A2533]"
+        className="z-50 w-[var(--button-width)] min-w-48 rounded-xl border border-ink-120 bg-ink-25 p-1.5 shadow-lg transition duration-100 ease-out [--anchor-gap:6px] focus:outline-none data-[closed]:-translate-y-1 data-[closed]:opacity-0 dark:border-ink-780 dark:bg-ink-850"
       >
         {options.map((p) => (
           <ListboxOption
             key={p.id}
             value={p.id}
-            className="group flex cursor-pointer items-center gap-2 rounded-lg px-2.5 py-2 text-body-sm text-[#101723] data-[focus]:bg-[#F3F7FC] dark:text-[#D7DFE5] dark:data-[focus]:bg-[#273444]"
+            className="group flex cursor-pointer items-center gap-2 rounded-lg px-2.5 py-2 text-body-sm text-ink-900 data-[focus]:bg-ink-30 dark:text-ink-130 dark:data-[focus]:bg-ink-790"
           >
             <span className="min-w-0 flex-1 truncate group-data-[selected]:font-medium">{p.name}</span>
             <Check size={14} className="invisible shrink-0 group-data-[selected]:visible" />
@@ -156,43 +156,43 @@ const InstallCode: React.FC<{ chatbotId: string; code: string }> = ({ chatbotId,
       <CodeBlock code={code} label={t("copyInstallCode")} />
 
       <div className="flex flex-col gap-1.5 sm:flex-row sm:items-center sm:gap-3">
-        <span className="text-body-sm text-[#566273] dark:text-[#9BAABD]">{t("showStepsFor")}</span>
+        <span className="text-body-sm text-fg-muted">{t("showStepsFor")}</span>
         <PlatformSelect value={platform} onChange={setPlatform} label={t("showStepsFor")} placeholder={t("pickPlatform")} />
       </div>
 
       {guide && (
-        <div className="space-y-3 rounded-xl border border-[#E7EDF6] bg-[#F3F7FC] p-4 dark:border-[#2B3646] dark:bg-[#141D2B]">
+        <div className="space-y-3 rounded-xl border border-ink-70 bg-ink-30 p-4 dark:border-ink-780 dark:bg-ink-875">
           <ol className="space-y-2">
             {guide.steps.map((step, i) => (
               <li key={step} className="flex items-start gap-2.5">
-                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#101723] text-[11px] font-semibold text-white dark:bg-[#D7DFE5] dark:text-[#141D2B]">
+                <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-ink-900 text-caption font-semibold leading-none tabular-nums text-white dark:bg-ink-130 dark:text-ink-875">
                   {i + 1}
                 </span>
-                <p className="text-body-sm text-[#3B4656] dark:text-[#B8C3D1]">{step}</p>
+                <p className="text-body-sm text-ink-715 dark:text-ink-230">{step}</p>
               </li>
             ))}
           </ol>
           {platform === "gtm" && <CodeBlock code={tagManagerCodeFor(chatbotId)} label={t("copyInstallCode")} />}
           {(platform === "shopify" || platform === "wordpress") && (
             <div className="flex flex-wrap items-center gap-2">
-              <span className="text-caption text-[#566273] dark:text-[#9BAABD]">
-                {t("chatbotId")}: <code className="font-mono text-[#101723] dark:text-[#D7DFE5]">{chatbotId}</code>
+              <span className="text-caption text-fg-muted">
+                {t("chatbotId")}: <code className="font-mono text-fg">{chatbotId}</code>
               </span>
               <CopyButton
                 text={chatbotId}
                 label={t("copyChatbotId")}
-                className="border border-[#D8DFE9] text-[#566273] hover:bg-[#F9FCFF] hover:text-[#101723] dark:border-[#2B3646] dark:text-[#9BAABD] dark:hover:bg-[#273444] dark:hover:text-[#D7DFE5]"
+                className="border border-ink-120 text-ink-605 hover:bg-ink-25 hover:text-ink-900 dark:border-ink-780 dark:text-ink-325 dark:hover:bg-ink-790 dark:hover:text-ink-130"
               />
               <Link
                 to="/integrations"
-                className={`inline-flex h-8 items-center gap-1.5 rounded-lg px-2.5 text-caption font-medium text-[#101723] transition-colors hover:bg-[#E7EDF6] dark:text-[#D7DFE5] dark:hover:bg-[#273444] ${focusRing}`}
+                className={`inline-flex h-8 items-center gap-1.5 rounded-lg px-2.5 text-caption font-medium text-ink-900 transition-colors hover:bg-ink-70 dark:text-ink-130 dark:hover:bg-ink-790 ${focusRing}`}
               >
                 {t("openIntegrations")}
                 <ArrowRight size={14} />
               </Link>
             </div>
           )}
-          {guide.note && <p className="text-caption text-[#647184] dark:text-[#87909D]">{guide.note}</p>}
+          {guide.note && <p className="text-caption text-fg-subtle">{guide.note}</p>}
         </div>
       )}
     </div>
@@ -201,15 +201,15 @@ const InstallCode: React.FC<{ chatbotId: string; code: string }> = ({ chatbotId,
 
 /** An extra, folded away until it's needed. */
 const MoreOption: React.FC<{ title: string; description: string; children: React.ReactNode }> = ({ title, description, children }) => (
-  <details className="group border-t border-[#E7EDF6] dark:border-[#2B3646]">
+  <details className="group border-t border-ink-70 dark:border-ink-780">
     <summary
       className={`flex cursor-pointer list-none items-center justify-between gap-3 px-5 py-3.5 sm:px-6 [&::-webkit-details-marker]:hidden ${focusRing}`}
     >
       <span className="min-w-0">
-        <span className="block text-body-sm font-medium text-[#101723] dark:text-[#D7DFE5]">{title}</span>
-        <span className="mt-0.5 block text-caption text-[#647184] dark:text-[#87909D]">{description}</span>
+        <span className="block text-body-sm font-medium text-fg">{title}</span>
+        <span className="mt-0.5 block text-caption text-fg-subtle">{description}</span>
       </span>
-      <ChevronDown size={16} className="shrink-0 text-[#87909D] transition-transform group-open:rotate-180" aria-hidden="true" />
+      <ChevronDown size={16} className="shrink-0 text-ink-425 transition-transform group-open:rotate-180" aria-hidden="true" />
     </summary>
     <div className="px-5 pb-5 sm:px-6">{children}</div>
   </details>
@@ -258,7 +258,7 @@ const EmbedTab: React.FC<Props> = ({ chatbotId, hasChanges, saving, onSave }) =>
         <MoreOption title={t("ownButtonTitle")} description={t("ownButtonDesc")}>
           <div className="space-y-2.5">
             <CodeBlock code={'<a href="#" data-askio-open>Chat with us</a>'} label={t("copyInstallCode")} />
-            <p className="text-caption text-[#647184] dark:text-[#87909D]">{t("ownButtonHint")}</p>
+            <p className="text-caption text-fg-subtle">{t("ownButtonHint")}</p>
           </div>
         </MoreOption>
       </Panel>

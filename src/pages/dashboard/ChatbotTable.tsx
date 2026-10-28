@@ -1,5 +1,5 @@
 import React from "react";
-import { ArrowDown, ArrowUp } from "lucide-react";
+import { ArrowDown, ArrowUp } from "../../components/icons";
 import ChatbotCard from "../../components/ChatbotCard";
 import { Chatbot, ChatbotActions, EMPTY_FEEDBACK, FeedbackCounts, SortKey, SortOrder } from "./types";
 import { useT } from "../../i18n";
@@ -14,7 +14,7 @@ interface ChatbotTableProps extends ChatbotActions {
 }
 
 const headerCell =
-  "py-2.5 pl-3 pr-2 text-left text-[11px] font-medium uppercase tracking-wider text-[#647184] sm:px-6 dark:text-[#87909D]";
+  "py-2.5 pl-3 pr-2 text-left text-caption font-medium text-ink-545 sm:px-6 dark:text-ink-425";
 
 const ChatbotTable: React.FC<ChatbotTableProps> = ({
   chatbots,
@@ -45,8 +45,8 @@ const ChatbotTable: React.FC<ChatbotTableProps> = ({
       >
         <button
           onClick={() => sort.onSort(column)}
-          className={`inline-flex items-center gap-1 uppercase tracking-wider hover:text-[#101723] dark:hover:text-[#D7DFE5] ${
-            active ? "text-[#101723] dark:text-[#D7DFE5]" : ""
+          className={`inline-flex items-center gap-1 hover:text-fg ${
+            active ? "text-fg" : ""
           }`}
         >
           {label}
@@ -61,11 +61,11 @@ const ChatbotTable: React.FC<ChatbotTableProps> = ({
       className={
         bare
           ? "overflow-x-auto"
-          : "overflow-x-auto rounded-xl border border-[#D8DFE9] bg-[#F9FCFF] shadow-[0_1px_2px_rgba(16,23,35,0.04)] dark:border-[#2B3646] dark:bg-[#1A2533]"
+          : "overflow-x-auto rounded-xl border border-ink-120 bg-ink-25 shadow-[0_1px_2px_rgba(16,23,35,0.04)] dark:border-ink-780 dark:bg-ink-850"
       }
     >
       <table className="min-w-full">
-        <thead className="border-b border-[#E7EDF6] bg-[#F3F7FC]/70 dark:border-[#2B3646] dark:bg-[#141D2B]/60">
+        <thead className="border-b border-ink-70 bg-ink-30/70 dark:border-ink-780 dark:bg-ink-875/60">
           <tr>
             {sortableHeader("title", tc("sortName"))}
             <th scope="col" className={`${headerCell} hidden sm:table-cell`}>
@@ -80,7 +80,7 @@ const ChatbotTable: React.FC<ChatbotTableProps> = ({
             </th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-[#E7EDF6] dark:divide-[#2B3646]">
+        <tbody className="divide-y divide-ink-70 dark:divide-ink-780">
           {chatbots.map((chatbot, index) => (
             <ChatbotCard
               key={chatbot.id}

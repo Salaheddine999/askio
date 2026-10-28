@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate, useParams, useSearchParams } from "reac
 import { doc, getDoc } from "firebase/firestore";
 import { toast } from "react-hot-toast";
 import { Helmet } from "react-helmet-async";
-import { ArrowLeft, Eye, EyeOff, Sparkles } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff } from "./icons";
 import { auth } from "../utils/firebase";
 import { db } from "../utils/db";
 import { apiRequest } from "../utils/api";
@@ -25,6 +25,7 @@ import { useTabScroller } from "../hooks/useTabScroller";
 import { makeT, useLanguage, useT, type Lang } from "../i18n";
 import { widgetMessages } from "../i18n/widget";
 import { editorMessages } from "../i18n/messages/editor";
+import { AiIcon } from "./icons";
 
 // Dynamic import: AI feature is optional (not included in open-source builds)
 const aiModules = import.meta.glob('./AiFaqGenerator.tsx');
@@ -109,7 +110,7 @@ const EditorSkeleton: React.FC<{ label: string }> = ({ label }) => (
         <Skeleton className="h-8 w-56" />
       </div>
     </div>
-    <div className="flex gap-6 border-b border-[#D8DFE9] pb-3 dark:border-[#2B3646]">
+    <div className="flex gap-6 border-b border-ink-120 pb-3 dark:border-ink-780">
       {[64, 84, 72, 76, 52].map((w) => (
         <Skeleton key={w} className="h-4" style={{ width: w }} />
       ))}
@@ -118,7 +119,7 @@ const EditorSkeleton: React.FC<{ label: string }> = ({ label }) => (
       <div className="space-y-5">
         {[0, 1, 2].map((i) => (
           <SkeletonCard key={i}>
-            <div className="border-b border-[#E7EDF6] px-6 py-4 dark:border-[#2B3646]">
+            <div className="border-b border-ink-70 px-6 py-4 dark:border-ink-780">
               <Skeleton className="h-4 w-28" />
               <Skeleton className="mt-2 h-3.5 w-56" />
             </div>
@@ -408,7 +409,7 @@ const EditChatbot: React.FC = () => {
   ) : null;
 
   return (
-    <div className="min-h-screen bg-[#F3F7FC] font-sans text-[#101723] dark:bg-[#141D2B] dark:text-[#D7DFE5]">
+    <div className="min-h-screen bg-ink-30 font-sans text-ink-900 dark:bg-ink-875 dark:text-ink-130">
       <Helmet>
         <title>{`${id ? config.name || t("editChatbot") : t("newChatbot")} | Askio`}</title>
         <meta
@@ -426,19 +427,19 @@ const EditChatbot: React.FC = () => {
               <div className="min-w-0">
                 <Link
                   to="/"
-                  className={`inline-flex items-center gap-1 rounded text-caption font-medium text-[#647184] transition-colors hover:text-[#101723] dark:text-[#87909D] dark:hover:text-[#D7DFE5] ${focusRing}`}
+                  className={`inline-flex items-center gap-1 rounded text-caption font-medium text-ink-545 transition-colors hover:text-ink-900 dark:text-ink-425 dark:hover:text-ink-130 ${focusRing}`}
                 >
                   <ArrowLeft size={13} />
                   {t("dashboard")}
                 </Link>
                 <div className="mt-2 flex min-w-0 items-center gap-3">
                   <BotAvatar color={config.primaryColor} launcherStyle={config.launcherStyle} size={34} />
-                  <h1 className="truncate font-serif text-h2 tracking-tight text-[#101723] sm:text-h1 dark:text-[#D7DFE5]">
+                  <h1 className="truncate font-display text-h2 tracking-tight text-ink-900 sm:text-h1 dark:text-ink-130">
                     {heading}
                   </h1>
                   {config.aiEnabled && (
-                    <span className="hidden shrink-0 items-center gap-1 rounded-full border border-[#D8DFE9] bg-[#F9FCFF] px-2 py-0.5 text-caption font-medium text-[#566273] sm:inline-flex dark:border-[#2B3646] dark:bg-[#1A2533] dark:text-[#9BAABD]">
-                      <Sparkles size={11} />
+                    <span className="hidden shrink-0 items-center gap-1 rounded-full border border-ink-120 bg-ink-25 px-2 py-0.5 text-caption font-medium text-ink-605 sm:inline-flex dark:border-ink-780 dark:bg-ink-850 dark:text-ink-325">
+                      <AiIcon size={12} />
                       {t("aiBadge")}
                     </span>
                   )}
@@ -459,7 +460,7 @@ const EditChatbot: React.FC = () => {
               ref={tabScroller}
               role="tablist"
               aria-label={t("settingsTabs")}
-              className="scrollbar-hide -mx-4 mt-6 flex gap-1 overflow-x-auto border-b border-[#D8DFE9] px-4 sm:mx-0 sm:px-0 dark:border-[#2B3646]"
+              className="scrollbar-hide -mx-4 mt-6 flex gap-1 overflow-x-auto border-b border-ink-120 px-4 sm:mx-0 sm:px-0 dark:border-ink-780"
             >
               {TABS.map((tab) => {
                 const selected = activeTab === tab.key;
@@ -473,13 +474,13 @@ const EditChatbot: React.FC = () => {
                     onClick={() => setActiveTab(tab.key)}
                     className={`relative -mb-px flex shrink-0 items-center gap-1.5 whitespace-nowrap border-b-2 px-3 pb-3 pt-1 text-body-sm font-medium transition-colors ${focusRing} ${
                       selected
-                        ? "border-[#101723] text-[#101723] dark:border-[#D7DFE5] dark:text-[#E7EDF6]"
-                        : "border-transparent text-[#647184] hover:text-[#101723] dark:text-[#87909D] dark:hover:text-[#D7DFE5]"
+                        ? "border-ink-900 text-ink-900 dark:border-ink-130 dark:text-ink-70"
+                        : "border-transparent text-ink-545 hover:text-ink-900 dark:text-ink-425 dark:hover:text-ink-130"
                     }`}
                   >
                     {t(tab.label)}
                     {count > 0 && (
-                      <span className="rounded-full bg-[#E7EDF6] px-1.5 text-[11px] font-medium tabular-nums text-[#566273] dark:bg-[#273444] dark:text-[#9BAABD]">
+                      <span className="inline-flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full px-1.5 text-caption font-semibold leading-none tabular-nums bg-ink-70 text-ink-605 dark:bg-ink-790 dark:text-ink-325">
                         {count}
                       </span>
                     )}
@@ -529,7 +530,7 @@ const EditChatbot: React.FC = () => {
                     ) : (
                       <Panel title={t("tabAi")} description={t("personaDesc")}>
                         <div className="flex flex-col gap-4 px-5 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-6">
-                          <p className="text-body-sm text-[#566273] dark:text-[#9BAABD]">
+                          <p className="text-body-sm text-fg-muted">
                             {canUseAi
                               ? t("personaTurnOnHint")
                               : t("personaProHint")}
@@ -540,7 +541,7 @@ const EditChatbot: React.FC = () => {
                               onClick={() => handleChange("aiEnabled", true)}
                               className={`${primaryButton} shrink-0 self-start sm:self-auto`}
                             >
-                              <Sparkles size={15} />
+                              <AiIcon size={15} />
                               {t("turnOnAiReplies")}
                             </button>
                           ) : (
@@ -557,8 +558,8 @@ const EditChatbot: React.FC = () => {
                   )}
                 </div>
 
-                <div className="sticky bottom-4 z-20 mt-6 flex items-center justify-between gap-3 rounded-xl border border-[#D8DFE9] bg-[#F9FCFF]/90 px-4 py-3 shadow-[0_8px_24px_-12px_rgba(16,23,35,0.25)] backdrop-blur-md dark:border-[#2B3646] dark:bg-[#1A2533]/90">
-                  <p className="flex min-w-0 items-center gap-2 text-body-sm text-[#566273] dark:text-[#9BAABD]" aria-live="polite">
+                <div className="sticky bottom-4 z-20 mt-6 flex items-center justify-between gap-3 rounded-xl border border-ink-120 bg-ink-25 px-4 py-3 shadow-[0_8px_24px_-12px_rgba(16,23,35,0.25)] dark:border-ink-780 dark:bg-ink-850">
+                  <p className="flex min-w-0 items-center gap-2 text-body-sm text-fg-muted" aria-live="polite">
                     <span
                       className={`h-2 w-2 shrink-0 rounded-full ${
                         hasChanges || !id ? "bg-amber-500" : "bg-emerald-500"

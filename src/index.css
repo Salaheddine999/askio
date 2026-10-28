@@ -3,16 +3,23 @@
 @tailwind utilities;
 
 @layer base {
+  /* Text colours that follow the theme: text-fg, text-fg-muted, text-fg-subtle. */
   html {
     color-scheme: light;
+    --fg: 16 23 35; /* ink-900 */
+    --fg-muted: 86 98 115; /* ink-605 */
+    --fg-subtle: 100 113 132; /* ink-545 */
   }
 
   html.dark {
     color-scheme: dark;
+    --fg: 215 223 229; /* ink-130 */
+    --fg-muted: 155 170 189; /* ink-325 */
+    --fg-subtle: 135 144 157; /* ink-425 */
   }
 
   * {
-    @apply border-[#D8DFE9] dark:border-[#2B3646];
+    @apply border-ink-120 dark:border-ink-780;
   }
 
   html {
@@ -20,11 +27,11 @@
     scroll-padding-top: 80px;
     font-family: 'Inter', system-ui, sans-serif;
     scroll-behavior: smooth;
-    @apply text-body text-[#101723] dark:text-[#D7DFE5] antialiased;
+    @apply text-body text-fg antialiased;
   }
   
   h1, h2, h3 {
-    @apply font-serif font-medium;
+    @apply font-display font-medium;
     font-synthesis: none;
   }
 }

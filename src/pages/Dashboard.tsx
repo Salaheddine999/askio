@@ -12,7 +12,7 @@ import {
   QueryDocumentSnapshot,
 } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
-import { Check, Copy, RefreshCw } from "lucide-react";
+import { Check, Copy } from "../components/icons";
 import { format, isBefore, startOfDay, subDays } from "date-fns";
 import ConfirmationModal from "../components/ConfirmationModal";
 import { toast } from "react-hot-toast";
@@ -21,21 +21,19 @@ import Tabs from "../components/Tabs";
 import { ActivityItem } from "../components/RecentActivity";
 import { FeedbackSeries } from "../components/OverviewChart";
 import { useCollection } from "react-firebase-hooks/firestore";
-import { DUMMY_CHATBOTS, DUMMY_FEEDBACK_COUNTS, DUMMY_RECENT_ACTIVITY, DUMMY_NOTIFICATIONS } from "../utils/dummyData";
+import { DUMMY_CHATBOTS, DUMMY_FEEDBACK_COUNTS, DUMMY_RECENT_ACTIVITY } from "../utils/dummyData";
 import { Helmet } from "react-helmet-async";
 import { embedCodeFor } from "../utils/embedCode";
+import { openNotifications } from "../utils/sidebarCounts";
 import OverviewTab from "./dashboard/OverviewTab";
 import ChatbotsTab from "./dashboard/ChatbotsTab";
 import ReportsTab from "./dashboard/ReportsTab";
-import NotificationsTab from "./dashboard/NotificationsTab";
-import { secondaryButton } from "./dashboard/ui";
-import { downloadCsv, fetchOwnedByChatbots, fetchRecentOwned } from "./dashboard/data";
-import { Chatbot, FeedbackCounts, NotificationItem, TrendData } from "./dashboard/types";
+import { downloadCsv, fetchOwnedByChatbots } from "./dashboard/data";
+import { Chatbot, FeedbackCounts, TrendData } from "./dashboard/types";
 import { dateLocale, useT } from "../i18n";
 import { dashboardMessages } from "../i18n/messages/dashboard";
-import { markNotificationsSeen, NOTIFICATIONS_SEEN_KEY } from "../utils/sidebarCounts";
 
-type TabId = "overview" | "chatbots" | "reports" | "notifications";
+type TabId = "overview" | "chatbots" | "reports";
 type Trends = Record<"chatbots" | "feedback" | "satisfaction" | "avgFeedback", TrendData>;
 
 const NEUTRAL_TRENDS: Trends = {
@@ -46,16 +44,9 @@ const NEUTRAL_TRENDS: Trends = {
 };
 
 const RECENT_ACTIVITY_LIMIT = 5;
+// Ratings kept for the chart and recent activity.
 const NOTIFICATION_LIMIT = 200;
 
-function readLastSeen() {
-  try {
-    const stored = localStorage.getItem(NOTIFICATIONS_SEEN_KEY);
-    return stored ? new Date(stored) : new Date(0);
-  } catch {
-    return new Date(0);
-  }
-}
 
 const toTrend = (diff: number, unit: "%" | "", digits = 0): TrendData => ({
   value: `${diff >= 0 ? "+" : ""}${diff.toFixed(digits)}${unit}`,
@@ -134,7 +125,6 @@ const Dashboard: React.FC<DashboardProps> = ({ testMode }) => {
   const navigate = useNavigate();
   const [chatbots, setChatbots] = useState<Chatbot[]>([]);
   const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const deleteModal = useModal();
   const embedModal = useModal();
@@ -160,12 +150,6 @@ const Dashboard: React.FC<DashboardProps> = ({ testMode }) => {
   const [isGeneratingLeadReport, setIsGeneratingLeadReport] = useState(false);
   const [isGeneratingQueryReport, setIsGeneratingQueryReport] = useState(false);
 
-  // Leads and unanswered queries; feedback notifications are derived from feedbackEvents.
-  const [inboxItems, setInboxItems] = useState<NotificationItem[]>([]);
-  const [loadingNotifications, setLoadingNotifications] = useState(false);
-  const [notificationsFetched, setNotificationsFetched] = useState(false);
-  const [lastSeen, setLastSeen] = useState<Date>(readLastSeen);
-  const [seenBeforeOpen, setSeenBeforeOpen] = useState<Date>(lastSeen);
 
   const fetchChatbots = useCallback(async () => {
     setLoading(true);
@@ -209,57 +193,12 @@ const Dashboard: React.FC<DashboardProps> = ({ testMode }) => {
       setTrends(NEUTRAL_TRENDS);
       setFeedbackEvents(DUMMY_RECENT_ACTIVITY);
       setDailyFeedback(sampleDailySeries());
-      setInboxItems(DUMMY_NOTIFICATIONS.filter((n) => !n.type.endsWith("_feedback")));
-      setNotificationsFetched(true);
       setError(null);
       setLoading(false);
     } else {
-      setNotificationsFetched(false);
       fetchChatbots();
     }
   }, [testMode, fetchChatbots]);
-
-  const fetchNotifications = useCallback(async () => {
-    const user = auth.currentUser;
-    if (testMode || !user || chatbots.length === 0) return;
-    setLoadingNotifications(true);
-    try {
-      const names = new Map(chatbots.map((c) => [c.id, c.title]));
-      const [leads, queries] = await Promise.all([
-        fetchRecentOwned("leads", user.uid, NOTIFICATION_LIMIT),
-        fetchRecentOwned("unanswered_queries", user.uid, NOTIFICATION_LIMIT),
-      ]);
-      setInboxItems([
-        ...leads.map((l) => ({
-          id: l.id,
-          type: "lead" as const,
-          title: t("newLeadCaptured"),
-          description: l.email,
-          timestamp: l.timestamp,
-          chatbotName: names.get(l.chatbotId) || t("unknownChatbot"),
-        })),
-        ...queries.map((q) => ({
-          id: q.id,
-          type: "unanswered" as const,
-          title: t("unansweredQuestion"),
-          description: `“${q.query}”`,
-          timestamp: q.timestamp,
-          chatbotName: names.get(q.chatbotId) || t("unknownChatbot"),
-        })),
-      ]);
-      setNotificationsFetched(true);
-    } catch (err) {
-      console.error("Error fetching notifications:", err);
-      toast.error(t("notificationsLoadFailed"));
-    } finally {
-      setLoadingNotifications(false);
-    }
-  }, [testMode, chatbots, t]);
-
-  // Fetched eagerly so the unseen badge works from any tab.
-  useEffect(() => {
-    if (!notificationsFetched && chatbots.length > 0) fetchNotifications();
-  }, [chatbots, notificationsFetched, fetchNotifications]);
 
   useEffect(() => {
     if (testMode || !feedbackSnapshot || chatbots.length === 0) return;
@@ -296,30 +235,7 @@ const Dashboard: React.FC<DashboardProps> = ({ testMode }) => {
     setDailyFeedback(dailySeries(ratings));
   }, [feedbackSnapshot, chatbots, testMode]);
 
-  const notifications = useMemo(() => {
-    const feedback: NotificationItem[] = feedbackEvents.map((e) => ({
-      id: e.id,
-      type: e.type === "positive" ? "positive_feedback" : "negative_feedback",
-      title: t(e.type === "positive" ? "positiveRating" : "negativeRating"),
-      description: t(e.type === "positive" ? "positiveRatingDesc" : "negativeRatingDesc"),
-      timestamp: e.date,
-      chatbotName: e.chatbotName,
-    }));
-    return [...inboxItems, ...feedback]
-      .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
-      .slice(0, NOTIFICATION_LIMIT);
-  }, [inboxItems, feedbackEvents, t]);
-
-  const hasUnseenNotifications =
-    activeTab !== "notifications" && notifications.some((n) => n.timestamp.getTime() > lastSeen.getTime());
-
   const changeTab = (id: TabId) => {
-    if (id === "notifications" && activeTab !== "notifications") {
-      const now = new Date();
-      setSeenBeforeOpen(lastSeen);
-      setLastSeen(now);
-      markNotificationsSeen();
-    }
     setActiveTab(id);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -385,16 +301,19 @@ const Dashboard: React.FC<DashboardProps> = ({ testMode }) => {
     );
   };
 
-  const refreshDashboard = async () => {
-    if (testMode) {
-      toast.success(t("testNothingToRefresh"));
-      return;
-    }
-    setRefreshing(true);
-    await fetchChatbots();
-    setNotificationsFetched(false);
-    setRefreshing(false);
-  };
+  // Coming back to the tab reloads the data, at most once a minute, so it's
+  // never stale and there's nothing to refresh by hand.
+  useEffect(() => {
+    if (testMode) return;
+    let last = Date.now();
+    const onVisible = () => {
+      if (document.visibilityState !== "visible" || Date.now() - last < 60_000) return;
+      last = Date.now();
+      void fetchChatbots();
+    };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => document.removeEventListener("visibilitychange", onVisible);
+  }, [testMode, fetchChatbots]);
 
   const downloadReport = () => {
     try {
@@ -461,7 +380,7 @@ const Dashboard: React.FC<DashboardProps> = ({ testMode }) => {
   );
 
   return (
-    <div className="min-h-screen bg-[#F3F7FC] font-sans text-[#101723] dark:bg-[#141D2B]">
+    <div className="min-h-screen bg-ink-30 font-sans text-ink-900 dark:bg-ink-875">
       <Helmet>
         <title>{t("metaTitle")}</title>
         <meta name="description" content={t("metaDescription")} />
@@ -470,27 +389,15 @@ const Dashboard: React.FC<DashboardProps> = ({ testMode }) => {
       <div className="w-full space-y-6 px-4 py-6 sm:px-6 sm:py-8 lg:px-8 xl:px-10">
         <header className="flex flex-wrap items-start justify-between gap-4">
           <div className="min-w-0">
-            <p className="text-caption font-medium uppercase tracking-wider text-[#647184] dark:text-[#87909D]">
+            <p className="text-caption font-medium text-fg-subtle">
               {format(new Date(), t("dateLineFormat"), { locale })}
             </p>
-            <h1 className="mt-1 font-serif text-h2 tracking-tight text-[#101723] sm:text-h1 dark:text-[#D7DFE5]">
+            <h1 className="mt-1 font-display text-h2 tracking-tight text-ink-900 sm:text-h1 dark:text-ink-130">
               {firstName ? t(`${greetingKey()}Name`, { name: firstName }) : t(greetingKey())}
             </h1>
-            <p className="mt-1 text-body-sm text-[#566273] dark:text-[#9BAABD]">
+            <p className="mt-1 text-body-sm text-fg-muted">
               {t("subtitle")}
             </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={refreshDashboard}
-              disabled={refreshing}
-              className={secondaryButton}
-              aria-label={t("refreshDashboard")}
-              title={t("refresh")}
-            >
-              <RefreshCw size={15} className={refreshing ? "animate-spin" : ""} />
-              <span className="hidden sm:inline">{t("refresh")}</span>
-            </button>
           </div>
         </header>
 
@@ -499,7 +406,6 @@ const Dashboard: React.FC<DashboardProps> = ({ testMode }) => {
             { id: "overview", label: t("tabOverview") },
             { id: "chatbots", label: t("tabChatbots"), count: loading ? undefined : chatbots.length },
             { id: "reports", label: t("tabReports") },
-            { id: "notifications", label: t("tabNotifications"), showBadge: hasUnseenNotifications },
           ]}
           activeTab={activeTab}
           onChange={(id) => changeTab(id as TabId)}
@@ -514,11 +420,11 @@ const Dashboard: React.FC<DashboardProps> = ({ testMode }) => {
             satisfactionRate={satisfactionRate}
             trends={trends}
             recentActivities={feedbackEvents.slice(0, RECENT_ACTIVITY_LIMIT)}
+            onViewNotifications={openNotifications}
             loading={loading}
             error={error}
             onRetry={fetchChatbots}
             onViewChatbots={() => changeTab("chatbots")}
-            onViewNotifications={() => changeTab("notifications")}
             {...chatbotActions}
           />
         )}
@@ -545,13 +451,6 @@ const Dashboard: React.FC<DashboardProps> = ({ testMode }) => {
           />
         )}
 
-        {activeTab === "notifications" && (
-          <NotificationsTab
-            notifications={notifications}
-            loading={loadingNotifications && notifications.length === 0}
-            lastSeen={seenBeforeOpen}
-          />
-        )}
       </div>
 
       <ConfirmationModal
@@ -563,11 +462,11 @@ const Dashboard: React.FC<DashboardProps> = ({ testMode }) => {
         cancelText={t("cancel")}
         confirmButtonClass="bg-red-600 text-white hover:bg-red-700 shadow-md dark:bg-red-500 dark:hover:bg-red-600 focus:ring-red-500 dark:focus:ring-red-400"
       >
-        <p className="text-body-sm text-[#566273] dark:text-[#D7DFE5]">
+        <p className="text-body-sm text-ink-605 dark:text-ink-130">
           {deleteTarget ? (
             <>
               {t("deleteNamedBefore")}
-              <span className="font-medium text-[#101723] dark:text-white">{deleteTarget.title}</span>
+              <span className="font-medium text-ink-900 dark:text-white">{deleteTarget.title}</span>
               {t("deleteNamedAfter")}
             </>
           ) : (
@@ -584,21 +483,21 @@ const Dashboard: React.FC<DashboardProps> = ({ testMode }) => {
         confirmText={embedCopied ? t("copied") : t("copyCode")}
         cancelText={t("close")}
         onConfirm={copyEmbedCode}
-        confirmButtonClass="bg-[#101723] text-white hover:bg-[#243040] shadow-md dark:bg-[#D7DFE5] dark:text-[#141D2B] dark:hover:bg-[#E7EDF6] focus:ring-[#101723] dark:focus:ring-[#D7DFE5]"
+        confirmButtonClass="bg-ink-900 text-white hover:bg-ink-805 shadow-md dark:bg-ink-130 dark:text-ink-875 dark:hover:bg-ink-70 focus:ring-ink-900 dark:focus:ring-ink-130"
       >
-        <p className="mb-3 text-body-sm text-[#566273] dark:text-[#9BAABD]">
+        <p className="mb-3 text-body-sm text-fg-muted">
           {t("embedHintBefore")} <code className="font-mono text-[13px]">&lt;/body&gt;</code>
           {t("embedHintAfter")}
         </p>
-        <div className="relative rounded-lg border border-[#D8DFE9] bg-[#101723] p-3 pr-10 dark:border-[#39485B]">
+        <div className="relative rounded-lg border border-ink-120 bg-ink-900 p-3 pr-10 dark:border-ink-710">
           <button
             onClick={copyEmbedCode}
             aria-label={t("copyEmbedCode")}
-            className="absolute right-2 top-2 rounded-md p-1.5 text-[#9BAABD] transition-colors hover:bg-white/10 hover:text-white"
+            className="absolute right-2 top-2 rounded-md p-1.5 text-ink-325 transition-colors hover:bg-white/10 hover:text-white"
           >
             {embedCopied ? <Check size={14} /> : <Copy size={14} />}
           </button>
-          <pre className="overflow-x-auto whitespace-pre font-mono text-[12.5px] leading-relaxed text-[#D7DFE5]">
+          <pre className="overflow-x-auto whitespace-pre font-mono text-[12.5px] leading-relaxed text-ink-130">
             {selectedChatbotId && generateEmbedCode(selectedChatbotId)}
           </pre>
         </div>

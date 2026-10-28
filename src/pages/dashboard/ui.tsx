@@ -16,7 +16,7 @@ import {
   RefreshCw,
   Search,
   X,
-} from "lucide-react";
+} from "../../components/icons";
 import { SortKey, SortOrder } from "./types";
 import { ListSkeleton, Skeleton } from "../../components/Skeleton";
 import { useT } from "../../i18n";
@@ -33,9 +33,9 @@ export const SectionHeader: React.FC<{
 }> = ({ title, description, actions }) => (
   <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
     <div className="min-w-0">
-      <h2 className="text-h3 font-serif text-[#101723] dark:text-[#D7DFE5]">{title}</h2>
+      <h2 className="text-h3 font-display text-fg">{title}</h2>
       {description && (
-        <p className="mt-1 text-body-sm text-[#566273] dark:text-[#9BAABD]">{description}</p>
+        <p className="mt-1 text-body-sm text-fg-muted">{description}</p>
       )}
     </div>
     {actions && <div className="flex flex-wrap items-center gap-2 lg:flex-nowrap">{actions}</div>}
@@ -49,11 +49,11 @@ export const CardHeader: React.FC<{
 }> = ({ title, description, action }) => (
   <div className="flex items-start justify-between gap-4 px-5 pt-5 pb-4 sm:px-6">
     <div className="min-w-0">
-      <h3 className="text-body font-semibold tracking-tight text-[#101723] dark:text-[#D7DFE5]">
+      <h3 className="text-body font-semibold tracking-tight text-fg">
         {title}
       </h3>
       {description && (
-        <p className="mt-0.5 text-body-sm text-[#566273] dark:text-[#9BAABD]">{description}</p>
+        <p className="mt-0.5 text-body-sm text-fg-muted">{description}</p>
       )}
     </div>
     {action}
@@ -71,7 +71,7 @@ export const SearchInput: React.FC<{
   <div className="relative w-full sm:w-64">
     <Search
       size={16}
-      className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#647184] dark:text-[#87909D]"
+      className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-fg-subtle"
     />
     <input
       type="search"
@@ -79,14 +79,14 @@ export const SearchInput: React.FC<{
       onChange={(e) => onChange(e.target.value)}
       placeholder={placeholder}
       aria-label={placeholder}
-      className="h-9 w-full rounded-lg border border-[#D8DFE9] bg-[#F9FCFF] pl-9 pr-8 text-body-sm text-[#101723] placeholder:text-[#647184] focus:border-[#101723] focus:outline-none focus:ring-2 focus:ring-[#101723]/10 dark:border-[#2B3646] dark:bg-[#1A2533] dark:text-[#D7DFE5] dark:placeholder:text-[#87909D] dark:focus:border-[#9BAABD] dark:focus:ring-[#D7DFE5]/10 [&::-webkit-search-cancel-button]:hidden"
+      className="h-9 w-full rounded-lg border border-ink-120 bg-ink-25 pl-9 pr-8 text-body-sm text-ink-900 placeholder:text-ink-545 focus:border-ink-900 focus:outline-none focus:ring-2 focus:ring-ink-900/10 dark:border-ink-780 dark:bg-ink-850 dark:text-ink-130 dark:placeholder:text-ink-425 dark:focus:border-ink-325 dark:focus:ring-ink-130/10 [&::-webkit-search-cancel-button]:hidden"
     />
     {value && (
       <button
         type="button"
         onClick={() => onChange("")}
         aria-label={t("clearSearch")}
-        className={`absolute right-2 top-1/2 -translate-y-1/2 rounded p-0.5 text-[#647184] hover:text-[#101723] dark:text-[#87909D] dark:hover:text-[#D7DFE5] ${focusRing}`}
+        className={`absolute right-2 top-1/2 -translate-y-1/2 rounded p-0.5 text-ink-545 hover:text-ink-900 dark:text-ink-425 dark:hover:text-ink-130 ${focusRing}`}
       >
         <X size={14} />
       </button>
@@ -114,9 +114,9 @@ export const SortMenu: React.FC<{
       <Menu.Button className={secondaryButton}>
         <ArrowUpDown size={15} />
         <span className="hidden sm:inline">{t("sortBy")}</span>
-        <span className="text-[#101723] dark:text-[#D7DFE5]">{t(current.label)}</span>
+        <span className="text-fg">{t(current.label)}</span>
       </Menu.Button>
-      <Menu.Items anchor="bottom end" modal={false} transition className="z-50 w-52 origin-top-right rounded-xl [--anchor-gap:8px] transition duration-100 ease-out data-[closed]:scale-95 data-[closed]:opacity-0 border border-[#D8DFE9] bg-[#F9FCFF] p-1.5 shadow-xl focus:outline-none dark:border-[#2B3646] dark:bg-[#1A2533]">
+      <Menu.Items anchor="bottom end" modal={false} transition className="z-50 w-52 origin-top-right rounded-xl [--anchor-gap:8px] transition duration-100 ease-out data-[closed]:scale-95 data-[closed]:opacity-0 border border-ink-120 bg-ink-25 p-1.5 shadow-lg focus:outline-none dark:border-ink-780 dark:bg-ink-850">
           {SORT_OPTIONS.map((option) => (
             <Menu.Item key={option.key}>
               {({ active }) => (
@@ -124,13 +124,13 @@ export const SortMenu: React.FC<{
                   onClick={() => onSort(option.key)}
                   className={`flex w-full items-center justify-between rounded-lg px-2.5 py-2 text-body-sm ${
                     active
-                      ? "bg-[#F3F7FC] text-[#101723] dark:bg-[#273444] dark:text-[#D7DFE5]"
-                      : "text-[#566273] dark:text-[#9BAABD]"
+                      ? "bg-ink-30 text-ink-900 dark:bg-ink-790 dark:text-ink-130"
+                      : "text-fg-muted"
                   }`}
                 >
                   {t(option.label)}
                   {sortBy === option.key && (
-                    <span className="flex items-center gap-1 text-[#101723] dark:text-[#D7DFE5]">
+                    <span className="flex items-center gap-1 text-fg">
                       <OrderIcon size={13} />
                       <Check size={14} />
                     </span>
@@ -157,7 +157,7 @@ export const ViewToggle: React.FC<{
     <div
       role="group"
       aria-label={t("viewMode")}
-      className="inline-flex h-9 items-center rounded-lg border border-[#D8DFE9] bg-[#F3F7FC] p-0.5 dark:border-[#2B3646] dark:bg-[#141D2B]"
+      className="inline-flex h-9 items-center rounded-lg border border-ink-120 bg-ink-30 p-0.5 dark:border-ink-780 dark:bg-ink-875"
     >
       {options.map(({ id, label, Icon }) => (
         <button
@@ -168,8 +168,8 @@ export const ViewToggle: React.FC<{
           title={label}
           className={`flex h-full items-center rounded-md px-2.5 transition-colors ${focusRing} ${
             value === id
-              ? "bg-[#F9FCFF] text-[#101723] shadow-sm dark:bg-[#273444] dark:text-[#D7DFE5]"
-              : "text-[#647184] hover:text-[#101723] dark:text-[#87909D] dark:hover:text-[#D7DFE5]"
+              ? "bg-ink-25 text-ink-900 shadow-sm dark:bg-ink-790 dark:text-ink-130"
+              : "text-ink-545 hover:text-ink-900 dark:text-ink-425 dark:hover:text-ink-130"
           }`}
         >
           <Icon size={16} />
@@ -206,19 +206,19 @@ export const Pagination: React.FC<{
       aria-label={t("pagination")}
       className="flex flex-col items-center justify-between gap-3 sm:flex-row"
     >
-      <p className="text-caption text-[#647184] dark:text-[#87909D]">{summary}</p>
+      <p className="text-caption text-fg-subtle">{summary}</p>
       <div className="flex items-center gap-1">
         <button
           onClick={() => onChange(page - 1)}
           disabled={page === 1}
           aria-label={t("previousPage")}
-          className={`${pageButton} text-[#566273] hover:bg-[#E7EDF6] disabled:pointer-events-none disabled:opacity-40 dark:text-[#9BAABD] dark:hover:bg-[#273444]`}
+          className={`${pageButton} text-ink-605 hover:bg-ink-70 disabled:pointer-events-none disabled:opacity-40 dark:text-ink-325 dark:hover:bg-ink-790`}
         >
           <ChevronLeft size={16} />
         </button>
         {pageWindow(page, totalPages).map((p, i) =>
           p === "gap" ? (
-            <span key={`gap-${i}`} className="px-1 text-body-sm text-[#87909D]">
+            <span key={`gap-${i}`} className="px-1 text-body-sm text-ink-425">
               …
             </span>
           ) : (
@@ -228,8 +228,8 @@ export const Pagination: React.FC<{
               aria-current={p === page ? "page" : undefined}
               className={`${pageButton} ${
                 p === page
-                  ? "bg-[#101723] font-medium text-white dark:bg-[#D7DFE5] dark:text-[#141D2B]"
-                  : "text-[#566273] hover:bg-[#E7EDF6] dark:text-[#9BAABD] dark:hover:bg-[#273444]"
+                  ? "bg-ink-900 font-medium text-white dark:bg-ink-130 dark:text-ink-875"
+                  : "text-ink-605 hover:bg-ink-70 dark:text-ink-325 dark:hover:bg-ink-790"
               }`}
             >
               {p}
@@ -240,7 +240,7 @@ export const Pagination: React.FC<{
           onClick={() => onChange(page + 1)}
           disabled={page === totalPages}
           aria-label={t("nextPage")}
-          className={`${pageButton} text-[#566273] hover:bg-[#E7EDF6] disabled:pointer-events-none disabled:opacity-40 dark:text-[#9BAABD] dark:hover:bg-[#273444]`}
+          className={`${pageButton} text-ink-605 hover:bg-ink-70 disabled:pointer-events-none disabled:opacity-40 dark:text-ink-325 dark:hover:bg-ink-790`}
         >
           <ChevronRight size={16} />
         </button>
@@ -260,28 +260,33 @@ export const EmptyState: React.FC<{
   compact?: boolean;
   /** Show Kio, looking around, instead of the icon: for "nothing yet" moments. */
   kio?: boolean;
-}> = ({ icon: Icon, title, description, action, compact, kio }) => (
-  <div
-    className={`flex flex-col items-center justify-center px-6 text-center ${
-      compact ? "py-10" : "py-16"
-    }`}
-  >
-    {kio ? (
-      <div className="mb-4 h-12 w-12">
-        <Suspense fallback={null}>
-          <LiveOrb size={48} />
-        </Suspense>
+}> = ({ icon: Icon, title, description, action, compact, kio }) =>
+  // Inside a card or list, "nothing here" is a quiet line, not a showpiece.
+  compact && !kio ? (
+    <div className="flex items-start gap-3 px-5 py-6 sm:px-6">
+      <Icon size={18} className="mt-0.5 shrink-0 text-fg-subtle" strokeWidth={1.75} aria-hidden="true" />
+      <div className="min-w-0">
+        <h3 className="text-body-sm font-medium text-fg">{title}</h3>
+        <p className="mt-0.5 text-body-sm text-fg-muted">{description}</p>
+        {action && <div className="mt-3">{action}</div>}
       </div>
-    ) : (
-      <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl border border-[#D8DFE9] bg-[#F3F7FC] dark:border-[#2B3646] dark:bg-[#141D2B]">
-        <Icon size={22} className="text-[#566273] dark:text-[#9BAABD]" strokeWidth={1.75} />
-      </div>
-    )}
-    <h3 className="text-body font-semibold text-[#101723] dark:text-[#D7DFE5]">{title}</h3>
-    <p className="mt-1 max-w-sm text-body-sm text-[#566273] dark:text-[#9BAABD]">{description}</p>
-    {action && <div className="mt-6">{action}</div>}
-  </div>
-);
+    </div>
+  ) : (
+    <div className={`flex flex-col items-center justify-center px-6 text-center ${compact ? "py-10" : "py-14"}`}>
+      {kio ? (
+        <div className="mb-4 h-12 w-12">
+          <Suspense fallback={null}>
+            <LiveOrb size={48} />
+          </Suspense>
+        </div>
+      ) : (
+        <Icon size={24} className="mb-3 text-fg-subtle" strokeWidth={1.5} aria-hidden="true" />
+      )}
+      <h3 className="text-body font-semibold text-fg">{title}</h3>
+      <p className="mt-1 max-w-sm text-body-sm text-fg-muted">{description}</p>
+      {action && <div className="mt-5">{action}</div>}
+    </div>
+  );
 
 export const CreateChatbotLink: React.FC<{ label?: string; to?: string }> = ({ label, to = "/configure" }) => {
   const t = useT(commonMessages);
@@ -316,7 +321,7 @@ export const ErrorBanner: React.FC<{ message: string; onRetry: () => void }> = (
 export const ChatbotGridSkeleton: React.FC<{ count?: number }> = ({ count = 6 }) => (
   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4" aria-busy="true">
     {Array.from({ length: count }).map((_, i) => (
-      <div key={i} className="overflow-hidden rounded-2xl border border-[#D8DFE9] bg-[#F9FCFF] dark:border-[#2B3646] dark:bg-[#1A2533]">
+      <div key={i} className="overflow-hidden rounded-2xl border border-ink-120 bg-ink-25 dark:border-ink-780 dark:bg-ink-850">
         <div className="p-4">
           <div className="flex items-start justify-between gap-3">
             <Skeleton className="h-10 w-10 shrink-0 rounded-full" />
@@ -328,7 +333,7 @@ export const ChatbotGridSkeleton: React.FC<{ count?: number }> = ({ count = 6 })
           </div>
           <Skeleton className="mt-5 h-3 w-full" />
           <Skeleton className="mt-2 h-1.5 w-full rounded-full" />
-          <div className="mt-5 flex items-center justify-between border-t border-[#E7EDF6] pt-3 dark:border-[#2B3646]">
+          <div className="mt-5 flex items-center justify-between border-t border-ink-70 pt-3 dark:border-ink-780">
             <Skeleton className="h-3 w-24" />
             <Skeleton className="h-8 w-24 rounded-lg" />
           </div>

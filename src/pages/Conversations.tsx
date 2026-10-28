@@ -23,7 +23,7 @@ import {
   type DocumentData,
   type DocumentSnapshot,
 } from "firebase/firestore";
-import { ArrowLeft, Bot, Check, ChevronsUpDown, Copy, Mail, MessagesSquare, Send, Trash2 } from "lucide-react";
+import { ArrowLeft, Bot, Check, ChevronsUpDown, Copy, Mail, MessagesSquare, Send, Trash2 } from "../components/icons";
 import { auth } from "../utils/firebase";
 import { apiRequest } from "../utils/api";
 import type { LiveStatus } from "../utils/liveChat";
@@ -160,25 +160,25 @@ const ChatbotPicker: React.FC<{ chatbots: ChatbotInfo[]; value: string; onChange
     <Listbox value={value} onChange={onChange}>
       <ListboxButton
         aria-label={t("chatbotFilter")}
-        className={`inline-flex h-9 w-56 items-center gap-2 rounded-lg border border-[#D8DFE9] bg-[#F9FCFF] pl-2.5 pr-2.5 text-left text-[13px] font-medium text-[#101723] transition-colors hover:border-[#B8C3D1] dark:border-[#2B3646] dark:bg-[#1A2533] dark:text-[#D7DFE5] ${focusRing}`}
+        className={`inline-flex h-9 w-56 items-center gap-2 rounded-lg border border-ink-120 bg-ink-25 pl-2.5 pr-2.5 text-left text-[13px] font-medium text-ink-900 transition-colors hover:border-ink-230 dark:border-ink-780 dark:bg-ink-850 dark:text-ink-130 ${focusRing}`}
       >
-        {selected ? <BotAvatar color={selected.primaryColor} launcherStyle={selected.launcherStyle} size={18} /> : <Bot size={15} className="shrink-0 text-[#647184]" />}
+        {selected ? <BotAvatar color={selected.primaryColor} launcherStyle={selected.launcherStyle} size={18} /> : <Bot size={15} className="shrink-0 text-ink-545" />}
         <span className="min-w-0 flex-1 truncate">{selected ? selected.title || t("untitled") : t("allChatbots")}</span>
-        <ChevronsUpDown size={14} className="ml-1 shrink-0 text-[#87909D]" />
+        <ChevronsUpDown size={14} className="ml-1 shrink-0 text-ink-425" />
       </ListboxButton>
       <ListboxOptions
         anchor="bottom end"
         modal={false}
         transition
-        className="z-50 max-h-72 w-[var(--button-width)] min-w-56 overflow-auto rounded-xl border border-[#D8DFE9] bg-[#F9FCFF] p-1.5 shadow-xl transition duration-100 ease-out [--anchor-gap:6px] focus:outline-none data-[closed]:-translate-y-1 data-[closed]:opacity-0 dark:border-[#2B3646] dark:bg-[#1A2533]"
+        className="z-50 max-h-72 w-[var(--button-width)] min-w-56 overflow-auto rounded-xl border border-ink-120 bg-ink-25 p-1.5 shadow-lg transition duration-100 ease-out [--anchor-gap:6px] focus:outline-none data-[closed]:-translate-y-1 data-[closed]:opacity-0 dark:border-ink-780 dark:bg-ink-850"
       >
         {options.map((bot) => (
           <ListboxOption
             key={bot.id}
             value={bot.id}
-            className="group flex cursor-pointer items-center gap-2.5 rounded-lg px-2 py-2 text-body-sm text-[#101723] data-[focus]:bg-[#F3F7FC] dark:text-[#D7DFE5] dark:data-[focus]:bg-[#273444]"
+            className="group flex cursor-pointer items-center gap-2.5 rounded-lg px-2 py-2 text-body-sm text-ink-900 data-[focus]:bg-ink-30 dark:text-ink-130 dark:data-[focus]:bg-ink-790"
           >
-            {bot.id === "all" ? <Bot size={16} className="shrink-0 text-[#647184]" /> : <BotAvatar color={bot.primaryColor} launcherStyle={bot.launcherStyle} size={20} />}
+            {bot.id === "all" ? <Bot size={16} className="shrink-0 text-ink-545" /> : <BotAvatar color={bot.primaryColor} launcherStyle={bot.launcherStyle} size={20} />}
             <span className="min-w-0 flex-1 truncate group-data-[selected]:font-medium">{bot.title || t("untitled")}</span>
             <Check size={14} className="invisible shrink-0 group-data-[selected]:visible" />
           </ListboxOption>
@@ -315,19 +315,19 @@ const Transcript: React.FC<{
 
   return (
     <div className="flex h-full min-h-0 flex-col">
-      <div className="flex items-start gap-3 border-b border-[#E7EDF6] px-4 py-3 sm:px-5 sm:py-4 dark:border-[#2B3646]">
+      <div className="flex items-start gap-3 border-b border-ink-70 px-4 py-3 sm:px-5 sm:py-4 dark:border-ink-780">
         <button
           type="button"
           onClick={onBack}
           aria-label={t("back")}
-          className={`-ml-1 mt-0.5 rounded-lg p-1.5 text-[#566273] hover:bg-[#E7EDF6] lg:hidden dark:text-[#9BAABD] dark:hover:bg-[#273444] ${focusRing}`}
+          className={`-ml-1 mt-0.5 rounded-lg p-1.5 text-ink-605 hover:bg-ink-70 lg:hidden dark:text-ink-325 dark:hover:bg-ink-790 ${focusRing}`}
         >
           <ArrowLeft size={16} />
         </button>
         <BotAvatar color={chatbot?.primaryColor} launcherStyle={chatbot?.launcherStyle} size={32} />
         <div className="min-w-0 flex-1">
-          <p className="truncate text-body-sm font-semibold text-[#101723] dark:text-[#E7EDF6]">{chatbot?.title || t("untitled")}</p>
-          <p className="mt-0.5 text-caption text-[#647184] dark:text-[#87909D]">
+          <p className="truncate text-body-sm font-semibold text-ink-900 dark:text-ink-70">{chatbot?.title || t("untitled")}</p>
+          <p className="mt-0.5 text-caption text-fg-subtle">
             {conversation.startedAt ? t("started", { date: format(conversation.startedAt, t("dateTimeFormat"), { locale }) }) : ""}
             {" · "}
             {t.plural("messages", conversation.messageCount)}
@@ -338,7 +338,7 @@ const Transcript: React.FC<{
               target="_blank"
               rel="noopener noreferrer"
               title={conversation.lastPage}
-              className="mt-0.5 block truncate text-caption text-[#566273] underline-offset-2 hover:text-[#101723] hover:underline dark:text-[#9BAABD] dark:hover:text-[#D7DFE5]"
+              className="mt-0.5 block truncate text-caption text-ink-605 underline-offset-2 hover:text-ink-900 hover:underline dark:text-ink-325 dark:hover:text-ink-130"
             >
               {t("onPage", { page: conversation.lastPage.replace(/^https?:\/\//, "") })}
             </a>
@@ -359,7 +359,7 @@ const Transcript: React.FC<{
             onClick={() => setConfirming(true)}
             aria-label={t("delete")}
             title={t("delete")}
-            className={`shrink-0 rounded-lg p-2 text-[#87909D] transition-colors hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/30 ${focusRing}`}
+            className={`shrink-0 rounded-lg p-2 text-ink-425 transition-colors hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/30 ${focusRing}`}
           >
             <Trash2 size={15} />
           </button>
@@ -372,7 +372,7 @@ const Transcript: React.FC<{
       )}
 
       {conversation.leadEmail && (
-        <div className="flex items-center gap-2 border-b border-[#E7EDF6] bg-emerald-50/60 px-5 py-2.5 text-caption text-emerald-800 dark:border-[#2B3646] dark:bg-emerald-950/20 dark:text-emerald-300">
+        <div className="flex items-center gap-2 border-b border-ink-70 bg-emerald-50/60 px-5 py-2.5 text-caption text-emerald-800 dark:border-ink-780 dark:bg-emerald-950/20 dark:text-emerald-300">
           <Mail size={14} className="shrink-0" />
           <span className="shrink-0">{t("leftEmail")}:</span>
           <span className="min-w-0 truncate font-medium">{conversation.leadEmail}</span>
@@ -389,7 +389,7 @@ const Transcript: React.FC<{
       )}
 
       {live && (
-        <div className="flex items-center gap-3 border-b border-[#E7EDF6] bg-emerald-50/70 px-5 py-2.5 text-caption text-emerald-900 dark:border-[#2B3646] dark:bg-emerald-950/25 dark:text-emerald-200">
+        <div className="flex items-center gap-3 border-b border-ink-70 bg-emerald-50/70 px-5 py-2.5 text-caption text-emerald-900 dark:border-ink-780 dark:bg-emerald-950/25 dark:text-emerald-200">
           <span className="relative flex h-2.5 w-2.5 shrink-0">
             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60 motion-reduce:hidden" />
             <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500" />
@@ -409,7 +409,7 @@ const Transcript: React.FC<{
         </div>
       )}
 
-      <div className="min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-contain bg-[#F3F7FC] px-4 py-4 sm:px-5 sm:py-5 [scrollbar-width:thin] dark:bg-[#141D2B]">
+      <div className="min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-contain bg-ink-30 px-4 py-4 sm:px-5 sm:py-5 [scrollbar-width:thin] dark:bg-ink-875">
         {shown.map((m, i) => {
           const isVisitor = m.role === "visitor";
           const isAgent = m.role === "agent";
@@ -422,14 +422,14 @@ const Transcript: React.FC<{
                     isVisitor
                       ? "rounded-br-md text-white dark:ring-1 dark:ring-white/15"
                       : isAgent
-                        ? "rounded-bl-md bg-emerald-50 text-[#101723] ring-1 ring-emerald-200 dark:bg-emerald-950/30 dark:text-[#D7DFE5] dark:ring-emerald-900/60"
-                        : "rounded-bl-md bg-[#F9FCFF] text-[#101723] ring-1 ring-[#E7EDF6] dark:bg-[#1A2533] dark:text-[#D7DFE5] dark:ring-[#2B3646]"
+                        ? "rounded-bl-md bg-emerald-50 text-ink-900 ring-1 ring-emerald-200 dark:bg-emerald-950/30 dark:text-ink-130 dark:ring-emerald-900/60"
+                        : "rounded-bl-md bg-ink-25 text-ink-900 ring-1 ring-ink-70 dark:bg-ink-850 dark:text-ink-130 dark:ring-ink-780"
                   }`}
                   style={isVisitor ? { background: visitorColor } : undefined}
                 >
                   {m.text}
                 </div>
-                <p className={`mt-1 text-[11px] text-[#87909D] ${isVisitor ? "text-right" : ""}`}>
+                <p className={`mt-1 text-caption text-ink-425 ${isVisitor ? "text-right" : ""}`}>
                   {isVisitor ? t("visitor") : isAgent ? t("you") : chatbot?.title || "Bot"} ·{" "}
                   {isPending ? t("sending") : format(new Date(m.at), t("timeFormat"), { locale })}
                 </p>
@@ -438,10 +438,10 @@ const Transcript: React.FC<{
           );
         })}
         {visitorTyping && (
-          <p className="flex items-center justify-end gap-2 text-caption text-[#647184] dark:text-[#87909D]" aria-live="polite">
+          <p className="flex items-center justify-end gap-2 text-caption text-fg-subtle" aria-live="polite">
             <span className="flex gap-0.5" aria-hidden="true">
               {[0, 1, 2].map((i) => (
-                <span key={i} className="h-1.5 w-1.5 animate-bounce rounded-full bg-[#87909D] motion-reduce:animate-none" style={{ animationDelay: `${i * 0.15}s` }} />
+                <span key={i} className="h-1.5 w-1.5 animate-bounce rounded-full bg-ink-425 motion-reduce:animate-none" style={{ animationDelay: `${i * 0.15}s` }} />
               ))}
             </span>
             {t("visitorTyping")}
@@ -451,11 +451,11 @@ const Transcript: React.FC<{
       </div>
 
       {!canWrite && (
-        <p className="border-t border-[#E7EDF6] px-5 py-3 text-caption text-[#647184] dark:border-[#2B3646] dark:text-[#87909D]">
+        <p className="border-t border-ink-70 px-5 py-3 text-caption text-ink-545 dark:border-ink-780 dark:text-ink-425">
           {chatbot && !chatbot.liveChat ? (
             <>
               {t("liveOffHint")}{" "}
-              <Link to={`/configure/${chatbot.id}`} className="font-medium text-[#101723] underline underline-offset-2 dark:text-[#D7DFE5]">
+              <Link to={`/configure/${chatbot.id}`} className="font-medium text-ink-900 underline underline-offset-2 dark:text-ink-130">
                 {t("turnOnLiveChat")}
               </Link>
             </>
@@ -471,10 +471,10 @@ const Transcript: React.FC<{
             e.preventDefault();
             void send();
           }}
-          className="flex flex-wrap items-end gap-2 border-t border-[#E7EDF6] px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 dark:border-[#2B3646]"
+          className="flex flex-wrap items-end gap-2 border-t border-ink-70 px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 dark:border-ink-780"
         >
           {joinable && (
-            <p className="w-full text-caption text-[#647184] dark:text-[#87909D]">
+            <p className="w-full text-caption text-fg-subtle">
               {t("joinHint", { time: conversation.lastMessageAt ? formatDistanceToNowStrict(conversation.lastMessageAt, { addSuffix: true, locale }) : t("justNow") })}
             </p>
           )}
@@ -494,7 +494,7 @@ const Transcript: React.FC<{
             maxLength={1000}
             placeholder={t("replyPlaceholder")}
             aria-label={t("replyPlaceholder")}
-            className={`min-h-[38px] flex-1 resize-none rounded-lg border border-[#D8DFE9] bg-[#F9FCFF] px-3 py-2 text-body-sm text-[#101723] placeholder:text-[#87909D] dark:border-[#2B3646] dark:bg-[#1A2533] dark:text-[#D7DFE5] ${focusRing}`}
+            className={`min-h-[38px] flex-1 resize-none rounded-lg border border-ink-120 bg-ink-25 px-3 py-2 text-body-sm text-ink-900 placeholder:text-ink-425 dark:border-ink-780 dark:bg-ink-850 dark:text-ink-130 ${focusRing}`}
           />
           <button type="submit" disabled={!reply.trim()} className={`${primaryButton} h-[38px] shrink-0`} aria-label={t("send")}>
             <Send size={15} />
@@ -700,8 +700,8 @@ const Conversations: React.FC<{ testMode?: boolean }> = ({ testMode = false }) =
   const header = (
     <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
       <div>
-        <h1 className="font-serif text-h2 tracking-tight text-[#101723] sm:text-h1 dark:text-[#D7DFE5]">{t("title")}</h1>
-        <p className="mt-1 text-body-sm text-[#566273] dark:text-[#9BAABD]">{t("subtitle")}</p>
+        <h1 className="font-display text-h2 tracking-tight text-ink-900 sm:text-h1 dark:text-ink-130">{t("title")}</h1>
+        <p className="mt-1 text-body-sm text-fg-muted">{t("subtitle")}</p>
       </div>
       {(isPro || testMode) && chatbots && chatbots.length > 1 && (
         <ChatbotPicker
@@ -766,10 +766,10 @@ const Conversations: React.FC<{ testMode?: boolean }> = ({ testMode = false }) =
   } else {
     body = (
       <div className={`${surface} grid h-[calc(100dvh-13rem)] min-h-[420px] grid-cols-1 overflow-hidden lg:grid-cols-[minmax(280px,380px)_minmax(0,1fr)]`}>
-        <div className={`flex min-h-0 flex-col border-[#E7EDF6] lg:border-r dark:border-[#2B3646] ${open ? "hidden lg:flex" : "flex"}`}>
+        <div className={`flex min-h-0 flex-col border-ink-70 lg:border-r dark:border-ink-780 ${open ? "hidden lg:flex" : "flex"}`}>
           {liveItems.length > 0 && (
-            <div className="border-b border-[#E7EDF6] bg-emerald-50/40 dark:border-[#2B3646] dark:bg-emerald-950/15">
-              <p className="px-4 pb-1 pt-3 text-[11px] font-semibold uppercase tracking-wide text-emerald-700 dark:text-emerald-300">
+            <div className="border-b border-ink-70 bg-emerald-50/40 dark:border-ink-780 dark:bg-emerald-950/15">
+              <p className="px-4 pb-1 pt-3 text-caption font-semibold text-emerald-700 dark:text-emerald-300">
                 {t("liveNow")}
               </p>
               <ul className="pb-1.5">
@@ -786,11 +786,11 @@ const Conversations: React.FC<{ testMode?: boolean }> = ({ testMode = false }) =
                         }`}
                       >
                         <BotAvatar color={bot?.primaryColor} launcherStyle={bot?.launcherStyle} size={24} />
-                        <span className="min-w-0 flex-1 truncate text-body-sm text-[#101723] dark:text-[#D7DFE5]">
+                        <span className="min-w-0 flex-1 truncate text-body-sm text-fg">
                           {c.preview || t("noQuestion")}
                         </span>
                         <span
-                          className={`shrink-0 rounded-full px-2 py-px text-[11px] font-semibold ${
+                          className={`shrink-0 rounded-full px-2 py-px text-caption font-semibold ${
                             c.liveStatus === "waiting" ? "bg-emerald-500 text-white" : "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-200"
                           }`}
                         >
@@ -803,7 +803,7 @@ const Conversations: React.FC<{ testMode?: boolean }> = ({ testMode = false }) =
               </ul>
             </div>
           )}
-          <ul className={`min-h-0 flex-1 divide-y divide-[#E7EDF6] overflow-y-auto [scrollbar-width:thin] dark:divide-[#2B3646] ${list.loading ? "opacity-60" : ""}`}>
+          <ul className={`min-h-0 flex-1 divide-y divide-ink-70 overflow-y-auto [scrollbar-width:thin] dark:divide-ink-780 ${list.loading ? "opacity-60" : ""}`}>
             {items.map((c) => {
               const bot = byId.get(c.chatbotId);
               const selected = c.id === openId;
@@ -814,21 +814,21 @@ const Conversations: React.FC<{ testMode?: boolean }> = ({ testMode = false }) =
                     onClick={() => openChat(c.id)}
                     aria-current={selected ? "true" : undefined}
                     className={`flex w-full items-start gap-3 px-4 py-3.5 text-left transition-colors ${focusRing} ${
-                      selected ? "bg-[#F3F7FC] dark:bg-[#141D2B]" : "hover:bg-[#F3F7FC]/70 dark:hover:bg-[#141D2B]/60"
+                      selected ? "bg-ink-30 dark:bg-ink-875" : "hover:bg-ink-30/70 dark:hover:bg-ink-875/60"
                     }`}
                   >
                     <BotAvatar color={bot?.primaryColor} launcherStyle={bot?.launcherStyle} size={28} />
                     <span className="min-w-0 flex-1">
                       <span className="flex items-baseline justify-between gap-2">
-                        <span className="truncate text-caption font-medium text-[#566273] dark:text-[#9BAABD]">
+                        <span className="truncate text-caption font-medium text-fg-muted">
                           {bot?.title || t("untitled")}
                         </span>
-                        <span className="shrink-0 whitespace-nowrap text-[11px] text-[#87909D]">{when(c.lastMessageAt)}</span>
+                        <span className="shrink-0 whitespace-nowrap text-caption text-ink-425">{when(c.lastMessageAt)}</span>
                       </span>
-                      <span className="mt-0.5 line-clamp-2 text-body-sm text-[#101723] dark:text-[#D7DFE5]">
+                      <span className="mt-0.5 line-clamp-2 text-body-sm text-fg">
                         {c.preview || t("noQuestion")}
                       </span>
-                      <span className="mt-1 flex items-center gap-2 text-[11px] text-[#87909D]">
+                      <span className="mt-1 flex items-center gap-2 text-caption text-ink-425">
                         {t.plural("messages", c.messageCount)}
                         {c.leadEmail && (
                           <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-1.5 py-px font-medium text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
@@ -844,12 +844,12 @@ const Conversations: React.FC<{ testMode?: boolean }> = ({ testMode = false }) =
             })}
           </ul>
           {!testMode && list.totalPages > 1 && (
-            <div className="border-t border-[#E7EDF6] px-4 py-2.5 dark:border-[#2B3646] [&_p]:hidden">
+            <div className="border-t border-ink-70 px-4 py-2.5 dark:border-ink-780 [&_p]:hidden">
               <Pagination page={list.page} totalPages={list.totalPages} onChange={(p) => void list.goTo(p)} />
             </div>
           )}
           {total !== null && total > 0 && (
-            <p className="border-t border-[#E7EDF6] px-4 py-2 text-[11px] text-[#87909D] dark:border-[#2B3646]">
+            <p className="border-t border-ink-70 px-4 py-2 text-caption text-ink-425 dark:border-ink-780">
               {t("summary", {
                 from: ((list.page - 1) * PAGE_SIZE + 1).toLocaleString(t.lang),
                 to: ((list.page - 1) * PAGE_SIZE + items.length).toLocaleString(t.lang),
@@ -863,7 +863,7 @@ const Conversations: React.FC<{ testMode?: boolean }> = ({ testMode = false }) =
             messaging app, so the reply box stays in reach. */}
         <div
           className={`min-h-0 flex-col ${
-            open ? "fixed inset-x-0 bottom-0 top-14 z-20 flex bg-[#F9FCFF] lg:static lg:z-auto dark:bg-[#1A2533] lg:dark:bg-transparent lg:bg-transparent" : "hidden lg:flex"
+            open ? "fixed inset-x-0 bottom-0 top-14 z-20 flex bg-ink-25 lg:static lg:z-auto dark:bg-ink-850 lg:dark:bg-transparent lg:bg-transparent" : "hidden lg:flex"
           }`}
         >
           {open ? (
@@ -896,7 +896,7 @@ const Conversations: React.FC<{ testMode?: boolean }> = ({ testMode = false }) =
   }
 
   return (
-    <div className="min-h-screen bg-[#F3F7FC] font-sans text-[#101723] dark:bg-[#141D2B]">
+    <div className="min-h-screen bg-ink-30 font-sans text-ink-900 dark:bg-ink-875">
       <Helmet>
         <title>{t("metaTitle")}</title>
       </Helmet>

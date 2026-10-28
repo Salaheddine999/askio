@@ -1,4 +1,4 @@
-import { Globe } from "lucide-react";
+import { Globe } from "../../components/icons";
 import type { IconType } from "react-icons";
 import {
   SiAngular,
@@ -39,7 +39,7 @@ function PlatformList() {
       {PLATFORMS.map(({ name, icon: Icon, wordmark }) => (
         <li
           key={name}
-          className="flex items-center gap-2 whitespace-nowrap text-[14px] font-medium tracking-[-0.01em] text-[#647184] transition-colors duration-200 hover:text-[#101723] dark:text-[#87909D] dark:hover:text-[#E7EDF6]"
+          className="flex items-center gap-2 whitespace-nowrap text-[14px] font-medium tracking-[-0.01em] text-ink-545 transition-colors duration-200 hover:text-ink-900 dark:text-ink-425 dark:hover:text-ink-70"
         >
           {wordmark ? (
             <Icon className="h-6 w-9 shrink-0" aria-hidden="true" />
@@ -58,12 +58,12 @@ function PlatformList() {
 export default function MarqueeStrip() {
   return (
     <section
-      className="flex items-stretch overflow-hidden border-b border-[rgba(16,23,35,0.12)] dark:border-[#2B3646]"
+      className="flex items-stretch overflow-hidden border-b border-[rgba(16,23,35,0.12)] dark:border-ink-780"
       aria-label="Works with"
     >
       <p className="sr-only">Works with {PLATFORMS.map((p) => p.name).join(", ")}.</p>
       <div
-        className="flex shrink-0 items-center whitespace-nowrap border-r border-[rgba(16,23,35,0.12)] px-4 text-[11px] font-medium uppercase tracking-[0.08em] text-[#647184] sm:px-6 sm:text-xs dark:border-[#2B3646] dark:text-[#9BAABD]"
+        className="flex shrink-0 items-center whitespace-nowrap border-r border-[rgba(16,23,35,0.12)] px-4 text-caption font-medium text-ink-545 sm:px-6 sm:text-xs dark:border-ink-780 dark:text-ink-325"
         aria-hidden="true"
       >
         Works with

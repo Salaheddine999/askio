@@ -8,7 +8,7 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
-import { BarChart3 } from "lucide-react";
+import { BarChart3 } from "./icons";
 import { useSiteDarkMode } from "../utils/useSiteDarkMode";
 import { useT } from "../i18n";
 import { dashboardMessages } from "../i18n/messages/dashboard";
@@ -48,18 +48,18 @@ const OverviewChart: React.FC<OverviewChartProps> = ({ byChatbot, overTime }) =>
   const total = series.positive.reduce((a, b) => a + b, 0) + series.negative.reduce((a, b) => a + b, 0);
 
   return (
-    <div className="flex h-full flex-col rounded-xl border border-[#D8DFE9] bg-[#F9FCFF] text-[#101723] shadow-[0_1px_2px_rgba(16,23,35,0.04)] dark:border-[#2B3646] dark:bg-[#1A2533] dark:text-[#D7DFE5]">
+    <div className="flex h-full flex-col rounded-xl border border-ink-120 bg-ink-25 text-ink-900 shadow-[0_1px_2px_rgba(16,23,35,0.04)] dark:border-ink-780 dark:bg-ink-850 dark:text-ink-130">
       <div className="flex flex-wrap items-start justify-between gap-3 px-5 pt-5 pb-2 sm:px-6">
         <div>
           <h3 className="text-body font-semibold tracking-tight">{t("chartTitle")}</h3>
-          <p className="mt-0.5 text-body-sm text-[#566273] dark:text-[#9BAABD]">
+          <p className="mt-0.5 text-body-sm text-fg-muted">
             {mode === "time" ? t.plural("ratingsLast30", total) : t("allTimeByChatbot")}
           </p>
         </div>
         <div
           role="group"
           aria-label={t("chartView")}
-          className="inline-flex rounded-lg border border-[#D8DFE9] bg-[#F3F7FC] p-0.5 text-caption font-medium dark:border-[#2B3646] dark:bg-[#141D2B]"
+          className="inline-flex rounded-lg border border-ink-120 bg-ink-30 p-0.5 text-caption font-medium dark:border-ink-780 dark:bg-ink-875"
         >
           {(
             [
@@ -73,8 +73,8 @@ const OverviewChart: React.FC<OverviewChartProps> = ({ byChatbot, overTime }) =>
               aria-pressed={mode === id}
               className={`rounded-md px-2.5 py-1 transition-colors ${
                 mode === id
-                  ? "bg-[#F9FCFF] text-[#101723] shadow-sm dark:bg-[#273444] dark:text-[#D7DFE5]"
-                  : "text-[#647184] hover:text-[#101723] dark:text-[#87909D] dark:hover:text-[#D7DFE5]"
+                  ? "bg-ink-25 text-ink-900 shadow-sm dark:bg-ink-790 dark:text-ink-130"
+                  : "text-ink-545 hover:text-ink-900 dark:text-ink-425 dark:hover:text-ink-130"
               }`}
             >
               {label}
@@ -83,7 +83,7 @@ const OverviewChart: React.FC<OverviewChartProps> = ({ byChatbot, overTime }) =>
         </div>
       </div>
       {hasData && (
-        <div className="flex items-center gap-4 px-5 pb-1 text-caption text-[#566273] sm:px-6 dark:text-[#9BAABD]">
+        <div className="flex items-center gap-4 px-5 pb-1 text-caption text-ink-605 sm:px-6 dark:text-ink-325">
           <span className="flex items-center gap-1.5">
             <span className="h-2.5 w-2.5 rounded-sm" style={{ background: colors.positive }} />
             {t("positive")}
@@ -164,11 +164,11 @@ const OverviewChart: React.FC<OverviewChartProps> = ({ byChatbot, overTime }) =>
           </div>
         ) : (
           <div className="flex h-[280px] flex-col items-center justify-center text-center lg:h-[320px]">
-            <BarChart3 size={28} className="text-[#87909D]" strokeWidth={1.5} />
-            <p className="mt-3 text-body-sm font-medium text-[#101723] dark:text-[#D7DFE5]">
+            <BarChart3 size={28} className="text-ink-425" strokeWidth={1.5} />
+            <p className="mt-3 text-body-sm font-medium text-fg">
               {mode === "time" ? t("noRatings30") : t("noFeedbackYet")}
             </p>
-            <p className="mt-1 max-w-xs text-caption text-[#647184] dark:text-[#87909D]">
+            <p className="mt-1 max-w-xs text-caption text-fg-subtle">
               {t("chartEmptyDesc")}
             </p>
           </div>

@@ -1,9 +1,10 @@
 import React from "react";
-import { X, Sparkles, CheckCircle2 } from "lucide-react";
+import { X, CheckCircle2 } from "./icons";
 import Button from "./Button";
 import { redirectToProCheckout } from "../utils/billing";
 import { useT } from "../i18n";
 import { settingsMessages } from "../i18n/messages/settings";
+import { ProIcon } from "./icons";
 
 interface UpgradeModalProps {
   isOpen: boolean;
@@ -15,16 +16,13 @@ const UpgradeModal: React.FC<UpgradeModalProps> = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 dark:bg-black/80 backdrop-blur-sm">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 dark:bg-black/80">
       <div 
-        className="w-full max-w-md bg-[#F9FCFF] dark:bg-[#141D2B] rounded-2xl shadow-xl border border-[#E7EDF6] dark:border-[#1A2533] overflow-hidden"
+        className="w-full max-w-md bg-ink-25 dark:bg-ink-875 rounded-2xl shadow-lg border border-ink-70 dark:border-ink-850 overflow-hidden"
       >
-        <div className="relative h-32 bg-gradient-to-br from-[#101723] to-[#566273] flex items-center justify-center overflow-hidden">
-             {/* Decorative background circles */}
-            <div className="absolute top-0 right-0 w-32 h-32 translate-x-1/2 -translate-y-1/2 rounded-full bg-[#F9FCFF]/10 blur-2xl"></div>
-            <div className="absolute bottom-0 left-0 w-24 h-24 -translate-x-1/2 translate-y-1/2 rounded-full bg-[#F9FCFF]/10 blur-xl"></div>
+        <div className="relative h-32 bg-ink-900 dark:bg-ink-850 flex items-center justify-center overflow-hidden">
             
-            <Sparkles className="w-12 h-12 text-white animate-pulse" />
+            <ProIcon className="w-12 h-12 text-white" />
             
             <button
                 onClick={onClose}
@@ -36,23 +34,23 @@ const UpgradeModal: React.FC<UpgradeModalProps> = ({ isOpen, onClose }) => {
         </div>
         
         <div className="p-6 text-center">
-          <h2 className="text-xl font-bold text-[#101723] dark:text-[#D7DFE5] mb-2 font-serif">
+          <h2 className="text-xl font-bold text-fg mb-2 font-display">
             {t("upgradeTitle")}
           </h2>
-          <p className="text-[#566273] dark:text-[#9BAABD] text-sm mb-6">
+          <p className="text-fg-muted text-sm mb-6">
             {t("upgradeBody")}
           </p>
 
           <div className="space-y-3 mb-8 text-left max-w-[240px] mx-auto">
-            <div className="flex items-center gap-3 text-sm text-[#101723] dark:text-[#D7DFE5]">
+            <div className="flex items-center gap-3 text-sm text-fg">
                 <CheckCircle2 size={16} className="text-green-500 shrink-0" />
                 <span>{t("upgradeFeatureChatbots")}</span>
             </div>
-            <div className="flex items-center gap-3 text-sm text-[#101723] dark:text-[#D7DFE5]">
+            <div className="flex items-center gap-3 text-sm text-fg">
                 <CheckCircle2 size={16} className="text-green-500 shrink-0" />
                 <span>{t("upgradeFeatureFaq")}</span>
             </div>
-            <div className="flex items-center gap-3 text-sm text-[#101723] dark:text-[#D7DFE5]">
+            <div className="flex items-center gap-3 text-sm text-fg">
                 <CheckCircle2 size={16} className="text-green-500 shrink-0" />
                 <span>{t("upgradeFeatureLive")}</span>
             </div>
@@ -63,17 +61,17 @@ const UpgradeModal: React.FC<UpgradeModalProps> = ({ isOpen, onClose }) => {
               onClose();
               void redirectToProCheckout();
             }}
-            className="w-full bg-[#101723] hover:bg-[#243040] text-white dark:bg-[#D7DFE5] dark:text-[#141D2B] dark:hover:bg-[#E7EDF6] shadow-lg py-2.5 rounded-xl font-medium transition-all group"
+            className="w-full bg-ink-900 hover:bg-ink-805 text-white dark:bg-ink-130 dark:text-ink-875 dark:hover:bg-ink-70 shadow-lg py-2.5 rounded-xl font-medium transition-all group"
           >
             <span className="flex items-center justify-center gap-2">
                 {t("upgradeToPro")}
-                <Sparkles size={16} className="group-hover:rotate-12 transition-transform" />
+                <ProIcon size={16} />
             </span>
           </Button>
           
           <button 
             onClick={onClose}
-            className="mt-4 text-xs font-medium text-[#647184] hover:text-[#101723] dark:hover:text-white transition-colors"
+            className="mt-4 text-xs font-medium text-ink-545 hover:text-ink-900 dark:hover:text-white transition-colors"
           >
               {t("upgradeLater")}
           </button>

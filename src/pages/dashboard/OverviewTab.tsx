@@ -1,10 +1,10 @@
 import React, { useMemo } from "react";
+import RecentActivity, { ActivityItem } from "../../components/RecentActivity";
 import { Link } from "react-router-dom";
-import { ArrowRight, Bot, MessageSquare, Plus, Smile, TrendingUp } from "lucide-react";
+import { ArrowRight, Bot, MessageSquare, Plus, Smile, TrendingUp } from "../../components/icons";
 import StatsCard from "../../components/StatsCard";
 import AiUsageMeter from "../../components/AiUsageMeter";
 import OverviewChart, { FeedbackSeries } from "../../components/OverviewChart";
-import RecentActivity, { ActivityItem } from "../../components/RecentActivity";
 import ChatbotCard from "../../components/ChatbotCard";
 import { ListSkeleton, Skeleton, SkeletonCard, StatTilesSkeleton } from "../../components/Skeleton";
 import { ChatbotGridSkeleton, CreateChatbotLink, EmptyState, ErrorBanner, focusRing } from "./ui";
@@ -23,20 +23,20 @@ interface OverviewTabProps extends ChatbotActions {
   satisfactionRate: number;
   trends: Record<"chatbots" | "feedback" | "satisfaction" | "avgFeedback", TrendData>;
   recentActivities: ActivityItem[];
+  onViewNotifications: () => void;
   loading: boolean;
   error: string | null;
   onRetry: () => void;
   onViewChatbots: () => void;
-  onViewNotifications: () => void;
 }
 
 // Flat trends add noise, so only real movement gets a chip.
 const trendProps = (trend: TrendData) =>
   trend.direction === "neutral" ? {} : { trend: trend.value, trendDirection: trend.direction };
 
-const statIcon = "h-3.5 w-3.5 text-[#566273] dark:text-[#9BAABD]";
+const statIcon = "h-3.5 w-3.5 text-fg-muted";
 
-const linkButton = `inline-flex shrink-0 items-center gap-1 rounded text-body-sm font-medium text-[#566273] hover:text-[#101723] dark:text-[#9BAABD] dark:hover:text-[#D7DFE5] ${focusRing}`;
+const linkButton = `inline-flex shrink-0 items-center gap-1 rounded text-body-sm font-medium text-ink-605 hover:text-ink-900 dark:text-ink-325 dark:hover:text-ink-130 ${focusRing}`;
 
 const BAR_HEIGHTS = [55, 80, 35, 65, 90, 45, 70, 30, 60, 75, 40, 85];
 
@@ -65,7 +65,7 @@ const OverviewSkeleton: React.FC = () => {
           <Skeleton className="h-4 w-32" />
           <Skeleton className="h-3 w-48" />
         </div>
-        <ListSkeleton rows={5} className="border-t border-[#E7EDF6] dark:border-[#2B3646]" />
+        <ListSkeleton rows={5} className="border-t border-ink-70 dark:border-ink-780" />
       </SkeletonCard>
     </div>
     <div className="space-y-4">
@@ -84,11 +84,11 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
   satisfactionRate,
   trends,
   recentActivities,
+  onViewNotifications,
   loading,
   error,
   onRetry,
   onViewChatbots,
-  onViewNotifications,
   ...actions
 }) => {
   const t = useT(dashboardMessages);
@@ -119,7 +119,7 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
     return (
       <div className="space-y-6">
         <AiUsageMeter />
-        <div className="rounded-2xl border border-dashed border-[#C9D3E0] bg-[#F9FCFF]/60 dark:border-[#39485B] dark:bg-[#1A2533]/40">
+        <div className="rounded-2xl border border-dashed border-ink-165 bg-ink-25/60 dark:border-ink-710 dark:bg-ink-850/40">
           <EmptyState
             icon={Bot}
             title={t("firstChatbotTitle")}
@@ -189,8 +189,8 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
       <section className="space-y-4">
         <div className="flex items-end justify-between gap-4">
           <div>
-            <h2 className="font-serif text-h3 text-[#101723] dark:text-[#D7DFE5]">{t("yourChatbots")}</h2>
-            <p className="mt-1 text-body-sm text-[#566273] dark:text-[#9BAABD]">{t("recentChatbots")}</p>
+            <h2 className="font-display text-h3 text-fg">{t("yourChatbots")}</h2>
+            <p className="mt-1 text-body-sm text-fg-muted">{t("recentChatbots")}</p>
           </div>
           <button onClick={onViewChatbots} className={linkButton}>
             {t("viewAllCount", { count: chatbots.length.toLocaleString(t.lang) })}
@@ -214,14 +214,14 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
           {featured.length < FEATURED_CHATBOTS && (
             <Link
               to="/configure"
-              className={`group flex min-h-[11rem] flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-[#C9D3E0] text-center transition-colors hover:border-[#101723]/40 hover:bg-[#F9FCFF] dark:border-[#39485B] dark:hover:border-[#D7DFE5]/40 dark:hover:bg-[#1A2533] ${focusRing}`}
+              className={`group flex min-h-[11rem] flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-ink-165 text-center transition-colors hover:border-ink-900/40 hover:bg-ink-25 dark:border-ink-710 dark:hover:border-ink-130/40 dark:hover:bg-ink-850 ${focusRing}`}
             >
-              <span className="flex h-11 w-11 items-center justify-center rounded-full bg-[#E7EDF6] text-[#243040] transition-transform group-hover:scale-105 dark:bg-[#243040] dark:text-[#D7DFE5]">
+              <span className="flex h-11 w-11 items-center justify-center rounded-full bg-ink-70 text-ink-805 transition-transform group-hover:scale-105 dark:bg-ink-805 dark:text-ink-130">
                 <Plus size={20} />
               </span>
               <span>
-                <span className="block text-body-sm font-medium text-[#101723] dark:text-[#D7DFE5]">{tc("newChatbot")}</span>
-                <span className="block text-caption text-[#647184] dark:text-[#87909D]">{t("newChatbotHint")}</span>
+                <span className="block text-body-sm font-medium text-fg">{tc("newChatbot")}</span>
+                <span className="block text-caption text-fg-subtle">{t("newChatbotHint")}</span>
               </span>
             </Link>
           )}

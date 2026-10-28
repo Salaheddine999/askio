@@ -19,7 +19,7 @@ import {
   Percent,
   Plus,
   UserPlus,
-} from "lucide-react";
+} from "../components/icons";
 import { auth } from "../utils/firebase";
 import { db } from "../utils/db";
 import { useSiteDarkMode } from "../utils/useSiteDarkMode";
@@ -310,8 +310,8 @@ export default function Analytics({ testMode = false }: AnalyticsProps) {
   const breakdown = useMemo(() => {
     const count = (type: EventType) => scoped.events.filter((e) => e.type === type).length;
     const rows = [
-      { key: "faq", label: t("breakdownFaq"), value: count("faq_matched"), color: "bg-[#101723] dark:bg-[#D7DFE5]" },
-      { key: "suggestion", label: t("breakdownSuggestion"), value: count("suggestion_clicked"), color: "bg-[#647184] dark:bg-[#87909D]" },
+      { key: "faq", label: t("breakdownFaq"), value: count("faq_matched"), color: "bg-ink-900 dark:bg-ink-130" },
+      { key: "suggestion", label: t("breakdownSuggestion"), value: count("suggestion_clicked"), color: "bg-ink-545 dark:bg-ink-425" },
       { key: "ai", label: t("breakdownAi"), value: count("ai_generated"), color: "bg-violet-500 dark:bg-violet-400" },
       { key: "missed", label: t("breakdownMissed"), value: scoped.unanswered.length, color: "bg-amber-500 dark:bg-amber-400" },
     ];
@@ -402,10 +402,10 @@ export default function Analytics({ testMode = false }: AnalyticsProps) {
 
   const locale = dateLocale(t.lang);
   const num = (n: number) => n.toLocaleString(t.lang);
-  const statIcon = "h-3.5 w-3.5 text-[#566273] dark:text-[#9BAABD]";
+  const statIcon = "h-3.5 w-3.5 text-fg-muted";
 
   return (
-    <div className="min-h-screen bg-[#F3F7FC] font-sans text-[#101723] dark:bg-[#141D2B]">
+    <div className="min-h-screen bg-ink-30 font-sans text-ink-900 dark:bg-ink-875">
       <Helmet>
         <title>{t("metaTitle")}</title>
       </Helmet>
@@ -413,8 +413,8 @@ export default function Analytics({ testMode = false }: AnalyticsProps) {
       <div className="w-full space-y-6 px-4 py-6 sm:px-6 sm:py-8 lg:px-8 xl:px-10">
         <header className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div className="min-w-0">
-            <h1 className="font-serif text-h2 tracking-tight text-[#101723] sm:text-h1 dark:text-[#D7DFE5]">{t("title")}</h1>
-            <p className="mt-1 text-body-sm text-[#566273] dark:text-[#9BAABD]">
+            <h1 className="font-display text-h2 tracking-tight text-ink-900 sm:text-h1 dark:text-ink-130">{t("title")}</h1>
+            <p className="mt-1 text-body-sm text-fg-muted">
               {t("subtitle")}
             </p>
           </div>
@@ -424,7 +424,7 @@ export default function Analytics({ testMode = false }: AnalyticsProps) {
               <div
                 role="radiogroup"
                 aria-label={t("dateRange")}
-                className="inline-flex h-9 items-center rounded-lg border border-[#D8DFE9] bg-[#F3F7FC] p-0.5 dark:border-[#2B3646] dark:bg-[#141D2B]"
+                className="inline-flex h-9 items-center rounded-lg border border-ink-120 bg-ink-30 p-0.5 dark:border-ink-780 dark:bg-ink-875"
               >
                 {RANGES.map((r) => (
                   <button
@@ -435,8 +435,8 @@ export default function Analytics({ testMode = false }: AnalyticsProps) {
                     onClick={() => setRange(r.id)}
                     className={`h-full whitespace-nowrap rounded-md px-2.5 text-[13px] font-medium transition-colors ${focusRing} ${
                       range === r.id
-                        ? "bg-[#F9FCFF] text-[#101723] shadow-sm dark:bg-[#273444] dark:text-[#D7DFE5]"
-                        : "text-[#647184] hover:text-[#101723] dark:text-[#87909D] dark:hover:text-[#D7DFE5]"
+                        ? "bg-ink-25 text-ink-900 shadow-sm dark:bg-ink-790 dark:text-ink-130"
+                        : "text-ink-545 hover:text-ink-900 dark:text-ink-425 dark:hover:text-ink-130"
                     }`}
                   >
                     {t(r.label)}
@@ -448,7 +448,7 @@ export default function Analytics({ testMode = false }: AnalyticsProps) {
         </header>
 
         {chatbots.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-[#C9D3E0] bg-[#F9FCFF]/60 dark:border-[#39485B] dark:bg-[#1A2533]/40">
+          <div className="rounded-2xl border border-dashed border-ink-165 bg-ink-25/60 dark:border-ink-710 dark:bg-ink-850/40">
             <EmptyState
               kio
               icon={BarChart3}
@@ -508,7 +508,7 @@ export default function Analytics({ testMode = false }: AnalyticsProps) {
                 <div className="px-5 pb-5 sm:px-6">
                   {breakdown.total > 0 ? (
                     <>
-                      <div className="flex h-2.5 overflow-hidden rounded-full bg-[#E7EDF6] dark:bg-[#243040]">
+                      <div className="flex h-2.5 overflow-hidden rounded-full bg-ink-70 dark:bg-ink-805">
                         {breakdown.rows.map((r) =>
                           r.value > 0 ? (
                             <div key={r.key} className={r.color} style={{ width: `${(r.value / breakdown.total) * 100}%` }} title={r.label} />
@@ -519,9 +519,9 @@ export default function Analytics({ testMode = false }: AnalyticsProps) {
                         {breakdown.rows.map((r) => (
                           <li key={r.key} className="flex items-center gap-3 text-body-sm">
                             <span className={`h-2.5 w-2.5 shrink-0 rounded-sm ${r.color}`} />
-                            <span className="flex-1 text-[#566273] dark:text-[#9BAABD]">{r.label}</span>
-                            <span className="tabular-nums font-medium text-[#101723] dark:text-[#D7DFE5]">{num(r.value)}</span>
-                            <span className="w-10 text-right tabular-nums text-caption text-[#87909D]">
+                            <span className="flex-1 text-fg-muted">{r.label}</span>
+                            <span className="tabular-nums font-medium text-fg">{num(r.value)}</span>
+                            <span className="w-10 text-right tabular-nums text-caption text-ink-425">
                               {t("percent", { value: num(Math.round((r.value / breakdown.total) * 100)) })}
                             </span>
                           </li>
@@ -529,7 +529,7 @@ export default function Analytics({ testMode = false }: AnalyticsProps) {
                       </ul>
                     </>
                   ) : (
-                    <p className="py-8 text-center text-body-sm text-[#647184] dark:text-[#87909D]">{t("noQuestionsInPeriod")}</p>
+                    <p className="py-8 text-center text-body-sm text-fg-subtle">{t("noQuestionsInPeriod")}</p>
                   )}
                 </div>
               </div>
@@ -543,15 +543,15 @@ export default function Analytics({ testMode = false }: AnalyticsProps) {
                     {topQuestions.map((q, i) => (
                       <li key={q.question}>
                         <div className="flex items-baseline justify-between gap-4 text-body-sm">
-                          <span className="min-w-0 truncate text-[#101723] dark:text-[#D7DFE5]">
-                            <span className="mr-2 tabular-nums text-[#87909D]">{num(i + 1)}</span>
+                          <span className="min-w-0 truncate text-fg">
+                            <span className="mr-2 tabular-nums text-ink-425">{num(i + 1)}</span>
                             {q.question}
                           </span>
-                          <span className="shrink-0 tabular-nums font-medium text-[#566273] dark:text-[#9BAABD]">{num(q.count)}</span>
+                          <span className="shrink-0 tabular-nums font-medium text-fg-muted">{num(q.count)}</span>
                         </div>
-                        <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-[#E7EDF6] dark:bg-[#243040]">
+                        <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-ink-70 dark:bg-ink-805">
                           <div
-                            className="h-full rounded-full bg-[#101723] dark:bg-[#D7DFE5]"
+                            className="h-full rounded-full bg-ink-900 dark:bg-ink-130"
                             style={{ width: `${(q.count / topQuestions[0].count) * 100}%` }}
                           />
                         </div>
@@ -571,7 +571,7 @@ export default function Analytics({ testMode = false }: AnalyticsProps) {
               <div className={surface}>
                 <CardHeader title={t("missedTitle")} description={t("missedDescription")} />
                 {unansweredGroups.length > 0 ? (
-                  <ul className="divide-y divide-[#E7EDF6] border-t border-[#E7EDF6] dark:divide-[#2B3646] dark:border-[#2B3646]">
+                  <ul className="divide-y divide-ink-70 border-t border-ink-70 dark:divide-ink-780 dark:border-ink-780">
                     {unansweredGroups.map((g) => {
                       const bot = botById.get(g.chatbotId);
                       const open = answering?.key === g.key;
@@ -582,8 +582,8 @@ export default function Analytics({ testMode = false }: AnalyticsProps) {
                             <CircleHelp size={15} />
                           </span>
                           <div className="min-w-0 flex-1">
-                            <p className="truncate text-body-sm font-medium text-[#101723] dark:text-[#D7DFE5]">“{g.text}”</p>
-                            <p className="mt-0.5 truncate text-caption text-[#647184] dark:text-[#87909D]">
+                            <p className="truncate text-body-sm font-medium text-fg">“{g.text}”</p>
+                            <p className="mt-0.5 truncate text-caption text-fg-subtle">
                               {g.count > 1 ? `${t.plural("askedTimes", g.count)} · ` : ""}
                               {bot?.title || t("unknownChatbot")} · {formatDistanceToNowStrict(g.latest, { addSuffix: true, locale })}
                             </p>
@@ -593,7 +593,7 @@ export default function Analytics({ testMode = false }: AnalyticsProps) {
                               type="button"
                               onClick={() => setAnswering({ key: g.key, question: g.text, answer: "" })}
                               title={t("addAnswerIn", { chatbot: bot.title })}
-                              className={`inline-flex h-8 shrink-0 items-center gap-1 rounded-lg border border-[#D8DFE9] px-2.5 text-caption font-medium text-[#101723] transition-colors hover:bg-[#F3F7FC] dark:border-[#2B3646] dark:text-[#D7DFE5] dark:hover:bg-[#273444] ${focusRing}`}
+                              className={`inline-flex h-8 shrink-0 items-center gap-1 rounded-lg border border-ink-120 px-2.5 text-caption font-medium text-ink-900 transition-colors hover:bg-ink-30 dark:border-ink-780 dark:text-ink-130 dark:hover:bg-ink-790 ${focusRing}`}
                             >
                               <Plus size={13} />
                               <span className="hidden sm:inline">{t("addAnswer")}</span>
@@ -609,16 +609,16 @@ export default function Analytics({ testMode = false }: AnalyticsProps) {
                             }}
                           >
                             <label className="block">
-                              <span className="text-caption font-medium text-[#566273] dark:text-[#9BAABD]">{t("questionLabel")}</span>
+                              <span className="text-caption font-medium text-fg-muted">{t("questionLabel")}</span>
                               <input
                                 value={answering.question}
                                 onChange={(e) => setAnswering({ ...answering, question: e.target.value })}
                                 maxLength={300}
-                                className={`mt-1 h-9 w-full rounded-lg border border-[#D8DFE9] bg-[#F9FCFF] px-3 text-body-sm text-[#101723] dark:border-[#2B3646] dark:bg-[#141D2B] dark:text-[#D7DFE5] ${focusRing}`}
+                                className={`mt-1 h-9 w-full rounded-lg border border-ink-120 bg-ink-25 px-3 text-body-sm text-ink-900 dark:border-ink-780 dark:bg-ink-875 dark:text-ink-130 ${focusRing}`}
                               />
                             </label>
                             <label className="block">
-                              <span className="text-caption font-medium text-[#566273] dark:text-[#9BAABD]">{t("answerLabel")}</span>
+                              <span className="text-caption font-medium text-fg-muted">{t("answerLabel")}</span>
                               <textarea
                                 autoFocus
                                 rows={3}
@@ -626,14 +626,14 @@ export default function Analytics({ testMode = false }: AnalyticsProps) {
                                 onChange={(e) => setAnswering({ ...answering, answer: e.target.value })}
                                 maxLength={2000}
                                 placeholder={t("answerPlaceholder")}
-                                className={`mt-1 w-full resize-y rounded-lg border border-[#D8DFE9] bg-[#F9FCFF] px-3 py-2 text-body-sm text-[#101723] placeholder:text-[#87909D] dark:border-[#2B3646] dark:bg-[#141D2B] dark:text-[#D7DFE5] ${focusRing}`}
+                                className={`mt-1 w-full resize-y rounded-lg border border-ink-120 bg-ink-25 px-3 py-2 text-body-sm text-ink-900 placeholder:text-ink-425 dark:border-ink-780 dark:bg-ink-875 dark:text-ink-130 ${focusRing}`}
                               />
                             </label>
                             <div className="flex flex-wrap items-center gap-2">
                               <button
                                 type="submit"
                                 disabled={savingAnswer || !answering.question.trim() || !answering.answer.trim()}
-                                className={`inline-flex h-8 items-center gap-1.5 rounded-lg bg-[#101723] px-3 text-caption font-medium text-white transition-colors hover:bg-[#243040] disabled:opacity-50 dark:bg-[#D7DFE5] dark:text-[#141D2B] dark:hover:bg-[#E7EDF6] ${focusRing}`}
+                                className={`inline-flex h-8 items-center gap-1.5 rounded-lg bg-ink-900 px-3 text-caption font-medium text-white transition-colors hover:bg-ink-805 disabled:opacity-50 dark:bg-ink-130 dark:text-ink-875 dark:hover:bg-ink-70 ${focusRing}`}
                               >
                                 <Check size={13} />
                                 {t("saveAnswer")}
@@ -641,14 +641,14 @@ export default function Analytics({ testMode = false }: AnalyticsProps) {
                               <button
                                 type="button"
                                 onClick={() => setAnswering(null)}
-                                className={`inline-flex h-8 items-center rounded-lg px-2.5 text-caption font-medium text-[#566273] hover:bg-[#F3F7FC] dark:text-[#9BAABD] dark:hover:bg-[#273444] ${focusRing}`}
+                                className={`inline-flex h-8 items-center rounded-lg px-2.5 text-caption font-medium text-ink-605 hover:bg-ink-30 dark:text-ink-325 dark:hover:bg-ink-790 ${focusRing}`}
                               >
                                 {t("cancelAnswer")}
                               </button>
                               <Link
                                 to={`/configure/${bot.id}?tab=faq`}
                                 state={{ faqQuestion: answering.question }}
-                                className={`ml-auto rounded text-caption text-[#647184] underline-offset-2 hover:text-[#101723] hover:underline dark:text-[#87909D] dark:hover:text-[#D7DFE5] ${focusRing}`}
+                                className={`ml-auto rounded text-caption text-ink-545 underline-offset-2 hover:text-ink-900 hover:underline dark:text-ink-425 dark:hover:text-ink-130 ${focusRing}`}
                               >
                                 {t("moreOptions")}
                               </Link>
@@ -690,13 +690,13 @@ export default function Analytics({ testMode = false }: AnalyticsProps) {
                   {visibleLeads.length > 0 ? (
                     <div className="overflow-x-auto">
                       <table className="min-w-full">
-                        <thead className="border-y border-[#E7EDF6] bg-[#F3F7FC]/70 dark:border-[#2B3646] dark:bg-[#141D2B]/60">
+                        <thead className="border-y border-ink-70 bg-ink-30/70 dark:border-ink-780 dark:bg-ink-875/60">
                           <tr>
                             {[t("columnEmail"), t("columnChatbot"), t("columnCaptured")].map((h, i) => (
                               <th
                                 key={h}
                                 scope="col"
-                                className={`px-5 py-2.5 text-left text-[11px] font-medium uppercase tracking-wider text-[#647184] sm:px-6 dark:text-[#87909D] ${
+                                className={`px-5 py-2.5 text-left text-caption font-medium text-ink-545 sm:px-6 dark:text-ink-425 ${
                                   i === 1 ? "hidden sm:table-cell" : ""
                                 }`}
                               >
@@ -705,21 +705,21 @@ export default function Analytics({ testMode = false }: AnalyticsProps) {
                             ))}
                           </tr>
                         </thead>
-                        <tbody className="divide-y divide-[#E7EDF6] dark:divide-[#2B3646]">
+                        <tbody className="divide-y divide-ink-70 dark:divide-ink-780">
                           {(showAllLeads ? visibleLeads : visibleLeads.slice(0, LEADS_PREVIEW)).map((lead) => {
                             const bot = botById.get(lead.chatbotId);
                             return (
-                              <tr key={lead.id} className="transition-colors hover:bg-[#F3F7FC] dark:hover:bg-[#1F2B3A]">
-                                <td className="max-w-[12rem] truncate px-5 py-3 text-body-sm font-medium text-[#101723] sm:max-w-none sm:px-6 dark:text-[#D7DFE5]">
+                              <tr key={lead.id} className="transition-colors hover:bg-ink-30 dark:hover:bg-ink-825">
+                                <td className="max-w-[12rem] truncate px-5 py-3 text-body-sm font-medium text-ink-900 sm:max-w-none sm:px-6 dark:text-ink-130">
                                   {lead.email}
                                 </td>
                                 <td className="hidden px-6 py-3 sm:table-cell">
-                                  <span className="flex items-center gap-2 text-body-sm text-[#566273] dark:text-[#9BAABD]">
+                                  <span className="flex items-center gap-2 text-body-sm text-fg-muted">
                                     <BotAvatar color={bot?.primaryColor} launcherStyle={bot?.launcherStyle} size={20} />
                                     {bot?.title || t("unknownChatbot")}
                                   </span>
                                 </td>
-                                <td className="whitespace-nowrap px-5 py-3 text-body-sm text-[#566273] sm:px-6 dark:text-[#9BAABD]">
+                                <td className="whitespace-nowrap px-5 py-3 text-body-sm text-ink-605 sm:px-6 dark:text-ink-325">
                                   <span title={format(lead.timestamp, t("dateTimeFormat"), { locale })}>
                                     {formatDistanceToNowStrict(lead.timestamp, { addSuffix: true, locale })}
                                   </span>
@@ -731,16 +731,16 @@ export default function Analytics({ testMode = false }: AnalyticsProps) {
                       </table>
                     </div>
                   ) : (
-                    <p className="border-t border-[#E7EDF6] py-10 text-center text-body-sm text-[#647184] dark:border-[#2B3646] dark:text-[#87909D]">
+                    <p className="border-t border-ink-70 py-10 text-center text-body-sm text-ink-545 dark:border-ink-780 dark:text-ink-425">
                       {t("noEmailsMatch", { term: leadSearch.trim() })}
                     </p>
                   )}
                   {visibleLeads.length > LEADS_PREVIEW && (
-                    <div className="border-t border-[#E7EDF6] px-5 py-3 text-center sm:px-6 dark:border-[#2B3646]">
+                    <div className="border-t border-ink-70 px-5 py-3 text-center sm:px-6 dark:border-ink-780">
                       <button
                         type="button"
                         onClick={() => setShowAllLeads((v) => !v)}
-                        className={`rounded text-body-sm font-medium text-[#566273] hover:text-[#101723] dark:text-[#9BAABD] dark:hover:text-[#D7DFE5] ${focusRing}`}
+                        className={`rounded text-body-sm font-medium text-ink-605 hover:text-ink-900 dark:text-ink-325 dark:hover:text-ink-130 ${focusRing}`}
                       >
                         {showAllLeads ? t("showFewer") : t("showAll", { count: num(visibleLeads.length) })}
                       </button>
@@ -779,26 +779,26 @@ function ChatbotFilter({
   return (
     <Listbox value={value} onChange={onChange}>
       <ListboxButton
-        className={`inline-flex h-9 w-48 items-center gap-2 rounded-lg border border-[#D8DFE9] bg-[#F9FCFF] px-2.5 text-left text-[13px] font-medium text-[#101723] transition-colors hover:border-[#B8C3D1] dark:border-[#2B3646] dark:bg-[#1A2533] dark:text-[#D7DFE5] ${focusRing}`}
+        className={`inline-flex h-9 w-48 items-center gap-2 rounded-lg border border-ink-120 bg-ink-25 px-2.5 text-left text-[13px] font-medium text-ink-900 transition-colors hover:border-ink-230 dark:border-ink-780 dark:bg-ink-850 dark:text-ink-130 ${focusRing}`}
       >
-        {selected ? <BotAvatar color={selected.primaryColor} launcherStyle={selected.launcherStyle} size={18} /> : <Bot size={15} className="shrink-0 text-[#647184]" />}
+        {selected ? <BotAvatar color={selected.primaryColor} launcherStyle={selected.launcherStyle} size={18} /> : <Bot size={15} className="shrink-0 text-ink-545" />}
         <span className="min-w-0 flex-1 truncate">{selected?.title || t("allChatbots")}</span>
-        <ChevronsUpDown size={14} className="shrink-0 text-[#87909D]" />
+        <ChevronsUpDown size={14} className="shrink-0 text-ink-425" />
       </ListboxButton>
       {/* Anchored and non-modal, like the other pickers, so the page doesn't lock or shift. */}
       <ListboxOptions
         anchor="bottom start"
         modal={false}
         transition
-        className="z-50 max-h-72 w-[var(--button-width)] min-w-56 overflow-auto rounded-xl border border-[#D8DFE9] bg-[#F9FCFF] p-1.5 shadow-xl transition duration-100 ease-out [--anchor-gap:6px] focus:outline-none data-[closed]:-translate-y-1 data-[closed]:opacity-0 dark:border-[#2B3646] dark:bg-[#1A2533]"
+        className="z-50 max-h-72 w-[var(--button-width)] min-w-56 overflow-auto rounded-xl border border-ink-120 bg-ink-25 p-1.5 shadow-lg transition duration-100 ease-out [--anchor-gap:6px] focus:outline-none data-[closed]:-translate-y-1 data-[closed]:opacity-0 dark:border-ink-780 dark:bg-ink-850"
       >
         {options.map((bot) => (
           <ListboxOption
             key={bot.id}
             value={bot.id}
-            className="group flex cursor-pointer items-center gap-2.5 rounded-lg px-2 py-2 text-body-sm text-[#101723] data-[focus]:bg-[#F3F7FC] dark:text-[#D7DFE5] dark:data-[focus]:bg-[#273444]"
+            className="group flex cursor-pointer items-center gap-2.5 rounded-lg px-2 py-2 text-body-sm text-ink-900 data-[focus]:bg-ink-30 dark:text-ink-130 dark:data-[focus]:bg-ink-790"
           >
-            {bot.id === "all" ? <Bot size={16} className="shrink-0 text-[#647184]" /> : <BotAvatar color={bot.primaryColor} launcherStyle={bot.launcherStyle} size={20} />}
+            {bot.id === "all" ? <Bot size={16} className="shrink-0 text-ink-545" /> : <BotAvatar color={bot.primaryColor} launcherStyle={bot.launcherStyle} size={20} />}
             <span className="min-w-0 flex-1 truncate group-data-[selected]:font-medium">{bot.title}</span>
             <Check size={14} className="invisible shrink-0 group-data-[selected]:visible" />
           </ListboxOption>
@@ -862,14 +862,14 @@ function ActivityChart({
     <div className={`${surface} flex h-full flex-col`}>
       <div className="flex flex-wrap items-start justify-between gap-3 px-5 pt-5 pb-2 sm:px-6">
         <div>
-          <h3 className="text-body font-semibold tracking-tight text-[#101723] dark:text-[#D7DFE5]">{t("chartTitle")}</h3>
-          <p className="mt-0.5 text-body-sm text-[#566273] dark:text-[#9BAABD]">
+          <h3 className="text-body font-semibold tracking-tight text-fg">{t("chartTitle")}</h3>
+          <p className="mt-0.5 text-body-sm text-fg-muted">
             {allTime
               ? t("chartShowingLast", { days: days.toLocaleString(t.lang) })
               : t.plural("chartTotal", total, { days: days.toLocaleString(t.lang) })}
           </p>
         </div>
-        <div className="flex flex-wrap items-center gap-4 text-caption text-[#566273] dark:text-[#9BAABD]">
+        <div className="flex flex-wrap items-center gap-4 text-caption text-fg-muted">
           {legend.map((l) => (
             <span key={l.label} className="flex items-center gap-1.5">
               <span className="h-2.5 w-2.5 rounded-sm" style={{ background: l.color }} />
@@ -926,9 +926,9 @@ function ActivityChart({
           </div>
         ) : (
           <div className="flex h-[260px] flex-col items-center justify-center text-center lg:h-[300px]">
-            <BarChart3 size={28} className="text-[#87909D]" strokeWidth={1.5} />
-            <p className="mt-3 text-body-sm font-medium text-[#101723] dark:text-[#D7DFE5]">{t("chartEmptyTitle")}</p>
-            <p className="mt-1 max-w-xs text-caption text-[#647184] dark:text-[#87909D]">
+            <BarChart3 size={28} className="text-ink-425" strokeWidth={1.5} />
+            <p className="mt-3 text-body-sm font-medium text-fg">{t("chartEmptyTitle")}</p>
+            <p className="mt-1 max-w-xs text-caption text-fg-subtle">
               {t("chartEmptyDescription")}
             </p>
           </div>
@@ -943,7 +943,7 @@ const BAR_HEIGHTS = [40, 65, 30, 55, 80, 45, 70, 35, 60, 85, 50, 75, 40, 65];
 function AnalyticsSkeleton() {
   const t = useT(analyticsMessages);
   return (
-    <div className="min-h-screen bg-[#F3F7FC] dark:bg-[#141D2B]" aria-busy="true" aria-label={t("loading")}>
+    <div className="min-h-screen bg-ink-30 dark:bg-ink-875" aria-busy="true" aria-label={t("loading")}>
       <div className="w-full space-y-6 px-4 py-6 sm:px-6 sm:py-8 lg:px-8 xl:px-10">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div className="space-y-3">

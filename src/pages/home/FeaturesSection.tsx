@@ -10,11 +10,10 @@ import {
   RotateCcw,
   Send,
   Settings,
-  Sparkles,
   Truck,
   Type,
   X,
-} from "lucide-react";
+} from "../../components/icons";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { useInView } from "react-intersection-observer";
 import { forwardRef, useCallback, useEffect, useRef, useState } from "react";
@@ -22,8 +21,8 @@ import { FaAngular, FaReact, FaShopify, FaVuejs, FaWordpress } from "react-icons
 import { SiWix } from "react-icons/si";
 import { AnimatedBeam } from "../../components/magicui/animated-beam";
 import HatchStrip from "./HatchStrip";
-import Badge from "./Badge";
 import logoHome from "../../assets/logo.svg";
+import { AiIcon } from "../../components/icons";
 
 const IntegrationCircle = forwardRef<
   HTMLDivElement,
@@ -32,7 +31,7 @@ const IntegrationCircle = forwardRef<
   return (
     <div
       ref={ref}
-      className={`z-10 flex size-12 items-center justify-center rounded-full border-2 border-[#E7EDF6] bg-[#F9FCFF] p-3 shadow-[0_0_20px_-12px_rgba(0,0,0,0.8)] dark:border-[#566273] dark:bg-[#1A2533] ${className ?? ""}`}
+      className={`z-10 flex size-12 items-center justify-center rounded-full border-2 border-ink-70 bg-ink-25 p-3 shadow-[0_0_20px_-12px_rgba(0,0,0,0.8)] dark:border-ink-605 dark:bg-ink-850 ${className ?? ""}`}
     >
       {children}
     </div>
@@ -256,18 +255,18 @@ function BrandShowcasePreview() {
   return (
     <div
       ref={setRefs}
-      className="relative mt-auto h-[282px] w-full overflow-hidden rounded-[14px] border border-[#D8DFE9] bg-[#F9FCFF] shadow-[0px_8px_24px_rgba(0,0,0,0.05)] dark:border-[#2B3646] dark:bg-[#141D2B]"
+      className="relative mt-auto h-[282px] w-full overflow-hidden rounded-[14px] border border-ink-120 bg-ink-25 shadow-[0px_8px_24px_rgba(0,0,0,0.05)] dark:border-ink-780 dark:bg-ink-875"
     >
       {/* Browser chrome with the address being typed and the AI's status */}
-      <div className="relative z-20 flex h-[30px] items-center gap-2 border-b border-[#E7EDF6] bg-[#F3F7FC] px-2.5 dark:border-[#2B3646] dark:bg-[#1A2533]">
+      <div className="relative z-20 flex h-[30px] items-center gap-2 border-b border-ink-70 bg-ink-30 px-2.5 dark:border-ink-780 dark:bg-ink-850">
         <span className="flex shrink-0 gap-1" aria-hidden="true">
           {[0, 1, 2].map((i) => (
-            <span key={i} className="h-1.5 w-1.5 rounded-full bg-[#D0D8E3] dark:bg-[#39485B]" />
+            <span key={i} className="h-1.5 w-1.5 rounded-full bg-ink-145 dark:bg-ink-710" />
           ))}
         </span>
-        <span className="flex h-[18px] min-w-0 flex-1 items-center gap-1 rounded-md bg-[#F9FCFF] px-2 text-[9px] text-[#566273] ring-1 ring-[#E7EDF6] dark:bg-[#141D2B] dark:text-[#9BAABD] dark:ring-[#2B3646]">
-          <Globe className="h-2.5 w-2.5 shrink-0 text-[#9BAABD]" aria-hidden="true" />
-          <span className="truncate">{url || <span className="text-[#9BAABD]">Paste your website…</span>}</span>
+        <span className="flex h-[18px] min-w-0 flex-1 items-center gap-1 rounded-md bg-ink-25 px-2 text-caption text-ink-605 ring-1 ring-ink-70 dark:bg-ink-875 dark:text-ink-325 dark:ring-ink-780">
+          <Globe className="h-2.5 w-2.5 shrink-0 text-ink-325" aria-hidden="true" />
+          <span className="truncate">{url || <span className="text-ink-325">Paste your website…</span>}</span>
           {url && url.length < SITE_URL.length ? <span className="h-2.5 w-px animate-pulse bg-current" /> : null}
         </span>
         <AnimatePresence mode="wait" initial={false}>
@@ -280,12 +279,12 @@ function BrandShowcasePreview() {
               transition={{ duration: 0.2 }}
               className={`flex h-[18px] shrink-0 items-center gap-1 rounded-full px-2 text-[8.5px] font-medium ring-1 ring-inset ${
                 scanning
-                  ? "bg-[#EEF3FF] text-[#3B63D9] ring-[#4F8CF7]/25 dark:bg-[#1C2A45] dark:text-[#9DB8FF]"
+                  ? "bg-ink-40 text-[#3B63D9] ring-[#4F8CF7]/25 dark:bg-ink-815 dark:text-[#9DB8FF]"
                   : "bg-[#EEF6F0] text-[#3F8A55] ring-[#4F9A63]/25 dark:bg-[#1F3127] dark:text-[#8FD19B]"
               }`}
             >
               {scanning ? (
-                <Sparkles className="h-2.5 w-2.5 animate-pulse" />
+                <AiIcon className="h-2.5 w-2.5" />
               ) : (
                 <Check className="h-2.5 w-2.5" strokeWidth={3} />
               )}
@@ -302,22 +301,22 @@ function BrandShowcasePreview() {
 
         <div className="relative px-4 pt-3">
           <div className="flex items-center gap-1.5">
-            <span className="h-3 w-3 rounded-[4px] bg-[#101723] dark:bg-[#D7DFE5]" />
-            <span className="text-[9px] font-semibold text-[#101723] dark:text-[#D7DFE5]">Northwind</span>
+            <span className="h-3 w-3 rounded-[4px] bg-ink-900 dark:bg-ink-130" />
+            <span className="text-caption font-semibold text-fg">Northwind</span>
             <span className="ml-auto flex gap-2">
               {[18, 14, 20].map((w, i) => (
-                <span key={i} className="h-1 rounded-full bg-[#D8DFE9] dark:bg-[#2B3646]" style={{ width: w }} />
+                <span key={i} className="h-1 rounded-full bg-ink-120 dark:bg-ink-780" style={{ width: w }} />
               ))}
             </span>
           </div>
 
-          <p className="mt-4 font-serif text-[15px] leading-[17px] text-[#101723] dark:text-[#E7EDF6]">
+          <p className="mt-4 font-display text-[15px] leading-[17px] text-ink-900 dark:text-ink-70">
             Everyday goods,
             <br />
             made to last.
           </p>
-          <div className="mt-2 h-1 w-28 rounded-full bg-[#E2E8F1] dark:bg-[#243040]" />
-          <span className="mt-2.5 inline-flex h-4 items-center rounded-full bg-[#101723] px-2 text-[7.5px] font-medium text-white dark:bg-[#D7DFE5] dark:text-[#141D2B]">
+          <div className="mt-2 h-1 w-28 rounded-full bg-ink-85 dark:bg-ink-805" />
+          <span className="mt-2.5 inline-flex h-4 items-center rounded-full bg-ink-900 px-2 text-[7.5px] font-medium text-white dark:bg-ink-130 dark:text-ink-875">
             Shop now
           </span>
 
@@ -337,8 +336,8 @@ function BrandShowcasePreview() {
                     transition={{ duration: 0.3 }}
                     className="flex items-center gap-1.5 rounded-md px-1.5 py-1"
                   >
-                    <FactIcon className="h-2.5 w-2.5 shrink-0 text-[#647184] dark:text-[#9BAABD]" />
-                    <span className="truncate text-[8px] text-[#566273] dark:text-[#9BAABD]">{fact.text}</span>
+                    <FactIcon className="h-2.5 w-2.5 shrink-0 text-ink-545 dark:text-ink-325" />
+                    <span className="truncate text-[8px] text-fg-muted">{fact.text}</span>
                   </motion.div>
                   {isFound && !movedToWidget ? (
                     <motion.span
@@ -348,7 +347,7 @@ function BrandShowcasePreview() {
                       transition={editSpring}
                       className="absolute -right-1 -top-2 z-10 flex items-center gap-0.5 whitespace-nowrap rounded-full bg-[#4F8CF7] px-1.5 py-px text-[7px] font-semibold text-white shadow-sm"
                     >
-                      <Sparkles className="h-2 w-2" />
+                      <AiIcon className="h-2 w-2" />
                       {fact.tag}
                     </motion.span>
                   ) : null}
@@ -389,7 +388,7 @@ function BrandShowcasePreview() {
               transition={{ duration: 0.25, ease: "easeOut", layout: editSpring }}
               className="relative z-20"
             >
-              <div className="flex items-center gap-0.5 rounded-full bg-[#101723] p-1 pl-2 shadow-[0_10px_24px_-10px_rgba(16,23,35,0.6)] ring-1 ring-white/10 dark:bg-[#0B111B]">
+              <div className="flex items-center gap-0.5 rounded-full bg-ink-900 p-1 pl-2 shadow-[0_10px_24px_-10px_rgba(16,23,35,0.6)] ring-1 ring-white/10 dark:bg-ink-925">
                 <div role="radiogroup" aria-label="Widget colour" className="flex items-center gap-1 pr-1">
                   {EDIT_COLORS.map((c, i) => {
                     const selected = i === color;
@@ -507,7 +506,7 @@ function BrandShowcasePreview() {
                   <motion.span animate={{ backgroundColor: accent }} className="h-[5px] w-[2px] rounded-full" />
                   <motion.span animate={{ backgroundColor: accent }} className="h-[5px] w-[2px] rounded-full" />
                 </span>
-                <span className="relative text-[9px] font-semibold">Northwind</span>
+                <span className="relative text-caption font-semibold">Northwind</span>
                 <span className="relative ml-auto flex items-center gap-1 text-[8px] opacity-85">
                   <span className="h-1 w-1 rounded-full bg-[#7CE38B]" />
                   Online
@@ -516,11 +515,11 @@ function BrandShowcasePreview() {
               <div className="space-y-1.5 p-2">
                 <p
                   ref={bubbleRef}
-                  className="w-fit max-w-[94%] rounded-xl rounded-bl-sm bg-[#F1F3F7] px-2 py-1.5 text-[8.5px] leading-[12px] text-[#101723]"
+                  className="w-fit max-w-[94%] rounded-xl rounded-bl-sm bg-ink-50 px-2 py-1.5 text-[8.5px] leading-[12px] text-ink-900"
                 >
                   <span className={editingText === "selected" ? "rounded-[2px] bg-[#4F8CF7]/30" : ""}>{bubbleText || "​"}</span>
                   {editingText !== "idle" ? (
-                    <span className="ml-px inline-block h-2.5 w-px translate-y-0.5 animate-pulse bg-[#101723]" />
+                    <span className="ml-px inline-block h-2.5 w-px translate-y-0.5 animate-pulse bg-ink-900" />
                   ) : null}
                 </p>
                 <div className="flex flex-wrap gap-1">
@@ -538,8 +537,8 @@ function BrandShowcasePreview() {
                     ) : null
                   )}
                 </div>
-                <div className="flex items-center gap-1.5 rounded-full border border-[#E7EDF6] py-0.5 pl-2 pr-0.5">
-                  <span className="flex-1 truncate text-[8px] text-[#9BAABD]">Type a message…</span>
+                <div className="flex items-center gap-1.5 rounded-full border border-ink-70 py-0.5 pl-2 pr-0.5">
+                  <span className="flex-1 truncate text-[8px] text-ink-325">Type a message…</span>
                   <span className="relative flex h-4 w-4 items-center justify-center overflow-hidden rounded-full text-white">
                     <ColorSweep color={accent} />
                     <Send className="relative h-2 w-2" />
@@ -628,14 +627,14 @@ const faqTimeline = (question: string) => {
 
 function BotAvatar() {
   return (
-    <div className="w-5 h-5 rounded-full bg-[#F9FCFF] dark:bg-[#202C3C] shrink-0 flex items-center justify-center shadow-sm ring-1 ring-black/5">
+    <div className="w-5 h-5 rounded-full bg-ink-25 dark:bg-ink-820 shrink-0 flex items-center justify-center shadow-sm ring-1 ring-black/5">
       <img src={logoHome} alt="" className="h-2.5 w-2.5 dark:brightness-0 dark:invert" />
     </div>
   );
 }
 
 const botBubbleClass =
-  "bg-[#E7EDF6] dark:bg-[#2B3646] rounded-2xl rounded-bl-md px-3 py-2 max-w-[84%] shadow-[0_6px_18px_rgba(0,0,0,0.04)]";
+  "bg-ink-70 dark:bg-ink-780 rounded-2xl rounded-bl-md px-3 py-2 max-w-[84%] shadow-[0_6px_18px_rgba(0,0,0,0.04)]";
 
 function FaqChatPreview() {
   const reduceMotion = useReducedMotion();
@@ -675,14 +674,14 @@ function FaqChatPreview() {
       ref={previewRef}
       className="mt-auto w-full h-[236px] rounded-[14px] bg-[linear-gradient(180deg,#F9FCFF_0%,#F3F7FC_100%)] dark:bg-[linear-gradient(180deg,#1A2533_0%,#1A2533_100%)] shadow-[0px_0px_0px_0.9px_rgba(0,0,0,0.08),0px_8px_24px_rgba(0,0,0,0.06)] overflow-hidden flex flex-col"
     >
-      <div className="px-4 py-2.5 border-b border-[#D8DFE9] dark:border-[#2B3646] flex items-center gap-2 bg-[rgba(243,247,252,0.85)] dark:bg-[rgba(20,29,43,0.82)] backdrop-blur-sm">
-        <div className="w-6 h-6 rounded-full bg-[#F9FCFF] dark:bg-[#202C3C] flex items-center justify-center shadow-sm ring-1 ring-black/5">
+      <div className="px-4 py-2.5 border-b border-ink-120 dark:border-ink-780 flex items-center gap-2 bg-[rgba(243,247,252,0.85)] dark:bg-[rgba(20,29,43,0.82)]">
+        <div className="w-6 h-6 rounded-full bg-ink-25 dark:bg-ink-820 flex items-center justify-center shadow-sm ring-1 ring-black/5">
           <img src={logoHome} alt="Askio" className="h-3.5 w-3.5 dark:brightness-0 dark:invert" />
         </div>
-        <span className="text-[10px] text-[#101723] dark:text-[#D7DFE5] font-semibold font-sans">Askio Bot</span>
+        <span className="text-caption text-fg font-semibold font-sans">Askio Bot</span>
         <div className="ml-auto flex items-center gap-1.5">
           <span className="w-1.5 h-1.5 rounded-full bg-[#7CB342]" />
-          <span className="text-[9px] font-medium text-[#647184] dark:text-[#9BAABD]">Live now</span>
+          <span className="text-caption font-medium text-ink-545 dark:text-ink-325">Live now</span>
         </div>
       </div>
 
@@ -690,7 +689,7 @@ function FaqChatPreview() {
         <div className="flex items-end gap-2">
           <BotAvatar />
           <div className={botBubbleClass}>
-            <p className="text-[10px] text-[#101723] dark:text-[#D7DFE5] font-sans leading-[14px]">Hi! How can I help you today?</p>
+            <p className="text-caption text-fg font-sans leading-[14px]">Hi! How can I help you today?</p>
           </div>
         </div>
 
@@ -705,8 +704,8 @@ function FaqChatPreview() {
               style={{ transformOrigin: "bottom right" }}
               className="flex justify-end"
             >
-              <div className="bg-[#101723] dark:bg-[#D7DFE5] rounded-2xl rounded-br-md px-3 py-2 max-w-[84%] shadow-[0_8px_20px_rgba(16,23,35,0.16)]">
-                <p className="text-[10px] text-white dark:text-[#141D2B] font-sans leading-[14px]">{q}</p>
+              <div className="bg-ink-900 dark:bg-ink-130 rounded-2xl rounded-br-md px-3 py-2 max-w-[84%] shadow-[0_8px_20px_rgba(16,23,35,0.16)]">
+                <p className="text-caption text-white dark:text-ink-875 font-sans leading-[14px]">{q}</p>
               </div>
             </motion.div>
           ) : null}
@@ -723,11 +722,11 @@ function FaqChatPreview() {
               className="flex items-end gap-2"
             >
               <BotAvatar />
-              <div className="bg-[#E7EDF6] dark:bg-[#2B3646] rounded-2xl rounded-bl-md px-3 py-2.5 flex items-center gap-1 shadow-[0_6px_18px_rgba(0,0,0,0.04)]">
+              <div className="bg-ink-70 dark:bg-ink-780 rounded-2xl rounded-bl-md px-3 py-2.5 flex items-center gap-1 shadow-[0_6px_18px_rgba(0,0,0,0.04)]">
                 {[0, 150, 300].map((delay) => (
                   <span
                     key={delay}
-                    className="w-1 h-1 rounded-full bg-[#566273] dark:bg-[#9BAABD] animate-bounce"
+                    className="w-1 h-1 rounded-full bg-ink-605 dark:bg-ink-325 animate-bounce"
                     style={{ animationDelay: `${delay}ms` }}
                   />
                 ))}
@@ -745,7 +744,7 @@ function FaqChatPreview() {
             >
               <BotAvatar />
               <div className={botBubbleClass}>
-                <p className="text-[10px] text-[#101723] dark:text-[#D7DFE5] font-sans leading-[14px]">{a}</p>
+                <p className="text-caption text-fg font-sans leading-[14px]">{a}</p>
               </div>
             </motion.div>
           ) : null}
@@ -754,8 +753,8 @@ function FaqChatPreview() {
 
       {/* The visitor's message box, where the question is typed */}
       <div className="px-3 pb-3">
-        <div className="flex items-center gap-2 rounded-full border border-[#D8DFE9] bg-[#F9FCFF] py-1 pl-3 pr-1 dark:border-[#2B3646] dark:bg-[#141D2B]">
-          <span className={`flex-1 truncate text-[10px] leading-[14px] ${draft ? "text-[#101723] dark:text-[#D7DFE5]" : "text-[#9BAABD]"}`}>
+        <div className="flex items-center gap-2 rounded-full border border-ink-120 bg-ink-25 py-1 pl-3 pr-1 dark:border-ink-780 dark:bg-ink-875">
+          <span className={`flex-1 truncate text-caption leading-[14px] ${draft ? "text-fg" : "text-ink-325"}`}>
             {draft || "Type your message..."}
             {draft ? <span className="ml-px inline-block h-2.5 w-px translate-y-0.5 animate-pulse bg-current" /> : null}
           </span>
@@ -763,7 +762,7 @@ function FaqChatPreview() {
             animate={sent && !answered && exchangeVisible ? { scale: [1, 0.85, 1] } : { scale: 1 }}
             transition={{ duration: 0.3 }}
             className={`flex h-5 w-5 items-center justify-center rounded-full transition-colors duration-200 ${
-              draft ? "bg-[#101723] text-white dark:bg-[#D7DFE5] dark:text-[#141D2B]" : "bg-[#E7EDF6] text-[#87909D] dark:bg-[#243040]"
+              draft ? "bg-ink-900 text-white dark:bg-ink-130 dark:text-ink-875" : "bg-ink-70 text-ink-425 dark:bg-ink-805"
             }`}
           >
             <Send className="h-2.5 w-2.5" />
@@ -804,14 +803,14 @@ function AnalyticsLeadsPreview() {
 
   return (
     <div ref={previewRef} className="relative mt-auto w-full pt-8">
-      <div className="absolute inset-x-6 top-0 h-[160px] rounded-[14px] border border-[#D8DFE9] bg-[#F9FCFF] opacity-55 dark:border-[#2B3646] dark:bg-[#202C3C]" />
-      <div className="absolute inset-x-3 top-4 h-[168px] rounded-[14px] border border-[#D8DFE9] bg-[#F9FCFF] opacity-80 dark:border-[#2B3646] dark:bg-[#202C3C]" />
+      <div className="absolute inset-x-6 top-0 h-[160px] rounded-[14px] border border-ink-120 bg-ink-25 opacity-55 dark:border-ink-780 dark:bg-ink-820" />
+      <div className="absolute inset-x-3 top-4 h-[168px] rounded-[14px] border border-ink-120 bg-ink-25 opacity-80 dark:border-ink-780 dark:bg-ink-820" />
 
-      <div className="relative rounded-[16px] border border-[#D8DFE9] bg-[linear-gradient(180deg,#F9FCFF_0%,#F3F7FC_100%)] p-4 shadow-[0px_10px_30px_rgba(0,0,0,0.08)] dark:border-[#2B3646] dark:bg-[linear-gradient(180deg,#202C3C_0%,#17212F_100%)]">
+      <div className="relative rounded-[16px] border border-ink-120 bg-[linear-gradient(180deg,#F9FCFF_0%,#F3F7FC_100%)] p-4 shadow-[0px_10px_30px_rgba(0,0,0,0.08)] dark:border-ink-780 dark:bg-[linear-gradient(180deg,#202C3C_0%,#17212F_100%)]">
         <div className="flex items-start justify-between">
           <div>
-            <p className="text-[11px] font-medium text-[#647184] dark:text-[#9BAABD]">Captured leads · this week</p>
-            <div className="relative mt-1 h-[30px] overflow-hidden text-[28px] font-semibold leading-[30px] tabular-nums text-[#101723] dark:text-[#D7DFE5]">
+            <p className="text-caption font-medium text-ink-545 dark:text-ink-325">Captured leads · this week</p>
+            <div className="relative mt-1 h-[30px] overflow-hidden text-[28px] font-semibold leading-[30px] tabular-nums text-fg">
               <AnimatePresence initial={false}>
                 <motion.span
                   key={count}
@@ -827,7 +826,7 @@ function AnalyticsLeadsPreview() {
               <span className="invisible">{count}</span>
             </div>
           </div>
-          <div className="rounded-full bg-[#EEF6F0] px-2.5 py-1 text-[10px] font-medium text-[#4F9A63] dark:bg-[#253128] dark:text-[#8FD19B]">
+          <div className="rounded-full bg-[#EEF6F0] px-2.5 py-1 text-caption font-medium text-[#4F9A63] dark:bg-[#253128] dark:text-[#8FD19B]">
             +18.4%
           </div>
         </div>
@@ -849,25 +848,25 @@ function AnalyticsLeadsPreview() {
                   animate={reduceMotion ? undefined : { scaleY: [0.88, 1.06, 0.88] }}
                   transition={{ duration: 3.8, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut", delay: index * 0.08 }}
                   className={`h-full w-full rounded-t-[5px] ${
-                    isToday ? "bg-[#101723] dark:bg-[#D7DFE5]" : "bg-[#D8DFE9] dark:bg-[#2B3646]"
+                    isToday ? "bg-ink-900 dark:bg-ink-130" : "bg-ink-120 dark:bg-ink-780"
                   }`}
                 />
               </motion.div>
             );
           })}
         </div>
-        <div className="mt-1.5 flex gap-2 text-[9px] font-medium text-[#9BAABD] dark:text-[#647184]">
+        <div className="mt-1.5 flex gap-2 text-caption font-medium text-ink-325 dark:text-ink-545">
           {LEAD_DAYS.map((day, index) => (
             <span
               key={index}
-              className={`flex-1 text-center ${index === LEAD_DAYS.length - 1 ? "text-[#101723] dark:text-[#D7DFE5]" : ""}`}
+              className={`flex-1 text-center ${index === LEAD_DAYS.length - 1 ? "text-fg" : ""}`}
             >
               {day}
             </span>
           ))}
         </div>
   
-        <div className="relative mt-3 h-[44px] overflow-hidden rounded-xl border border-[#D8DFE9]/80 bg-[#F9FCFF] dark:border-[#2B3646] dark:bg-[#1A2533]">
+        <div className="relative mt-3 h-[44px] overflow-hidden rounded-xl border border-ink-120/80 bg-ink-25 dark:border-ink-780 dark:bg-ink-850">
           <AnimatePresence initial={false}>
             <motion.div
               key={captured}
@@ -877,14 +876,14 @@ function AnalyticsLeadsPreview() {
               transition={{ duration: 0.35, ease: "easeOut" }}
               className="absolute inset-0 flex items-center gap-2.5 px-3"
             >
-              <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-[#E7EDF6] text-[9px] font-semibold text-[#566273] dark:bg-[#243040] dark:text-[#D7DFE5]">
+              <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-ink-70 text-caption font-semibold text-ink-605 dark:bg-ink-805 dark:text-ink-130">
                 {lead.initials}
               </span>
               <div className="min-w-0 flex-1">
-                <p className="truncate text-[11px] font-semibold text-[#101723] dark:text-[#D7DFE5]">{lead.email}</p>
-                <p className="truncate text-[10px] text-[#647184] dark:text-[#9BAABD]">via {lead.source}</p>
+                <p className="truncate text-caption font-semibold text-fg">{lead.email}</p>
+                <p className="truncate text-caption text-ink-545 dark:text-ink-325">via {lead.source}</p>
               </div>
-              <span className="shrink-0 rounded-full bg-[#EEF6F0] px-2 py-0.5 text-[9px] font-medium text-[#4F9A63] dark:bg-[#253128] dark:text-[#8FD19B]">
+              <span className="shrink-0 rounded-full bg-[#EEF6F0] px-2 py-0.5 text-caption font-medium text-[#4F9A63] dark:bg-[#253128] dark:text-[#8FD19B]">
                 New
               </span>
             </motion.div>
@@ -1018,65 +1017,64 @@ export default function FeaturesSection() {
       className=""
     >
       <div className="py-16 sm:py-20 flex flex-col items-center text-center px-4">
-        <Badge text="Features" />
-        <h2 className="mt-5 text-[clamp(2rem,4vw,3rem)] leading-[1.1] font-serif tracking-tight [text-wrap:balance] text-[#101723] dark:text-[#D7DFE5]">
+        <h2 className="text-[clamp(2rem,4vw,3rem)] leading-[1.1] font-display tracking-tight [text-wrap:balance] text-fg">
           From first question to next customer
         </h2>
-        <p className="mt-3 text-[#566273] dark:text-[#9BAABD] text-body max-w-md">
+        <p className="mt-3 text-fg-muted text-body max-w-md">
           Add Askio to your site, answer common questions, and see what visitors need.
         </p>
       </div>
 
-      <div className="flex border-t border-[rgba(16,23,35,0.12)] dark:border-[#2B3646]">
+      <div className="flex border-t border-[rgba(16,23,35,0.12)] dark:border-ink-780">
         <HatchStrip />
-        <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-0 border-l border-r border-[rgba(16,23,35,0.12)] dark:border-[#2B3646]">
-          <div className="p-6 sm:p-8 lg:p-10 flex flex-col gap-4 border-b md:border-b-0 border-r-0 md:border-r border-[rgba(16,23,35,0.12)] dark:border-[#2B3646] cursor-default">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 shrink-0 rounded-xl border border-[#D8DFE9]/70 bg-[#F9FCFF] dark:border-[#2B3646] dark:bg-[#1A2533] flex items-center justify-center">
-                <Code className="w-4 h-4 text-[#101723] dark:text-[#D7DFE5]" />
+        <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-0 border-l border-r border-[rgba(16,23,35,0.12)] dark:border-ink-780">
+          <div className="p-6 sm:p-8 lg:p-10 flex flex-col gap-4 border-b md:border-b-0 border-r-0 md:border-r border-[rgba(16,23,35,0.12)] dark:border-ink-780 cursor-default">
+            <div className="flex items-center gap-3 md:min-h-[58px] lg:min-h-0">
+              <div className="w-9 h-9 shrink-0 rounded-xl border border-ink-120/70 bg-ink-25 dark:border-ink-780 dark:bg-ink-850 flex items-center justify-center">
+                <Code className="w-4 h-4 text-fg" />
               </div>
-              <h3 className="text-[#101723] dark:text-[#D7DFE5] text-h3">Connect your website</h3>
+              <h3 className="text-fg text-h3">Connect your website</h3>
             </div>
-            <p className="text-[#566273] dark:text-[#9BAABD] text-body-sm leading-relaxed">
+            <p className="text-fg-muted text-body-sm leading-relaxed">
               Paste one embed code into your site. Keep the tools you already use.
             </p>
             <IntegrationBeamPreview />
           </div>
 
-          <div className="p-6 sm:p-8 lg:p-10 flex flex-col gap-4 border-t md:border-t-0 border-b md:border-b-0 border-[rgba(16,23,35,0.12)] dark:border-[#2B3646] cursor-default">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 shrink-0 rounded-xl border border-[#D8DFE9]/70 bg-[#F9FCFF] dark:border-[#2B3646] dark:bg-[#1A2533] flex items-center justify-center">
-                <MessageCircle className="w-4 h-4 text-[#101723] dark:text-[#D7DFE5]" />
+          <div className="p-6 sm:p-8 lg:p-10 flex flex-col gap-4 border-t md:border-t-0 border-b md:border-b-0 border-[rgba(16,23,35,0.12)] dark:border-ink-780 cursor-default">
+            <div className="flex items-center gap-3 md:min-h-[58px] lg:min-h-0">
+              <div className="w-9 h-9 shrink-0 rounded-xl border border-ink-120/70 bg-ink-25 dark:border-ink-780 dark:bg-ink-850 flex items-center justify-center">
+                <MessageCircle className="w-4 h-4 text-fg" />
               </div>
-              <h3 className="text-[#101723] dark:text-[#D7DFE5] text-h3">Answer FAQs instantly</h3>
+              <h3 className="text-fg text-h3">Answer everyday questions</h3>
             </div>
-            <p className="text-[#566273] dark:text-[#9BAABD] text-body-sm leading-relaxed">
+            <p className="text-fg-muted text-body-sm leading-relaxed">
               Give visitors your answers to common questions, even when you’re away.
             </p>
             <FaqChatPreview />
           </div>
 
-          <div className="p-6 sm:p-8 lg:p-10 flex flex-col gap-4 border-t md:border-t border-r-0 md:border-r border-[rgba(16,23,35,0.12)] dark:border-[#2B3646] cursor-default">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 shrink-0 rounded-xl border border-[#D8DFE9]/70 bg-[#F9FCFF] dark:border-[#2B3646] dark:bg-[#1A2533] flex items-center justify-center">
-                <BarChart3 className="w-4 h-4 text-[#101723] dark:text-[#D7DFE5]" />
+          <div className="p-6 sm:p-8 lg:p-10 flex flex-col gap-4 border-t md:border-t border-r-0 md:border-r border-[rgba(16,23,35,0.12)] dark:border-ink-780 cursor-default">
+            <div className="flex items-center gap-3 md:min-h-[58px] lg:min-h-0">
+              <div className="w-9 h-9 shrink-0 rounded-xl border border-ink-120/70 bg-ink-25 dark:border-ink-780 dark:bg-ink-850 flex items-center justify-center">
+                <BarChart3 className="w-4 h-4 text-fg" />
               </div>
-              <h3 className="text-[#101723] dark:text-[#D7DFE5] text-h3">Turn interest into leads</h3>
+              <h3 className="text-fg text-h3">Turn interest into leads</h3>
             </div>
-            <p className="text-[#566273] dark:text-[#9BAABD] text-body-sm leading-relaxed">
+            <p className="text-fg-muted text-body-sm leading-relaxed">
               Capture contact details and track activity so you know where to follow up.
             </p>
             <AnalyticsLeadsPreview />
           </div>
 
-          <div className="p-6 sm:p-8 lg:p-10 flex flex-col gap-4 border-t border-[rgba(16,23,35,0.12)] dark:border-[#2B3646] cursor-default">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 shrink-0 rounded-xl border border-[#D8DFE9]/70 bg-[#F9FCFF] dark:border-[#2B3646] dark:bg-[#1A2533] flex items-center justify-center">
-                <Settings className="w-4 h-4 text-[#101723] dark:text-[#D7DFE5]" />
+          <div className="p-6 sm:p-8 lg:p-10 flex flex-col gap-4 border-t border-[rgba(16,23,35,0.12)] dark:border-ink-780 cursor-default">
+            <div className="flex items-center gap-3 md:min-h-[58px] lg:min-h-0">
+              <div className="w-9 h-9 shrink-0 rounded-xl border border-ink-120/70 bg-ink-25 dark:border-ink-780 dark:bg-ink-850 flex items-center justify-center">
+                <Settings className="w-4 h-4 text-fg" />
               </div>
-              <h3 className="text-[#101723] dark:text-[#D7DFE5] text-h3">Make it your own</h3>
+              <h3 className="text-fg text-h3">Make it your own</h3>
             </div>
-            <p className="text-[#566273] dark:text-[#9BAABD] text-body-sm leading-relaxed">
+            <p className="text-fg-muted text-body-sm leading-relaxed">
               Askio reads your website for answers. Then match your colors, set a greeting, and choose where it appears.
             </p>
             <BrandShowcasePreview />

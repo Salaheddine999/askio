@@ -17,17 +17,17 @@ import {
   Plus,
   Rocket,
   SearchX,
-  Sparkles,
   UserPlus,
   Languages,
   MessagesSquare,
-} from "lucide-react";
+} from "../components/icons";
 import { toast } from "react-hot-toast";
 import { EmptyState, SearchInput, focusRing, surface } from "./dashboard/ui";
 import { useT } from "../i18n";
 import { docsMessages } from "../i18n/messages/docs";
 import { docsContent, type GuideContent, type GuideId } from "../i18n/messages/docs-content";
 import { COMPANY } from "./legal/company";
+import { AiIcon } from "../components/icons";
 
 interface Guide extends GuideContent {
   id: GuideId;
@@ -39,7 +39,7 @@ const GUIDE_ORDER: { id: GuideId; icon: LucideIcon; to?: string }[] = [
   { id: "create", icon: Rocket, to: "/configure" },
   { id: "faqs", icon: ListChecks },
   { id: "appearance", icon: Palette },
-  { id: "ai", icon: Sparkles },
+  { id: "ai", icon: AiIcon },
   { id: "leads", icon: UserPlus },
   { id: "install", icon: Blocks, to: "/integrations" },
   { id: "improve", icon: BarChart3, to: "/analytics" },
@@ -48,7 +48,7 @@ const GUIDE_ORDER: { id: GuideId; icon: LucideIcon; to?: string }[] = [
 ];
 
 const Field: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <span className="rounded bg-[#E7EDF6] px-1.5 py-px text-[13px] font-medium text-[#101723] dark:bg-[#243040] dark:text-[#E7EDF6]">
+  <span className="rounded bg-ink-70 px-1.5 py-px text-[13px] font-medium text-ink-900 dark:bg-ink-805 dark:text-ink-70">
     {children}
   </span>
 );
@@ -122,7 +122,7 @@ const Documentation: React.FC<{ toggleSidebar: () => void }> = () => {
     );
 
   return (
-    <div className="min-h-screen bg-[#F3F7FC] font-sans text-[#101723] dark:bg-[#141D2B]">
+    <div className="min-h-screen bg-ink-30 font-sans text-ink-900 dark:bg-ink-875">
       <Helmet>
         <title>{t("metaTitle")}</title>
         <meta name="description" content={t("metaDescription")} />
@@ -131,8 +131,8 @@ const Documentation: React.FC<{ toggleSidebar: () => void }> = () => {
       <div className="w-full space-y-8 px-4 py-6 sm:px-6 sm:py-8 lg:px-8 xl:px-10">
         <header className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div className="min-w-0">
-            <h1 className="font-serif text-h2 tracking-tight text-[#101723] sm:text-h1 dark:text-[#D7DFE5]">{t("title")}</h1>
-            <p className="mt-1 max-w-2xl text-body-sm text-[#566273] dark:text-[#9BAABD]">
+            <h1 className="font-display text-h2 tracking-tight text-ink-900 sm:text-h1 dark:text-ink-130">{t("title")}</h1>
+            <p className="mt-1 max-w-2xl text-body-sm text-fg-muted">
               {t("intro")}
             </p>
           </div>
@@ -149,17 +149,17 @@ const Documentation: React.FC<{ toggleSidebar: () => void }> = () => {
               <Link
                 key={q.to}
                 to={q.to}
-                className={`group flex items-start gap-3 ${surface} p-4 transition-colors hover:border-[#B8C3D1] dark:hover:border-[#39485B] ${focusRing}`}
+                className={`group flex items-start gap-3 ${surface} p-4 transition-colors hover:border-ink-230 dark:hover:border-ink-710 ${focusRing}`}
               >
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#101723] text-white dark:bg-[#D7DFE5] dark:text-[#141D2B]">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-ink-900 text-white dark:bg-ink-130 dark:text-ink-875">
                   <q.icon size={17} />
                 </span>
                 <span className="min-w-0 flex-1">
-                  <span className="flex items-center gap-1.5 text-body-sm font-semibold text-[#101723] dark:text-[#E7EDF6]">
-                    <span className="text-[#87909D]">{i + 1}.</span> {q.title}
-                    <ArrowRight size={14} className="text-[#87909D] transition-transform group-hover:translate-x-0.5" />
+                  <span className="flex items-center gap-1.5 text-body-sm font-semibold text-ink-900 dark:text-ink-70">
+                    <span className="text-ink-425">{i + 1}.</span> {q.title}
+                    <ArrowRight size={14} className="text-ink-425 transition-transform group-hover:translate-x-0.5" />
                   </span>
-                  <span className="mt-0.5 block text-caption text-[#647184] dark:text-[#87909D]">{q.body}</span>
+                  <span className="mt-0.5 block text-caption text-fg-subtle">{q.body}</span>
                 </span>
               </Link>
             ))}
@@ -170,12 +170,12 @@ const Documentation: React.FC<{ toggleSidebar: () => void }> = () => {
           {/* Contents */}
           <nav aria-label={t("guides")} className="hidden lg:block">
             <div className="sticky top-6 space-y-0.5">
-              <p className="mb-2 px-2.5 text-[11px] font-medium uppercase tracking-wider text-[#87909D]">{t("guides")}</p>
+              <p className="mb-2 px-2.5 text-caption font-medium text-ink-425">{t("guides")}</p>
               {guides.map((g) => (
                 <a
                   key={g.id}
                   href={`#${g.id}`}
-                  className={`flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-body-sm text-[#566273] transition-colors hover:bg-[#E7EDF6]/70 hover:text-[#101723] dark:text-[#9BAABD] dark:hover:bg-[#1F2B3A] dark:hover:text-[#D7DFE5] ${focusRing}`}
+                  className={`flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-body-sm text-ink-605 transition-colors hover:bg-ink-70/70 hover:text-ink-900 dark:text-ink-325 dark:hover:bg-ink-825 dark:hover:text-ink-130 ${focusRing}`}
                 >
                   <g.icon size={14} className="shrink-0 opacity-70" />
                   <span className="truncate">{g.title}</span>
@@ -184,7 +184,7 @@ const Documentation: React.FC<{ toggleSidebar: () => void }> = () => {
               {faqs.length > 0 && (
                 <a
                   href="#troubleshooting"
-                  className={`flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-body-sm text-[#566273] transition-colors hover:bg-[#E7EDF6]/70 hover:text-[#101723] dark:text-[#9BAABD] dark:hover:bg-[#1F2B3A] dark:hover:text-[#D7DFE5] ${focusRing}`}
+                  className={`flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-body-sm text-ink-605 transition-colors hover:bg-ink-70/70 hover:text-ink-900 dark:text-ink-325 dark:hover:bg-ink-825 dark:hover:text-ink-130 ${focusRing}`}
                 >
                   <HelpCircle size={14} className="shrink-0 opacity-70" />
                   {t("troubleshooting")}
@@ -207,17 +207,17 @@ const Documentation: React.FC<{ toggleSidebar: () => void }> = () => {
             {guides.map((g) => (
               <section key={g.id} id={g.id} className={`${surface} scroll-mt-6 p-5 sm:p-6`}>
                 <div className="flex items-start gap-3">
-                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[#D8DFE9] bg-[#F3F7FC] text-[#243040] dark:border-[#2B3646] dark:bg-[#141D2B] dark:text-[#D7DFE5]">
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-ink-120 bg-ink-30 text-ink-805 dark:border-ink-780 dark:bg-ink-875 dark:text-ink-130">
                     <g.icon size={17} />
                   </span>
                   <div className="min-w-0 flex-1">
-                    <h2 className="font-serif text-h3 leading-tight text-[#101723] dark:text-[#E7EDF6]">{g.title}</h2>
-                    <p className="mt-0.5 text-body-sm text-[#647184] dark:text-[#87909D]">{g.summary}</p>
+                    <h2 className="font-display text-h3 leading-tight text-ink-900 dark:text-ink-70">{g.title}</h2>
+                    <p className="mt-0.5 text-body-sm text-fg-subtle">{g.summary}</p>
                   </div>
                   {g.link && (
                     <Link
                       to={g.link.to}
-                      className={`hidden shrink-0 items-center gap-1 rounded-lg border border-[#D8DFE9] px-2.5 py-1.5 text-caption font-medium text-[#101723] transition-colors hover:bg-[#F3F7FC] sm:inline-flex dark:border-[#2B3646] dark:text-[#D7DFE5] dark:hover:bg-[#273444] ${focusRing}`}
+                      className={`hidden shrink-0 items-center gap-1 rounded-lg border border-ink-120 px-2.5 py-1.5 text-caption font-medium text-ink-900 transition-colors hover:bg-ink-30 sm:inline-flex dark:border-ink-780 dark:text-ink-130 dark:hover:bg-ink-790 ${focusRing}`}
                     >
                       {g.link.label}
                       <ArrowRight size={13} />
@@ -228,38 +228,38 @@ const Documentation: React.FC<{ toggleSidebar: () => void }> = () => {
                 <ol className="mt-5 space-y-3.5">
                   {g.steps.map((step, i) => (
                     <li key={i} className="flex gap-3">
-                      <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#E7EDF6] text-[11px] font-semibold tabular-nums text-[#243040] dark:bg-[#243040] dark:text-[#D7DFE5]">
+                      <span className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full pt-px bg-ink-70 text-caption font-semibold leading-none tabular-nums text-ink-805 dark:bg-ink-805 dark:text-ink-130">
                         {i + 1}
                       </span>
-                      <p className="text-body-sm leading-relaxed text-[#566273] dark:text-[#B9C4D2]">{rich(step)}</p>
+                      <p className="text-body-sm leading-relaxed text-ink-605 dark:text-ink-225">{rich(step)}</p>
                     </li>
                   ))}
                 </ol>
 
                 {g.id === "install" && (
-                  <div className="mt-5 overflow-hidden rounded-xl border border-[#243040] bg-[#101723]">
+                  <div className="mt-5 overflow-hidden rounded-xl border border-ink-805 bg-ink-900">
                     <div className="flex items-center justify-between border-b border-white/10 px-4 py-2">
-                      <span className="text-caption font-medium text-[#9BAABD]">{t("embedCode")}</span>
+                      <span className="text-caption font-medium text-ink-325">{t("embedCode")}</span>
                       <button
                         type="button"
                         onClick={copyEmbed}
-                        className={`inline-flex h-7 items-center gap-1.5 rounded-md bg-white/10 px-2.5 text-caption font-medium text-[#E7EDF6] hover:bg-white/15 ${focusRing}`}
+                        className={`inline-flex h-7 items-center gap-1.5 rounded-md bg-white/10 px-2.5 text-caption font-medium text-ink-70 hover:bg-white/15 ${focusRing}`}
                       >
                         <Copy size={13} />
                         {t("copy")}
                       </button>
                     </div>
-                    <pre className="overflow-x-auto p-4 font-mono text-[12.5px] leading-relaxed text-[#D7DFE5]">
+                    <pre className="overflow-x-auto p-4 font-mono text-[12.5px] leading-relaxed text-ink-130">
                       <code>{embedCode}</code>
                     </pre>
-                    <p className="border-t border-white/10 px-4 py-2 text-caption text-[#9BAABD]">
+                    <p className="border-t border-white/10 px-4 py-2 text-caption text-ink-325">
                       {t("embedNoteBefore")} <code>YOUR_CHATBOT_ID</code> {t("embedNoteAfter")}
                     </p>
                   </div>
                 )}
 
                 {g.tip && (
-                  <p className="mt-5 flex gap-2.5 rounded-lg bg-[#F3F7FC] px-3.5 py-3 text-body-sm text-[#566273] dark:bg-[#141D2B] dark:text-[#9BAABD]">
+                  <p className="mt-5 flex gap-2.5 rounded-lg bg-ink-30 px-3.5 py-3 text-body-sm text-ink-605 dark:bg-ink-875 dark:text-ink-325">
                     <Lightbulb size={16} className="mt-0.5 shrink-0 text-amber-500" />
                     <span>{rich(g.tip)}</span>
                   </p>
@@ -270,15 +270,15 @@ const Documentation: React.FC<{ toggleSidebar: () => void }> = () => {
             {faqs.length > 0 && (
               <section id="troubleshooting" className={`${surface} scroll-mt-6 overflow-hidden`}>
                 <div className="flex items-start gap-3 p-5 pb-3 sm:p-6 sm:pb-3">
-                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[#D8DFE9] bg-[#F3F7FC] text-[#243040] dark:border-[#2B3646] dark:bg-[#141D2B] dark:text-[#D7DFE5]">
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-ink-120 bg-ink-30 text-ink-805 dark:border-ink-780 dark:bg-ink-875 dark:text-ink-130">
                     <HelpCircle size={17} />
                   </span>
                   <div>
-                    <h2 className="font-serif text-h3 leading-tight text-[#101723] dark:text-[#E7EDF6]">{t("troubleshooting")}</h2>
-                    <p className="mt-0.5 text-body-sm text-[#647184] dark:text-[#87909D]">{t("troubleshootingSummary")}</p>
+                    <h2 className="font-display text-h3 leading-tight text-ink-900 dark:text-ink-70">{t("troubleshooting")}</h2>
+                    <p className="mt-0.5 text-body-sm text-fg-subtle">{t("troubleshootingSummary")}</p>
                   </div>
                 </div>
-                <ul className="divide-y divide-[#E7EDF6] border-t border-[#E7EDF6] dark:divide-[#2B3646] dark:border-[#2B3646]">
+                <ul className="divide-y divide-ink-70 border-t border-ink-70 dark:divide-ink-780 dark:border-ink-780">
                   {faqs.map((f, i) => {
                     const open = openFaq === i;
                     return (
@@ -287,13 +287,13 @@ const Documentation: React.FC<{ toggleSidebar: () => void }> = () => {
                           type="button"
                           aria-expanded={open}
                           onClick={() => setOpenFaq(open ? null : i)}
-                          className={`flex w-full items-center justify-between gap-4 px-5 py-3.5 text-left text-body-sm font-medium text-[#101723] hover:bg-[#F3F7FC]/70 sm:px-6 dark:text-[#E7EDF6] dark:hover:bg-[#1F2B3A] ${focusRing}`}
+                          className={`flex w-full items-center justify-between gap-4 px-5 py-3.5 text-left text-body-sm font-medium text-ink-900 hover:bg-ink-30/70 sm:px-6 dark:text-ink-70 dark:hover:bg-ink-825 ${focusRing}`}
                         >
                           {f.q}
-                          <ChevronDown size={16} className={`shrink-0 text-[#87909D] transition-transform ${open ? "rotate-180" : ""}`} />
+                          <ChevronDown size={16} className={`shrink-0 text-ink-425 transition-transform ${open ? "rotate-180" : ""}`} />
                         </button>
                         {open && (
-                          <p className="px-5 pb-4 text-body-sm leading-relaxed text-[#566273] sm:px-6 dark:text-[#B9C4D2]">{rich(f.a)}</p>
+                          <p className="px-5 pb-4 text-body-sm leading-relaxed text-ink-605 sm:px-6 dark:text-ink-225">{rich(f.a)}</p>
                         )}
                       </li>
                     );
@@ -302,9 +302,9 @@ const Documentation: React.FC<{ toggleSidebar: () => void }> = () => {
               </section>
             )}
 
-            <p className="flex items-center gap-2 px-1 text-body-sm text-[#647184] dark:text-[#87909D]">
+            <p className="flex items-center gap-2 px-1 text-body-sm text-fg-subtle">
               <Check size={15} className="text-emerald-500" />
-              {t("stillStuckBefore")} <a href={`mailto:${COMPANY.contactEmail}`} className="font-medium text-[#101723] underline underline-offset-2 dark:text-[#D7DFE5]">{COMPANY.contactEmail}</a> {t("stillStuckAfter")}
+              {t("stillStuckBefore")} <a href={`mailto:${COMPANY.contactEmail}`} className="font-medium text-ink-900 underline underline-offset-2 dark:text-ink-130">{COMPANY.contactEmail}</a> {t("stillStuckAfter")}
             </p>
           </div>
         </div>

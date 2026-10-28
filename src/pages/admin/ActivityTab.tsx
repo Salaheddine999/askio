@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { format, formatDistanceToNowStrict } from "date-fns";
-import { Ban, RotateCcw, ShieldCheck, Trash2 } from "lucide-react";
+import { Ban, RotateCcw, ShieldCheck, Trash2 } from "../../components/icons";
 import { EmptyState } from "../dashboard/ui";
 import { LogEntry, LogFilter, logQuery, toLogEntry } from "./data";
 import { Card, FilterChips, Pager, RowsLoading } from "./parts";
@@ -20,7 +20,7 @@ const FILTERS: { value: LogFilter; label: string }[] = [
 ];
 
 export const LogItem: React.FC<{ entry: LogEntry; showAdmin?: boolean }> = ({ entry, showAdmin }) => {
-  const action = ACTIONS[entry.action] ?? { label: entry.action, icon: ShieldCheck, tone: "bg-[#E7EDF6] text-[#566273]" };
+  const action = ACTIONS[entry.action] ?? { label: entry.action, icon: ShieldCheck, tone: "bg-ink-70 text-ink-605" };
   const Icon = action.icon;
   return (
     <li className="flex items-start gap-3 px-5 py-3 sm:px-6">
@@ -28,20 +28,20 @@ export const LogItem: React.FC<{ entry: LogEntry; showAdmin?: boolean }> = ({ en
         <Icon size={14} />
       </span>
       <div className="min-w-0 flex-1">
-        <p className="truncate text-body-sm text-[#101723] dark:text-[#D7DFE5]" title={entry.targetEmail || undefined}>
+        <p className="truncate text-body-sm text-fg" title={entry.targetEmail || undefined}>
           <span className="font-medium">{action.label}</span> {entry.targetEmail || "an account"}
         </p>
         {entry.reason && (
-          <p className="mt-0.5 line-clamp-2 text-caption text-[#647184] dark:text-[#87909D]" title={entry.reason}>
+          <p className="mt-0.5 line-clamp-2 text-caption text-fg-subtle" title={entry.reason}>
             “{entry.reason}”
           </p>
         )}
         {showAdmin && entry.adminEmail && (
-          <p className="mt-0.5 truncate text-caption text-[#87909D]">by {entry.adminEmail}</p>
+          <p className="mt-0.5 truncate text-caption text-ink-425">by {entry.adminEmail}</p>
         )}
       </div>
       <span
-        className="shrink-0 whitespace-nowrap text-caption text-[#87909D]"
+        className="shrink-0 whitespace-nowrap text-caption text-ink-425"
         title={entry.at ? format(entry.at, "PPpp") : undefined}
       >
         {!entry.at ? "" : Date.now() - entry.at.getTime() < 60_000 ? "just now" : formatDistanceToNowStrict(entry.at, { addSuffix: true })}
@@ -61,7 +61,7 @@ const ActivityTab: React.FC<{ version: number }> = ({ version }) => {
 
   return (
     <Card title="Activity" description="Every suspension and deletion by an admin, newest first.">
-      <div className="border-b border-[#E7EDF6] px-5 py-3 sm:px-6 dark:border-[#2B3646]">
+      <div className="border-b border-ink-70 px-5 py-3 sm:px-6 dark:border-ink-780">
         <FilterChips label="Filter activity" value={filter} onChange={setFilter} options={FILTERS} />
       </div>
       {list.error ? (
@@ -74,7 +74,7 @@ const ActivityTab: React.FC<{ version: number }> = ({ version }) => {
         <EmptyState compact icon={ShieldCheck} title="Nothing here yet" description="Admin actions will be listed here." />
       ) : (
         <div className={`transition-opacity ${list.loading ? "opacity-60" : ""}`}>
-          <ul className="divide-y divide-[#E7EDF6] dark:divide-[#2B3646]">
+          <ul className="divide-y divide-ink-70 dark:divide-ink-780">
             {list.items.map((entry) => (
               <LogItem key={entry.id} entry={entry} showAdmin />
             ))}

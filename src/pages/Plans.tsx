@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, Check } from "lucide-react";
+import { ArrowRight, Check } from "../components/icons";
 import { Helmet } from "react-helmet-async";
 import { redirectToProCheckout } from "../utils/billing";
 import { auth } from "../utils/firebase";
@@ -32,11 +32,11 @@ type PlanCardProps = {
 };
 
 function PlanCard({ name, description, price, priceSuffix, note, cta, features, featured = false, badge }: PlanCardProps) {
-  const muted = featured ? "text-white/70 dark:text-[#9BAABD]" : "text-[#566273] dark:text-[#9BAABD]";
+  const muted = featured ? "text-white/70 dark:text-ink-325" : "text-fg-muted";
   const button = `mt-5 inline-flex h-9 w-full items-center justify-center gap-1.5 rounded-lg text-button transition-colors ${focusRing} ${
     featured
-      ? "bg-[#F9FCFF] text-[#101723] hover:bg-[#E7EDF6]"
-      : "bg-[#101723] text-white hover:bg-[#243040] dark:bg-[#D7DFE5] dark:text-[#141D2B] dark:hover:bg-[#E7EDF6]"
+      ? "bg-ink-25 text-ink-900 hover:bg-ink-70"
+      : "bg-ink-900 text-white hover:bg-ink-805 dark:bg-ink-130 dark:text-ink-875 dark:hover:bg-ink-70"
   }`;
   const arrow = <ArrowRight className="h-4 w-4" />;
 
@@ -45,7 +45,7 @@ function PlanCard({ name, description, price, priceSuffix, note, cta, features, 
     action = (
       <div
         className={`mt-5 inline-flex h-9 w-full items-center justify-center gap-1.5 rounded-lg text-button ring-1 ring-inset ${
-          featured ? "text-white/80 ring-white/20" : "text-[#566273] ring-[#D8DFE9] dark:text-[#9BAABD] dark:ring-[#2B3646]"
+          featured ? "text-white/80 ring-white/20" : "text-ink-605 ring-ink-120 dark:text-ink-325 dark:ring-ink-780"
         }`}
       >
         <Check className="h-4 w-4" />
@@ -79,16 +79,16 @@ function PlanCard({ name, description, price, priceSuffix, note, cta, features, 
     <div
       className={`flex flex-col rounded-xl p-6 ring-1 ${
         featured
-          ? "bg-[#101723] text-white ring-[#101723] dark:bg-[#243040] dark:text-[#E7EDF6] dark:ring-[#39485B]"
-          : "bg-[#F9FCFF] text-[#101723] ring-[#D8DFE9] dark:bg-[#1A2533] dark:text-[#D7DFE5] dark:ring-[#2B3646]"
+          ? "bg-ink-900 text-white ring-ink-900 dark:bg-ink-805 dark:text-ink-70 dark:ring-ink-710"
+          : "bg-ink-25 text-ink-900 ring-ink-120 dark:bg-ink-850 dark:text-ink-130 dark:ring-ink-780"
       }`}
     >
       <div className="flex items-center justify-between gap-3">
         <h2 className="text-body-lg font-semibold">{name}</h2>
         {badge && (
           <span
-            className={`shrink-0 rounded-full px-2.5 py-0.5 text-[11px] font-medium ${
-              featured ? "bg-white/10 text-white/90" : "bg-[#E7EDF6] text-[#566273] dark:bg-[#273444] dark:text-[#9BAABD]"
+            className={`shrink-0 rounded-full px-2.5 py-0.5 text-caption font-medium ${
+              featured ? "bg-white/10 text-white/90" : "bg-ink-70 text-ink-605 dark:bg-ink-790 dark:text-ink-325"
             }`}
           >
             {badge}
@@ -98,20 +98,20 @@ function PlanCard({ name, description, price, priceSuffix, note, cta, features, 
       <p className={`mt-1.5 min-h-[2.5rem] text-body-sm ${muted}`}>{description}</p>
 
       <div className="mt-5 flex h-9 items-baseline gap-1">
-        <span className="font-serif text-[36px] leading-none tracking-tight">{price}</span>
+        <span className="font-display text-[36px] leading-none tracking-tight">{price}</span>
         {priceSuffix && <span className={`text-body-sm ${muted}`}>{priceSuffix}</span>}
       </div>
       <p className={`mt-1.5 min-h-[1.25rem] text-caption ${muted}`}>{note}</p>
 
       {action}
 
-      <div className={`my-6 h-px ${featured ? "bg-white/10" : "bg-[#E7EDF6] dark:bg-[#2B3646]"}`} />
+      <div className={`my-6 h-px ${featured ? "bg-white/10" : "bg-ink-70 dark:bg-ink-780"}`} />
 
       <ul className="space-y-2.5">
         {features.map((feature) => (
-          <li key={feature} className={`flex items-start gap-2.5 text-body-sm ${featured ? "text-white/85 dark:text-[#D7DFE5]" : "text-[#566273] dark:text-[#D7DFE5]"}`}>
+          <li key={feature} className={`flex items-start gap-2.5 text-body-sm ${featured ? "text-white/85 dark:text-ink-130" : "text-ink-605 dark:text-ink-130"}`}>
             <Check
-              className={`mt-[3px] h-4 w-4 shrink-0 ${featured ? "text-white/70" : "text-[#87909D] dark:text-[#9BAABD]"}`}
+              className={`mt-[3px] h-4 w-4 shrink-0 ${featured ? "text-white/70" : "text-ink-425 dark:text-ink-325"}`}
               strokeWidth={2.5}
             />
             <span>{feature}</span>
@@ -150,7 +150,7 @@ const Plans: React.FC = () => {
         : { label: t("upgrade"), onClick: () => void redirectToProCheckout(billingInterval) };
 
   return (
-    <div className="min-h-screen bg-[#F3F7FC] text-[#101723] dark:bg-[#141D2B] dark:text-[#D7DFE5]">
+    <div className="min-h-screen bg-ink-30 text-ink-900 dark:bg-ink-875 dark:text-ink-130">
       <Helmet>
         <title>{`${t("title")} | Askio`}</title>
         <meta name="description" content="Compare Askio plans and choose the right setup for your chatbots." />
@@ -159,8 +159,8 @@ const Plans: React.FC = () => {
       <div className="mx-auto w-full max-w-[1060px] px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
         <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <h1 className="font-serif text-h2 tracking-tight sm:text-h1">{t("title")}</h1>
-            <p className="mt-1 max-w-2xl text-body-sm text-[#566273] dark:text-[#9BAABD]">{t("subtitle")}</p>
+            <h1 className="font-display text-h2 tracking-tight sm:text-h1">{t("title")}</h1>
+            <p className="mt-1 max-w-2xl text-body-sm text-fg-muted">{t("subtitle")}</p>
           </div>
           <div className="shrink-0">
             <BillingToggle
@@ -217,7 +217,7 @@ const Plans: React.FC = () => {
           <div className="mt-8 text-center">
             <Link
               to="/"
-              className={`inline-flex items-center rounded text-body-sm font-medium text-[#566273] hover:text-[#101723] dark:text-[#9BAABD] dark:hover:text-[#D7DFE5] ${focusRing}`}
+              className={`inline-flex items-center rounded text-body-sm font-medium text-ink-605 hover:text-ink-900 dark:text-ink-325 dark:hover:text-ink-130 ${focusRing}`}
             >
               {t("backHome")}
             </Link>

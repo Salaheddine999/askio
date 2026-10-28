@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { RotateCcw } from "lucide-react";
+import { RotateCcw } from "../icons";
 import Chatbot from "../Chatbot";
 import { focusRing } from "../../pages/dashboard/ui";
 import { ChatbotConfig } from "./types";
@@ -14,7 +14,7 @@ const CORNER: Record<ChatbotConfig["position"], string> = {
 };
 
 const Line: React.FC<{ w: string; className?: string }> = ({ w, className = "" }) => (
-  <span className={`block h-2 rounded-full bg-[#E7EDF6] dark:bg-[#223042] ${className}`} style={{ width: w }} />
+  <span className={`block h-2 rounded-full bg-ink-70 dark:bg-ink-810 ${className}`} style={{ width: w }} />
 );
 
 /**
@@ -38,36 +38,36 @@ const PreviewFrame: React.FC<{ config: ChatbotConfig }> = ({ config }) => {
     <div>
       <div className="mb-3 flex items-center justify-between gap-3">
         <div className="min-w-0">
-          <h2 className="text-body font-semibold text-[#101723] dark:text-[#E7EDF6]">{t("preview")}</h2>
-          <p className="text-caption text-[#647184] dark:text-[#87909D]">{t("previewDesc")}</p>
+          <h2 className="text-body font-semibold text-ink-900 dark:text-ink-70">{t("preview")}</h2>
+          <p className="text-caption text-fg-subtle">{t("previewDesc")}</p>
         </div>
         <button
           type="button"
           onClick={replay}
           title={t("startOver")}
-          className={`inline-flex h-8 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg px-2.5 text-caption font-medium text-[#566273] transition-colors hover:bg-[#E7EDF6] hover:text-[#101723] dark:text-[#9BAABD] dark:hover:bg-[#273444] dark:hover:text-[#D7DFE5] ${focusRing}`}
+          className={`inline-flex h-8 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg px-2.5 text-caption font-medium text-ink-605 transition-colors hover:bg-ink-70 hover:text-ink-900 dark:text-ink-325 dark:hover:bg-ink-790 dark:hover:text-ink-130 ${focusRing}`}
         >
           <RotateCcw size={13} />
           {t("restart")}
         </button>
       </div>
 
-      <div className="overflow-hidden rounded-xl border border-[#D8DFE9] bg-[#F9FCFF] shadow-[0_1px_2px_rgba(16,23,35,0.04)] dark:border-[#2B3646] dark:bg-[#1A2533]">
-        <div className="flex items-center gap-3 border-b border-[#E7EDF6] px-3 py-2.5 dark:border-[#2B3646]">
+      <div className="overflow-hidden rounded-xl border border-ink-120 bg-ink-25 shadow-[0_1px_2px_rgba(16,23,35,0.04)] dark:border-ink-780 dark:bg-ink-850">
+        <div className="flex items-center gap-3 border-b border-ink-70 px-3 py-2.5 dark:border-ink-780">
           <span className="flex gap-1.5" aria-hidden>
-            <span className="h-2.5 w-2.5 rounded-full bg-[#D8DFE9] dark:bg-[#39485B]" />
-            <span className="h-2.5 w-2.5 rounded-full bg-[#D8DFE9] dark:bg-[#39485B]" />
-            <span className="h-2.5 w-2.5 rounded-full bg-[#D8DFE9] dark:bg-[#39485B]" />
+            <span className="h-2.5 w-2.5 rounded-full bg-ink-120 dark:bg-ink-710" />
+            <span className="h-2.5 w-2.5 rounded-full bg-ink-120 dark:bg-ink-710" />
+            <span className="h-2.5 w-2.5 rounded-full bg-ink-120 dark:bg-ink-710" />
           </span>
-          <span className="flex-1 truncate rounded-md bg-[#F3F7FC] px-2.5 py-1 text-center text-[11px] text-[#87909D] dark:bg-[#141D2B]">
+          <span className="flex-1 truncate rounded-md bg-ink-30 px-2.5 py-1 text-center text-caption text-ink-425 dark:bg-ink-875">
             yourwebsite.com
           </span>
         </div>
 
-        <div className="relative h-[572px] overflow-hidden bg-[#F3F7FC] dark:bg-[#141D2B]" style={{ transform: "translateZ(0)" }}>
+        <div className="relative h-[572px] overflow-hidden bg-ink-30 dark:bg-ink-875" style={{ transform: "translateZ(0)" }}>
           <div aria-hidden className="space-y-6 p-6">
             <div className="flex items-center justify-between">
-              <span className="h-3 w-16 rounded-full bg-[#D8DFE9] dark:bg-[#2B3646]" />
+              <span className="h-3 w-16 rounded-full bg-ink-120 dark:bg-ink-780" />
               <span className="flex gap-3">
                 <Line w="28px" />
                 <Line w="28px" />
@@ -82,7 +82,7 @@ const PreviewFrame: React.FC<{ config: ChatbotConfig }> = ({ config }) => {
             </div>
             <div className="grid grid-cols-3 gap-3 pt-2">
               {[0, 1, 2].map((i) => (
-                <span key={i} className="block h-20 rounded-lg bg-[#E7EDF6] dark:bg-[#1A2533]" />
+                <span key={i} className="block h-20 rounded-lg bg-ink-70 dark:bg-ink-850" />
               ))}
             </div>
             <div className="space-y-2">

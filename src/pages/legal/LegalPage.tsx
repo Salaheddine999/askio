@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
-import { AlertTriangle, ArrowLeft } from "lucide-react";
+import { AlertTriangle, ArrowLeft } from "../../components/icons";
 import { COMPANY, hasPlaceholders, isPlaceholder } from "./company";
 
 /** A company detail; unfilled placeholders are highlighted so they're easy to spot. */
@@ -30,24 +30,24 @@ export const ContactEmail: React.FC = () =>
   isPlaceholder(COMPANY.contactEmail) ? (
     <Detail field="contactEmail" />
   ) : (
-    <a href={`mailto:${COMPANY.contactEmail}`} className="font-medium text-[#101723] underline underline-offset-2 dark:text-[#E7EDF6]">
+    <a href={`mailto:${COMPANY.contactEmail}`} className="font-medium text-ink-900 underline underline-offset-2 dark:text-ink-70">
       {COMPANY.contactEmail}
     </a>
   );
 
 export const Section: React.FC<{ id: string; title: string; children: React.ReactNode }> = ({ id, title, children }) => (
   <section id={id} className="scroll-mt-24">
-    <h2 className="mb-3 font-serif text-[22px] leading-tight text-[#101723] dark:text-[#E7EDF6]">{title}</h2>
+    <h2 className="mb-3 font-display text-[22px] leading-tight text-ink-900 dark:text-ink-70">{title}</h2>
     <div className="space-y-3">{children}</div>
   </section>
 );
 
 export const List: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <ul className="list-disc space-y-2 pl-5 marker:text-[#9BAABD]">{children}</ul>
+  <ul className="list-disc space-y-2 pl-5 marker:text-ink-325">{children}</ul>
 );
 
 export const Term: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <strong className="font-semibold text-[#101723] dark:text-[#E7EDF6]">{children}</strong>
+  <strong className="font-semibold text-ink-900 dark:text-ink-70">{children}</strong>
 );
 
 interface LegalPageProps {
@@ -60,7 +60,7 @@ interface LegalPageProps {
 
 export default function LegalPage({ title, description, intro, sections, children }: LegalPageProps) {
   return (
-    <div className="min-h-screen bg-[#F3F7FC] px-4 py-12 sm:py-16 dark:bg-[#141D2B]">
+    <div className="min-h-screen bg-ink-30 px-4 py-12 sm:py-16 dark:bg-ink-875">
       <Helmet>
         <title>{title} | Askio</title>
         <meta name="description" content={description} />
@@ -69,7 +69,7 @@ export default function LegalPage({ title, description, intro, sections, childre
       <div className="mx-auto max-w-3xl">
         <Link
           to="/"
-          className="inline-flex items-center gap-1.5 text-sm font-medium text-[#566273] hover:text-[#101723] dark:text-[#9BAABD] dark:hover:text-[#E7EDF6]"
+          className="inline-flex items-center gap-1.5 text-sm font-medium text-ink-605 hover:text-ink-900 dark:text-ink-325 dark:hover:text-ink-70"
         >
           <ArrowLeft size={15} />
           Back to Askio
@@ -88,24 +88,24 @@ export default function LegalPage({ title, description, intro, sections, childre
           </div>
         ) : null}
 
-        <h1 className="mt-8 font-serif text-[clamp(2rem,5vw,2.75rem)] leading-tight text-[#101723] dark:text-[#E7EDF6]">
+        <h1 className="mt-8 font-display text-[clamp(2rem,5vw,2.75rem)] leading-tight text-ink-900 dark:text-ink-70">
           {title}
         </h1>
-        <p className="mt-2 text-sm text-[#647184] dark:text-[#9BAABD]">
+        <p className="mt-2 text-sm text-ink-545 dark:text-ink-325">
           Effective <Detail field="effectiveDate" />
         </p>
 
-        <div className="mt-6 space-y-3 text-[15px] leading-7 text-[#566273] dark:text-[#B9C4D2]">{intro}</div>
+        <div className="mt-6 space-y-3 text-[15px] leading-7 text-ink-605 dark:text-ink-225">{intro}</div>
 
         <nav
           aria-label="On this page"
-          className="mt-8 rounded-xl border border-[#D8DFE9] bg-[#F9FCFF] p-5 dark:border-[#2B3646] dark:bg-[#1A2533]"
+          className="mt-8 rounded-xl border border-ink-120 bg-ink-25 p-5 dark:border-ink-780 dark:bg-ink-850"
         >
-          <p className="mb-3 text-xs font-medium uppercase tracking-[0.08em] text-[#87909D]">On this page</p>
+          <p className="mb-3 text-xs font-medium text-ink-425">On this page</p>
           <ol className="grid gap-x-8 gap-y-1.5 text-sm sm:grid-cols-2">
             {sections.map((s) => (
               <li key={s.id}>
-                <a href={`#${s.id}`} className="text-[#566273] hover:text-[#101723] dark:text-[#9BAABD] dark:hover:text-[#E7EDF6]">
+                <a href={`#${s.id}`} className="text-ink-605 hover:text-ink-900 dark:text-ink-325 dark:hover:text-ink-70">
                   {s.title}
                 </a>
               </li>
@@ -113,7 +113,7 @@ export default function LegalPage({ title, description, intro, sections, childre
           </ol>
         </nav>
 
-        <div className="mt-10 space-y-10 text-[15px] leading-7 text-[#566273] dark:text-[#B9C4D2]">{children}</div>
+        <div className="mt-10 space-y-10 text-[15px] leading-7 text-ink-605 dark:text-ink-225">{children}</div>
       </div>
     </div>
   );

@@ -16,7 +16,7 @@ import {
   LoaderCircle,
   ShoppingBag,
   Unplug,
-} from "lucide-react";
+} from "../components/icons";
 import { FaWordpress, FaShopify } from "react-icons/fa";
 import { SiWix } from "react-icons/si";
 import { Link } from "react-router-dom";
@@ -92,8 +92,8 @@ const PLATFORMS: {
     labelKey: "anyWebsite",
     tagline: "htmlTagline",
     effort: "htmlEffort",
-    icon: <Globe size={20} className="text-[#566273]" />,
-    logo: <Globe size={26} className="text-[#566273]" />,
+    icon: <Globe size={20} className="text-ink-605" />,
+    logo: <Globe size={26} className="text-ink-605" />,
   },
 ];
 
@@ -293,7 +293,7 @@ export default function Integrations({ testMode = false }: IntegrationsProps) {
   if (loading) return <IntegrationsSkeleton />;
 
   return (
-    <div className="min-h-screen bg-[#F3F7FC] font-sans text-[#101723] dark:bg-[#141D2B]">
+    <div className="min-h-screen bg-ink-30 font-sans text-ink-900 dark:bg-ink-875">
       <Helmet>
         <title>{t("metaTitle")}</title>
       </Helmet>
@@ -301,10 +301,10 @@ export default function Integrations({ testMode = false }: IntegrationsProps) {
       <div className="w-full space-y-6 px-4 py-6 sm:px-6 sm:py-8 lg:px-8 xl:px-10">
         <header className="flex flex-wrap items-end justify-between gap-4">
           <div className="min-w-0">
-            <h1 className="font-serif text-h2 tracking-tight text-[#101723] sm:text-h1 dark:text-[#D7DFE5]">
+            <h1 className="font-display text-h2 tracking-tight text-ink-900 sm:text-h1 dark:text-ink-130">
               {t("title")}
             </h1>
-            <p className="mt-1 text-body-sm text-[#566273] dark:text-[#9BAABD]">
+            <p className="mt-1 text-body-sm text-fg-muted">
               {t("subtitle")}
             </p>
           </div>
@@ -315,7 +315,7 @@ export default function Integrations({ testMode = false }: IntegrationsProps) {
         </header>
 
         {chatbots.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-[#C9D3E0] bg-[#F9FCFF]/60 dark:border-[#39485B] dark:bg-[#1A2533]/40">
+          <div className="rounded-2xl border border-dashed border-ink-165 bg-ink-25/60 dark:border-ink-710 dark:bg-ink-850/40">
             <EmptyState
               icon={Bot}
               title={t("noChatbotsTitle")}
@@ -331,11 +331,11 @@ export default function Integrations({ testMode = false }: IntegrationsProps) {
                 <StepLabel n={1}>{t("stepChatbot")}</StepLabel>
                 <ChatbotPicker chatbots={chatbots} value={selectedChatbot} onChange={setSelectedChatbot} />
               </div>
-              <div className="hidden h-12 w-px bg-[#E7EDF6] lg:block dark:bg-[#2B3646]" />
+              <div className="hidden h-12 w-px bg-ink-70 lg:block dark:bg-ink-780" />
               <div className="min-w-0 flex-1">
-                <p className="mb-2 text-caption font-medium text-[#566273] dark:text-[#9BAABD]">{t("chatbotId")}</p>
+                <p className="mb-2 text-caption font-medium text-fg-muted">{t("chatbotId")}</p>
                 <div className="flex items-center gap-2">
-                  <code className="min-w-0 flex-1 truncate rounded-lg border border-[#E7EDF6] bg-[#F3F7FC] px-3 py-2 font-mono text-[13px] text-[#101723] select-all dark:border-[#2B3646] dark:bg-[#141D2B] dark:text-[#D7DFE5]">
+                  <code className="min-w-0 flex-1 truncate rounded-lg border border-ink-70 bg-ink-30 px-3 py-2 font-mono text-[13px] text-ink-900 select-all dark:border-ink-780 dark:bg-ink-875 dark:text-ink-130">
                     {selectedChatbot}
                   </code>
                   <button onClick={() => copyToClipboard(selectedChatbot, "id")} className={secondaryButton}>
@@ -343,7 +343,7 @@ export default function Integrations({ testMode = false }: IntegrationsProps) {
                     <span className="hidden sm:inline">{copiedId ? t("copied") : t("copy")}</span>
                   </button>
                 </div>
-                <p className="mt-1.5 text-caption text-[#647184] dark:text-[#87909D]">
+                <p className="mt-1.5 text-caption text-fg-subtle">
                   {t("chatbotIdHint")}
                 </p>
               </div>
@@ -364,27 +364,27 @@ export default function Integrations({ testMode = false }: IntegrationsProps) {
                       onClick={() => setActivePlatform(p.key)}
                       className={`relative flex items-center gap-3 rounded-xl border p-3 text-left transition-colors sm:p-4 ${focusRing} ${
                         active
-                          ? "border-[#101723] bg-[#F9FCFF] shadow-[0_0_0_1px_#101723] dark:border-[#D7DFE5] dark:bg-[#1A2533] dark:shadow-[0_0_0_1px_#D7DFE5]"
-                          : "border-[#D8DFE9] bg-[#F9FCFF] hover:border-[#B8C3D1] dark:border-[#2B3646] dark:bg-[#1A2533] dark:hover:border-[#39485B]"
+                          ? "border-ink-900 bg-ink-25 shadow-[0_0_0_1px_#101723] dark:border-ink-130 dark:bg-ink-850 dark:shadow-[0_0_0_1px_#D7DFE5]"
+                          : "border-ink-120 bg-ink-25 hover:border-ink-230 dark:border-ink-780 dark:bg-ink-850 dark:hover:border-ink-710"
                       }`}
                     >
-                      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-[#E7EDF6] bg-white dark:border-[#2B3646] dark:bg-[#F3F7FC]">
+                      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-ink-70 bg-white dark:border-ink-780 dark:bg-ink-30">
                         {p.icon}
                       </span>
                       <span className="min-w-0">
-                        <span className="block truncate text-body-sm font-semibold text-[#101723] dark:text-[#F3F7FC]">
+                        <span className="block truncate text-body-sm font-semibold text-ink-900 dark:text-ink-30">
                           {platformLabel(p)}
                         </span>
-                        <span className="hidden truncate text-caption text-[#647184] sm:block dark:text-[#87909D]">{t(p.tagline)}</span>
+                        <span className="hidden truncate text-caption text-ink-545 sm:block dark:text-ink-425">{t(p.tagline)}</span>
                       </span>
                       {connected > 0 && (
-                        <span className="absolute right-2 top-2 inline-flex items-center gap-1 rounded-full bg-emerald-50 px-1.5 py-0.5 text-[10px] font-medium text-emerald-700 ring-1 ring-inset ring-emerald-600/20 dark:bg-emerald-900/25 dark:text-emerald-400">
+                        <span className="absolute right-2 top-2 inline-flex items-center gap-1 rounded-full bg-emerald-50 px-1.5 py-0.5 text-caption font-medium text-emerald-700 ring-1 ring-inset ring-emerald-600/20 dark:bg-emerald-900/25 dark:text-emerald-400">
                           <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
                           {connected}
                         </span>
                       )}
                       {active && (
-                        <span className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-[#101723] text-white dark:bg-[#D7DFE5] dark:text-[#141D2B]">
+                        <span className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-ink-900 text-white dark:bg-ink-130 dark:text-ink-875">
                           <Check size={12} strokeWidth={3} />
                         </span>
                       )}
@@ -396,15 +396,15 @@ export default function Integrations({ testMode = false }: IntegrationsProps) {
 
             {/* Instructions */}
             <section className={`${surface} overflow-hidden`}>
-              <div className="flex flex-wrap items-center gap-4 border-b border-[#E7EDF6] px-5 py-4 sm:px-6 dark:border-[#2B3646]">
-                <span className="flex h-12 w-12 items-center justify-center rounded-xl border border-[#E7EDF6] bg-white dark:border-[#2B3646] dark:bg-[#F3F7FC]">
+              <div className="flex flex-wrap items-center gap-4 border-b border-ink-70 px-5 py-4 sm:px-6 dark:border-ink-780">
+                <span className="flex h-12 w-12 items-center justify-center rounded-xl border border-ink-70 bg-white dark:border-ink-780 dark:bg-ink-30">
                   {platform.logo}
                 </span>
                 <div className="min-w-0 flex-1">
-                  <h2 className="font-serif text-h3 text-[#101723] dark:text-[#D7DFE5]">
+                  <h2 className="font-display text-h3 text-fg">
                     {platform.label ? t("installOn", { platform: platform.label }) : t("installOnAnyWebsite")}
                   </h2>
-                  <p className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-body-sm text-[#566273] dark:text-[#9BAABD]">
+                  <p className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-body-sm text-fg-muted">
                     <span className="inline-flex items-center gap-1.5">
                       <Clock size={13} />
                       {t(platform.effort)}
@@ -435,10 +435,10 @@ export default function Integrations({ testMode = false }: IntegrationsProps) {
                         {downloading ? <LoaderCircle size={16} className="animate-spin" /> : <Download size={16} />}
                         {downloading ? t("preparing") : t("downloadFile", { file: "askio-chatbot.zip" })}
                       </button>
-                      <div className="mt-5 border-t border-[#E7EDF6] pt-4 dark:border-[#2B3646]">
-                        <p className="text-caption font-medium text-[#566273] dark:text-[#9BAABD]">{t("neededInStep3")}</p>
+                      <div className="mt-5 border-t border-ink-70 pt-4 dark:border-ink-780">
+                        <p className="text-caption font-medium text-fg-muted">{t("neededInStep3")}</p>
                         <div className="mt-2 flex items-center gap-2">
-                          <code className="min-w-0 flex-1 truncate rounded-lg bg-[#101723] px-3 py-2 font-mono text-[13px] text-[#D7DFE5]">
+                          <code className="min-w-0 flex-1 truncate rounded-lg bg-ink-900 px-3 py-2 font-mono text-[13px] text-ink-130">
                             {selectedChatbot}
                           </code>
                           <button onClick={() => copyToClipboard(selectedChatbot, "id")} className={secondaryButton} aria-label={t("copyChatbotId")}>
@@ -469,7 +469,7 @@ export default function Integrations({ testMode = false }: IntegrationsProps) {
                             {t("storeUrl")}
                           </label>
                           <div className="relative flex-1">
-                            <ShoppingBag size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#87909D]" />
+                            <ShoppingBag size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ink-425" />
                             <input
                               id="shop-url"
                               type="text"
@@ -478,7 +478,7 @@ export default function Integrations({ testMode = false }: IntegrationsProps) {
                               value={shopUrl}
                               onChange={(e) => setShopUrl(e.target.value)}
                               placeholder="yourstore.myshopify.com"
-                              className="h-9 w-full rounded-lg border border-[#D8DFE9] bg-[#F9FCFF] pl-9 pr-3 text-body-sm text-[#101723] placeholder:text-[#87909D] focus:border-[#101723] focus:outline-none focus:ring-2 focus:ring-[#101723]/10 dark:border-[#2B3646] dark:bg-[#1A2533] dark:text-[#D7DFE5] dark:focus:border-[#9BAABD]"
+                              className="h-9 w-full rounded-lg border border-ink-120 bg-ink-25 pl-9 pr-3 text-body-sm text-ink-900 placeholder:text-ink-425 focus:border-ink-900 focus:outline-none focus:ring-2 focus:ring-ink-900/10 dark:border-ink-780 dark:bg-ink-850 dark:text-ink-130 dark:focus:border-ink-325"
                             />
                           </div>
                           <button type="submit" className={primaryButton}>
@@ -499,25 +499,25 @@ export default function Integrations({ testMode = false }: IntegrationsProps) {
                       </ActionPanel>
 
                       {shopifyConnections.length > 0 && (
-                        <div className="rounded-xl border border-[#E7EDF6] dark:border-[#2B3646]">
-                          <p className="border-b border-[#E7EDF6] px-4 py-2.5 text-[11px] font-medium uppercase tracking-wider text-[#647184] dark:border-[#2B3646] dark:text-[#87909D]">
+                        <div className="rounded-xl border border-ink-70 dark:border-ink-780">
+                          <p className="border-b border-ink-70 px-4 py-2.5 text-caption font-medium text-ink-545 dark:border-ink-780 dark:text-ink-425">
                             {t("connectedStores")}
                           </p>
-                          <ul className="divide-y divide-[#E7EDF6] dark:divide-[#2B3646]">
+                          <ul className="divide-y divide-ink-70 dark:divide-ink-780">
                             {shopifyConnections.map((conn) => (
                               <li key={conn.id} className="flex items-center gap-3 px-4 py-3">
                                 <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600 dark:bg-emerald-900/25 dark:text-emerald-400">
                                   <ShoppingBag size={15} />
                                 </span>
                                 <div className="min-w-0 flex-1">
-                                  <p className="truncate text-body-sm font-medium text-[#101723] dark:text-[#D7DFE5]">{conn.shop}</p>
-                                  <p className="truncate text-caption text-[#647184] dark:text-[#87909D]">
+                                  <p className="truncate text-body-sm font-medium text-fg">{conn.shop}</p>
+                                  <p className="truncate text-caption text-fg-subtle">
                                     {conn.chatbotTitle || chatbots.find((b) => b.id === conn.chatbotId)?.title || conn.chatbotId}
                                   </p>
                                 </div>
                                 <button
                                   onClick={() => setConnectionToRemove(conn)}
-                                  className={`inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-caption font-medium text-[#566273] hover:bg-red-50 hover:text-red-600 dark:text-[#9BAABD] dark:hover:bg-red-950/30 dark:hover:text-red-400 ${focusRing}`}
+                                  className={`inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-caption font-medium text-ink-605 hover:bg-red-50 hover:text-red-600 dark:text-ink-325 dark:hover:bg-red-950/30 dark:hover:text-red-400 ${focusRing}`}
                                 >
                                   <Unplug size={13} />
                                   {t("disconnect")}
@@ -573,9 +573,9 @@ export default function Integrations({ testMode = false }: IntegrationsProps) {
         cancelText={t("cancel")}
         confirmButtonClass="bg-red-600 text-white hover:bg-red-700 shadow-md dark:bg-red-500 dark:hover:bg-red-600 focus:ring-red-500"
       >
-        <p className="text-body-sm text-[#566273] dark:text-[#D7DFE5]">
+        <p className="text-body-sm text-ink-605 dark:text-ink-130">
           {t("disconnectBefore")}
-          <span className="font-medium text-[#101723] dark:text-white">{connectionToRemove?.shop}</span>
+          <span className="font-medium text-ink-900 dark:text-white">{connectionToRemove?.shop}</span>
           {t("disconnectAfter")}
         </p>
       </ConfirmationModal>
@@ -587,8 +587,8 @@ export default function Integrations({ testMode = false }: IntegrationsProps) {
 
 function StepLabel({ n, children }: { n: number; children: React.ReactNode }) {
   return (
-    <p className="mb-2 flex items-center gap-2 text-caption font-medium text-[#566273] dark:text-[#9BAABD]">
-      <span className="flex h-4 w-4 items-center justify-center rounded-full bg-[#101723] text-[10px] font-semibold text-white dark:bg-[#D7DFE5] dark:text-[#141D2B]">
+    <p className="mb-2 flex items-center gap-2 text-caption font-medium text-fg-muted">
+      <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-ink-900 text-caption font-semibold leading-none tabular-nums text-white dark:bg-ink-130 dark:text-ink-875">
         {n}
       </span>
       {children}
@@ -610,33 +610,33 @@ function ChatbotPicker({
   return (
     <Listbox value={value} onChange={onChange}>
       <ListboxButton
-        className={`flex h-11 w-full items-center gap-2.5 rounded-lg border border-[#D8DFE9] bg-[#F9FCFF] px-2.5 text-left transition-colors hover:border-[#B8C3D1] data-[open]:border-[#101723] dark:border-[#2B3646] dark:bg-[#141D2B] dark:hover:border-[#39485B] dark:data-[open]:border-[#9BAABD] ${focusRing}`}
+        className={`flex h-11 w-full items-center gap-2.5 rounded-lg border border-ink-120 bg-ink-25 px-2.5 text-left transition-colors hover:border-ink-230 data-[open]:border-ink-900 dark:border-ink-780 dark:bg-ink-875 dark:hover:border-ink-710 dark:data-[open]:border-ink-325 ${focusRing}`}
       >
         <BotAvatar color={selected?.primaryColor} launcherStyle={selected?.launcherStyle} size={26} muted={selected?.isActive === false} />
-        <span className="min-w-0 flex-1 truncate text-body-sm font-medium text-[#101723] dark:text-[#D7DFE5]">
+        <span className="min-w-0 flex-1 truncate text-body-sm font-medium text-fg">
           {selected?.title || t("selectChatbot")}
         </span>
-        <ChevronsUpDown size={15} className="shrink-0 text-[#87909D]" />
+        <ChevronsUpDown size={15} className="shrink-0 text-ink-425" />
       </ListboxButton>
       {/* Anchored (portalled) and non-modal: the page keeps scrolling and doesn't shift while it's open. */}
       <ListboxOptions
         anchor="bottom start"
         modal={false}
         transition
-        className="z-50 max-h-72 w-[var(--button-width)] min-w-56 overflow-auto rounded-xl border border-[#D8DFE9] bg-[#F9FCFF] p-1.5 shadow-xl transition duration-100 ease-out [--anchor-gap:6px] focus:outline-none data-[closed]:-translate-y-1 data-[closed]:opacity-0 dark:border-[#2B3646] dark:bg-[#1A2533]"
+        className="z-50 max-h-72 w-[var(--button-width)] min-w-56 overflow-auto rounded-xl border border-ink-120 bg-ink-25 p-1.5 shadow-lg transition duration-100 ease-out [--anchor-gap:6px] focus:outline-none data-[closed]:-translate-y-1 data-[closed]:opacity-0 dark:border-ink-780 dark:bg-ink-850"
       >
         {chatbots.map((bot) => (
           <ListboxOption
             key={bot.id}
             value={bot.id}
-            className="group flex cursor-pointer items-center gap-2.5 rounded-lg px-2 py-2 text-body-sm data-[focus]:bg-[#F3F7FC] dark:data-[focus]:bg-[#273444]"
+            className="group flex cursor-pointer items-center gap-2.5 rounded-lg px-2 py-2 text-body-sm data-[focus]:bg-ink-30 dark:data-[focus]:bg-ink-790"
           >
             <BotAvatar color={bot.primaryColor} launcherStyle={bot.launcherStyle} size={22} muted={bot.isActive === false} />
-            <span className="min-w-0 flex-1 truncate text-[#101723] group-data-[selected]:font-medium dark:text-[#D7DFE5]">
+            <span className="min-w-0 flex-1 truncate text-ink-900 group-data-[selected]:font-medium dark:text-ink-130">
               {bot.title}
             </span>
-            {bot.isActive === false && <span className="text-caption text-[#87909D]">{t("paused")}</span>}
-            <Check size={15} className="invisible text-[#101723] group-data-[selected]:visible dark:text-[#D7DFE5]" />
+            {bot.isActive === false && <span className="text-caption text-ink-425">{t("paused")}</span>}
+            <Check size={15} className="invisible text-ink-900 group-data-[selected]:visible dark:text-ink-130" />
           </ListboxOption>
         ))}
       </ListboxOptions>
@@ -651,20 +651,20 @@ function Steps({ steps, footer }: { steps: { title: string; body: string }[]; fo
         {steps.map((step, i) => (
           <li key={step.title} className="relative flex gap-4 pb-6 last:pb-0">
             {i < steps.length - 1 && (
-              <span aria-hidden className="absolute left-[13px] top-8 bottom-1 w-px bg-[#D8DFE9] dark:bg-[#2B3646]" />
+              <span aria-hidden className="absolute left-[13px] top-8 bottom-1 w-px bg-ink-120 dark:bg-ink-780" />
             )}
-            <span className="relative flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-[#D8DFE9] bg-[#F3F7FC] text-caption font-semibold text-[#101723] dark:border-[#39485B] dark:bg-[#141D2B] dark:text-[#D7DFE5]">
+            <span className="relative flex size-7 shrink-0 items-center justify-center rounded-full border border-ink-120 bg-ink-30 text-caption font-semibold leading-none tabular-nums text-ink-900 dark:border-ink-710 dark:bg-ink-875 dark:text-ink-130">
               {i + 1}
             </span>
             <div className="min-w-0 pt-0.5">
-              <h3 className="text-body-sm font-semibold text-[#101723] dark:text-[#D7DFE5]">{step.title}</h3>
-              <p className="mt-1 text-body-sm leading-relaxed text-[#566273] dark:text-[#9BAABD]">{step.body}</p>
+              <h3 className="text-body-sm font-semibold text-fg">{step.title}</h3>
+              <p className="mt-1 text-body-sm leading-relaxed text-fg-muted">{step.body}</p>
             </div>
           </li>
         ))}
       </ol>
       {footer && (
-        <p className="mt-6 rounded-lg bg-[#F3F7FC] px-3 py-2.5 text-caption text-[#566273] dark:bg-[#141D2B] dark:text-[#9BAABD]">
+        <p className="mt-6 rounded-lg bg-ink-30 px-3 py-2.5 text-caption text-ink-605 dark:bg-ink-875 dark:text-ink-325">
           {footer}
         </p>
       )}
@@ -682,9 +682,9 @@ function ActionPanel({
   children: React.ReactNode;
 }) {
   return (
-    <div className="rounded-xl border border-[#E7EDF6] bg-[#F3F7FC]/60 p-4 sm:p-5 dark:border-[#2B3646] dark:bg-[#141D2B]/60">
-      <h3 className="text-body font-semibold text-[#101723] dark:text-[#D7DFE5]">{title}</h3>
-      <p className="mb-4 mt-0.5 text-body-sm text-[#566273] dark:text-[#9BAABD]">{description}</p>
+    <div className="rounded-xl border border-ink-70 bg-ink-30/60 p-4 sm:p-5 dark:border-ink-780 dark:bg-ink-875/60">
+      <h3 className="text-body font-semibold text-fg">{title}</h3>
+      <p className="mb-4 mt-0.5 text-body-sm text-fg-muted">{description}</p>
       {children}
     </div>
   );
@@ -701,9 +701,9 @@ function EmbedCodeBlock({
 }) {
   const t = useT(integrationsMessages);
   return (
-    <div className="self-start overflow-hidden rounded-xl border border-[#243040] bg-[#101723] shadow-sm">
+    <div className="self-start overflow-hidden rounded-xl border border-ink-805 bg-ink-900 shadow-sm">
       <div className="flex items-center justify-between border-b border-white/10 px-4 py-2.5">
-        <span className="flex items-center gap-2 text-caption font-medium text-[#9BAABD]">
+        <span className="flex items-center gap-2 text-caption font-medium text-ink-325">
           <span className="flex gap-1">
             <span className="h-2 w-2 rounded-full bg-white/15" />
             <span className="h-2 w-2 rounded-full bg-white/15" />
@@ -714,14 +714,14 @@ function EmbedCodeBlock({
         <button
           onClick={onCopy}
           className={`inline-flex h-7 items-center gap-1.5 rounded-md px-2.5 text-caption font-medium transition-colors ${focusRing} ${
-            copied ? "bg-emerald-500/15 text-emerald-300" : "bg-white/10 text-[#E7EDF6] hover:bg-white/15"
+            copied ? "bg-emerald-500/15 text-emerald-300" : "bg-white/10 text-ink-70 hover:bg-white/15"
           }`}
         >
           {copied ? <Check size={13} /> : <Copy size={13} />}
           {copied ? t("copied") : t("copyCode")}
         </button>
       </div>
-      <pre className="overflow-x-auto p-4 font-mono text-[12.5px] leading-relaxed text-[#D7DFE5]">
+      <pre className="overflow-x-auto p-4 font-mono text-[12.5px] leading-relaxed text-ink-130">
         <code>{code}</code>
       </pre>
     </div>
@@ -731,7 +731,7 @@ function EmbedCodeBlock({
 function IntegrationsSkeleton() {
   const t = useT(integrationsMessages);
   return (
-    <div className="min-h-screen bg-[#F3F7FC] dark:bg-[#141D2B]" aria-busy="true" aria-label={t("loading")}>
+    <div className="min-h-screen bg-ink-30 dark:bg-ink-875" aria-busy="true" aria-label={t("loading")}>
       <div className="w-full space-y-6 px-4 py-6 sm:px-6 sm:py-8 lg:px-8 xl:px-10">
         <div className="space-y-3">
           <Skeleton className="h-9 w-48" />
@@ -753,7 +753,7 @@ function IntegrationsSkeleton() {
           ))}
         </div>
         <SkeletonCard>
-          <div className="flex items-center gap-4 border-b border-[#E7EDF6] px-6 py-4 dark:border-[#2B3646]">
+          <div className="flex items-center gap-4 border-b border-ink-70 px-6 py-4 dark:border-ink-780">
             <Skeleton className="h-12 w-12 rounded-xl" />
             <div className="space-y-2">
               <Skeleton className="h-5 w-48" />

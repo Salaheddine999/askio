@@ -21,7 +21,7 @@ const Tabs: React.FC<TabsProps> = ({ tabs, activeTab, onChange, className = "" }
   return (
     <div
       ref={scroller}
-      className={`-mx-4 scrollbar-hide overflow-x-auto border-b border-[#D8DFE9] px-4 sm:mx-0 sm:px-0 dark:border-[#2B3646] ${className}`}
+      className={`-mx-4 scrollbar-hide overflow-x-auto border-b border-ink-120 px-4 sm:mx-0 sm:px-0 dark:border-ink-780 ${className}`}
     >
       <div role="tablist" className="flex min-w-max items-center gap-1">
         {tabs.map((tab) => {
@@ -34,19 +34,19 @@ const Tabs: React.FC<TabsProps> = ({ tabs, activeTab, onChange, className = "" }
               onClick={() => onChange(tab.id)}
               className={`group relative -mb-px flex h-11 items-center gap-2 px-3 text-body-sm font-medium transition-colors focus-visible:outline-none ${
                 isActive
-                  ? "text-[#101723] dark:text-[#F3F7FC]"
-                  : "text-[#647184] hover:text-[#101723] dark:text-[#87909D] dark:hover:text-[#D7DFE5]"
+                  ? "text-ink-900 dark:text-ink-30"
+                  : "text-ink-545 hover:text-ink-900 dark:text-ink-425 dark:hover:text-ink-130"
               }`}
             >
-              <span className="rounded-md px-1 py-0.5 group-focus-visible:ring-2 group-focus-visible:ring-[#101723]/25 dark:group-focus-visible:ring-[#D7DFE5]/40">
+              <span className="rounded-md px-1 py-0.5 group-focus-visible:ring-2 group-focus-visible:ring-ink-900/25 dark:group-focus-visible:ring-ink-130/40">
                 {tab.label}
               </span>
               {typeof tab.count === "number" && (
                 <span
-                  className={`rounded-full px-1.5 py-px text-[11px] tabular-nums ${
+                  className={`inline-flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full px-1.5 text-caption font-semibold leading-none tabular-nums ${
                     isActive
-                      ? "bg-[#101723] text-white dark:bg-[#D7DFE5] dark:text-[#141D2B]"
-                      : "bg-[#E2E8F1] text-[#566273] dark:bg-[#243040] dark:text-[#9BAABD]"
+                      ? "bg-ink-900 text-white dark:bg-ink-130 dark:text-ink-875"
+                      : "bg-ink-85 text-ink-605 dark:bg-ink-805 dark:text-ink-325"
                   }`}
                 >
                   {tab.count}
@@ -54,14 +54,13 @@ const Tabs: React.FC<TabsProps> = ({ tabs, activeTab, onChange, className = "" }
               )}
               {tab.showBadge && (
                 <span className="relative flex h-2 w-2" aria-label="New">
-                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-rose-400 opacity-60" />
                   <span className="relative inline-flex h-2 w-2 rounded-full bg-rose-500" />
                 </span>
               )}
               {isActive && (
                 <motion.span
                   layoutId="activeTabUnderline"
-                  className="absolute inset-x-2 bottom-0 h-0.5 rounded-full bg-[#101723] dark:bg-[#F3F7FC]"
+                  className="absolute inset-x-2 bottom-0 h-0.5 rounded-full bg-ink-900 dark:bg-ink-30"
                   transition={{ type: "spring", stiffness: 500, damping: 38 }}
                 />
               )}

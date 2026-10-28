@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { doc, getDoc } from "firebase/firestore";
-import { AlertTriangle, Sparkles } from "lucide-react";
+import { AlertTriangle } from "./icons";
 import { auth } from "../utils/firebase";
 import { db } from "../utils/db";
 import { AI_USAGE_WARNING_RATIO, PRO_AI_REPLY_LIMIT } from "../utils/pricing";
 import { useT, type Lang } from "../i18n";
 import { settingsMessages } from "../i18n/messages/settings";
 import { COMPANY } from "../pages/legal/company";
+import { AiIcon } from "./icons";
 
 type Usage = { used: number; limit: number | null };
 
@@ -68,18 +69,18 @@ const AiUsageMeter: React.FC = () => {
   const reached = limit !== null && used >= limit;
   const warning = limit !== null && !reached && ratio >= AI_USAGE_WARNING_RATIO;
 
-  const barColor = reached ? "bg-[#C2410C]" : warning ? "bg-[#D7A43B]" : "bg-[#101723] dark:bg-[#D7DFE5]";
+  const barColor = reached ? "bg-[#C2410C]" : warning ? "bg-[#D7A43B]" : "bg-ink-900 dark:bg-ink-130";
 
   return (
-    <div className="rounded-xl border border-[#D8DFE9] dark:border-[#2B3646] bg-[#F9FCFF] dark:bg-[#1A2533] shadow-sm p-5">
+    <div className="rounded-xl border border-ink-120 dark:border-ink-780 bg-ink-25 dark:bg-ink-850 shadow-sm p-5">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <h3 className="flex items-center gap-2 text-body-sm font-medium text-[#566273] dark:text-[#9BAABD]">
-          <Sparkles className="h-4 w-4" />
+        <h3 className="flex items-center gap-2 text-body-sm font-medium text-fg-muted">
+          <AiIcon className="h-4 w-4" />
           {t("usageTitle")}
         </h3>
-        <p className="text-body-sm font-medium text-[#101723] dark:text-[#D7DFE5] tabular-nums">
+        <p className="text-body-sm font-medium text-fg tabular-nums">
           {used.toLocaleString(t.lang)}
-          <span className="text-[#647184] dark:text-[#9BAABD]">
+          <span className="text-ink-545 dark:text-ink-325">
             {limit === null ? ` · ${t("usageUnlimited")}` : ` / ${limit.toLocaleString(t.lang)}`}
           </span>
         </p>
@@ -87,7 +88,7 @@ const AiUsageMeter: React.FC = () => {
 
       {limit !== null ? (
         <div
-          className="mt-3 h-2 w-full overflow-hidden rounded-full bg-[#E7EDF6] dark:bg-[#243040]"
+          className="mt-3 h-2 w-full overflow-hidden rounded-full bg-ink-70 dark:bg-ink-805"
           role="progressbar"
           aria-label={t("usageAria")}
           aria-valuemin={0}
@@ -118,7 +119,7 @@ const AiUsageMeter: React.FC = () => {
           </span>
         </p>
       ) : (
-        <p className="mt-3 text-caption text-[#647184] dark:text-[#9BAABD]">
+        <p className="mt-3 text-caption text-ink-545 dark:text-ink-325">
           {limit === null ? t("usageNoLimit") : t("usageResetsOn", { date: resetDateLabel(t.lang) })}
         </p>
       )}

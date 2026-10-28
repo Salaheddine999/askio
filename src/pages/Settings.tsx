@@ -23,11 +23,10 @@ import {
   LucideIcon,
   Monitor,
   Moon,
-  Sparkles,
   Sun,
   Trash2,
   UserRound,
-} from "lucide-react";
+} from "../components/icons";
 import ConfirmationModal from "../components/ConfirmationModal";
 import AiUsageMeter from "../components/AiUsageMeter";
 import { useModal } from "../hooks/useModal";
@@ -46,6 +45,7 @@ import { Switch } from "../components/editor/controls";
 import { pushState, turnOffPush, turnOnPush, type PushState } from "../utils/push";
 import { settingsMessages } from "../i18n/messages/settings";
 import { reviewEmailHref } from "../utils/support";
+import { ProIcon } from "../components/icons";
 
 type Plan = "free" | "pro" | "enterprise";
 
@@ -60,7 +60,7 @@ const SECTIONS: { id: string; label: SettingsKey; icon: LucideIcon }[] = [
 ];
 
 const inputClass =
-  "h-10 w-full rounded-lg border border-[#D8DFE9] bg-[#F9FCFF] px-3 text-body-sm text-[#101723] placeholder:text-[#87909D] focus:border-[#101723] focus:outline-none focus:ring-2 focus:ring-[#101723]/10 disabled:opacity-60 dark:border-[#2B3646] dark:bg-[#141D2B] dark:text-[#D7DFE5] dark:focus:border-[#9BAABD] dark:focus:ring-[#D7DFE5]/10";
+  "h-10 w-full rounded-lg border border-ink-120 bg-ink-25 px-3 text-body-sm text-ink-900 placeholder:text-ink-425 focus:border-ink-900 focus:outline-none focus:ring-2 focus:ring-ink-900/10 disabled:opacity-60 dark:border-ink-780 dark:bg-ink-875 dark:text-ink-130 dark:focus:border-ink-325 dark:focus:ring-ink-130/10";
 
 const Section: React.FC<{ id: string; title: string; description: string; children: React.ReactNode; tone?: "danger" }> = ({
   id,
@@ -73,21 +73,21 @@ const Section: React.FC<{ id: string; title: string; description: string; childr
     id={id}
     className={`scroll-mt-6 ${surface} ${tone === "danger" ? "border-red-200 dark:border-red-900/50" : ""}`}
   >
-    <div className="border-b border-[#E7EDF6] px-5 py-4 sm:px-6 dark:border-[#2B3646]">
-      <h2 className={`text-body font-semibold ${tone === "danger" ? "text-red-600 dark:text-red-400" : "text-[#101723] dark:text-[#E7EDF6]"}`}>
+    <div className="border-b border-ink-70 px-5 py-4 sm:px-6 dark:border-ink-780">
+      <h2 className={`text-body font-semibold ${tone === "danger" ? "text-red-600 dark:text-red-400" : "text-ink-900 dark:text-ink-70"}`}>
         {title}
       </h2>
-      <p className="mt-0.5 text-body-sm text-[#647184] dark:text-[#87909D]">{description}</p>
+      <p className="mt-0.5 text-body-sm text-fg-subtle">{description}</p>
     </div>
-    <div className="divide-y divide-[#E7EDF6] dark:divide-[#2B3646]">{children}</div>
+    <div className="divide-y divide-ink-70 dark:divide-ink-780">{children}</div>
   </section>
 );
 
 const Row: React.FC<{ label: string; hint?: React.ReactNode; children: React.ReactNode }> = ({ label, hint, children }) => (
   <div className="flex flex-col gap-3 px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
     <div className="min-w-0">
-      <p className="text-body-sm font-medium text-[#101723] dark:text-[#D7DFE5]">{label}</p>
-      {hint && <p className="mt-0.5 text-caption text-[#647184] dark:text-[#87909D]">{hint}</p>}
+      <p className="text-body-sm font-medium text-fg">{label}</p>
+      {hint && <p className="mt-0.5 text-caption text-fg-subtle">{hint}</p>}
     </div>
     <div className="flex shrink-0 flex-wrap items-center gap-2">{children}</div>
   </div>
@@ -298,6 +298,12 @@ const Settings: React.FC<SettingsProps> = ({ darkMode, setDarkMode, suspension }
     }
   };
 
+  // Links like /settings#emails land on that section once it has rendered.
+  useEffect(() => {
+    const id = window.location.hash.slice(1);
+    if (!loading && id) document.getElementById(id)?.scrollIntoView();
+  }, [loading]);
+
   if (loading) return <FormPageSkeleton />;
 
   const initials = (savedName || email || "?")
@@ -317,7 +323,7 @@ const Settings: React.FC<SettingsProps> = ({ darkMode, setDarkMode, suspension }
     ? "bg-emerald-50 text-emerald-700 ring-emerald-600/20 dark:bg-emerald-900/25 dark:text-emerald-400"
     : ["paused", "past_due", "unpaid", "cancelled"].includes(subscriptionStatus)
       ? "bg-amber-50 text-amber-700 ring-amber-600/20 dark:bg-amber-900/25 dark:text-amber-400"
-      : "bg-[#E7EDF6] text-[#566273] ring-[#566273]/15 dark:bg-[#243040] dark:text-[#9BAABD]";
+      : "bg-ink-70 text-ink-605 ring-ink-605/15 dark:bg-ink-805 dark:text-ink-325";
   const statusKey = `status_${subscriptionStatus || "inactive"}`;
   const statusLabel =
     statusKey in settingsMessages.en
@@ -328,7 +334,7 @@ const Settings: React.FC<SettingsProps> = ({ darkMode, setDarkMode, suspension }
   const planLabel = userPlan === "pro" ? "Pro" : userPlan === "enterprise" ? "Enterprise" : t("planFree");
 
   return (
-    <div className="min-h-screen bg-[#F3F7FC] font-sans text-[#101723] dark:bg-[#141D2B]">
+    <div className="min-h-screen bg-ink-30 font-sans text-ink-900 dark:bg-ink-875">
       <Helmet>
         <title>{t("metaTitle")}</title>
         <meta name="description" content={t("metaDescription")} />
@@ -336,8 +342,8 @@ const Settings: React.FC<SettingsProps> = ({ darkMode, setDarkMode, suspension }
 
       <div className="w-full space-y-6 px-4 py-6 sm:px-6 sm:py-8 lg:px-8 xl:px-10">
         <header>
-          <h1 className="font-serif text-h2 tracking-tight text-[#101723] sm:text-h1 dark:text-[#D7DFE5]">{t("title")}</h1>
-          <p className="mt-1 text-body-sm text-[#566273] dark:text-[#9BAABD]">{t("subtitle")}</p>
+          <h1 className="font-display text-h2 tracking-tight text-ink-900 sm:text-h1 dark:text-ink-130">{t("title")}</h1>
+          <p className="mt-1 text-body-sm text-fg-muted">{t("subtitle")}</p>
         </header>
 
         {suspension && (
@@ -364,7 +370,7 @@ const Settings: React.FC<SettingsProps> = ({ darkMode, setDarkMode, suspension }
                   className={`flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-body-sm transition-colors ${focusRing} ${
                     s.id === "danger"
                       ? "text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/30"
-                      : "text-[#566273] hover:bg-[#E7EDF6]/70 hover:text-[#101723] dark:text-[#9BAABD] dark:hover:bg-[#1F2B3A] dark:hover:text-[#D7DFE5]"
+                      : "text-ink-605 hover:bg-ink-70/70 hover:text-ink-900 dark:text-ink-325 dark:hover:bg-ink-825 dark:hover:text-ink-130"
                   }`}
                 >
                   <s.icon size={14} className="shrink-0 opacity-70" />
@@ -381,13 +387,13 @@ const Settings: React.FC<SettingsProps> = ({ darkMode, setDarkMode, suspension }
                 {user?.photoURL ? (
                   <img src={user.photoURL} alt="" referrerPolicy="no-referrer" className="h-14 w-14 shrink-0 rounded-full object-cover ring-1 ring-black/5" />
                 ) : (
-                  <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-[#101723] text-body font-semibold text-white dark:bg-[#D7DFE5] dark:text-[#141D2B]">
+                  <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-ink-900 text-body font-semibold text-white dark:bg-ink-130 dark:text-ink-875">
                     {initials}
                   </span>
                 )}
                 <div className="min-w-0">
-                  <p className="truncate text-body font-semibold text-[#101723] dark:text-[#E7EDF6]">{savedName || t("noName")}</p>
-                  <p className="truncate text-body-sm text-[#647184] dark:text-[#87909D]">{email}</p>
+                  <p className="truncate text-body font-semibold text-ink-900 dark:text-ink-70">{savedName || t("noName")}</p>
+                  <p className="truncate text-body-sm text-fg-subtle">{email}</p>
                 </div>
               </div>
               <form
@@ -398,7 +404,7 @@ const Settings: React.FC<SettingsProps> = ({ darkMode, setDarkMode, suspension }
                 }}
               >
                 <label className="min-w-0 flex-1">
-                  <span className="mb-1.5 block text-body-sm font-medium text-[#101723] dark:text-[#D7DFE5]">{t("fullName")}</span>
+                  <span className="mb-1.5 block text-body-sm font-medium text-fg">{t("fullName")}</span>
                   <input value={name} onChange={(e) => setName(e.target.value)} placeholder={t("namePlaceholder")} className={inputClass} />
                 </label>
                 <div className="flex gap-2">
@@ -413,7 +419,7 @@ const Settings: React.FC<SettingsProps> = ({ darkMode, setDarkMode, suspension }
                 </div>
               </form>
               <Row label={t("email")} hint={t("emailHint")}>
-                <span className="text-body-sm text-[#566273] dark:text-[#9BAABD]">{email}</span>
+                <span className="text-body-sm text-fg-muted">{email}</span>
               </Row>
             </Section>
 
@@ -422,12 +428,12 @@ const Settings: React.FC<SettingsProps> = ({ darkMode, setDarkMode, suspension }
               <div className="flex flex-col gap-4 px-5 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-6">
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="font-serif text-h3 text-[#101723] dark:text-[#E7EDF6]">{planLabel}</span>
+                    <span className="font-display text-h3 text-ink-900 dark:text-ink-70">{planLabel}</span>
                     {isPaid && (
                       <span className={`rounded-full px-2 py-0.5 text-caption font-medium ring-1 ring-inset ${statusTone}`}>{statusLabel}</span>
                     )}
                   </div>
-                  <p className="mt-1 text-body-sm text-[#647184] dark:text-[#87909D]">
+                  <p className="mt-1 text-body-sm text-fg-subtle">
                     {!isPaid
                       ? t("upgradePitch", { limit: PRO_AI_REPLY_LIMIT.toLocaleString(t.lang), price: `$${PRO_PRICE.monthly}` })
                       : cancelled && periodEndLabel
@@ -445,7 +451,7 @@ const Settings: React.FC<SettingsProps> = ({ darkMode, setDarkMode, suspension }
                       onClick={() => runBillingAction(() => redirectToProCheckout(), t("checkoutFailed"))}
                       className={primaryButton}
                     >
-                      <Sparkles size={15} />
+                      <ProIcon size={15} />
                       {billingActionLoading ? t("opening") : t("upgradeToPro")}
                     </button>
                   )}
@@ -510,7 +516,7 @@ const Settings: React.FC<SettingsProps> = ({ darkMode, setDarkMode, suspension }
                 <div
                   role="radiogroup"
                   aria-label={t("theme")}
-                  className="inline-flex h-9 items-center rounded-lg border border-[#D8DFE9] bg-[#F3F7FC] p-0.5 dark:border-[#2B3646] dark:bg-[#141D2B]"
+                  className="inline-flex h-9 items-center rounded-lg border border-ink-120 bg-ink-30 p-0.5 dark:border-ink-780 dark:bg-ink-875"
                 >
                   {[
                     { dark: false, label: t("light"), icon: Sun },
@@ -526,8 +532,8 @@ const Settings: React.FC<SettingsProps> = ({ darkMode, setDarkMode, suspension }
                         onClick={() => setDarkMode(option.dark)}
                         className={`flex h-full items-center gap-1.5 rounded-md px-3 text-[13px] font-medium transition-colors ${focusRing} ${
                           active
-                            ? "bg-[#F9FCFF] text-[#101723] shadow-sm dark:bg-[#273444] dark:text-[#D7DFE5]"
-                            : "text-[#647184] hover:text-[#101723] dark:text-[#87909D] dark:hover:text-[#D7DFE5]"
+                            ? "bg-ink-25 text-ink-900 shadow-sm dark:bg-ink-790 dark:text-ink-130"
+                            : "text-ink-545 hover:text-ink-900 dark:text-ink-425 dark:hover:text-ink-130"
                         }`}
                       >
                         <option.icon size={14} />
@@ -545,7 +551,7 @@ const Settings: React.FC<SettingsProps> = ({ darkMode, setDarkMode, suspension }
                 label={t("signInMethod")}
                 hint={isGoogleAccount ? t("signInGoogleHint") : t("signInEmailHint")}
               >
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-[#E7EDF6] px-2.5 py-1 text-caption font-medium text-[#243040] dark:bg-[#243040] dark:text-[#D7DFE5]">
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-ink-70 px-2.5 py-1 text-caption font-medium text-ink-805 dark:bg-ink-805 dark:text-ink-130">
                   <Check size={12} />
                   {isGoogleAccount ? "Google" : t("methodEmail")}
                 </span>
@@ -555,8 +561,8 @@ const Settings: React.FC<SettingsProps> = ({ darkMode, setDarkMode, suspension }
                   {!passwordOpen ? (
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                       <div>
-                        <p className="text-body-sm font-medium text-[#101723] dark:text-[#D7DFE5]">{t("password")}</p>
-                        <p className="mt-0.5 text-caption text-[#647184] dark:text-[#87909D]">{t("passwordHint")}</p>
+                        <p className="text-body-sm font-medium text-fg">{t("password")}</p>
+                        <p className="mt-0.5 text-caption text-fg-subtle">{t("passwordHint")}</p>
                       </div>
                       <button type="button" onClick={() => setPasswordOpen(true)} className={secondaryButton}>
                         <KeyRound size={15} />
@@ -565,7 +571,7 @@ const Settings: React.FC<SettingsProps> = ({ darkMode, setDarkMode, suspension }
                     </div>
                   ) : (
                     <form onSubmit={handleChangePassword} className="space-y-3">
-                      <p className="text-body-sm font-medium text-[#101723] dark:text-[#D7DFE5]">{t("changePassword")}</p>
+                      <p className="text-body-sm font-medium text-fg">{t("changePassword")}</p>
                       <input
                         type="password"
                         autoComplete="current-password"
@@ -599,7 +605,7 @@ const Settings: React.FC<SettingsProps> = ({ darkMode, setDarkMode, suspension }
                         <button
                           type="button"
                           onClick={sendResetEmail}
-                          className={`rounded text-caption font-medium text-[#566273] underline-offset-2 hover:text-[#101723] hover:underline dark:text-[#9BAABD] dark:hover:text-[#D7DFE5] ${focusRing}`}
+                          className={`rounded text-caption font-medium text-ink-605 underline-offset-2 hover:text-ink-900 hover:underline dark:text-ink-325 dark:hover:text-ink-130 ${focusRing}`}
                         >
                           {t("forgotCurrent")}
                         </button>
@@ -636,7 +642,7 @@ const Settings: React.FC<SettingsProps> = ({ darkMode, setDarkMode, suspension }
                     setDeletePassword("");
                     deleteAccountModal.openModal();
                   }}
-                  className={`inline-flex h-9 items-center gap-2 rounded-lg border border-red-200 bg-[#F9FCFF] px-3.5 text-button text-red-600 transition-colors hover:bg-red-50 dark:border-red-900/50 dark:bg-transparent dark:text-red-400 dark:hover:bg-red-950/30 ${focusRing}`}
+                  className={`inline-flex h-9 items-center gap-2 rounded-lg border border-red-200 bg-ink-25 px-3.5 text-button text-red-600 transition-colors hover:bg-red-50 dark:border-red-900/50 dark:bg-transparent dark:text-red-400 dark:hover:bg-red-950/30 ${focusRing}`}
                 >
                   <Trash2 size={15} />
                   {t("deleteAccount")}
@@ -663,10 +669,10 @@ const Settings: React.FC<SettingsProps> = ({ darkMode, setDarkMode, suspension }
           </p>
         </div>
         {isGoogleAccount ? (
-          <p className="mt-3 text-body-sm text-[#566273] dark:text-[#9BAABD]">{t("confirmWithGoogle")}</p>
+          <p className="mt-3 text-body-sm text-fg-muted">{t("confirmWithGoogle")}</p>
         ) : (
           <label className="mt-3 block">
-            <span className="mb-1.5 block text-body-sm font-medium text-[#101723] dark:text-[#D7DFE5]">{t("enterPasswordToConfirm")}</span>
+            <span className="mb-1.5 block text-body-sm font-medium text-fg">{t("enterPasswordToConfirm")}</span>
             <input
               type="password"
               autoComplete="current-password"

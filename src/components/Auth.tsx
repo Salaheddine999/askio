@@ -159,7 +159,7 @@ const Auth: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#F3F7FC] dark:bg-[#141D2B] px-4">
+    <div className="min-h-screen flex items-center justify-center bg-ink-30 dark:bg-ink-875 px-4">
       <motion.div
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
@@ -168,11 +168,11 @@ const Auth: React.FC = () => {
       >
         {/* Brand */}
         <Link to="/" className="mb-8 flex items-center justify-center">
-          <BrandLogo size={24} className="text-[#101723] dark:text-[#D7DFE5]" />
+          <BrandLogo size={24} className="text-fg" />
         </Link>
 
         {/* Card */}
-        <div className="bg-[#F9FCFF] dark:bg-[#1A2533] rounded-2xl shadow-[0_1px_3px_rgba(0,0,0,0.04),0_8px_30px_-10px_rgba(0,0,0,0.08)] dark:shadow-none border border-[rgba(16,23,35,0.06)] dark:border-[#2B3646] overflow-hidden">
+        <div className="bg-ink-25 dark:bg-ink-850 rounded-2xl shadow-[0_1px_3px_rgba(0,0,0,0.04),0_8px_30px_-10px_rgba(0,0,0,0.08)] dark:shadow-none border border-[rgba(16,23,35,0.06)] dark:border-ink-780 overflow-hidden">
           {/* Header */}
           <div className="px-6 pt-6 pb-0">
             <AnimatePresence mode="wait">
@@ -183,10 +183,10 @@ const Auth: React.FC = () => {
                 exit={{ opacity: 0, x: mode === "register" ? -8 : 8 }}
                 transition={{ duration: 0.15 }}
               >
-                <h2 className="text-xl font-serif text-[#101723] dark:text-[#D7DFE5] tracking-tight">
+                <h2 className="text-xl font-display text-fg tracking-tight">
                   {mode === "login" ? t("welcomeBack") : mode === "register" ? t("createAccountTitle") : t("resetTitle")}
                 </h2>
-                <p className="text-[13px] text-[#647184] dark:text-[#9BAABD] mt-1">
+                <p className="text-[13px] text-ink-545 dark:text-ink-325 mt-1">
                   {mode === "login"
                     ? t("loginSubtitle")
                     : mode === "register"
@@ -232,7 +232,7 @@ const Auth: React.FC = () => {
             {/* Google OAuth */}
             <button
               onClick={handleOAuth}
-              className="w-full flex items-center justify-center py-2.5 px-4 border border-[#D8DFE9] dark:border-[#2B3646] rounded-xl bg-[#F9FCFF] dark:bg-[#141D2B] text-[#101723] dark:text-[#D7DFE5] text-[13px] font-medium hover:bg-[#F3F7FC] dark:hover:bg-[#1A2533] hover:border-[#D7DFE5] dark:hover:border-[#39485B] transition-all duration-200 group"
+              className="w-full flex items-center justify-center py-2.5 px-4 border border-ink-120 dark:border-ink-780 rounded-xl bg-ink-25 dark:bg-ink-875 text-fg text-[13px] font-medium hover:bg-ink-30 dark:hover:bg-ink-850 hover:border-ink-130 dark:hover:border-ink-710 transition-all duration-200 group"
             >
               <svg
                 className="h-4 w-4 mr-2.5 group-hover:scale-110 transition-transform"
@@ -261,10 +261,10 @@ const Auth: React.FC = () => {
             {/* Divider */}
             <div className="relative my-4">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-[#D8DFE9] dark:border-[#2B3646]" />
+                <div className="w-full border-t border-ink-120 dark:border-ink-780" />
               </div>
-              <div className="relative flex justify-center text-[11px]">
-                <span className="px-2.5 bg-[#F9FCFF] dark:bg-[#1A2533] text-[#647184] dark:text-[#9BAABD] font-medium uppercase tracking-wider">
+              <div className="relative flex justify-center text-caption">
+                <span className="px-2.5 bg-ink-25 dark:bg-ink-850 text-ink-545 dark:text-ink-325 font-medium">
                   {t("or")}
                 </span>
               </div>
@@ -279,15 +279,15 @@ const Auth: React.FC = () => {
                     <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l9 6 9-6M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                   </svg>
                 </div>
-                <p className="text-[14px] font-medium text-[#101723] dark:text-[#D7DFE5]">{t("checkInbox")}</p>
-                <p className="mt-1 text-[13px] leading-relaxed text-[#647184] dark:text-[#9BAABD]">
-                  {t("resetSentBefore")} <span className="font-medium text-[#101723] dark:text-[#D7DFE5]">{email}</span>
+                <p className="text-[14px] font-medium text-fg">{t("checkInbox")}</p>
+                <p className="mt-1 text-[13px] leading-relaxed text-ink-545 dark:text-ink-325">
+                  {t("resetSentBefore")} <span className="font-medium text-fg">{email}</span>
                   {t("resetSentAfter")}
                 </p>
                 <button
                   type="button"
                   onClick={() => switchMode("login")}
-                  className="mt-5 w-full rounded-xl border border-[#D8DFE9] bg-[#F9FCFF] px-4 py-2.5 text-[13px] font-medium text-[#101723] transition-colors hover:bg-[#F3F7FC] dark:border-[#2B3646] dark:bg-[#141D2B] dark:text-[#D7DFE5] dark:hover:bg-[#1A2533]"
+                  className="mt-5 w-full rounded-xl border border-ink-120 bg-ink-25 px-4 py-2.5 text-[13px] font-medium text-ink-900 transition-colors hover:bg-ink-30 dark:border-ink-780 dark:bg-ink-875 dark:text-ink-130 dark:hover:bg-ink-850"
                 >
                   {t("backToSignIn")}
                 </button>
@@ -297,7 +297,7 @@ const Auth: React.FC = () => {
               <div>
                 <label
                   htmlFor="email"
-                  className="block text-[11px] font-semibold text-[#566273] dark:text-[#9BAABD] mb-1 uppercase tracking-wider"
+                  className="block text-caption font-semibold text-fg-muted mb-1"
                 >
                   {t("email")}
                 </label>
@@ -308,7 +308,7 @@ const Auth: React.FC = () => {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-3.5 py-2.5 border border-[#D8DFE9] dark:border-[#2B3646] rounded-xl focus:ring-2 focus:ring-[#101723]/15 dark:focus:ring-[#D7DFE5]/15 focus:border-[#101723] dark:focus:border-[#D7DFE5] transition-all duration-200 bg-[#F3F7FC] dark:bg-[#141D2B] text-[#101723] dark:text-[#D7DFE5] text-[13px] placeholder-[#647184] dark:placeholder-[#87909D] outline-none"
+                  className="w-full px-3.5 py-2.5 border border-ink-120 dark:border-ink-780 rounded-xl focus:ring-2 focus:ring-ink-900/15 dark:focus:ring-ink-130/15 focus:border-ink-900 dark:focus:border-ink-130 transition-all duration-200 bg-ink-30 dark:bg-ink-875 text-fg text-[13px] placeholder-ink-545 dark:placeholder-ink-425 outline-none"
                 />
               </div>
 
@@ -317,7 +317,7 @@ const Auth: React.FC = () => {
                 <div className="mb-1 flex items-center justify-between">
                   <label
                     htmlFor="password"
-                    className="block text-[11px] font-semibold text-[#566273] dark:text-[#9BAABD] uppercase tracking-wider"
+                    className="block text-caption font-semibold text-fg-muted"
                   >
                     {t("password")}
                   </label>
@@ -325,7 +325,7 @@ const Auth: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => switchMode("reset")}
-                      className="text-[12px] font-medium text-[#566273] hover:text-[#101723] hover:underline dark:text-[#9BAABD] dark:hover:text-[#D7DFE5]"
+                      className="text-[12px] font-medium text-ink-605 hover:text-ink-900 hover:underline dark:text-ink-325 dark:hover:text-ink-130"
                     >
                       {t("forgotPassword")}
                     </button>
@@ -338,7 +338,7 @@ const Auth: React.FC = () => {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-3.5 py-2.5 border border-[#D8DFE9] dark:border-[#2B3646] rounded-xl focus:ring-2 focus:ring-[#101723]/15 dark:focus:ring-[#D7DFE5]/15 focus:border-[#101723] dark:focus:border-[#D7DFE5] transition-all duration-200 bg-[#F3F7FC] dark:bg-[#141D2B] text-[#101723] dark:text-[#D7DFE5] text-[13px] placeholder-[#647184] dark:placeholder-[#87909D] outline-none"
+                  className="w-full px-3.5 py-2.5 border border-ink-120 dark:border-ink-780 rounded-xl focus:ring-2 focus:ring-ink-900/15 dark:focus:ring-ink-130/15 focus:border-ink-900 dark:focus:border-ink-130 transition-all duration-200 bg-ink-30 dark:bg-ink-875 text-fg text-[13px] placeholder-ink-545 dark:placeholder-ink-425 outline-none"
                 />
               </div>
               )}
@@ -346,7 +346,7 @@ const Auth: React.FC = () => {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full bg-[#101723] dark:bg-[#D7DFE5] text-white dark:text-[#141D2B] py-2.5 px-4 rounded-xl text-[13px] font-medium hover:bg-[#243040] dark:hover:bg-[#E7EDF6] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.99] mt-1"
+                className="w-full bg-ink-900 dark:bg-ink-130 text-white dark:text-ink-875 py-2.5 px-4 rounded-xl text-[13px] font-medium hover:bg-ink-805 dark:hover:bg-ink-70 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.99] mt-1"
               >
                 {isLoading ? (
                   <span className="flex items-center justify-center">
@@ -381,20 +381,20 @@ const Auth: React.FC = () => {
             )}
 
             {mode === "reset" && !resetSent && (
-              <p className="mt-4 text-center text-[11.5px] leading-relaxed text-[#647184] dark:text-[#9BAABD]">
+              <p className="mt-4 text-center text-[11.5px] leading-relaxed text-ink-545 dark:text-ink-325">
                 {t("googleResetHint")}
               </p>
             )}
 
             {/* Google sign-in can also create an account, so this shows on sign-in and sign-up. */}
             {mode !== "reset" && (
-            <p className="mt-4 text-center text-[11.5px] leading-relaxed text-[#647184] dark:text-[#9BAABD]">
+            <p className="mt-4 text-center text-[11.5px] leading-relaxed text-ink-545 dark:text-ink-325">
               {t("consentBefore")}{" "}
-              <Link to="/terms" className="font-medium text-[#101723] underline underline-offset-2 hover:no-underline dark:text-[#D7DFE5]">
+              <Link to="/terms" className="font-medium text-ink-900 underline underline-offset-2 hover:no-underline dark:text-ink-130">
                 {t("consentTerms")}
               </Link>{" "}
               {t("consentAnd")}{" "}
-              <Link to="/privacy" className="font-medium text-[#101723] underline underline-offset-2 hover:no-underline dark:text-[#D7DFE5]">
+              <Link to="/privacy" className="font-medium text-ink-900 underline underline-offset-2 hover:no-underline dark:text-ink-130">
                 {t("consentPrivacy")}
               </Link>
               {t("consentAfter")}
@@ -403,14 +403,14 @@ const Auth: React.FC = () => {
           </div>
 
           {/* Footer */}
-          <div className="px-6 py-4 bg-[#F3F7FC] dark:bg-[#141D2B] border-t border-[rgba(16,23,35,0.06)] dark:border-[#2B3646]">
-            <p className="text-center text-[13px] text-[#647184] dark:text-[#9BAABD]">
+          <div className="px-6 py-4 bg-ink-30 dark:bg-ink-875 border-t border-[rgba(16,23,35,0.06)] dark:border-ink-780">
+            <p className="text-center text-[13px] text-ink-545 dark:text-ink-325">
               {mode === "reset" ? (
                 <span>
                   {t("remembered")}{" "}
                   <button
                     onClick={() => switchMode("login")}
-                    className="text-[#101723] dark:text-[#D7DFE5] font-semibold hover:underline"
+                    className="text-fg font-semibold hover:underline"
                   >
                     {t("signIn")}
                   </button>
@@ -420,7 +420,7 @@ const Auth: React.FC = () => {
                   {t("noAccount")}{" "}
                   <button
                     onClick={() => switchMode("register")}
-                    className="text-[#101723] dark:text-[#D7DFE5] font-semibold hover:underline"
+                    className="text-fg font-semibold hover:underline"
                   >
                     {t("signUp")}
                   </button>
@@ -430,7 +430,7 @@ const Auth: React.FC = () => {
                   {t("haveAccount")}{" "}
                   <button
                     onClick={() => switchMode("login")}
-                    className="text-[#101723] dark:text-[#D7DFE5] font-semibold hover:underline"
+                    className="text-fg font-semibold hover:underline"
                   >
                     {t("signIn")}
                   </button>
@@ -441,7 +441,7 @@ const Auth: React.FC = () => {
         </div>
 
         {/* Trust line */}
-        <p className="mt-5 text-center text-[11px] text-[#647184] dark:text-[#9BAABD]">
+        <p className="mt-5 text-center text-caption text-ink-545 dark:text-ink-325">
           {t("trustLine")}
         </p>
       </motion.div>

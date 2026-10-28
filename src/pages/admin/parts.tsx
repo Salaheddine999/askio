@@ -4,7 +4,7 @@ import { Pagination, focusRing, surface } from "../dashboard/ui";
 import { AdminUser } from "./data";
 
 const tone = {
-  free: "bg-[#E7EDF6] text-[#566273] ring-[#566273]/10 dark:bg-[#243040] dark:text-[#9BAABD] dark:ring-white/5",
+  free: "bg-ink-70 text-ink-605 ring-ink-605/10 dark:bg-ink-805 dark:text-ink-325 dark:ring-white/5",
   paid: "bg-emerald-50 text-emerald-700 ring-emerald-600/15 dark:bg-emerald-900/25 dark:text-emerald-400 dark:ring-emerald-400/20",
   warn: "bg-amber-50 text-amber-700 ring-amber-600/15 dark:bg-amber-900/25 dark:text-amber-300 dark:ring-amber-400/20",
   bad: "bg-red-50 text-red-700 ring-red-600/15 dark:bg-red-950/40 dark:text-red-300 dark:ring-red-400/20",
@@ -34,15 +34,15 @@ export const PlanBadge: React.FC<{ user: AdminUser }> = ({ user }) => {
 export const UsageBar: React.FC<{ used: number; limit: number }> = ({ used, limit }) => {
   const unlimited = !Number.isFinite(limit) || limit >= Number.MAX_SAFE_INTEGER;
   const ratio = unlimited || limit <= 0 ? 0 : Math.min(1, used / limit);
-  const color = ratio >= 1 ? "bg-red-500" : ratio >= 0.8 ? "bg-amber-500" : "bg-[#101723] dark:bg-[#D7DFE5]";
+  const color = ratio >= 1 ? "bg-red-500" : ratio >= 0.8 ? "bg-amber-500" : "bg-ink-900 dark:bg-ink-130";
   return (
     <div>
-      <div className="flex items-baseline justify-between text-caption tabular-nums text-[#566273] dark:text-[#9BAABD]">
+      <div className="flex items-baseline justify-between text-caption tabular-nums text-fg-muted">
         <span>{used.toLocaleString()} used</span>
         <span>{unlimited ? "No limit" : limit <= 0 ? "No AI on this plan" : `of ${limit.toLocaleString()}`}</span>
       </div>
       {!unlimited && limit > 0 && (
-        <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-[#E7EDF6] dark:bg-[#273444]">
+        <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-ink-70 dark:bg-ink-790">
           <div className={`h-full rounded-full ${color}`} style={{ width: `${Math.max(ratio * 100, used > 0 ? 2 : 0)}%` }} />
         </div>
       )}
@@ -57,10 +57,10 @@ export const Card: React.FC<{
   children: React.ReactNode;
 }> = ({ title, description, action, children }) => (
   <section className={surface}>
-    <div className="flex flex-col gap-3 border-b border-[#E7EDF6] px-5 py-4 sm:flex-row sm:items-start sm:justify-between sm:px-6 dark:border-[#2B3646]">
+    <div className="flex flex-col gap-3 border-b border-ink-70 px-5 py-4 sm:flex-row sm:items-start sm:justify-between sm:px-6 dark:border-ink-780">
       <div className="min-w-0">
-        <h2 className="text-body font-semibold text-[#101723] dark:text-[#E7EDF6]">{title}</h2>
-        {description && <p className="mt-0.5 text-body-sm text-[#647184] dark:text-[#87909D]">{description}</p>}
+        <h2 className="text-body font-semibold text-ink-900 dark:text-ink-70">{title}</h2>
+        {description && <p className="mt-0.5 text-body-sm text-fg-subtle">{description}</p>}
       </div>
       {action && <div className="flex shrink-0 flex-wrap items-center gap-2">{action}</div>}
     </div>
@@ -102,8 +102,8 @@ export function FilterChips<T extends string>({
             onClick={() => onChange(o.value)}
             className={`h-8 rounded-full border px-3 text-caption font-medium transition-colors ${focusRing} ${
               selected
-                ? "border-[#101723] bg-[#101723] text-white dark:border-[#D7DFE5] dark:bg-[#D7DFE5] dark:text-[#141D2B]"
-                : "border-[#D8DFE9] text-[#566273] hover:border-[#B8C3D1] hover:text-[#101723] dark:border-[#2B3646] dark:text-[#9BAABD] dark:hover:text-[#D7DFE5]"
+                ? "border-ink-900 bg-ink-900 text-white dark:border-ink-130 dark:bg-ink-130 dark:text-ink-875"
+                : "border-ink-120 text-ink-605 hover:border-ink-230 hover:text-ink-900 dark:border-ink-780 dark:text-ink-325 dark:hover:text-ink-130"
             }`}
           >
             {o.label}
@@ -122,7 +122,7 @@ export const Pager: React.FC<{
   onChange: (page: number) => void;
 }> = ({ page, totalPages, summary, onChange }) =>
   totalPages > 1 ? (
-    <div className="border-t border-[#E7EDF6] px-5 py-3 sm:px-6 dark:border-[#2B3646]">
+    <div className="border-t border-ink-70 px-5 py-3 sm:px-6 dark:border-ink-780">
       <Pagination page={page} totalPages={totalPages} onChange={onChange} summary={summary} />
     </div>
   ) : null;

@@ -1,10 +1,10 @@
-import { ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
 import brandLogo from "../../assets/logo.svg";
 import MainCta from "./MainCta";
+import KioMark from "../../components/KioMark";
 
 export default function HeroSection() {
-  const sectionBorder = "border-b border-[rgba(16,23,35,0.12)] dark:border-[#2B3646]";
+  const sectionBorder = "border-b border-[rgba(16,23,35,0.12)] dark:border-ink-780";
 
   return (
     <section className={`pt-16 sm:pt-20 lg:pt-24 pb-8 sm:pb-12 flex flex-col items-center text-center ${sectionBorder}`}>
@@ -16,19 +16,21 @@ export default function HeroSection() {
       >
         <a
           href="#kio"
-          className="group mb-6 inline-flex items-center gap-2 rounded-full border border-[#D8DFE9] bg-[#F9FCFF]/80 py-1 pl-1 pr-3 text-xs font-medium text-[#566273] transition-colors duration-200 hover:border-[#B8C2CF] hover:text-[#101723] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#87909D] dark:border-[#2B3646] dark:bg-[#1A2533]/80 dark:text-[#9BAABD] dark:hover:text-[#D7DFE5]"
+          className="group mb-7 inline-flex items-center gap-2.5 rounded-full border border-ink-120 py-1.5 pl-1.5 pr-3.5 text-body-sm text-fg-muted transition-colors duration-200 hover:border-ink-235 hover:text-fg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ink-425 dark:border-ink-780 dark:hover:border-ink-710"
         >
-          <span className="rounded-full bg-[#101723] px-2 py-0.5 text-[11px] font-semibold text-white dark:bg-[#D7DFE5] dark:text-[#141D2B]">New</span>
-          <span className="sm:hidden">Meet Kio, a launcher with personality</span>
-          <span className="hidden sm:inline">Meet Kio, the chat launcher your visitors notice</span>
-          <ArrowRight className="h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-x-0.5 motion-reduce:transform-none" />
+          <KioMark size={20} className="shrink-0 text-fg" />
+          <span className="sm:hidden">Meet Kio, the launcher that looks back</span>
+          <span className="hidden sm:inline">Meet Kio, a chat launcher whose eyes follow your visitors</span>
+          <span className="hidden font-medium text-fg underline decoration-ink-235 underline-offset-4 group-hover:decoration-current sm:inline dark:decoration-ink-710">
+            See it
+          </span>
         </a>
-        <h1 className="text-[2.25rem] sm:text-[clamp(2.5rem,5vw,4rem)] font-serif leading-[1.08] tracking-[-0.025em] [text-wrap:balance] text-[#101723] dark:text-[#D7DFE5] mb-5">
+        <h1 className="text-[2.25rem] sm:text-[clamp(2.5rem,5vw,4rem)] font-display leading-[1.08] tracking-[-0.025em] [text-wrap:balance] text-fg mb-5">
           Answer customer questions.{" "}
           <br className="hidden sm:block" />
           Even when you’re away.
         </h1>
-        <p className="text-[#566273] dark:text-[#9BAABD] text-body-lg font-normal leading-relaxed max-w-[540px] mx-auto mb-7">
+        <p className="text-fg-muted text-body-lg font-normal leading-relaxed max-w-[540px] mx-auto mb-7">
           Turn your FAQs into a chatbot that looks like your brand. Give visitors instant answers and capture leads, no coding needed.
         </p>
       </motion.div>
@@ -40,7 +42,7 @@ export default function HeroSection() {
         className="w-full flex flex-col items-center justify-center gap-3 px-6 mb-10 sm:mb-14"
       >
         <MainCta>Create your chatbot</MainCta>
-        <p className="text-caption text-[#647184] dark:text-[#9BAABD]">Free plan · No credit card needed</p>
+        <p className="text-caption text-ink-545 dark:text-ink-325">Free plan · No credit card needed</p>
       </motion.div>
 
       {/* Dashboard Screenshot */}
@@ -50,11 +52,14 @@ export default function HeroSection() {
         transition={{ duration: 0.6, delay: 0.4 }}
         className="w-full max-w-[1000px] px-4 relative isolate md:pb-6"
       >
+        {/* A soft light on the page behind the screenshot: one wide, faint
+            gradient, brightest at the top edge, so the image sits in light
+            rather than on a coloured blob. */}
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute -top-8 left-1/2 -z-10 h-[55%] w-[85%] -translate-x-1/2 rounded-full bg-[#93B5D9]/40 blur-[72px] dark:bg-[#769CC5]/20"
+          className="pointer-events-none absolute inset-x-0 -top-16 -z-10 h-[70%] bg-[radial-gradient(60%_60%_at_50%_30%,rgba(79,140,247,0.16),rgba(79,140,247,0.05)_45%,transparent_75%)] dark:bg-[radial-gradient(60%_60%_at_50%_30%,rgba(118,156,197,0.14),rgba(118,156,197,0.04)_45%,transparent_75%)]"
         />
-        <div className="relative z-10 rounded-2xl border border-[#D8DFE9]/80 bg-[#F9FCFF]/60 p-1.5 sm:p-2 shadow-[0_16px_48px_-24px_rgba(16,23,35,0.25)] dark:border-[#2B3646] dark:bg-[#1A2533]/70 dark:shadow-[0_16px_48px_-24px_rgba(0,0,0,0.5)]">
+        <div className="relative z-10 rounded-2xl border border-ink-120/80 bg-ink-25/60 p-1.5 sm:p-2 shadow-[0_16px_48px_-24px_rgba(16,23,35,0.25)] dark:border-ink-780 dark:bg-ink-850/70 dark:shadow-[0_16px_48px_-24px_rgba(0,0,0,0.5)]">
           {/* Below md, crop to the left of the dashboard so it stays legible */}
           <img
             src="/screenshot askio.png"
@@ -67,26 +72,26 @@ export default function HeroSection() {
         </div>
         <aside
           aria-label="Example customer conversation"
-          className="relative z-20 mx-auto -mt-20 w-[88%] max-w-[300px] overflow-hidden rounded-2xl border border-[#D8DFE9] bg-[#F9FCFF] text-left shadow-[0_12px_36px_-16px_rgba(16,23,35,0.3)] dark:border-[#2B3646] dark:bg-[#1A2533] md:absolute md:bottom-0 md:right-8 md:mt-0"
+          className="relative z-20 mx-auto -mt-20 w-[88%] max-w-[300px] overflow-hidden rounded-2xl border border-ink-120 bg-ink-25 text-left shadow-[0_12px_36px_-16px_rgba(16,23,35,0.3)] dark:border-ink-780 dark:bg-ink-850 md:absolute md:bottom-0 md:right-8 md:mt-0"
         >
-          <div className="flex items-center gap-2.5 border-b border-[#D8DFE9]/70 px-4 py-3 dark:border-[#2B3646]">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#E7EDF6] dark:bg-[#243040]">
+          <div className="flex items-center gap-2.5 border-b border-ink-120/70 px-4 py-3 dark:border-ink-780">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-ink-70 dark:bg-ink-805">
               <img src={brandLogo} alt="" className="h-6 w-6 dark:brightness-0 dark:invert" />
             </div>
             <div>
-              <p className="text-sm font-medium text-[#101723] dark:text-[#D7DFE5]">Your website assistant</p>
-              <p className="mt-0.5 text-xs text-[#647184] dark:text-[#9BAABD]">Example conversation</p>
+              <p className="text-sm font-medium text-fg">Your website assistant</p>
+              <p className="mt-0.5 text-xs text-ink-545 dark:text-ink-325">Example conversation</p>
             </div>
           </div>
           <div className="space-y-3 p-4 text-[13px] leading-relaxed">
-            <p className="ml-8 rounded-2xl rounded-br-md bg-[#101723] px-3 py-2.5 text-white dark:bg-[#D7DFE5] dark:text-[#141D2B]">
+            <p className="ml-8 rounded-2xl rounded-br-md bg-ink-900 px-3 py-2.5 text-white dark:bg-ink-130 dark:text-ink-875">
               Where can I track my order?
             </p>
-            <p className="mr-5 rounded-2xl rounded-bl-md bg-[#E7EDF6] px-3 py-2.5 text-[#101723] dark:bg-[#243040] dark:text-[#D7DFE5]">
+            <p className="mr-5 rounded-2xl rounded-bl-md bg-ink-70 px-3 py-2.5 text-ink-900 dark:bg-ink-805 dark:text-ink-130">
               You’ll find your tracking link in your shipping confirmation email.
             </p>
           </div>
-          <div className="hidden sm:block border-t border-[#D8DFE9]/70 px-4 py-2.5 text-center text-[11px] text-[#647184] dark:border-[#2B3646] dark:text-[#9BAABD]">
+          <div className="hidden sm:block border-t border-ink-120/70 px-4 py-2.5 text-center text-caption text-ink-545 dark:border-ink-780 dark:text-ink-325">
             Your answers. Your brand. Powered by Askio.
           </div>
         </aside>

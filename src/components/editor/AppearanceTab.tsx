@@ -1,5 +1,5 @@
 import React from "react";
-import { Check, Plus, Trash2 } from "lucide-react";
+import { Check, Plus, Trash2 } from "../icons";
 import { focusRing } from "../../pages/dashboard/ui";
 import { LiveOrb } from "../LiveOrb";
 import { orbPropsFor } from "../../utils/orbColors";
@@ -98,8 +98,8 @@ const AppearanceTab: React.FC<Props> = ({ config, onChange }) => {
                   onClick={() => onChange("launcherStyle", option.value)}
                   className={`flex flex-col items-center rounded-xl border px-3 pb-3 pt-4 text-center transition-colors ${focusRing} ${
                     selected
-                      ? "border-[#101723] bg-[#F3F7FC] dark:border-[#D7DFE5] dark:bg-[#141D2B]"
-                      : "border-[#D8DFE9] hover:border-[#9BAABD] dark:border-[#2B3646] dark:hover:border-[#566273]"
+                      ? "border-ink-900 bg-ink-30 dark:border-ink-130 dark:bg-ink-875"
+                      : "border-ink-120 hover:border-ink-325 dark:border-ink-780 dark:hover:border-ink-605"
                   }`}
                 >
                   <span className="flex h-14 items-center justify-center">
@@ -118,8 +118,8 @@ const AppearanceTab: React.FC<Props> = ({ config, onChange }) => {
                       </span>
                     )}
                   </span>
-                  <span className="mt-3 text-body-sm font-medium text-[#101723] dark:text-[#D7DFE5]">{option.label}</span>
-                  <span className="mt-0.5 text-caption text-[#647184] dark:text-[#87909D]">{option.hint}</span>
+                  <span className="mt-3 text-body-sm font-medium text-fg">{option.label}</span>
+                  <span className="mt-0.5 text-caption text-fg-subtle">{option.hint}</span>
                 </button>
               );
             })}
@@ -148,7 +148,7 @@ const AppearanceTab: React.FC<Props> = ({ config, onChange }) => {
             return (
               <div key={i} className="flex items-end gap-2">
                 <label className="block w-[38%] shrink-0">
-                  <span className="text-caption font-medium text-[#566273] dark:text-[#9BAABD]">{t("pageMatch")}</span>
+                  <span className="text-caption font-medium text-fg-muted">{t("pageMatch")}</span>
                   <input
                     className={`${inputClass} mt-1 h-10`}
                     placeholder={t("pageMatchPlaceholder")}
@@ -159,7 +159,7 @@ const AppearanceTab: React.FC<Props> = ({ config, onChange }) => {
                   />
                 </label>
                 <label className="block min-w-0 flex-1">
-                  <span className="text-caption font-medium text-[#566273] dark:text-[#9BAABD]">{t("pageMessage")}</span>
+                  <span className="text-caption font-medium text-fg-muted">{t("pageMessage")}</span>
                   <input
                     className={`${inputClass} mt-1 h-10`}
                     placeholder={t("pageMessagePlaceholder")}
@@ -173,7 +173,7 @@ const AppearanceTab: React.FC<Props> = ({ config, onChange }) => {
                   aria-label={t("removePageGreeting")}
                   title={t("removePageGreeting")}
                   onClick={() => onChange("pageGreetings", (config.pageGreetings || []).filter((_, j) => j !== i))}
-                  className={`mb-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-[#87909D] hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/30 ${focusRing}`}
+                  className={`mb-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-ink-425 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/30 ${focusRing}`}
                 >
                   <Trash2 size={15} />
                 </button>
@@ -184,7 +184,7 @@ const AppearanceTab: React.FC<Props> = ({ config, onChange }) => {
             <button
               type="button"
               onClick={() => onChange("pageGreetings", [...(config.pageGreetings || []), { match: "", message: "" }])}
-              className={`inline-flex items-center gap-1.5 rounded-md text-body-sm font-medium text-[#101723] hover:underline dark:text-[#D7DFE5] ${focusRing}`}
+              className={`inline-flex items-center gap-1.5 rounded-md text-body-sm font-medium text-ink-900 hover:underline dark:text-ink-130 ${focusRing}`}
             >
               <Plus size={14} />
               {t("addPageGreeting")}
@@ -217,10 +217,10 @@ const AppearanceTab: React.FC<Props> = ({ config, onChange }) => {
               </div>
               <div>
                 <div className="mb-1.5 flex items-center justify-between">
-                  <label htmlFor="gradient-angle" className="text-label text-[#101723] dark:text-[#D7DFE5]">
+                  <label htmlFor="gradient-angle" className="text-label text-fg">
                     {t("angle")}
                   </label>
-                  <span className="font-mono text-caption tabular-nums text-[#566273] dark:text-[#9BAABD]">
+                  <span className="font-mono text-caption tabular-nums text-fg-muted">
                     {gradient.angle}°
                   </span>
                 </div>
@@ -232,14 +232,14 @@ const AppearanceTab: React.FC<Props> = ({ config, onChange }) => {
                   step={5}
                   value={gradient.angle}
                   onChange={(e) => setGradient({ angle: Number(e.target.value) })}
-                  className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-[#D8DFE9] accent-[#101723] dark:bg-[#39485B] dark:accent-[#D7DFE5]"
+                  className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-ink-120 accent-ink-900 dark:bg-ink-710 dark:accent-ink-130"
                 />
               </div>
               <div
                 className="h-12 rounded-lg ring-1 ring-inset ring-black/10 dark:ring-white/10"
                 style={{ background: config.primaryColor }}
               />
-              <p className="text-caption text-[#647184] dark:text-[#87909D]">
+              <p className="text-caption text-fg-subtle">
                 {t("gradientHint")}
               </p>
             </>
@@ -260,7 +260,7 @@ const AppearanceTab: React.FC<Props> = ({ config, onChange }) => {
                 />
               </div>
               <div>
-                <p className="mb-2 text-label text-[#101723] dark:text-[#D7DFE5]">{t("presets")}</p>
+                <p className="mb-2 text-label text-fg">{t("presets")}</p>
                 <div className="flex flex-wrap gap-2">
                   {PRESETS.map((color) => {
                     const active =
@@ -274,7 +274,7 @@ const AppearanceTab: React.FC<Props> = ({ config, onChange }) => {
                         aria-pressed={active}
                         onClick={() => setColors(color, color)}
                         className={`flex h-8 w-8 items-center justify-center rounded-full ring-1 ring-inset ring-black/10 transition-transform hover:scale-110 dark:ring-white/10 ${focusRing} ${
-                          active ? "ring-2 ring-offset-2 ring-offset-[#F9FCFF] !ring-[#101723] dark:ring-offset-[#1A2533] dark:!ring-[#D7DFE5]" : ""
+                          active ? "ring-2 ring-offset-2 ring-offset-ink-25 !ring-ink-900 dark:ring-offset-ink-850 dark:!ring-ink-130" : ""
                         }`}
                         style={{ backgroundColor: color }}
                       >

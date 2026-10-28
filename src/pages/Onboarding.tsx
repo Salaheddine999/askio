@@ -2,7 +2,7 @@ import React, { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { toast } from "react-hot-toast";
-import { AlertTriangle, ArrowLeft, ArrowRight, Check, Pencil, Plus, Sparkles, Trash2 } from "lucide-react";
+import { AlertTriangle, ArrowLeft, ArrowRight, Check, Pencil, Plus, Trash2 } from "../components/icons";
 import { apiRequest } from "../utils/api";
 import { useMediaQuery } from "../hooks/useMediaQuery";
 import { usePlanAccess } from "../hooks/usePlanAccess";
@@ -18,6 +18,7 @@ import { BLANK_ID, hasPlaceholder, startersFor } from "./onboarding/templates";
 import { makeT, useLanguage, useT, type Lang } from "../i18n";
 import { widgetMessages } from "../i18n/widget";
 import { onboardingMessages } from "../i18n/messages/onboarding";
+import { AiIcon } from "../components/icons";
 
 type Step = 1 | 2 | 3 | 4;
 type DraftFaq = { question: string; answer: string; selected: boolean };
@@ -73,20 +74,20 @@ const StepIndicator: React.FC<{ step: Step }> = ({ step }) => {
           <span
             className={`flex h-6 w-6 items-center justify-center rounded-full text-caption font-semibold ${
               done || current
-                ? "bg-[#101723] text-white dark:bg-[#D7DFE5] dark:text-[#141D2B]"
-                : "border border-[#D8DFE9] text-[#87909D] dark:border-[#2B3646]"
+                ? "bg-ink-900 text-white dark:bg-ink-130 dark:text-ink-875"
+                : "border border-ink-120 text-ink-425 dark:border-ink-780"
             }`}
           >
             {done ? <Check size={13} strokeWidth={3} /> : n}
           </span>
           <span
             className={`text-body-sm ${
-              current ? "font-medium text-[#101723] dark:text-[#E7EDF6]" : "text-[#647184] dark:text-[#87909D]"
+              current ? "font-medium text-ink-900 dark:text-ink-70" : "text-fg-subtle"
             }`}
           >
             {label}
           </span>
-          {n < 4 && <span className="mx-1 hidden h-px w-6 bg-[#D8DFE9] sm:block dark:bg-[#2B3646]" />}
+          {n < 4 && <span className="mx-1 hidden h-px w-6 bg-ink-120 sm:block dark:bg-ink-780" />}
         </li>
       );
     })}
@@ -221,7 +222,7 @@ const Onboarding: React.FC = () => {
   const showPreview = wide && step >= 2 && step <= 3;
 
   return (
-    <div className="min-h-screen bg-[#F3F7FC] font-sans text-[#101723] dark:bg-[#141D2B] dark:text-[#D7DFE5]">
+    <div className="min-h-screen bg-ink-30 font-sans text-ink-900 dark:bg-ink-875 dark:text-ink-130">
       <Helmet>
         <title>{t("pageTitle")}</title>
       </Helmet>
@@ -230,17 +231,17 @@ const Onboarding: React.FC = () => {
         <header className="flex flex-col gap-5">
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
-              <h1 className="font-serif text-h2 tracking-tight sm:text-h1 dark:text-[#E7EDF6]">
+              <h1 className="font-display text-h2 tracking-tight sm:text-h1 dark:text-ink-70">
                 {step === 4 ? t("headingReady") : t("headingSetup")}
               </h1>
-              <p className="mt-1 text-body-sm text-[#566273] dark:text-[#9BAABD]">
+              <p className="mt-1 text-body-sm text-fg-muted">
                 {step === 4 ? t("subReady") : t("subSetup")}
               </p>
             </div>
             {step < 4 && (
               <Link
                 to="/configure"
-                className={`rounded text-body-sm text-[#647184] underline-offset-2 hover:text-[#101723] hover:underline dark:text-[#87909D] dark:hover:text-[#D7DFE5] ${focusRing}`}
+                className={`rounded text-body-sm text-ink-545 underline-offset-2 hover:text-ink-900 hover:underline dark:text-ink-425 dark:hover:text-ink-130 ${focusRing}`}
               >
                 {t("skip")}
               </Link>
@@ -289,14 +290,14 @@ const Onboarding: React.FC = () => {
                 </Panel>
 
                 {canUseAi && (
-                  <div className="flex flex-col gap-4 rounded-xl border border-[#D8DFE9] bg-[#F9FCFF] p-5 sm:flex-row sm:items-center sm:justify-between dark:border-[#2B3646] dark:bg-[#1A2533]">
+                  <div className="flex flex-col gap-4 rounded-xl border border-ink-120 bg-ink-25 p-5 sm:flex-row sm:items-center sm:justify-between dark:border-ink-780 dark:bg-ink-850">
                     <div className="flex items-start gap-3">
-                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#101723] text-white dark:bg-[#D7DFE5] dark:text-[#141D2B]">
-                        <Sparkles size={16} />
+                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-ink-900 text-white dark:bg-ink-130 dark:text-ink-875">
+                        <AiIcon size={16} />
                       </span>
                       <div>
-                        <p className="text-body-sm font-medium text-[#101723] dark:text-[#E7EDF6]">{t("scanTitle")}</p>
-                        <p className="mt-0.5 text-caption text-[#647184] dark:text-[#87909D]">{t("scanDescription")}</p>
+                        <p className="text-body-sm font-medium text-ink-900 dark:text-ink-70">{t("scanTitle")}</p>
+                        <p className="mt-0.5 text-caption text-fg-subtle">{t("scanDescription")}</p>
                       </div>
                     </div>
                     <button
@@ -327,12 +328,12 @@ const Onboarding: React.FC = () => {
                             onClick={() => setStarterId(s.id)}
                             className={`rounded-xl border px-4 py-3 text-left transition-colors ${focusRing} ${
                               isSelected
-                                ? "border-[#101723] bg-[#F3F7FC] dark:border-[#D7DFE5] dark:bg-[#141D2B]"
-                                : "border-[#D8DFE9] hover:border-[#9BAABD] dark:border-[#2B3646] dark:hover:border-[#566273]"
+                                ? "border-ink-900 bg-ink-30 dark:border-ink-130 dark:bg-ink-875"
+                                : "border-ink-120 hover:border-ink-325 dark:border-ink-780 dark:hover:border-ink-605"
                             }`}
                           >
-                            <span className="block text-body-sm font-medium text-[#101723] dark:text-[#D7DFE5]">{s.label}</span>
-                            <span className="mt-0.5 block text-caption text-[#647184] dark:text-[#87909D]">{s.hint}</span>
+                            <span className="block text-body-sm font-medium text-fg">{s.label}</span>
+                            <span className="mt-0.5 block text-caption text-fg-subtle">{s.hint}</span>
                           </button>
                         );
                       })}
@@ -343,9 +344,9 @@ const Onboarding: React.FC = () => {
                       </p>
                     )}
                     {!canUseAi && !planLoading && (
-                      <p className="mt-4 text-caption text-[#647184] dark:text-[#87909D]">
+                      <p className="mt-4 text-caption text-fg-subtle">
                         {t("proUpsell")}{" "}
-                        <Link to="/plans" className="font-medium text-[#101723] underline underline-offset-2 dark:text-[#E7EDF6]">
+                        <Link to="/plans" className="font-medium text-ink-900 underline underline-offset-2 dark:text-ink-70">
                           {t("seePro")}
                         </Link>
                       </p>
@@ -382,11 +383,11 @@ const Onboarding: React.FC = () => {
                   }
                 >
                   {faqs.length === 0 ? (
-                    <p className="px-6 py-10 text-center text-body-sm text-[#647184] dark:text-[#87909D]">
+                    <p className="px-6 py-10 text-center text-body-sm text-fg-subtle">
                       {t("noQuestions")}
                     </p>
                   ) : (
-                    <ul className="divide-y divide-[#E7EDF6] dark:divide-[#2B3646]">
+                    <ul className="divide-y divide-ink-70 dark:divide-ink-780">
                       {faqs.map((faq, i) => {
                         const needsDetails = faq.selected && (hasPlaceholder(faq.question) || hasPlaceholder(faq.answer));
                         return (
@@ -397,7 +398,7 @@ const Onboarding: React.FC = () => {
                                 checked={faq.selected}
                                 onChange={(e) => setFaq(i, { selected: e.target.checked })}
                                 aria-label={t("keepQuestion", { question: faq.question || t("newQuestion") })}
-                                className="mt-1 h-4 w-4 shrink-0 cursor-pointer accent-[#101723] dark:accent-[#D7DFE5]"
+                                className="mt-1 h-4 w-4 shrink-0 cursor-pointer accent-ink-900 dark:accent-ink-130"
                               />
                               {editing === i ? (
                                 <div className="min-w-0 flex-1 space-y-2">
@@ -430,10 +431,10 @@ const Onboarding: React.FC = () => {
                                   onClick={() => setEditing(i)}
                                   className={`min-w-0 flex-1 rounded-md text-left ${focusRing}`}
                                 >
-                                  <span className="block text-body-sm font-medium text-[#101723] dark:text-[#D7DFE5]">
+                                  <span className="block text-body-sm font-medium text-fg">
                                     {faq.question || t("untitledQuestion")}
                                   </span>
-                                  <span className="mt-1 block text-body-sm text-[#566273] dark:text-[#9BAABD]">
+                                  <span className="mt-1 block text-body-sm text-fg-muted">
                                     {!faq.answer
                                       ? t("noAnswer")
                                       : faq.answer.split(/(\[[^\]]+\])/).map((part, k) =>
@@ -461,7 +462,7 @@ const Onboarding: React.FC = () => {
                                   type="button"
                                   aria-label={t("removeQuestion")}
                                   onClick={() => setFaqs((list) => list.filter((_, j) => j !== i))}
-                                  className={`rounded-lg p-1.5 text-[#87909D] hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/30 ${focusRing}`}
+                                  className={`rounded-lg p-1.5 text-ink-425 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/30 ${focusRing}`}
                                 >
                                   <Trash2 size={14} />
                                 </button>
@@ -487,7 +488,7 @@ const Onboarding: React.FC = () => {
                     {t("back")}
                   </button>
                   <div className="flex items-center gap-3">
-                    <span className="hidden text-caption text-[#647184] sm:inline dark:text-[#87909D]">
+                    <span className="hidden text-caption text-ink-545 sm:inline dark:text-ink-425">
                       {t.plural("kept", selected.length)}
                       {unfinished ? t.plural("toFinish", unfinished) : ""}
                     </span>
@@ -543,7 +544,7 @@ const Onboarding: React.FC = () => {
                     </div>
 
                     <div>
-                      <p className="mb-2 text-label text-[#101723] dark:text-[#D7DFE5]">{t("brandColour")}</p>
+                      <p className="mb-2 text-label text-fg">{t("brandColour")}</p>
                       <div className="flex flex-wrap items-center gap-2">
                         {COLORS.map((c) => {
                           const active = config.primaryColor.toLowerCase() === c.toLowerCase();
@@ -555,7 +556,7 @@ const Onboarding: React.FC = () => {
                               aria-pressed={active}
                               onClick={() => setConfig((cfg) => ({ ...cfg, primaryColor: c, secondaryColor: c }))}
                               className={`flex h-8 w-8 items-center justify-center rounded-full ring-1 ring-inset ring-black/10 transition-transform hover:scale-110 ${focusRing} ${
-                                active ? "ring-2 ring-offset-2 ring-offset-[#F9FCFF] !ring-[#101723] dark:ring-offset-[#1A2533] dark:!ring-[#D7DFE5]" : ""
+                                active ? "ring-2 ring-offset-2 ring-offset-ink-25 !ring-ink-900 dark:ring-offset-ink-850 dark:!ring-ink-130" : ""
                               }`}
                               style={{ backgroundColor: c }}
                             >
@@ -574,7 +575,7 @@ const Onboarding: React.FC = () => {
                     </div>
 
                     <div>
-                      <p className="mb-2 text-label text-[#101723] dark:text-[#D7DFE5]">{t("launcher")}</p>
+                      <p className="mb-2 text-label text-fg">{t("launcher")}</p>
                       <div role="radiogroup" aria-label={t("launcherStyle")} className="grid max-w-sm grid-cols-2 gap-3">
                         {([
                           { value: "classic", label: t("classic") },
@@ -590,8 +591,8 @@ const Onboarding: React.FC = () => {
                               onClick={() => update("launcherStyle", o.value)}
                               className={`flex items-center gap-3 rounded-xl border px-3 py-2.5 text-left transition-colors ${focusRing} ${
                                 isSelected
-                                  ? "border-[#101723] bg-[#F3F7FC] dark:border-[#D7DFE5] dark:bg-[#141D2B]"
-                                  : "border-[#D8DFE9] hover:border-[#9BAABD] dark:border-[#2B3646]"
+                                  ? "border-ink-900 bg-ink-30 dark:border-ink-130 dark:bg-ink-875"
+                                  : "border-ink-120 hover:border-ink-325 dark:border-ink-780"
                               }`}
                             >
                               {o.value === "orb" ? (
@@ -599,7 +600,7 @@ const Onboarding: React.FC = () => {
                               ) : (
                                 <span className="h-[30px] w-[30px] rounded-full" style={{ background: config.primaryColor }} />
                               )}
-                              <span className="text-body-sm font-medium text-[#101723] dark:text-[#D7DFE5]">{o.label}</span>
+                              <span className="text-body-sm font-medium text-fg">{o.label}</span>
                             </button>
                           );
                         })}
