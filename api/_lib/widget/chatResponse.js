@@ -5,6 +5,7 @@ import { getMonthlyAiReplies, recordAiReply } from "../aiUsage.js";
 import { takeRateLimit, visitorKey } from "../rateLimit.js";
 import { reportError } from "../monitoring.js";
 import { noteAiFailure } from "../aiHealth.js";
+import { takeAiBudget } from "../aiBudget.js";
 import { adminDb } from "../firebaseAdmin.js";
 
 const MAX_QUERY_CHARS = 1000;
@@ -80,6 +81,10 @@ export default async function handler(req, res) {
     const used = await getMonthlyAiReplies(ownerUid);
     if (used >= ownerProfile.access.aiReplyLimit) {
       return sendFallback(res, "monthly_limit");
+    }
+    // Askio-wide ceiling for the day, on top of each account's own limits.
+    if (!(await takeAiBudget("chat"))) {
+      return sendFallback(res, "daily_limit");
     }
 
     // When the owner is online, a question the bot can't answer goes to them.

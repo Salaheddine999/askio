@@ -8,6 +8,8 @@ const ai = vi.hoisted(() => ({
   liveChat: false,
   presence: null as null | { online: boolean; lastSeen: { toMillis: () => number } },
   handoff: "" as string,
+  budgetLeft: true,
+  called: 0,
 }));
 
 vi.mock("../api/_lib/firebaseAdmin.js", () => ({
@@ -34,11 +36,13 @@ vi.mock("../api/_lib/aiUsage.js", () => ({
 vi.mock("../api/_lib/ai.js", () => ({
   generateChatResponse: async ({ handoff }: { handoff: string }) => {
     ai.handoff = handoff;
+    ai.called++;
     if (ai.error) throw ai.error;
     return ai.result;
   },
 }));
 vi.mock("../api/_lib/monitoring.js", () => ({ reportError: () => undefined }));
+vi.mock("../api/_lib/aiBudget.js", () => ({ takeAiBudget: async () => ai.budgetLeft }));
 
 const { default: chatResponse } = await import("../api/_lib/widget/chatResponse.js");
 
@@ -67,6 +71,8 @@ beforeEach(() => {
   ai.liveChat = false;
   ai.presence = null;
   ai.handoff = "";
+  ai.budgetLeft = true;
+  ai.called = 0;
 });
 
 describe("AI chat replies (/api/ai/chat-response)", () => {
@@ -105,6 +111,16 @@ describe("AI chat replies (/api/ai/chat-response)", () => {
     await chatResponse(ask(), res);
     expect(res.statusCode).toBe(200);
     expect(res.body).toEqual({ reply: null, fallback: "ai_error" });
+    expect(ai.recorded).toBe(0);
+  });
+
+  it("answers from the FAQs, without calling the AI, once Askio's daily limit is reached", async () => {
+    ai.budgetLeft = false;
+    ai.result = { reply: "Yes.", answered: true };
+    const res = fakeRes();
+    await chatResponse(ask(), res);
+    expect(res.body).toEqual({ reply: null, fallback: "daily_limit" });
+    expect(ai.called).toBe(0);
     expect(ai.recorded).toBe(0);
   });
 });

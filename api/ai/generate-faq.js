@@ -6,6 +6,15 @@ import { adminDb } from "../_lib/firebaseAdmin.js";
 import { assertCanUseAiForOwner, assertNotSuspended, getOwnedChatbot } from "../_lib/plan.js";
 import { withMonitoring } from "../_lib/monitoring.js";
 import { noteAiFailure } from "../_lib/aiHealth.js";
+import { takeRateLimit } from "../_lib/rateLimit.js";
+import { takeAiBudget } from "../_lib/aiBudget.js";
+import { FieldValue } from "firebase-admin/firestore";
+
+/** Website scans per account per UTC day. Each one is a long Sonnet call. */
+export const FAQ_SCANS_PER_DAY = 10;
+const DAY_MS = 86_400_000;
+/** The persona goes into the prompt; a sentence or two is all it needs. */
+const MAX_TONE_CHARS = 300;
 
 
 function normalizeUrl(value) {
@@ -61,14 +70,20 @@ async function handler(req, res) {
       });
     }
 
-    const faqs = await generateFaqsFromUrl(normalizedUrl, Boolean(isDeepCrawl), aiTone);
+    // Checked last, so a refused request (no plan, AI off) doesn't use a scan.
+    if (!(await takeRateLimit(`faq_${decodedToken.uid}`, FAQ_SCANS_PER_DAY, DAY_MS))) {
+      return res.status(429).json({
+        error: `You've used today's ${FAQ_SCANS_PER_DAY} website scans. You can scan again tomorrow, or add FAQs by hand.`,
+      });
+    }
+    if (!(await takeAiBudget("faq"))) {
+      return res.status(503).json({ error: "FAQ writing is paused for today. Please try again tomorrow, or add FAQs by hand." });
+    }
 
-    await adminDb.collection("users").doc(decodedToken.uid).set(
-      {
-        aiScansCount: (Number((await adminDb.collection("users").doc(decodedToken.uid).get()).data()?.aiScansCount) || 0) + 1,
-      },
-      { merge: true }
-    );
+    const tone = typeof aiTone === "string" ? aiTone.slice(0, MAX_TONE_CHARS) : "";
+    const faqs = await generateFaqsFromUrl(normalizedUrl, Boolean(isDeepCrawl), tone);
+
+    await adminDb.collection("users").doc(decodedToken.uid).set({ aiScansCount: FieldValue.increment(1) }, { merge: true });
 
     await chatbotRef.set(
       {
