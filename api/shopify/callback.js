@@ -20,6 +20,11 @@ async function handler(req, res) {
     if (!isSignedByShopify(req.query, apiSecret)) {
       return res.status(401).json({ error: "This request didn't come from Shopify." });
     }
+    // Shopify signs the time it sent the merchant back; old links are refused.
+    const sentAt = Number(req.query.timestamp) * 1000;
+    if (!Number.isFinite(sentAt) || Math.abs(Date.now() - sentAt) > 24 * 3_600_000) {
+      return res.redirect(302, `${INTEGRATIONS}?shopify_error=expired`);
+    }
     const install = readState(state, apiSecret);
     if (!install) {
       return res.redirect(302, `${INTEGRATIONS}?shopify_error=expired`);

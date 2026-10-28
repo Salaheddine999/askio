@@ -1,6 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // Push notifications with Firestore and Firebase Cloud Messaging stubbed.
+// Shaped like real FCM registration tokens.
+const PHONE = "phoneAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
+const LAPTOP = "laptopBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB";
+
 const fake = vi.hoisted(() => ({
   users: {} as Record<string, Record<string, unknown>>,
   sent: [] as { tokens: string[]; webpush: { notification: { title: string; body: string }; fcmOptions: { link: string } } }[],
@@ -37,7 +41,7 @@ const { pushLiveChatRequest, sendPush } = await import("../api/_lib/push.js");
 const chatbot = { user_id: "owner1", title: "Shop bot" };
 
 beforeEach(() => {
-  fake.users = { owner1: { pushTokens: ["phone", "laptop"], language: "en" } };
+  fake.users = { owner1: { pushTokens: [PHONE, LAPTOP], language: "en" } };
   fake.sent = [];
   fake.failures = {};
   fake.removed = [];
@@ -47,7 +51,7 @@ describe("push notifications", () => {
   it("ring every device with what the visitor wrote and a link to the chat", async () => {
     expect(await pushLiveChatRequest({ chatbot, conversationId: "bot1_s1", preview: "Do you ship to Belgium?" })).toBe(2);
     const [message] = fake.sent;
-    expect(message.tokens).toEqual(["phone", "laptop"]);
+    expect(message.tokens).toEqual([PHONE, LAPTOP]);
     expect(message.webpush.notification).toMatchObject({ title: "A visitor wants to talk to you", body: "Shop bot: Do you ship to Belgium?" });
     expect(message.webpush.fcmOptions.link).toBe("https://www.getaskio.xyz/conversations?open=bot1_s1");
   });
@@ -60,9 +64,9 @@ describe("push notifications", () => {
   });
 
   it("forget devices that will never receive them again", async () => {
-    fake.failures = { laptop: "messaging/registration-token-not-registered" };
+    fake.failures = { [LAPTOP]: "messaging/registration-token-not-registered" };
     expect(await sendPush("owner1", { title: "t", body: "b", path: "/", tag: "x" })).toBe(1);
-    expect(fake.removed).toEqual(["laptop"]);
+    expect(fake.removed).toEqual([LAPTOP]);
   });
 
   it("do nothing for an owner without devices", async () => {

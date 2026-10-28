@@ -50,9 +50,11 @@ const ChatbotEmbed: React.FC = () => {
   }, [id, launcherOverride, greetingOverride]);
 
   useEffect(() => {
-    // Notify parent window that the chatbot is ready
+    // Tell the embedding page the chatbot is ready, with only what it needs
+    // to place the launcher. The page is any website, so nothing else is sent.
     if (config) {
-      window.parent.postMessage({ type: "chatbotReady", config }, "*");
+      const { isActive, suspended, position, launcherStyle } = config;
+      window.parent.postMessage({ type: "chatbotReady", config: { isActive, suspended, position, launcherStyle } }, "*");
     }
   }, [config]);
 

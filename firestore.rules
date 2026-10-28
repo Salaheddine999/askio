@@ -26,10 +26,6 @@ service cloud.firestore {
         || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('suspended', false) != true;
     }
 
-    function suspensionUnchanged() {
-      return request.resource.data.get('suspended', false) == resource.data.get('suspended', false);
-    }
-
     // A new profile, as sign-up writes it: the free plan, the signed-in
     // account's own email, and nothing else. Plan, limits, billing ids and
     // suspension are written by the server only (webhooks, admin actions).
@@ -72,17 +68,17 @@ service cloud.firestore {
       allow get: if true;
       allow list: if isAdmin() || (signedIn() && resource.data.user_id == request.auth.uid);
 
-      allow create: if signedIn()
-        && request.resource.data.user_id == request.auth.uid
-        && request.resource.data.aiEnabled == false
-        && request.resource.data.get('suspended', false) == false
-        && notSuspended();
+      // Chatbots are created and edited through /api/chatbots/save, which
+      // checks the plan and cleans every field. The dashboard writes only two
+      // things directly: pausing a chatbot, and adding an FAQ from Analytics.
+      allow create: if false;
 
       allow update: if ownsExistingChatbot()
-        && request.resource.data.user_id == resource.data.user_id
-        && request.resource.data.aiEnabled == resource.data.aiEnabled
-        && suspensionUnchanged()
-        && notSuspended();
+        && notSuspended()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['isActive', 'faqData', 'lastUpdated'])
+        && request.resource.data.get('isActive', true) is bool
+        && request.resource.data.get('faqData', []) is list
+        && request.resource.data.get('faqData', []).size() <= 200;
 
       allow delete: if ownsExistingChatbot() && notSuspended();
     }

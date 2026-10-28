@@ -262,7 +262,11 @@
       }
 
       window.addEventListener("message", function (event) {
+        // Only this widget's own frame may hide, move or resize it; other
+        // frames on the page (ads, a second chatbot) are ignored.
+        if (event.source !== iframe.contentWindow || !event.data || typeof event.data !== "object") return;
         if (event.data.type === "chatbotReady") {
+          if (!event.data.config || typeof event.data.config !== "object") return;
           if (event.data.config.isActive === false || event.data.config.suspended === true) {
              iframe.style.display = "none";
              return;

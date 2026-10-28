@@ -1,3 +1,4 @@
+import crypto from "node:crypto";
 import { Timestamp } from "firebase-admin/firestore";
 import { adminDb } from "../_lib/firebaseAdmin.js";
 import { sendError } from "../_lib/response.js";
@@ -38,8 +39,14 @@ async function deleteWhere(query, budget) {
  * variable is set, so only the scheduler can trigger it.
  */
 async function handler(req, res) {
+  if (req.method !== "GET") {
+    res.setHeader("Allow", "GET");
+    return res.status(405).json({ error: "Method not allowed." });
+  }
   const secret = process.env.CRON_SECRET;
-  if (!secret || req.headers.authorization !== `Bearer ${secret}`) {
+  const expected = Buffer.from(`Bearer ${secret || ""}`);
+  const received = Buffer.from(String(req.headers.authorization || ""));
+  if (!secret || expected.length !== received.length || !crypto.timingSafeEqual(expected, received)) {
     return res.status(401).json({ error: "Unauthorized." });
   }
 

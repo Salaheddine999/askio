@@ -1,7 +1,7 @@
 import { generateChatResponse } from "../ai.js";
 import { sendError } from "../response.js";
 import { assertChatbotAiAvailable } from "../plan.js";
-import { getMonthlyAiReplies, recordAiReply } from "../aiUsage.js";
+import { releaseAiReply, reserveAiReply } from "../aiUsage.js";
 import { takeRateLimit, takeRateLimits, visitorKey } from "../rateLimit.js";
 import { reportError } from "../monitoring.js";
 import { noteAiFailure } from "../aiHealth.js";
@@ -90,10 +90,6 @@ export default async function handler(req, res) {
     const { chatbotData, ownerProfile } = availability;
     const ownerUid = chatbotData.user_id;
 
-    const used = await getMonthlyAiReplies(ownerUid);
-    if (used >= ownerProfile.access.aiReplyLimit) {
-      return sendFallback(res, "monthly_limit");
-    }
     // One account can use at most a share of Askio's daily ceiling, so
     // traffic aimed at one customer's chatbot can't switch AI off for all.
     if (!(await takeRateLimit(`ai_owner_day_${ownerUid}`, ownerDailyShare(), DAY_MS))) {
@@ -102,6 +98,12 @@ export default async function handler(req, res) {
     // Askio-wide ceiling for the day, on top of each account's own limits.
     if (!(await takeAiBudget("chat"))) {
       return sendFallback(res, "daily_limit");
+    }
+    // The monthly reply is reserved before the model is called, so requests
+    // arriving together can't go past the plan's limit. It's given back if
+    // no reply reaches the visitor.
+    if (!(await reserveAiReply(ownerUid, ownerProfile.access.aiReplyLimit))) {
+      return sendFallback(res, "monthly_limit");
     }
 
     // When the owner is online, a question the bot can't answer goes to them.
@@ -119,6 +121,8 @@ export default async function handler(req, res) {
         handoff: live ? "live" : chatbotData.enableLeadCapture === true ? "email" : chatbotData.liveChatLink ? "human" : "none",
       });
     } catch (error) {
+      // Only replies the visitor actually receives count toward the limit.
+      await releaseAiReply(ownerUid);
       // Out of quota, overloaded or slow: the widget answers from the FAQs.
       if (error.statusCode !== 503) throw error;
       if (!error.expected) reportError(error, { route: "chat-response", aiStatus: error.aiStatus });
@@ -126,9 +130,8 @@ export default async function handler(req, res) {
       return sendFallback(res, "ai_error");
     }
 
-    // Only replies the visitor actually receives count toward the limit.
-    if (result.reply) {
-      await recordAiReply(ownerUid);
+    if (!result.reply) {
+      await releaseAiReply(ownerUid);
     }
 
     return res.status(200).json({ reply: result.reply, answered: result.answered, sources: result.sources || [], live });

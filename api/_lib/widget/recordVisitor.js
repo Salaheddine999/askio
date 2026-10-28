@@ -26,7 +26,9 @@ const LIMITS = {
   seen: [10, 600],
 };
 
-const SESSION_ID = /^[A-Za-z0-9_-]{8,64}$/;
+// No "_": the conversation id is "<chatbotId>_<sessionId>", so an
+// underscore here could make one chatbot's key look like another's.
+const SESSION_ID = /^[A-Za-z0-9-]{8,64}$/;
 /** A conversation stops growing here, well under Firestore's 1 MB document limit. */
 const MAX_MESSAGES = 200;
 const MAX_MESSAGE_CHARS = 2000;
@@ -58,7 +60,8 @@ function token(value, { required = false } = {}) {
     if (required) throw badRequest("Missing visitor token.");
     return null;
   }
-  if (typeof value !== "string" || value.length > 64) throw badRequest("Invalid visitor token.");
+  // Part of a document id, so only plain characters.
+  if (typeof value !== "string" || !/^[A-Za-z0-9_-]{1,64}$/.test(value)) throw badRequest("Invalid visitor token.");
   return value;
 }
 
@@ -346,8 +349,9 @@ export default async function recordVisitor(req, res) {
       await collection.add(record);
     }
     if (kind === "lead") {
-      await tagConversationLead(chatbotId, body.sessionId, fields.email);
-      await sendLeadAlert({ chatbotId, chatbot, email: fields.email, sessionId: body.sessionId });
+      const sessionId = typeof body.sessionId === "string" && SESSION_ID.test(body.sessionId) ? body.sessionId : null;
+      await tagConversationLead(chatbotId, sessionId, fields.email);
+      await sendLeadAlert({ chatbotId, chatbot, email: fields.email, sessionId });
     }
 
     return res.status(201).json({ ok: true });

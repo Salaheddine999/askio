@@ -8,6 +8,20 @@ import { withMonitoring } from "../_lib/monitoring.js";
 
 // Owners can star up to this many questions for the widget to suggest.
 const MAX_SUGGESTED = 3;
+export const MAX_FAQS = 200;
+const POSITIONS = ["bottom-right", "bottom-left", "top-right", "top-left"];
+// A hex colour, or the two-colour gradient the editor makes. Nothing else
+// reaches the widget's styles (no url() that would load from elsewhere).
+const HEX = /^#[0-9a-f]{3,8}$/i;
+const GRADIENT = /^linear-gradient\(\s*-?\d+(?:\.\d+)?deg\s*,\s*#[0-9a-f]{3,8}\s*,\s*#[0-9a-f]{3,8}\s*\)$/i;
+
+export function normalizeColor(value, fallback) {
+  const color = typeof value === "string" ? value.trim() : "";
+  return HEX.test(color) || GRADIENT.test(color) ? color : fallback;
+}
+
+/** Free text, trimmed and cut to a length that fits its place in the widget. */
+const clip = (value, max) => String(value ?? "").trim().slice(0, max);
 
 /** A button link on an FAQ answer: a web page, email, phone or WhatsApp. */
 export function normalizeButtonUrl(value) {
@@ -49,14 +63,15 @@ export function normalizeFaqData(faqData) {
       const buttonLabel = typeof item.buttonLabel === "string" ? item.buttonLabel.trim().slice(0, 40) : "";
       const buttonUrl = normalizeButtonUrl(item.buttonUrl);
       return {
-        question: item.question.trim(),
-        answer: item.answer.trim(),
+        question: item.question.trim().slice(0, 300),
+        answer: item.answer.trim().slice(0, 2000),
         suggested: item.suggested === true,
         // An optional button under the answer ("Track my order"); both parts or neither.
         ...(buttonLabel && buttonUrl ? { buttonLabel, buttonUrl } : {}),
       };
     })
     .filter((item) => item.question && item.answer)
+    .slice(0, MAX_FAQS)
     .map(({ suggested, ...item }) =>
       suggested && starred < MAX_SUGGESTED ? (starred++, { ...item, suggested: true }) : item
     );
@@ -66,19 +81,19 @@ function normalizeChatbotPayload(payload, uid) {
   const aiEnabled = payload.aiEnabled === true;
 
   return {
-    name: String(payload.name || "").trim(),
-    title: String(payload.title || "").trim(),
-    primaryColor: String(payload.primaryColor || "#4F46E5"),
-    secondaryColor: String(payload.secondaryColor || "#6366F1"),
-    position: String(payload.position || "bottom-right"),
+    name: clip(payload.name, 80),
+    title: clip(payload.title, 80),
+    primaryColor: normalizeColor(payload.primaryColor, "#4F46E5"),
+    secondaryColor: normalizeColor(payload.secondaryColor, "#6366F1"),
+    position: POSITIONS.includes(payload.position) ? payload.position : "bottom-right",
     launcherStyle: payload.launcherStyle === "orb" ? "orb" : "classic",
     greetingBubble: payload.greetingBubble === true,
     pageGreetings: normalizePageGreetings(payload.pageGreetings),
-    initialMessage: String(payload.initialMessage || "Hello! How can I help you today?"),
-    placeholder: String(payload.placeholder || "Type your message..."),
+    initialMessage: clip(payload.initialMessage, 500) || "Hello! How can I help you today?",
+    placeholder: clip(payload.placeholder, 120) || "Type your message...",
     language: ["en", "fr", "nl", "de", "es"].includes(payload.language) ? payload.language : "en",
     faqData: normalizeFaqData(payload.faqData),
-    liveChatLink: String(payload.liveChatLink || "").trim(),
+    liveChatLink: clip(payload.liveChatLink, 500),
     enableLeadCapture: payload.enableLeadCapture === true,
     // "Answered from: …" under replies; on unless the owner turns it off.
     showSources: payload.showSources !== false,
@@ -86,7 +101,7 @@ function normalizeChatbotPayload(payload, uid) {
     // Live chat replies through the saved conversation, so it needs history.
     liveChat: payload.liveChat === true && payload.saveConversations === true,
     aiEnabled,
-    aiTone: aiEnabled ? String(payload.aiTone || "").trim() : "",
+    aiTone: aiEnabled ? clip(payload.aiTone, 500) : "",
     user_id: uid,
     lastUpdated: FieldValue.serverTimestamp(),
   };

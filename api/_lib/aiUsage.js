@@ -18,6 +18,33 @@ export async function getMonthlyAiReplies(uid) {
   return snap.exists ? Number(snap.data().replies) || 0 : 0;
 }
 
+/**
+ * Takes one reply from this month's allowance, in a transaction, so replies
+ * requested at the same moment can't go past `limit`. False when it's used up.
+ */
+export async function reserveAiReply(uid, limit) {
+  const month = currentUsageMonth();
+  const ref = usageRef(uid, month);
+  return adminDb.runTransaction(async (transaction) => {
+    const snap = await transaction.get(ref);
+    const used = snap.exists ? Number(snap.data().replies) || 0 : 0;
+    if (used >= limit) return false;
+    transaction.set(
+      ref,
+      { uid, month, replies: used + 1, updatedAt: FieldValue.serverTimestamp() },
+      { merge: true }
+    );
+    return true;
+  });
+}
+
+/** Gives a reserved reply back when none reached the visitor. Never throws. */
+export async function releaseAiReply(uid) {
+  await usageRef(uid, currentUsageMonth())
+    .set({ replies: FieldValue.increment(-1) }, { merge: true })
+    .catch(() => undefined);
+}
+
 export async function recordAiReply(uid) {
   const month = currentUsageMonth();
   await usageRef(uid, month).set(

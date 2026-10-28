@@ -166,15 +166,20 @@ describe("chatbots", () => {
     await assertSucceeds(getDocs(collection(admin(), "chatbot_configs")));
   });
 
-  it("owners create chatbots for themselves, without AI turned on", async () => {
-    await assertSucceeds(setDoc(doc(owner(), "chatbot_configs/bot2"), chatbot));
-    await assertFails(setDoc(doc(owner(), "chatbot_configs/bot3"), { ...chatbot, aiEnabled: true }));
-    await assertFails(setDoc(doc(owner(), "chatbot_configs/bot4"), { ...chatbot, user_id: "stranger" }));
+  it("chatbots are created through the server, never from the browser", async () => {
+    await assertFails(setDoc(doc(owner(), "chatbot_configs/bot2"), chatbot));
     await assertFails(setDoc(doc(visitor(), "chatbot_configs/bot5"), chatbot));
   });
 
+  it("the owner may pause a chatbot or add an FAQ, and nothing else", async () => {
+    await assertSucceeds(updateDoc(doc(owner(), "chatbot_configs/bot1"), { isActive: false, lastUpdated: new Date() }));
+    await assertSucceeds(updateDoc(doc(owner(), "chatbot_configs/bot1"), { faqData: arrayUnion({ question: "Q", answer: "A" }) }));
+    await assertFails(updateDoc(doc(owner(), "chatbot_configs/bot1"), { name: "Renamed" }));
+    await assertFails(updateDoc(doc(owner(), "chatbot_configs/bot1"), { primaryColor: "url(https://example.com/x.png)" }));
+    await assertFails(updateDoc(doc(owner(), "chatbot_configs/bot1"), { isActive: "yes" }));
+  });
+
   it("only the owner edits or deletes, and can't switch on AI or take it over", async () => {
-    await assertSucceeds(updateDoc(doc(owner(), "chatbot_configs/bot1"), { name: "Renamed" }));
     await assertFails(updateDoc(doc(owner(), "chatbot_configs/bot1"), { aiEnabled: true }));
     await assertFails(updateDoc(doc(owner(), "chatbot_configs/bot1"), { user_id: "stranger" }));
     await assertFails(updateDoc(doc(owner(), "chatbot_configs/bot1"), { suspended: true }));
@@ -239,7 +244,7 @@ describe("suspended owners", () => {
 
   it("can't create, edit or delete anything", async () => {
     await assertFails(setDoc(doc(owner(), "chatbot_configs/bot2"), chatbot));
-    await assertFails(updateDoc(doc(owner(), "chatbot_configs/bot1"), { name: "Renamed" }));
+    await assertFails(updateDoc(doc(owner(), "chatbot_configs/bot1"), { isActive: false }));
     await assertFails(deleteDoc(doc(owner(), "chatbot_configs/bot1")));
     await assertFails(deleteDoc(doc(owner(), "leads/r1")));
     await assertFails(deleteDoc(doc(owner(), "conversations/r1")));

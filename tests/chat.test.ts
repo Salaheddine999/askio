@@ -30,8 +30,8 @@ vi.mock("../api/_lib/plan.js", () => ({
   }),
 }));
 vi.mock("../api/_lib/aiUsage.js", () => ({
-  getMonthlyAiReplies: async () => 0,
-  recordAiReply: async () => void ai.recorded++,
+  reserveAiReply: async () => (ai.recorded++, true),
+  releaseAiReply: async () => void ai.recorded--,
 }));
 vi.mock("../api/_lib/ai.js", () => ({
   generateChatResponse: async ({ handoff }: { handoff: string }) => {

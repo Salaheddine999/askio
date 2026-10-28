@@ -7,5 +7,9 @@ import { reportError } from "./monitoring.js";
 export function sendError(res, error) {
   const statusCode = error.statusCode || 500;
   if (statusCode >= 500 && !error.expected) reportError(error, { status: statusCode });
-  return res.status(statusCode).json({ error: error.message || "Request failed." });
+  // Errors raised on purpose carry a statusCode and a message meant for the
+  // user. Anything else is unexpected (a library, Firebase or config error),
+  // and its text stays in the logs.
+  const message = error.statusCode ? error.message : "";
+  return res.status(statusCode).json({ error: message || "Something went wrong. Please try again." });
 }

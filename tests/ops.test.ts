@@ -60,7 +60,10 @@ vi.mock("firebase-admin/firestore", () => ({
   FieldValue: { serverTimestamp: () => at(Date.now()), increment: (n: number) => ({ _inc: n }), arrayUnion: () => [] },
   Timestamp: { fromMillis: (ms: number) => at(ms), now: () => at(Date.now()) },
 }));
-vi.mock("../api/_lib/firebaseAdmin.js", () => ({ adminDb: fake.adminDb, adminAuth: {} }));
+vi.mock("../api/_lib/firebaseAdmin.js", () => ({
+  adminDb: fake.adminDb,
+  adminAuth: { getUser: async (uid: string) => ({ uid, email: (fake.store.users as Record<string, { email?: string }>)?.[uid]?.email }) },
+}));
 vi.mock("../api/_lib/rateLimit.js", () => ({ takeRateLimit: async () => true, takeRateLimits: async () => true, visitorKey: () => "visitor" }));
 vi.mock("../api/_lib/monitoring.js", () => ({ reportError: () => undefined }));
 vi.mock("../api/_lib/push.js", () => ({ pushLiveChatRequest: async () => 0 }));

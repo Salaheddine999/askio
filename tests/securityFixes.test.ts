@@ -128,6 +128,57 @@ describe("billing ids", () => {
   });
 });
 
+describe("hardening", () => {
+  it("errors without a status keep their text out of the response", async () => {
+    const { sendError } = await import("../api/_lib/response.js");
+    const unexpected = fakeRes();
+    sendError(unexpected, new Error("Firebase Admin environment variables are missing."));
+    expect(unexpected.statusCode).toBe(500);
+    expect(unexpected.body).toEqual({ error: "Something went wrong. Please try again." });
+    const meant = fakeRes();
+    sendError(meant, Object.assign(new Error("Chatbot not found."), { statusCode: 404 }));
+    expect(meant.body).toEqual({ error: "Chatbot not found." });
+  });
+
+  it("unsubscribe links: new and already-sent ones work, malformed ones are refused without crashing", async () => {
+    process.env.EMAIL_SIGNING_SECRET = "test-signing-secret";
+    const { unsubscribeSignature, verifyUnsubscribe } = await import("../api/_lib/email/alerts.js");
+    expect(verifyUnsubscribe("owner1", "leads", unsubscribeSignature("owner1", "leads"))).toBe(true);
+    const old = crypto.createHmac("sha256", "test-signing-secret").update("owner1:leads").digest("base64url").slice(0, 32);
+    expect(verifyUnsubscribe("owner1", "leads", old)).toBe(true);
+    expect(verifyUnsubscribe("owner2", "leads", old)).toBe(false);
+    expect(verifyUnsubscribe("owner1", "leads", "é".repeat(32))).toBe(false);
+  });
+
+  it("chatbot colours are a hex value or the editor's gradient, nothing that loads from elsewhere", async () => {
+    const { normalizeColor } = await import("../api/chatbots/save.js");
+    expect(normalizeColor("#4F46E5", "x")).toBe("#4F46E5");
+    expect(normalizeColor("linear-gradient(145deg, #4F46E5, #22d3ee)", "x")).toBe("linear-gradient(145deg, #4F46E5, #22d3ee)");
+    expect(normalizeColor("url(https://tracker.example/p.png)", "x")).toBe("x");
+  });
+
+  it("monthly AI replies are reserved up to the limit and can be given back", async () => {
+    const { reserveAiReply, releaseAiReply } = await import("../api/_lib/aiUsage.js");
+    expect(await reserveAiReply("owner1", 2)).toBe(true);
+    expect(await reserveAiReply("owner1", 2)).toBe(true);
+    expect(await reserveAiReply("owner1", 2)).toBe(false);
+    const [, usage] = [...db.docs].find(([k]) => k.startsWith("ai_usage/owner1_"))!;
+    expect(usage.replies).toBe(2);
+    await expect(releaseAiReply("owner1")).resolves.toBeUndefined();
+  });
+
+  it("the cron runs only on GET with the exact secret", async () => {
+    process.env.CRON_SECRET = "test-cron-secret";
+    const { default: cron } = await import("../api/cron/cleanup-rate-limits.js");
+    const post = fakeRes();
+    await cron({ method: "POST", headers: { authorization: "Bearer test-cron-secret" } }, post);
+    expect(post.statusCode).toBe(405);
+    const wrong = fakeRes();
+    await cron({ method: "GET", headers: { authorization: "Bearer test-cron-secretX" } }, wrong);
+    expect(wrong.statusCode).toBe(401);
+  });
+});
+
 describe("Shopify install", () => {
   const secret = "test-shopify-secret";
 

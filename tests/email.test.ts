@@ -22,7 +22,7 @@ vi.mock("../api/_lib/firebaseAdmin.js", () => ({
       }),
     }),
   },
-  adminAuth: {},
+  adminAuth: { getUser: async (uid: string) => ({ uid, email: fake.users[uid]?.email }) },
 }));
 vi.mock("../api/_lib/rateLimit.js", () => ({ takeRateLimit: async () => fake.allowed }));
 vi.mock("../api/_lib/monitoring.js", () => ({ reportError: () => undefined }));
