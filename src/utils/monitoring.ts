@@ -27,7 +27,17 @@ export function startMonitoring() {
           dsn,
           environment: import.meta.env.MODE,
           release: import.meta.env.VITE_SENTRY_RELEASE as string | undefined,
-          sendDefaultPii: false,
+          // Sentry collects headers, cookies, bodies and query strings unless
+          // told not to; any of them can hold a visitor's message or email.
+          dataCollection: {
+            userInfo: false,
+            cookies: false,
+            httpHeaders: false,
+            httpBodies: [],
+            urlQueryParams: false,
+            stackFrameVariables: false,
+            genAI: { inputs: false, outputs: false },
+          },
           tracesSampleRate: 0,
           ignoreErrors: ["ResizeObserver loop", "Non-Error promise rejection captured"],
           beforeBreadcrumb: (breadcrumb) => (breadcrumb.category === "console" ? null : breadcrumb),

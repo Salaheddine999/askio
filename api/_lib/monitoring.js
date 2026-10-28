@@ -6,6 +6,20 @@ import * as Sentry from "@sentry/node";
 
 let enabled = null;
 
+const NO_PERSONAL_DATA = {
+  userInfo: false,
+  cookies: false,
+  httpHeaders: false,
+  httpBodies: [],
+  urlQueryParams: false,
+  stackFrameVariables: false,
+  genAI: { inputs: false, outputs: false },
+  mcp: { inputs: false, outputs: false },
+  graphQL: { document: false, variables: false },
+  databaseQueryData: false,
+  queues: false,
+};
+
 function ensureInit() {
   if (enabled !== null) return enabled;
   const dsn = process.env.SENTRY_DSN || process.env.VITE_SENTRY_DSN;
@@ -15,7 +29,9 @@ function ensureInit() {
       dsn,
       environment: process.env.VERCEL_ENV || "development",
       release: process.env.VERCEL_GIT_COMMIT_SHA,
-      sendDefaultPii: false,
+      // Sentry collects request bodies, headers, cookies and local variables
+      // unless told not to; any of them can hold a visitor's message or email.
+      dataCollection: NO_PERSONAL_DATA,
       tracesSampleRate: 0,
       // Request data can contain visitor messages or emails; keep it out.
       beforeSend(event) {

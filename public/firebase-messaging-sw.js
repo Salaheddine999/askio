@@ -2,8 +2,8 @@
 // Push notifications for chatbot owners (Firebase Cloud Messaging). The app
 // registers this worker with its Firebase settings in the address, since a
 // file in public/ can't read the build's environment variables.
-importScripts("https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js");
-importScripts("https://www.gstatic.com/firebasejs/10.13.2/firebase-messaging-compat.js");
+importScripts("https://www.gstatic.com/firebasejs/13.1.0/firebase-app-compat.js");
+importScripts("https://www.gstatic.com/firebasejs/13.1.0/firebase-messaging-compat.js");
 
 const params = new URL(self.location.href).searchParams;
 firebase.initializeApp({
