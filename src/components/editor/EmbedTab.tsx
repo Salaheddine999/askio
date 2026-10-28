@@ -5,6 +5,7 @@ import { EmptyState, focusRing, primaryButton } from "../../pages/dashboard/ui";
 import { Panel, PanelBody } from "./controls";
 import { useT } from "../../i18n";
 import { editorMessages } from "../../i18n/messages/editor";
+import { embedCodeFor } from "../../utils/embedCode";
 
 interface Props {
   chatbotId?: string;
@@ -13,14 +14,6 @@ interface Props {
   onSave: () => void;
 }
 
-function embedCodeFor(chatbotId: string) {
-  const origin = window.location.origin;
-  return `<div id="chatbot-container"></div>
-<script src="${origin}/chatbot-embed.js"></script>
-<script>
-  ChatbotEmbed.init("${chatbotId}", "${origin}");
-</script>`;
-}
 
 const CopyButton: React.FC<{ text: string; label: string; className?: string }> = ({ text, label, className = "" }) => {
   const t = useT(editorMessages);

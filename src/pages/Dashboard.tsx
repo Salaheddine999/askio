@@ -23,6 +23,7 @@ import { FeedbackSeries } from "../components/OverviewChart";
 import { useCollection } from "react-firebase-hooks/firestore";
 import { DUMMY_CHATBOTS, DUMMY_FEEDBACK_COUNTS, DUMMY_RECENT_ACTIVITY, DUMMY_NOTIFICATIONS } from "../utils/dummyData";
 import { Helmet } from "react-helmet-async";
+import { embedCodeFor } from "../utils/embedCode";
 import OverviewTab from "./dashboard/OverviewTab";
 import ChatbotsTab from "./dashboard/ChatbotsTab";
 import ReportsTab from "./dashboard/ReportsTab";
@@ -371,14 +372,7 @@ const Dashboard: React.FC<DashboardProps> = ({ testMode }) => {
     embedModal.openModal();
   };
 
-  const generateEmbedCode = (id: string) => {
-    const scriptSrc = `${window.location.origin}/chatbot-embed.js`;
-    return `<div id="chatbot-container"></div>
-<script src="${scriptSrc}"></script>
-<script>
-  ChatbotEmbed.init("${id}", "${window.location.origin}");
-</script>`;
-  };
+  const generateEmbedCode = (id: string) => embedCodeFor(id);
 
   const copyEmbedCode = () => {
     if (!selectedChatbotId) return;

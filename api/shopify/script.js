@@ -7,23 +7,17 @@ function handler(req, res) {
     return res.status(200).send('// Askio: No chatbot ID provided');
   }
 
-  const origin = 'https://askio.vercel.app';
+  // The site's final address: the old askio.vercel.app redirects here, and
+  // the widget only hears messages sent to the address it really loads from.
+  const origin = 'https://www.getaskio.xyz';
+  const id = String(chatbotId).replace(/[^A-Za-z0-9_-]/g, '');
 
   const script = `
 (function() {
-  if (document.getElementById('chatbot-container')) return;
-
-  var container = document.createElement('div');
-  container.id = 'chatbot-container';
-  document.body.appendChild(container);
-
   var embedScript = document.createElement('script');
   embedScript.src = '${origin}/chatbot-embed.js';
-  embedScript.onload = function() {
-    if (window.ChatbotEmbed) {
-      ChatbotEmbed.init('${chatbotId}', '${origin}');
-    }
-  };
+  embedScript.async = true;
+  embedScript.setAttribute('data-chatbot', '${id}');
   document.body.appendChild(embedScript);
 })();
 `;

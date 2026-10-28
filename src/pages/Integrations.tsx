@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { embedCodeFor } from "../utils/embedCode";
 import { Helmet } from "react-helmet-async";
 import { Listbox, ListboxButton, ListboxOption, ListboxOptions } from "@headlessui/react";
 import {
@@ -213,7 +214,7 @@ export default function Integrations({ testMode = false }: IntegrationsProps) {
   };
 
   const embedCode = selectedChatbot
-    ? `<div id="chatbot-container"></div>\n<script src="${origin}/chatbot-embed.js"></script>\n<script>\n  ChatbotEmbed.init("${selectedChatbot}", "${origin}");\n</script>`
+    ? embedCodeFor(selectedChatbot, origin)
     : "";
 
   const copyToClipboard = (text: string, type: "embed" | "id") => {

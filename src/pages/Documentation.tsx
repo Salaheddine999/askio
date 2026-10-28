@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
+import { embedCodeFor } from "../utils/embedCode";
 import {
   ArrowRight,
   BarChart3,
@@ -112,11 +113,7 @@ const Documentation: React.FC<{ toggleSidebar: () => void }> = () => {
     [term, content]
   );
 
-  const embedCode = `<div id="chatbot-container"></div>
-<script src="${window.location.origin}/chatbot-embed.js"></script>
-<script>
-  ChatbotEmbed.init("YOUR_CHATBOT_ID", "${window.location.origin}");
-</script>`;
+  const embedCode = embedCodeFor("YOUR_CHATBOT_ID");
 
   const copyEmbed = () =>
     navigator.clipboard.writeText(embedCode).then(

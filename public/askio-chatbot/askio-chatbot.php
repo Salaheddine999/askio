@@ -61,13 +61,9 @@ function askio_chatbot_inject() {
     if (empty($chatbot_id) || is_admin()) {
         return;
     }
-    $origin = 'https://getaskio.xyz';
+    // One line, loaded without holding up the page.
     ?>
-    <div id="chatbot-container"></div>
-    <script src="<?php echo esc_url($origin . '/chatbot-embed.js'); ?>"></script>
-    <script>
-        ChatbotEmbed.init("<?php echo esc_js($chatbot_id); ?>", "<?php echo esc_js($origin); ?>");
-    </script>
+    <script src="https://www.getaskio.xyz/chatbot-embed.js" data-chatbot="<?php echo esc_attr($chatbot_id); ?>" async></script>
     <?php
 }
 add_action('wp_footer', 'askio_chatbot_inject');

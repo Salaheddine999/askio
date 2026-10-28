@@ -1,14 +1,57 @@
+// The Askio chat widget for any website. One line, anywhere in the page:
+//
+//   <script src="https://www.getaskio.xyz/chatbot-embed.js" data-chatbot="CHATBOT_ID" async></script>
+//
+// Optional: data-launcher="orb" or "classic", data-greeting="on" or "off".
+// The older three-part snippet (a #chatbot-container div and
+// ChatbotEmbed.init(id, origin)) keeps working.
+//
+// The widget loads after the page has, so it never slows the site's own
+// content down.
 (function (window, document) {
-  window.ChatbotEmbed = {
-    // options.launcherStyle: "classic" or "orb" overrides the saved launcher style.
-    // options.greetingBubble: true or false overrides the saved greeting bubble.
-    init: function (chatbotId, origin, options) {
-      options = options || {};
-      console.log("Initializing chatbot with ID:", chatbotId);
+  // Each chatbot starts once, even if the code is on the page twice (each
+  // copy of this script runs separately, so the list lives on window).
+  var started = (window.__askioStarted = window.__askioStarted || {});
+
+  function whenPageIsReady(fn) {
+    function idle() {
+      if (window.requestIdleCallback) window.requestIdleCallback(fn, { timeout: 3000 });
+      else window.setTimeout(fn, 200);
+    }
+    if (document.readyState === "complete") idle();
+    else window.addEventListener("load", idle, { once: true });
+  }
+
+  // options.launcherStyle: "classic" or "orb" overrides the saved launcher style.
+  // options.greetingBubble: true or false overrides the saved greeting bubble.
+  // Askio's older addresses redirect to www.getaskio.xyz. Messages to the
+  // widget must name the address it actually loads from, or the browser
+  // drops them, so they're all treated as that one.
+  var HOME = "https://www.getaskio.xyz";
+  function canonicalOrigin(origin) {
+    try {
+      var host = new URL(origin || HOME).host;
+      return host === "getaskio.xyz" || host === "askio.vercel.app" ? HOME : new URL(origin).origin;
+    } catch (e) {
+      return HOME;
+    }
+  }
+
+  function init(chatbotId, origin, options) {
+    if (!chatbotId || started[chatbotId]) return;
+    started[chatbotId] = true;
+    var from = canonicalOrigin(origin);
+    whenPageIsReady(function () {
+      mount(chatbotId, from, options || {});
+    });
+  }
+
+  function mount(chatbotId, origin, options) {
       var container = document.getElementById("chatbot-container");
       if (!container) {
-        console.error("Chatbot container not found");
-        return;
+        container = document.createElement("div");
+        container.id = "chatbot-container";
+        document.body.appendChild(container);
       }
 
       // Remove any existing iframes
@@ -227,13 +270,21 @@
       });
 
       iframe.onerror = function () {
-        console.error("Failed to load chatbot iframe");
         container.removeChild(iframe);
       };
+  }
 
-      iframe.onload = function () {
-        console.log("Chatbot iframe loaded successfully");
-      };
-    },
-  };
+  window.ChatbotEmbed = { init: init };
+
+  // The one-line install: start from the script tag's own data-* attributes.
+  var tag = document.currentScript || document.querySelector('script[data-chatbot][src*="chatbot-embed.js"]');
+  var chatbotId = tag && tag.getAttribute("data-chatbot");
+  if (chatbotId) {
+    var options = {};
+    var launcher = tag.getAttribute("data-launcher");
+    if (launcher === "orb" || launcher === "classic") options.launcherStyle = launcher;
+    var greeting = tag.getAttribute("data-greeting");
+    if (greeting === "on" || greeting === "off") options.greetingBubble = greeting === "on";
+    init(chatbotId, new URL(tag.src, window.location.href).origin, options);
+  }
 })(window, document);

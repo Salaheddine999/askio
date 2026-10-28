@@ -253,13 +253,13 @@ export function DesignIllustration() {
   );
 }
 
-const EMBED_ORIGIN = "https://getaskio.xyz";
+const EMBED_ORIGIN = "https://www.getaskio.xyz";
+// The one-line install, broken over lines so it fits the card.
 const EMBED_LINES: { text: string; tone: "tag" | "attr" | "string" | "plain" }[][] = [
-  [{ text: "<div ", tone: "tag" }, { text: "id", tone: "attr" }, { text: '="chatbot-container"', tone: "string" }, { text: "></div>", tone: "tag" }],
-  [{ text: "<script ", tone: "tag" }, { text: "src", tone: "attr" }, { text: `="${EMBED_ORIGIN}/chatbot-embed.js"`, tone: "string" }, { text: "></script>", tone: "tag" }],
-  [{ text: "<script>", tone: "tag" }],
-  [{ text: "  ChatbotEmbed", tone: "plain" }, { text: ".init(", tone: "attr" }, { text: `"your-bot-id", "${EMBED_ORIGIN}"`, tone: "string" }, { text: ");", tone: "attr" }],
-  [{ text: "</script>", tone: "tag" }],
+  [{ text: "<script", tone: "tag" }],
+  [{ text: "  src", tone: "attr" }, { text: `="${EMBED_ORIGIN}/chatbot-embed.js"`, tone: "string" }],
+  [{ text: "  data-chatbot", tone: "attr" }, { text: '="your-bot-id"', tone: "plain" }],
+  [{ text: "  async", tone: "attr" }, { text: "></script>", tone: "tag" }],
 ];
 const TONE_CLASS = {
   tag: "text-[#566273] dark:text-[#9BAABD]",
