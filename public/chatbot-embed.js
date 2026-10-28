@@ -33,7 +33,8 @@
       iframe.style.position = "fixed";
       iframe.style.border = "none";
       iframe.style.zIndex = "10000";
-      iframe.style.transition = "all 0.3s ease-in-out";
+      // Opening fades and lifts the panel in; sizes change at once.
+      iframe.style.transition = "opacity 0.2s ease, transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1)";
       iframe.style.overflow = "visible";
       iframe.style.background = "transparent";
       iframe.scrolling = "no";
@@ -45,53 +46,79 @@
 
       container.appendChild(iframe);
 
-      // The open frame: room for the widget (up to 360 x 600) and its
-      // shadow, never larger than the screen. The widget is told the same
-      // size, so it keeps its shape while the frame grows.
-      function openSize() {
-        // The frame sits 10px from the screen's edge.
-        return { width: Math.min(380, window.innerWidth - 10), height: Math.min(620, window.innerHeight - 10) };
+      // The open panel is exactly the widget's size, and the page draws its
+      // rounded corners and soft shadow, so nothing gets cut off. On phones
+      // it fills the screen. The widget is told the size, so it keeps its
+      // shape from the first frame.
+      function panel() {
+        if (window.innerWidth < 480) {
+          return { width: window.innerWidth, height: window.innerHeight, fullscreen: true };
+        }
+        return { width: Math.min(360, window.innerWidth - 32), height: Math.min(600, window.innerHeight - 32), fullscreen: false };
       }
       function sendSpace() {
         if (!iframe.contentWindow) return;
-        iframe.contentWindow.postMessage({ type: "askioSpace", width: openSize().width, height: openSize().height }, frameOrigin);
+        var p = panel();
+        iframe.contentWindow.postMessage({ type: "askioSpace", width: p.width, height: p.height, fullscreen: p.fullscreen }, frameOrigin);
       }
+      var frameOpen = false;
       window.addEventListener("resize", function () {
         sendSpace();
         if (isOpen) updatePosition(currentPosition, true);
       });
 
       function updatePosition(position, isOpen) {
+        var edge = "10px";
         if (isOpen) {
-          iframe.style.width = openSize().width + "px";
-          iframe.style.height = openSize().height + "px";
-          iframe.style.borderRadius = "0";
+          var p = panel();
+          iframe.style.width = p.width + "px";
+          iframe.style.height = p.height + "px";
+          iframe.style.borderRadius = p.fullscreen ? "0" : "22px";
+          iframe.style.boxShadow = p.fullscreen
+            ? "none"
+            : "0 20px 56px -16px rgba(16, 23, 35, 0.32), 0 4px 16px rgba(16, 23, 35, 0.08)";
+          edge = p.fullscreen ? "0px" : "16px";
         } else if (greetingSize) {
           // Just enough room for the greeting bubble beside the launcher.
           iframe.style.width = greetingSize.width + "px";
           iframe.style.height = greetingSize.height + "px";
           iframe.style.borderRadius = "0";
+          iframe.style.boxShadow = "none";
         } else {
           iframe.style.width = "62px";
           iframe.style.height = "62px";
           iframe.style.borderRadius = "31px";
+          iframe.style.boxShadow = "none";
         }
 
         if (position.includes("bottom")) {
-          iframe.style.bottom = "10px";
+          iframe.style.bottom = edge;
           iframe.style.top = "auto";
         } else {
-          iframe.style.top = "10px";
+          iframe.style.top = edge;
           iframe.style.bottom = "auto";
         }
 
         if (position.includes("right")) {
-          iframe.style.right = "10px";
+          iframe.style.right = edge;
           iframe.style.left = "auto";
         } else {
-          iframe.style.left = "10px";
+          iframe.style.left = edge;
           iframe.style.right = "auto";
         }
+
+        // Opening: the panel fades in and lifts from the launcher's corner.
+        if (isOpen && !frameOpen) {
+          iframe.style.transformOrigin = (position.includes("bottom") ? "bottom " : "top ") + (position.includes("right") ? "right" : "left");
+          iframe.style.transition = "none";
+          iframe.style.opacity = "0";
+          iframe.style.transform = "translateY(" + (position.includes("bottom") ? "12px" : "-12px") + ") scale(0.97)";
+          void iframe.offsetWidth;
+          iframe.style.transition = "opacity 0.2s ease, transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1)";
+          iframe.style.opacity = "1";
+          iframe.style.transform = "none";
+        }
+        frameOpen = isOpen;
       }
 
       var isOpen = false;

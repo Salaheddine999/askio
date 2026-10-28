@@ -214,16 +214,16 @@ const Chatbot: React.FC<ChatbotProps> = ({
   // The widget opens on a home screen (greeting, popular questions); the
   // chat takes over once the visitor asks something.
   const [view, setView] = useState<"home" | "chat">("home");
-  // The widget's size on a website: 360×600, or less when the embed script
-  // reports a smaller screen (it keeps 10px from the frame's open sides).
-  const [space, setSpace] = useState({ width: 360, height: 600 });
+  // The widget's size on a website: the panel the embed script opens
+  // (360×600, smaller on small screens, the whole screen on phones).
+  const [space, setSpace] = useState({ width: 360, height: 600, fullscreen: false });
   useEffect(() => {
     if (!isEmbedded) return;
     const onSpace = (event: MessageEvent) => {
       if (event.source !== window.parent || event.data?.type !== "askioSpace") return;
       const width = Number(event.data.width);
       const height = Number(event.data.height);
-      if (width > 0 && height > 0) setSpace({ width: Math.min(360, width - 10), height: Math.min(600, height - 10) });
+      if (width > 0 && height > 0) setSpace({ width, height, fullscreen: event.data.fullscreen === true });
     };
     window.addEventListener("message", onSpace);
     return () => window.removeEventListener("message", onSpace);
@@ -1192,22 +1192,27 @@ const Chatbot: React.FC<ChatbotProps> = ({
     </div>
   );
 
+  // On a website the page draws the panel's shadow and corners and animates
+  // it; in the editor's preview the widget does that itself.
+  const onSite = isEmbedded && !customPositionClass;
   const chatbotContent = (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={onSite ? false : { opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: 20 }}
+      exit={onSite ? undefined : { opacity: 0, y: 20 }}
       transition={{ duration: 0.3 }}
       className={`${
         isEmbedded ? `fixed ${combinedPositionClass} z-50` : "w-full h-full"
-      } bg-[#F5F7FA] dark:bg-[#111924] flex flex-col rounded-[22px] overflow-hidden ring-1 ring-black/[0.06] dark:ring-white/[0.06] ${
-        // In the editor's preview box it fits the box; on a website it
-        // takes the size the embed script reports (style below).
-        isEmbedded
-          ? `${customPositionClass ? "w-[min(360px,calc(100%-20px))] h-[min(600px,calc(100%-20px))]" : ""} shadow-[0_16px_48px_-12px_rgba(16,23,35,0.28)]`
-          : "shadow-lg"
+      } bg-[#F5F7FA] dark:bg-[#111924] flex flex-col overflow-hidden ${
+        onSite
+          ? space.fullscreen
+            ? ""
+            : "rounded-[22px]"
+          : isEmbedded
+            ? "w-[min(360px,calc(100%-20px))] h-[min(600px,calc(100%-20px))] rounded-[22px] ring-1 ring-black/[0.06] dark:ring-white/[0.06] shadow-[0_16px_48px_-12px_rgba(16,23,35,0.28)]"
+            : "rounded-[22px] shadow-lg"
       }`}
-      style={isEmbedded && !customPositionClass ? { width: space.width, height: space.height } : undefined}
+      style={onSite ? { width: space.width, height: space.height } : undefined}
     >
       {view === "home" ? homeView : (<>
       {/* Chat header: back to the home screen, who's answering, and how. */}
