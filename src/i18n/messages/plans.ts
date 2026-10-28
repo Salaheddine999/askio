@@ -21,7 +21,7 @@ export const plansMessages = defineMessages({
     currentPlan: "Current plan",
     upgrade: "Upgrade to Pro",
     manageBilling: "Manage billing",
-    talkToSales: "Talk to sales",
+    talkToSales: "Contact us",
     starterF1: "Unlimited chatbots",
     starterF2: "FAQ builder",
     starterF3: "Lead capture",

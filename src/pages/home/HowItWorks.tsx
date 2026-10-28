@@ -40,9 +40,9 @@ export default function HowItWorks() {
   const sectionBorder = "border-b border-[rgba(16,23,35,0.12)] dark:border-[#2B3646]";
 
   const steps = [
-    { title: "Create & Configure", desc: "Set up your chatbot by adding custom Q&As, defining conversation flows, and configuring automatic responses." },
-    { title: "Customize Design", desc: "Tailor your bot's appearance to match your brand: colors, fonts, positioning, and layout options." },
-    { title: "Plug & Play", desc: "Copy your unique embed code and paste it into your website. Your chatbot goes live instantly." },
+    { title: "Add your answers", desc: "Write the questions your customers ask and your answers. On Pro, Askio can read your website and draft them for you." },
+    { title: "Make it look like yours", desc: "Pick your colors, greeting, launcher style and which corner it sits in, and watch each change in the live preview." },
+    { title: "Paste one line", desc: "Copy one line of code into your site, or use the WordPress plugin or Shopify app. It loads after your page, so it won't slow it down." },
   ];
 
   return (
@@ -51,7 +51,7 @@ export default function HowItWorks() {
         <Badge text="How it Works" />
         <motion.div ref={howItWorksRef} initial={{ opacity: 0, y: 30 }} animate={howItWorksInView ? { opacity: 1, y: 0 } : {}} transition={{ duration: 0.35 }}>
           <h2 className="mt-5 text-[clamp(2rem,4vw,3rem)] leading-[1.1] font-serif tracking-tight [text-wrap:balance] text-[#101723] dark:text-[#D7DFE5]">Three simple steps to go live</h2>
-          <p className="mt-3 text-[#566273] dark:text-[#9BAABD] text-body max-w-md mx-auto">Create and deploy your custom chatbot in minutes. No coding required.</p>
+          <p className="mt-3 text-[#566273] dark:text-[#9BAABD] text-body max-w-md mx-auto">Set up your chatbot in minutes, without writing code.</p>
         </motion.div>
       </div>
 

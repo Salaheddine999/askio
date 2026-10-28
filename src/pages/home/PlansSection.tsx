@@ -221,20 +221,18 @@ export default function PlansSection() {
 
             <PlanCard
               title="Enterprise"
-              setupLabel="Custom rollout"
-              description="Plan a larger chatbot rollout with help from our team."
+              setupLabel="More than Pro"
+              description="More AI chatbots or AI replies than Pro includes. Email us and we'll set it up for you."
               price="Custom"
-              subtext="For teams that need more than 10 AI chatbots."
-              ctaLabel="Talk to sales"
+              subtext={`For more than 10 AI chatbots or ${PRO_AI_REPLY_LIMIT.toLocaleString("en-US")} AI replies a month.`}
+              ctaLabel="Contact us"
               ctaHref={`mailto:${COMPANY.contactEmail}?subject=Askio%20Enterprise%20Plan`}
               external
               features={[
                 "Everything in Pro",
                 "More than 10 AI chatbots",
-                "Custom AI reply limits",
-                "Custom onboarding support",
-                "Priority rollout coordination",
-                "Custom agreements on request",
+                "AI reply limits that fit your traffic",
+                "Help setting it up, by email",
               ]}
             />
           </div>

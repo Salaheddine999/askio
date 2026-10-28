@@ -16,6 +16,8 @@ describe("API dependencies on Vercel's runtime", () => {
       );
       expect(result.stderr).not.toMatch(/ERR_REQUIRE_ESM/);
       expect(result.status).toBe(0);
-    }
+    },
+    // Each one starts a fresh Node process, slow on a busy machine.
+    30_000
   );
 });
