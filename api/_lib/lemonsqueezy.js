@@ -21,6 +21,25 @@ export function getLemonSqueezyConfig() {
   };
 }
 
+// The checkout link carries the buyer's uid, which Lemon Squeezy echoes back
+// in the webhook. A buyer can edit the link, so the uid is signed: only a uid
+// with a valid signature is trusted to pick the account.
+function checkoutSigningKey() {
+  const { webhookSecret } = getLemonSqueezyConfig();
+  return webhookSecret ? `askio-checkout-uid:${webhookSecret}` : "";
+}
+
+export function signCheckoutUid(uid) {
+  const key = checkoutSigningKey();
+  return key ? crypto.createHmac("sha256", key).update(String(uid)).digest("hex") : "";
+}
+
+export function isSignedCheckoutUid(uid, signature) {
+  const expected = signCheckoutUid(uid);
+  if (!expected || typeof signature !== "string" || signature.length !== expected.length) return false;
+  return crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(signature));
+}
+
 export function buildCheckoutUrl({ checkoutUrl, email, name, uid }) {
   if (!checkoutUrl) {
     throw new Error("LEMONSQUEEZY_PRO_CHECKOUT_URL is not configured.");
@@ -38,6 +57,8 @@ export function buildCheckoutUrl({ checkoutUrl, email, name, uid }) {
 
   if (uid) {
     url.searchParams.set("checkout[custom][uid]", uid);
+    const signature = signCheckoutUid(uid);
+    if (signature) url.searchParams.set("checkout[custom][uid_sig]", signature);
   }
 
   return url.toString();
@@ -85,4 +106,25 @@ export async function lemonRequest(path, options = {}) {
   }
 
   return payload;
+}
+
+/** Lemon Squeezy ids are numeric; anything else is refused before it reaches a URL path. */
+export function lemonId(value) {
+  const id = String(value ?? "");
+  return /^[0-9]{1,20}$/.test(id) ? id : null;
+}
+
+/**
+ * The account's subscription, fetched with the store key, only if it belongs
+ * to the customer the webhook recorded for this account. Returns null for a
+ * missing, malformed or mismatched id.
+ */
+export async function ownedSubscription(userData) {
+  const subscriptionId = lemonId(userData.lemonSqueezySubscriptionId);
+  if (!subscriptionId) return null;
+  const response = await lemonRequest(`/subscriptions/${subscriptionId}`);
+  const subscription = response?.data;
+  const customerId = lemonId(userData.lemonSqueezyCustomerId);
+  if (!subscription || (customerId && String(subscription.attributes?.customer_id) !== customerId)) return null;
+  return subscription;
 }

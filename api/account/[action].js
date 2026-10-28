@@ -3,6 +3,7 @@ import adminAction from "../_lib/account/adminActions.js";
 import liveChat from "../_lib/account/liveChat.js";
 import sendInstallEmail from "../_lib/account/installEmail.js";
 import { emailUnsubscribe } from "../_lib/email/alerts.js";
+import { connectShopifyInstall, startShopifyInstall } from "../_lib/shopify/install.js";
 import { withMonitoring } from "../_lib/monitoring.js";
 
 // Account endpoints share one function to stay within Vercel's function limit:
@@ -14,7 +15,11 @@ import { withMonitoring } from "../_lib/monitoring.js";
 //   POST /api/account/live-end          end that live chat
 //   GET|POST /api/account/email-unsubscribe   the signed link in alert emails
 //   POST /api/account/install-email     send the install code to the owner's developer
+//   POST /api/account/shopify-start     the Shopify authorize link for one of your chatbots
+//   POST /api/account/shopify-connect   finish that install once Shopify sends you back
 const HANDLERS = {
+  "shopify-start": startShopifyInstall,
+  "shopify-connect": connectShopifyInstall,
   delete: deleteOwnAccount,
   "admin-suspend": (req, res) => adminAction(req, res, "suspend"),
   "admin-unsuspend": (req, res) => adminAction(req, res, "unsuspend"),

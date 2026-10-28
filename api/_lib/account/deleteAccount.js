@@ -1,7 +1,7 @@
 import { FieldPath } from "firebase-admin/firestore";
 import { requireUser } from "../auth.js";
 import { adminAuth, adminDb } from "../firebaseAdmin.js";
-import { lemonRequest } from "../lemonsqueezy.js";
+import { lemonId, lemonRequest, ownedSubscription } from "../lemonsqueezy.js";
 import { sendError } from "../response.js";
 
 const BATCH_SIZE = 400;
@@ -41,11 +41,13 @@ export async function deleteAccountData(uid) {
   const userRef = adminDb.collection("users").doc(uid);
   const userData = (await userRef.get()).data() || {};
 
-  const subscriptionId = userData.lemonSqueezySubscriptionId;
   const status = String(userData.subscriptionStatus || "").toLowerCase();
-  if (subscriptionId && BILLABLE_STATUSES.has(status)) {
+  if (userData.lemonSqueezySubscriptionId && BILLABLE_STATUSES.has(status)) {
     try {
-      await lemonRequest(`/subscriptions/${subscriptionId}`, { method: "DELETE" });
+      // Cancel only this account's own subscription, never one the id merely names.
+      const subscription = await ownedSubscription(userData);
+      if (!subscription) throw new Error("The stored subscription doesn't belong to this account.");
+      await lemonRequest(`/subscriptions/${lemonId(subscription.id)}`, { method: "DELETE" });
     } catch (error) {
       console.error("Failed to cancel subscription before account deletion:", error);
       const failure = new Error(

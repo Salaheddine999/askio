@@ -1,3 +1,4 @@
+import crypto from "node:crypto";
 import { requireUser } from "../auth.js";
 import { adminDb } from "../firebaseAdmin.js";
 import { getOwnedChatbot } from "../plan.js";
@@ -13,6 +14,7 @@ import { escapeHtml } from "../email/templates.js";
 
 const DAY_MS = 86_400_000;
 const PER_DAY = 5;
+const PER_RECIPIENT_PER_DAY = 2;
 const EMAIL = /^[^@\s]+@[^@\s]+\.[^@\s]{2,}$/;
 const CHATBOT_ID = /^[A-Za-z0-9_-]{1,128}$/;
 const ORIGIN = "https://www.getaskio.xyz";
@@ -141,16 +143,23 @@ export default async function sendInstallEmail(req, res) {
     if (!emailConfigured()) {
       return res.status(503).json({ error: "Email isn't set up yet. Copy the code and send it yourself for now." });
     }
-    const { chatbotData } = await getOwnedChatbot(decoded.uid, chatbotId);
+    await getOwnedChatbot(decoded.uid, chatbotId);
     if (!(await takeRateLimit(`install_email_${decoded.uid}`, PER_DAY, DAY_MS))) {
       return res.status(429).json({ error: "You've sent a few already today. Try again tomorrow." });
     }
+    // One address gets at most a couple a day, from all accounts together.
+    const recipientKey = crypto.createHash("sha256").update(to).digest("hex").slice(0, 32);
+    if (!(await takeRateLimit(`install_email_to_${recipientKey}`, PER_RECIPIENT_PER_DAY, DAY_MS))) {
+      return res.status(429).json({ error: "That address already got the code today. Try again tomorrow." });
+    }
     const user = (await adminDb.collection("users").doc(decoded.uid).get()).data() || {};
     if (user.suspended === true) return res.status(403).json({ error: "This account is suspended." });
-    const ownerEmail = user.email || decoded.email || "";
-    const owner = String(user.name || "").trim() || ownerEmail || "The site owner";
+    // Only fixed text and the signed-in account's own address: no names or
+    // titles the owner typed, so the email can't carry a message of theirs.
+    const ownerEmail = String(decoded.email || "").toLowerCase();
+    const owner = ownerEmail || "The site owner";
     const code = `<script src="${ORIGIN}/chatbot-embed.js" data-chatbot="${chatbotId}" async></script>`;
-    const message = installEmail({ lang: user.language || "en", bot: chatbotData?.title, owner, code });
+    const message = installEmail({ lang: user.language || "en", bot: "Askio", owner, code });
     await sendEmail({ to, ...message, ...(ownerEmail ? { replyTo: ownerEmail } : {}) });
     return res.status(200).json({ ok: true });
   } catch (error) {

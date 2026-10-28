@@ -58,9 +58,21 @@ describe("POST /api/account/install-email", () => {
     const email = fake.sent[0] as { to: string[]; reply_to: string; subject: string; text: string };
     expect(email.to).toEqual(["dev@agency.example"]);
     expect(email.reply_to).toBe("owner@shop.example");
-    expect(email.subject).toBe("Please add the Shop bot chat to our website");
+    expect(email.subject).toBe("Please add the Askio chat to our website");
     expect(email.text).toContain('<script src="https://www.getaskio.xyz/chatbot-embed.js" data-chatbot="bot1" async></script>');
-    expect(email.text).toContain("Sara uses Askio");
+    expect(email.text).toContain("owner@shop.example uses Askio");
+  });
+
+  it("carries no text the owner typed, and replies go to the signed-in account", async () => {
+    fake.user = { email: "attacker@evil.example", name: "Billing Dept: pay at evil.example", language: "en" };
+    const r = res();
+    await sendInstallEmail(ask({ chatbotId: "bot1", email: "victim@example.com" }), r);
+    const email = fake.sent[0] as { reply_to: string; subject: string; text: string; html: string };
+    expect(email.reply_to).toBe("owner@shop.example");
+    for (const part of [email.subject, email.text, email.html]) {
+      expect(part).not.toContain("evil.example");
+      expect(part).not.toContain("Shop bot");
+    }
   });
 
   it("refuses a bad address, someone else's chatbot, or a suspended account", async () => {

@@ -16,7 +16,7 @@ vi.mock("../api/_lib/firebaseAdmin.js", () => ({
   adminDb: { collection: () => ({ doc: () => ({ get: async () => ({ data: () => ai.presence ?? undefined }) }) }) },
   adminAuth: {},
 }));
-vi.mock("../api/_lib/rateLimit.js", () => ({ takeRateLimit: async () => true, visitorKey: () => "visitor" }));
+vi.mock("../api/_lib/rateLimit.js", () => ({ takeRateLimit: async () => true, takeRateLimits: async () => true, visitorKey: () => "visitor" }));
 vi.mock("../api/_lib/plan.js", () => ({
   assertChatbotAiAvailable: async () => ({
     chatbotData: {
@@ -42,7 +42,7 @@ vi.mock("../api/_lib/ai.js", () => ({
   },
 }));
 vi.mock("../api/_lib/monitoring.js", () => ({ reportError: () => undefined }));
-vi.mock("../api/_lib/aiBudget.js", () => ({ takeAiBudget: async () => ai.budgetLeft }));
+vi.mock("../api/_lib/aiBudget.js", () => ({ takeAiBudget: async () => ai.budgetLeft, dailyAiLimit: () => 5000 }));
 
 const { default: chatResponse } = await import("../api/_lib/widget/chatResponse.js");
 

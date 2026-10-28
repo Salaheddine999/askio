@@ -141,7 +141,7 @@ const Auth: React.FC = () => {
       if (isNewAccount) {
         await setDoc(doc(db, "users", userCredential.user.uid), {
           email: userCredential.user.email?.toLowerCase() || "",
-          name: userCredential.user.displayName || "",
+          name: (userCredential.user.displayName || "").slice(0, 80),
           createdAt: new Date(),
           aiScansCount: 0,
           isPro: false,

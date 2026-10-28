@@ -40,6 +40,7 @@ const db = vi.hoisted(() => {
 vi.mock("../api/_lib/firebaseAdmin.js", () => ({ adminDb: db.adminDb, adminAuth: {} }));
 vi.mock("../api/_lib/rateLimit.js", () => ({
   takeRateLimit: async () => db.rate.allow,
+  takeRateLimits: async () => db.rate.allow,
   visitorKey: () => "visitor",
 }));
 vi.mock("../api/_lib/plan.js", () => ({

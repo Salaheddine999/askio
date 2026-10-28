@@ -2,10 +2,10 @@ import { generateChatResponse } from "../ai.js";
 import { sendError } from "../response.js";
 import { assertChatbotAiAvailable } from "../plan.js";
 import { getMonthlyAiReplies, recordAiReply } from "../aiUsage.js";
-import { takeRateLimit, visitorKey } from "../rateLimit.js";
+import { takeRateLimit, takeRateLimits, visitorKey } from "../rateLimit.js";
 import { reportError } from "../monitoring.js";
 import { noteAiFailure } from "../aiHealth.js";
-import { takeAiBudget } from "../aiBudget.js";
+import { dailyAiLimit, takeAiBudget } from "../aiBudget.js";
 import { adminDb } from "../firebaseAdmin.js";
 
 const MAX_QUERY_CHARS = 1000;
@@ -25,7 +25,15 @@ const MAX_HISTORY_MESSAGES = 6;
 const MAX_HISTORY_CHARS = 500;
 /** AI requests per minute. A visitor types far slower than this. */
 const VISITOR_PER_MINUTE = 12;
+/** AI replies one visitor gets in a day; a real conversation needs a handful. */
+const VISITOR_PER_DAY = 150;
 const CHATBOT_PER_MINUTE = 60;
+const DAY_MS = 86_400_000;
+
+/** The most of Askio's daily AI ceiling one account's chatbots may use. */
+function ownerDailyShare() {
+  return Math.max(100, Math.ceil(dailyAiLimit("chat") / 5));
+}
 
 
 // Only the last few messages matter for context, and each is trimmed, so a
@@ -59,11 +67,15 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: "Chatbot ID and query are required." });
     }
 
-    const [visitorAllowed, chatbotAllowed] = await Promise.all([
-      takeRateLimit(`visitor_${visitorKey(req)}`, VISITOR_PER_MINUTE),
-      takeRateLimit(`chatbot_${chatbotId}`, CHATBOT_PER_MINUTE),
+    // The visitor's own limits first, so a visitor turned away never uses up
+    // the chatbot's shared window.
+    const visitor = visitorKey(req);
+    const allowed = await takeRateLimits([
+      [`visitor_${visitor}`, VISITOR_PER_MINUTE],
+      [`visitor_day_${visitor}`, VISITOR_PER_DAY, DAY_MS],
+      [`chatbot_${chatbotId}`, CHATBOT_PER_MINUTE],
     ]);
-    if (!visitorAllowed || !chatbotAllowed) {
+    if (!allowed) {
       return sendFallback(res, "rate_limited");
     }
 
@@ -81,6 +93,11 @@ export default async function handler(req, res) {
     const used = await getMonthlyAiReplies(ownerUid);
     if (used >= ownerProfile.access.aiReplyLimit) {
       return sendFallback(res, "monthly_limit");
+    }
+    // One account can use at most a share of Askio's daily ceiling, so
+    // traffic aimed at one customer's chatbot can't switch AI off for all.
+    if (!(await takeRateLimit(`ai_owner_day_${ownerUid}`, ownerDailyShare(), DAY_MS))) {
+      return sendFallback(res, "daily_limit");
     }
     // Askio-wide ceiling for the day, on top of each account's own limits.
     if (!(await takeAiBudget("chat"))) {

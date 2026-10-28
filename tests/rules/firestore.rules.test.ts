@@ -97,16 +97,73 @@ describe("user profiles", () => {
     await assertFails(updateDoc(doc(admin(), "users/owner1"), { suspended: true }));
   });
 
-  it("a new profile can't start suspended or belong to someone else", async () => {
-    await assertSucceeds(setDoc(doc(stranger(), "users/stranger"), { ...profile, plan: "free" }));
-    await assertFails(setDoc(doc(env.authenticatedContext("new").firestore(), "users/new"), { suspended: false }));
+  // As sign-up writes it (src/components/Auth.tsx).
+  const signUp = {
+    email: "new@example.com",
+    name: "",
+    createdAt: new Date(),
+    aiScansCount: 0,
+    isPro: false,
+    plan: "free",
+    subscriptionStatus: "inactive",
+    aiChatbotLimit: 0,
+    language: "en",
+  };
+  const newUser = () => env.authenticatedContext("new", { email: "new@example.com" }).firestore();
+
+  it("sign-up creates a free profile with the account's own email", async () => {
+    await assertSucceeds(setDoc(doc(newUser(), "users/new"), signUp));
+    await assertFails(setDoc(doc(newUser(), "users/new"), { ...signUp, email: "someone@else.com" }));
     await assertFails(setDoc(doc(stranger(), "users/someone-else"), { plan: "free" }));
+  });
+
+  it.each([
+    ["plan", "enterprise"],
+    ["plan", "pro"],
+    ["subscriptionStatus", "active"],
+    ["isPro", true],
+    ["aiChatbotLimit", 10],
+    ["aiReplyLimit", 1e9],
+    ["suspended", false],
+    ["lemonSqueezySubscriptionId", "999"],
+    ["currentPeriodEnd", new Date(2099, 0, 1)],
+  ])("a new profile can't start with %s = %s", async (field, value) => {
+    await assertFails(setDoc(doc(newUser(), "users/new"), { ...signUp, [field]: value }));
+  });
+
+  it.each([
+    ["lemonSqueezySubscriptionId", "999"],
+    ["lemonSqueezyCustomerId", "5"],
+    ["lemonSqueezyCustomerPortalUrl", "https://example.com"],
+    ["currentPeriodEnd", new Date(2099, 0, 1)],
+    ["email", "attacker@example.com"],
+  ])("owners can't change the server-written %s", async (field, value) => {
+    await assertFails(updateDoc(doc(owner(), "users/owner1"), { [field]: value }));
+  });
+
+  it("owners edit their name, alerts, language and devices", async () => {
+    await assertSucceeds(updateDoc(doc(owner(), "users/owner1"), { name: "Sara" }));
+    await assertSucceeds(updateDoc(doc(owner(), "users/owner1"), { "emailAlerts.leads": false }));
+    await assertSucceeds(updateDoc(doc(owner(), "users/owner1"), { pushTokens: arrayUnion("device-token") }));
+    await assertFails(updateDoc(doc(owner(), "users/owner1"), { name: "x".repeat(81) }));
+  });
+
+  it("nobody deletes a profile from the browser, so it can't be re-created with other fields", async () => {
+    await assertFails(deleteDoc(doc(owner(), "users/owner1")));
   });
 });
 
 describe("chatbots", () => {
   it("anyone can read a chatbot (the widget loads it)", async () => {
     await assertSucceeds(getDoc(doc(visitor(), "chatbot_configs/bot1")));
+  });
+
+  it("only owners list their own chatbots, and admins list all", async () => {
+    await assertFails(getDocs(collection(visitor(), "chatbot_configs")));
+    await assertFails(getDocs(collection(stranger(), "chatbot_configs")));
+    await assertSucceeds(getDocs(query(collection(owner(), "chatbot_configs"), where("user_id", "==", "owner1"))));
+    await assertFails(getDocs(query(collection(stranger(), "chatbot_configs"), where("user_id", "==", "owner1"))));
+    await assertSucceeds(getDocs(collection(admin(), "chatbot_configs")));
   });
 
   it("owners create chatbots for themselves, without AI turned on", async () => {
@@ -137,6 +194,16 @@ describe("visitor records", () => {
       await assertFails(getDocs(collection(stranger(), name)));
       await assertFails(setDoc(doc(visitor(), `${name}/new`), record));
       await assertFails(setDoc(doc(owner(), `${name}/new`), record));
+    }
+  );
+
+  it.each(["leads", "analytics_events", "unanswered_queries"])(
+    "%s: owners may mark a record resolved but not rewrite it into another dashboard",
+    async (name) => {
+      await assertSucceeds(updateDoc(doc(owner(), `${name}/r1`), { resolved: true }));
+      await assertFails(updateDoc(doc(owner(), `${name}/r1`), { ownerId: "stranger" }));
+      await assertFails(updateDoc(doc(owner(), `${name}/r1`), { chatbotId: "botS" }));
+      await assertFails(updateDoc(doc(owner(), `${name}/r1`), { resolved: "yes" }));
     }
   );
 

@@ -30,23 +30,47 @@ service cloud.firestore {
       return request.resource.data.get('suspended', false) == resource.data.get('suspended', false);
     }
 
+    // A new profile, as sign-up writes it: the free plan, the signed-in
+    // account's own email, and nothing else. Plan, limits, billing ids and
+    // suspension are written by the server only (webhooks, admin actions).
+    function isNewFreeProfile() {
+      let d = request.resource.data;
+      return d.keys().hasOnly(['email', 'name', 'createdAt', 'aiScansCount', 'isPro', 'plan', 'subscriptionStatus', 'aiChatbotLimit', 'language'])
+        && d.get('email', '') == request.auth.token.get('email', '').lower()
+        && d.get('name', '') is string && d.get('name', '').size() <= 80
+        && d.get('plan', 'free') == 'free'
+        && d.get('subscriptionStatus', 'inactive') == 'inactive'
+        && d.get('isPro', false) == false
+        && d.get('aiChatbotLimit', 0) == 0
+        && d.get('aiScansCount', 0) == 0;
+    }
+
+    // The only fields the dashboard edits. Email stays the signed-in
+    // account's, since alerts and replies are sent to it.
+    function isProfileEdit() {
+      let d = request.resource.data;
+      return d.diff(resource.data).affectedKeys().hasOnly(['name', 'emailAlerts', 'language', 'pushTokens'])
+        && d.get('name', '') is string && d.get('name', '').size() <= 80
+        && d.get('emailAlerts', {}) is map
+        && d.get('language', 'en') is string && d.get('language', 'en').size() <= 8
+        && d.get('pushTokens', []) is list && d.get('pushTokens', []).size() <= 20;
+    }
+
     match /users/{userId} {
       allow read: if ownsUserDoc(userId) || isAdmin();
-      allow create: if ownsUserDoc(userId) && !('suspended' in request.resource.data);
-
-      // Billing, limit and suspension fields are set by the server only. Checked
-      // as "not touched", so older profiles missing some of them still save.
-      allow update: if ownsUserDoc(userId)
-        && !request.resource.data.diff(resource.data).affectedKeys().hasAny([
-          'plan', 'subscriptionStatus', 'aiChatbotLimit', 'isPro', 'aiReplyLimit', 'suspended', 'suspendedReason'
-        ]);
-
-      // Deleting the profile would drop a suspension, so suspended owners can't.
-      allow delete: if ownsUserDoc(userId) && resource.data.get('suspended', false) != true;
+      allow create: if ownsUserDoc(userId) && isNewFreeProfile();
+      allow update: if ownsUserDoc(userId) && isProfileEdit();
+      // Accounts are deleted through /api/account/delete, which also cancels
+      // billing and removes the account's data. Deleting the profile from the
+      // browser would let it be re-created with other fields.
+      allow delete: if false;
     }
 
     match /chatbot_configs/{configId} {
-      allow read: if true;
+      // The widget loads one chatbot by its id. Listing is limited to the
+      // owner's own chatbots (and admins), so nobody can enumerate customers.
+      allow get: if true;
+      allow list: if isAdmin() || (signedIn() && resource.data.user_id == request.auth.uid);
 
       allow create: if signedIn()
         && request.resource.data.user_id == request.auth.uid
@@ -71,21 +95,31 @@ service cloud.firestore {
       return signedIn() && resource.data.ownerId == request.auth.uid;
     }
 
+    // Owners may only mark a record handled, never rewrite what the server
+    // stored (its owner, chatbot, time or contents).
+    function isMarkResolved() {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(['resolved'])
+        && request.resource.data.resolved is bool;
+    }
+
     match /leads/{leadId} {
       allow read: if ownsRecord();
-      allow update, delete: if ownsRecord() && notSuspended();
+      allow update: if ownsRecord() && notSuspended() && isMarkResolved();
+      allow delete: if ownsRecord() && notSuspended();
       allow create: if false;
     }
 
     match /analytics_events/{eventId} {
       allow read: if ownsRecord();
-      allow update, delete: if ownsRecord() && notSuspended();
+      allow update: if ownsRecord() && notSuspended() && isMarkResolved();
+      allow delete: if ownsRecord() && notSuspended();
       allow create: if false;
     }
 
     match /unanswered_queries/{queryId} {
       allow read: if ownsRecord();
-      allow update, delete: if ownsRecord() && notSuspended();
+      allow update: if ownsRecord() && notSuspended() && isMarkResolved();
+      allow delete: if ownsRecord() && notSuspended();
       allow create: if false;
     }
 
@@ -189,6 +223,13 @@ service cloud.firestore {
     match /admin_log/{entryId} {
       allow read: if isAdmin();
       allow write: if false;
+    }
+
+    // Shopify stores connected to a chatbot. The server writes them when an
+    // install finishes; the owner sees and removes their own.
+    match /shopify_connections/{connectionId} {
+      allow read, delete: if signedIn() && resource.data.userId == request.auth.uid;
+      allow create, update: if false;
     }
 
     // Per-minute request counters for the AI chat endpoint. Server only.

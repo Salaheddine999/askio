@@ -22,7 +22,8 @@ import { SiWix } from "react-icons/si";
 import { Link } from "react-router-dom";
 import { auth } from "../utils/firebase";
 import { db } from "../utils/db";
-import { collection, query, where, getDocs, setDoc, doc, deleteDoc } from "firebase/firestore";
+import { collection, query, where, getDocs, doc, deleteDoc } from "firebase/firestore";
+import { apiRequest } from "../utils/api";
 import { toast } from "react-hot-toast";
 import BotAvatar from "../components/BotAvatar";
 import ConfirmationModal from "../components/ConfirmationModal";
@@ -131,30 +132,27 @@ export default function Integrations({ testMode = false }: IntegrationsProps) {
   }, [testMode]);
 
   const handleShopifyCallback = async () => {
+    // Shopify sent the merchant back; the server finishes the install for the
+    // signed-in owner who started it.
     const params = new URLSearchParams(window.location.search);
-    if (params.get('shopify_connected') === 'true') {
-      const shop = params.get('shop');
-      const chatbotId = params.get('chatbotId');
-      const user = auth.currentUser;
-      if (shop && chatbotId && user) {
-        try {
-          const connectionId = shop.replace(/\./g, '_');
-          const chatbotTitle = params.get('chatbotTitle') || 'Chatbot';
-          await setDoc(doc(db, 'shopify_connections', connectionId), {
-            shop,
-            chatbotId,
-            chatbotTitle,
-            userId: user.uid,
-            connectedAt: new Date().toISOString(),
-          });
-          toast.success(t("toastConnected", { shop }));
-          fetchShopifyConnections();
-        } catch (err) {
-          console.error('Error saving connection:', err);
-        }
-      }
+    const pending = params.get('shopify_pending');
+    if (pending || params.get('shopify_error')) {
       window.history.replaceState({}, '', '/integrations');
       setActivePlatform('shopify');
+      if (!pending) {
+        toast.error(t("toastConnectFailed"));
+        return;
+      }
+      try {
+        const { shop } = await apiRequest<{ shop: string }>("/api/account/shopify-connect", {
+          authRequired: true,
+          body: { pending },
+        });
+        toast.success(t("toastConnected", { shop }));
+        fetchShopifyConnections();
+      } catch (err) {
+        toast.error((err as Error).message || t("toastConnectFailed"));
+      }
     }
   };
 
@@ -262,7 +260,7 @@ export default function Integrations({ testMode = false }: IntegrationsProps) {
     }
   };
 
-  const connectShopify = (e: React.FormEvent) => {
+  const connectShopify = async (e: React.FormEvent) => {
     e.preventDefault();
     const shop = shopUrl.trim().replace(/^https?:\/\//, '').replace(/\/$/, '');
     if (!shop || !shop.includes('.myshopify.com')) {
@@ -277,8 +275,15 @@ export default function Integrations({ testMode = false }: IntegrationsProps) {
       toast.success(t("toastTestMode"));
       return;
     }
-    const chatbotTitle = chatbots.find(b => b.id === selectedChatbot)?.title || 'Chatbot';
-    window.location.href = `/api/shopify/auth?shop=${encodeURIComponent(shop)}&chatbotId=${encodeURIComponent(selectedChatbot)}&chatbotTitle=${encodeURIComponent(chatbotTitle)}`;
+    try {
+      const { url } = await apiRequest<{ url: string }>("/api/account/shopify-start", {
+        authRequired: true,
+        body: { shop, chatbotId: selectedChatbot },
+      });
+      window.location.href = url;
+    } catch (err) {
+      toast.error((err as Error).message || t("toastConnectFailed"));
+    }
   };
 
   const selectedBot = chatbots.find((c) => c.id === selectedChatbot);

@@ -1,6 +1,6 @@
 import { FieldValue } from "firebase-admin/firestore";
 import { adminDb } from "../firebaseAdmin.js";
-import { takeRateLimit, visitorKey } from "../rateLimit.js";
+import { takeRateLimits, visitorKey } from "../rateLimit.js";
 import { getUserAccessProfile } from "../plan.js";
 import { sendLeadAlert, sendMissedChatAlert } from "../email/alerts.js";
 import { pushLiveChatRequest } from "../push.js";
@@ -284,12 +284,14 @@ export default async function recordVisitor(req, res) {
     const [perVisitor, perChatbot] = LIMITS[kind];
     // The chatbot is read alongside the limits, so a live chat message
     // reaches the owner one round trip sooner.
-    const [visitorOk, chatbotOk, chatbotSnap] = await Promise.all([
-      takeRateLimit(`rec_${kind}_v_${visitorKey(req)}`, perVisitor),
-      takeRateLimit(`rec_${kind}_c_${chatbotId}`, perChatbot),
+    const [allowed, chatbotSnap] = await Promise.all([
+      takeRateLimits([
+        [`rec_${kind}_v_${visitorKey(req)}`, perVisitor],
+        [`rec_${kind}_c_${chatbotId}`, perChatbot],
+      ]),
       adminDb.collection("chatbot_configs").doc(chatbotId).get(),
     ]);
-    if (!visitorOk || !chatbotOk) {
+    if (!allowed) {
       return res.status(429).json({ error: "Too many requests. Please try again in a minute." });
     }
 

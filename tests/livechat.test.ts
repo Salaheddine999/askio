@@ -49,7 +49,7 @@ vi.mock("firebase-admin/firestore", () => ({
   },
 }));
 vi.mock("../api/_lib/firebaseAdmin.js", () => ({ adminDb: fake.adminDb, adminAuth: {} }));
-vi.mock("../api/_lib/rateLimit.js", () => ({ takeRateLimit: async () => true, visitorKey: () => "visitor" }));
+vi.mock("../api/_lib/rateLimit.js", () => ({ takeRateLimit: async () => true, takeRateLimits: async () => true, visitorKey: () => "visitor" }));
 vi.mock("../api/_lib/auth.js", () => ({ requireUser: async () => ({ uid: fake.state.uid, name: "Sara Janssen" }) }));
 vi.mock("../api/_lib/plan.js", () => ({
   getUserAccessProfile: async () => ({

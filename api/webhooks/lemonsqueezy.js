@@ -2,6 +2,7 @@ import { FieldValue } from "firebase-admin/firestore";
 import { adminAuth, adminDb } from "../_lib/firebaseAdmin.js";
 import {
   getLemonSqueezyConfig,
+  isSignedCheckoutUid,
   verifyWebhookSignature,
 } from "../_lib/lemonsqueezy.js";
 import { readRawBody } from "../_lib/rawBody.js";
@@ -42,15 +43,27 @@ export function mapPlanStatus(lsStatus = "") {
   };
 }
 
-async function findUserRef(payload) {
-  const uid =
-    payload?.meta?.custom_data?.uid ||
-    payload?.meta?.custom_data?.user_id ||
-    null;
+const UID_PATTERN = /^[A-Za-z0-9]{1,128}$/;
+const BILLABLE = new Set(["active", "on_trial", "past_due", "paused", "unpaid", "cancelled"]);
 
-  if (uid) {
-    return adminDb.collection("users").doc(uid);
+/**
+ * The account an event is for, and whether that's certain. A uid signed at
+ * checkout (create-checkout) is certain. An unsigned uid (an old or edited
+ * checkout link) or a match on the buyer's email is only a guess, because the
+ * buyer typed it.
+ */
+async function findUserRef(payload) {
+  const custom = payload?.meta?.custom_data || {};
+  const uid = String(custom.uid || custom.user_id || "");
+
+  if (UID_PATTERN.test(uid)) {
+    return { ref: adminDb.collection("users").doc(uid), signed: isSignedCheckoutUid(uid, custom.uid_sig) };
   }
+  const ref = await findUserRefByEmail(payload);
+  return ref ? { ref, signed: false } : null;
+}
+
+async function findUserRefByEmail(payload) {
 
   const email = payload?.data?.attributes?.user_email || payload?.data?.attributes?.customer_email;
   if (!email) {
@@ -87,29 +100,60 @@ async function findUserRef(payload) {
   }
 }
 
+/**
+ * Decides whether an event may update the account. Events for the
+ * subscription already on the account always may (if they aren't older than
+ * the last one applied). A different subscription may replace it only when
+ * the checkout uid was signed, or when the account has no billable
+ * subscription left, so a buyer can't take over someone else's billing.
+ */
+export function shouldApplyEvent(stored = {}, { subscriptionId, updatedAt, signed }) {
+  const storedId = stored.lemonSqueezySubscriptionId != null ? String(stored.lemonSqueezySubscriptionId) : null;
+  if (storedId === subscriptionId) {
+    const last = Date.parse(stored.lemonSqueezyUpdatedAt || "");
+    const current = Date.parse(updatedAt || "");
+    return !(last && current && current < last);
+  }
+  if (signed) return true;
+  return !storedId || !BILLABLE.has(String(stored.subscriptionStatus || "").toLowerCase());
+}
+
 async function handleSubscriptionEvent(payload) {
-  const userRef = await findUserRef(payload);
-  if (!userRef) {
+  // Only subscription objects carry a subscription's status; the
+  // subscription_payment_* events carry invoices.
+  if (payload?.data?.type !== "subscriptions" || payload?.data?.id == null) return;
+  const target = await findUserRef(payload);
+  if (!target) {
     return;
   }
 
-  const attributes = payload?.data?.attributes || {};
+  const attributes = payload.data.attributes || {};
+  const subscriptionId = String(payload.data.id);
   const mapped = mapPlanStatus(attributes.status);
 
-  await userRef.set(
-    {
-      ...mapped,
-      lemonSqueezyCustomerId: attributes.customer_id ?? null,
-      lemonSqueezyOrderId: attributes.order_id ?? null,
-      lemonSqueezyProductId: attributes.product_id ?? null,
-      lemonSqueezyVariantId: attributes.variant_id ?? null,
-      lemonSqueezySubscriptionId: payload?.data?.id ?? null,
-      lemonSqueezyCustomerPortalUrl: attributes.urls?.customer_portal ?? null,
-      currentPeriodEnd: attributes.renews_at || attributes.ends_at || null,
-      lastBillingSyncAt: FieldValue.serverTimestamp(),
-    },
-    { merge: true }
-  );
+  await adminDb.runTransaction(async (transaction) => {
+    const stored = (await transaction.get(target.ref)).data() || {};
+    if (!shouldApplyEvent(stored, { subscriptionId, updatedAt: attributes.updated_at, signed: target.signed })) {
+      console.warn(`Ignored Lemon Squeezy event for subscription ${subscriptionId}: it doesn't match the account's billing.`);
+      return;
+    }
+    transaction.set(
+      target.ref,
+      {
+        ...mapped,
+        lemonSqueezyCustomerId: attributes.customer_id ?? null,
+        lemonSqueezyOrderId: attributes.order_id ?? null,
+        lemonSqueezyProductId: attributes.product_id ?? null,
+        lemonSqueezyVariantId: attributes.variant_id ?? null,
+        lemonSqueezySubscriptionId: subscriptionId,
+        lemonSqueezyCustomerPortalUrl: attributes.urls?.customer_portal ?? null,
+        lemonSqueezyUpdatedAt: attributes.updated_at ?? null,
+        currentPeriodEnd: attributes.renews_at || attributes.ends_at || null,
+        lastBillingSyncAt: FieldValue.serverTimestamp(),
+      },
+      { merge: true }
+    );
+  });
 }
 
 async function handler(req, res) {
@@ -133,8 +177,8 @@ async function handler(req, res) {
     }
 
     const payload = JSON.parse(rawBody.toString("utf8"));
-    const eventName =
-      req.headers["x-event-name"] || payload?.meta?.event_name || "";
+    // The event name inside the signed body, not the unsigned header.
+    const eventName = payload?.meta?.event_name || "";
 
     if (String(eventName).startsWith("subscription_")) {
       await handleSubscriptionEvent(payload);

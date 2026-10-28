@@ -1,4 +1,3 @@
-import crypto from 'crypto';
 import { reportError, withMonitoring } from "../_lib/monitoring.js";
 
 function handler(req, res) {
@@ -32,36 +31,13 @@ function handler(req, res) {
       `);
     }
 
-    const shopRegex = /^[a-zA-Z0-9][a-zA-Z0-9-]*\.myshopify\.com$/;
-    if (!shopRegex.test(shop)) {
-      return res.status(400).json({ error: 'Invalid shop URL format. Use: yourstore.myshopify.com' });
-    }
-
-    const apiKey = process.env.SHOPIFY_API_KEY;
-    if (!apiKey) {
-      return res.status(500).json({ error: 'Shopify API key not configured. Add SHOPIFY_API_KEY to Vercel environment variables.' });
-    }
-
-    const scopes = 'write_script_tags,read_script_tags';
-    const redirectUri = 'https://askio.vercel.app/api/shopify/callback';
-
-    const chatbotTitle = req.query.chatbotTitle || 'Chatbot';
-
-    const nonce = crypto.randomBytes(16).toString('hex');
-    const stateObj = JSON.stringify({ nonce, chatbotId, chatbotTitle });
-    const state = Buffer.from(stateObj).toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
-
-    const installUrl = 'https://' + shop + '/admin/oauth/authorize' +
-      '?client_id=' + apiKey +
-      '&scope=' + scopes +
-      '&redirect_uri=' + encodeURIComponent(redirectUri) +
-      '&state=' + state;
-
-    res.redirect(302, installUrl);
+    // Installs start signed in, from Integrations (POST /api/account/shopify-start),
+    // so an install is always bound to the owner of the chatbot. Old links land there.
+    res.redirect(302, 'https://askio.vercel.app/integrations?platform=shopify');
   } catch (err) {
     console.error('Auth error:', err);
     reportError(err, { route: "shopify/auth" });
-    res.status(500).json({ error: 'Internal server error', details: err.message });
+    res.status(500).json({ error: 'Internal server error' });
   }
 }
 
