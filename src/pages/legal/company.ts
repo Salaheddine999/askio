@@ -7,7 +7,7 @@ export const COMPANY = {
   contactEmail: "support@getaskio.xyz",
   country: "Morocco",
   courts: "the competent courts of Morocco",
-  effectiveDate: "October 27, 2026",
+  effectiveDate: "October 28, 2026",
 };
 
 // Facts to confirm before launch; each stays highlighted until set to true.

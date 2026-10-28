@@ -32,7 +32,7 @@ setup needed. This repository is the full source of that service.
 - **Frontend:** React 18, TypeScript, Vite, Tailwind CSS
 - **Backend:** Vercel serverless functions (`api/`)
 - **Data and sign-in:** Firebase Auth and Cloud Firestore
-- **AI:** Google Gemini
+- **AI:** Anthropic Claude (Haiku 5.5 for replies, Sonnet 5.5 for FAQ writing), with Google Gemini as the fallback
 - **Billing:** Lemon Squeezy
 - **Monitoring:** Sentry (optional)
 

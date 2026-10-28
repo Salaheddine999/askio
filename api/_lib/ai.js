@@ -1,5 +1,110 @@
+import Anthropic from "@anthropic-ai/sdk";
 import { GoogleGenAI } from "@google/genai";
 import { safeFetch } from "./safeFetch.js";
+import { reportError } from "./monitoring.js";
+
+// AI replies and FAQ writing run on Claude when ANTHROPIC_API_KEY is set,
+// with Gemini (GEMINI_API_KEY) as the fallback when Claude errors or is slow.
+// With only one key set, that provider does everything.
+
+const CLAUDE_CHAT_MODEL = "claude-haiku-5-5";
+const CLAUDE_FAQ_MODEL = "claude-sonnet-5-5";
+
+let claudeClient = null;
+function getClaude() {
+  if (!process.env.ANTHROPIC_API_KEY) return null;
+  // Retries are ours to decide: chat has a few seconds, then Gemini.
+  claudeClient ||= new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY, maxRetries: 0 });
+  return claudeClient;
+}
+
+/**
+ * One Claude call that must answer as JSON matching `schema`; returns the
+ * JSON text. Failures become the same plain 503 as Gemini's. Busy, rate
+ * limited or slow passes; anything else (a bad key, a bad request) is
+ * reported, even when Gemini then answers, so it can't hide.
+ */
+async function claudeJson({ model, prompt, schema, maxTokens, effort, timeoutMs, fast = false }) {
+  const client = getClaude();
+  try {
+    const params = {
+      model,
+      max_tokens: maxTokens,
+      // Short replies don't need thinking (Haiku 5.5 allows turning it off
+      // at low effort); FAQ writing keeps it.
+      ...(fast ? { thinking: { type: "disabled" } } : {}),
+      output_config: { effort, format: { type: "json_schema", schema } },
+      messages: [{ role: "user", content: prompt }],
+    };
+    // Sonnet 5.5: if its safeguards decline, Anthropic reruns the request on
+    // a suitable model within the same call.
+    const response =
+      model === CLAUDE_FAQ_MODEL
+        ? await client.beta.messages.create(
+            { ...params, betas: ["server-side-fallback-2026-07-01"], fallbacks: "default" },
+            { timeout: timeoutMs }
+          )
+        : await client.messages.create(params, { timeout: timeoutMs });
+    if (response.stop_reason === "refusal") throw Object.assign(new Error("Claude declined the request."), { status: 0 });
+    const text = response.content
+      .filter((block) => block.type === "text")
+      .map((block) => block.text)
+      .join("")
+      .trim();
+    if (!text) throw Object.assign(new Error("Claude returned an empty reply."), { status: 0 });
+    return text;
+  } catch (error) {
+    const status = typeof error?.status === "number" ? error.status : 0;
+    const expected = status === 0 || status === 429 || status >= 500;
+    console.error(`Claude ${model} failed: ${status || error?.name || "error"}`);
+    if (!expected) reportError(error, { route: "claude", model, status: String(status) });
+    const failure = new Error("The AI didn't respond in time. Please try again in a moment.");
+    failure.statusCode = 503;
+    failure.aiStatus = status;
+    failure.expected = expected;
+    throw failure;
+  }
+}
+
+/** Claude first; Gemini when Claude fails (or isn't set up). */
+async function withFallback(claudeCall, geminiCall) {
+  if (getClaude()) {
+    try {
+      return await claudeCall();
+    } catch (error) {
+      if (!process.env.GEMINI_API_KEY) throw error;
+    }
+  }
+  return geminiCall();
+}
+
+const FAQ_SCHEMA = {
+  type: "object",
+  properties: {
+    faqs: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: { question: { type: "string" }, answer: { type: "string" } },
+        required: ["question", "answer"],
+        additionalProperties: false,
+      },
+    },
+  },
+  required: ["faqs"],
+  additionalProperties: false,
+};
+
+const CHAT_SCHEMA = {
+  type: "object",
+  properties: {
+    reply: { type: "string" },
+    answered: { type: "boolean" },
+    sources: { type: "array", items: { type: "integer" } },
+  },
+  required: ["reply", "answered", "sources"],
+  additionalProperties: false,
+};
 
 const apiKey = process.env.GEMINI_API_KEY;
 
@@ -187,7 +292,9 @@ function safeParseFaqs(resultText) {
     .replace(/^```\s*/i, "")
     .replace(/\s*```$/, "");
 
-  const parsedFaqs = JSON.parse(cleaned);
+  const parsed = JSON.parse(cleaned);
+  // Claude answers {"faqs": [...]} (its schema needs an object); Gemini a bare list.
+  const parsedFaqs = Array.isArray(parsed) ? parsed : parsed?.faqs;
   if (!Array.isArray(parsedFaqs)) {
     throw new Error("AI did not return a FAQ list.");
   }
@@ -317,20 +424,32 @@ export async function generateFaqsFromUrl(url, isDeepCrawl = false, aiTone = "")
       ${rules}
     `;
 
-  const aiResponse = await generate(
-    FAQ_MODELS,
-    {
-      contents: prompt,
-      config: {
-        responseMimeType: "application/json",
-        // Low, so answers stick to the page instead of embellishing it.
-        temperature: 0.3,
-      },
-    },
-    40_000
+  const resultText = await withFallback(
+    () =>
+      claudeJson({
+        model: CLAUDE_FAQ_MODEL,
+        prompt: `${prompt}\n      Put the list in the "faqs" field.`,
+        schema: FAQ_SCHEMA,
+        maxTokens: 8000,
+        effort: "medium",
+        timeoutMs: 35_000,
+      }),
+    async () =>
+      (
+        await generate(
+          FAQ_MODELS,
+          {
+            contents: prompt,
+            config: {
+              responseMimeType: "application/json",
+              // Low, so answers stick to the page instead of embellishing it.
+              temperature: 0.3,
+            },
+          },
+          40_000
+        )
+      ).text
   );
-
-  const resultText = aiResponse.text;
   if (!resultText) {
     throw new Error("AI returned empty response.");
   }
@@ -416,29 +535,44 @@ export async function generateChatResponse({
     Return JSON: {"reply": "your reply", "answered": true or false, "sources": [numbers]}. "answered" is false only when you couldn't answer their question from the knowledge base. "sources" lists the numbers of the knowledge base entries your reply's facts came from, most relevant first; leave it empty for small talk or when you didn't answer.
   `;
 
-  const aiResponse = await generate(
-    CHAT_MODELS,
-    {
-      fast: true,
-      contents: prompt,
-      config: {
-        responseMimeType: "application/json",
-        responseSchema: {
-          type: "object",
-          properties: {
-            reply: { type: "string" },
-            answered: { type: "boolean" },
-            sources: { type: "array", items: { type: "integer" } },
+  const replyText = await withFallback(
+    () =>
+      claudeJson({
+        model: CLAUDE_CHAT_MODEL,
+        prompt,
+        schema: CHAT_SCHEMA,
+        maxTokens: 1024,
+        effort: "low",
+        fast: true,
+        timeoutMs: 7000,
+      }),
+    async () =>
+      (
+        await generate(
+          CHAT_MODELS,
+          {
+            fast: true,
+            contents: prompt,
+            config: {
+              responseMimeType: "application/json",
+              responseSchema: {
+                type: "object",
+                properties: {
+                  reply: { type: "string" },
+                  answered: { type: "boolean" },
+                  sources: { type: "array", items: { type: "integer" } },
+                },
+                required: ["reply", "answered"],
+              },
+              temperature: 0.3,
+            },
           },
-          required: ["reply", "answered"],
-        },
-        temperature: 0.3,
-      },
-    },
-    8000
+          8000
+        )
+      ).text
   );
 
-  const text = (aiResponse.text || "").trim();
+  const text = (replyText || "").trim();
   try {
     const parsed = JSON.parse(text);
     if (typeof parsed?.reply === "string" && parsed.reply.trim()) {

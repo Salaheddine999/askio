@@ -90,7 +90,8 @@ export default function TermsOfService() {
 
       <Section id="ai" title="5. AI-generated answers">
         <p>
-          Askio uses third-party AI models (currently Google's free Gemini API tier) to generate replies and draft FAQs.
+          Askio uses third-party AI models (currently Anthropic's Claude, with Google's free Gemini API tier as a backup)
+          to generate replies and draft FAQs.
           Content sent for AI processing may be used by the AI provider as described in our{" "}
           <Link to="/privacy#ai" className="underline underline-offset-2">Privacy Policy</Link>, so don't put personal data in
           your chatbot's instructions or FAQs. AI output can be wrong, incomplete or
