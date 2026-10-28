@@ -54,7 +54,7 @@ const UpgradeModal: React.FC<UpgradeModalProps> = ({ isOpen, onClose }) => {
             </div>
             <div className="flex items-center gap-3 text-sm text-[#101723] dark:text-[#D7DFE5]">
                 <CheckCircle2 size={16} className="text-green-500 shrink-0" />
-                <span>{t("upgradeFeatureBranding")}</span>
+                <span>{t("upgradeFeatureLive")}</span>
             </div>
           </div>
 

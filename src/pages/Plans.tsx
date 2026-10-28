@@ -198,6 +198,7 @@ const Plans: React.FC = () => {
               t("proF5"),
               t("proF6", { count: PRO_AI_REPLY_LIMIT.toLocaleString(t.lang) }),
               t("proF7"),
+              t("proF8"),
             ]}
           />
           <PlanCard

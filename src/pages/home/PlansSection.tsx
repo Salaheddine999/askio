@@ -162,7 +162,7 @@ export default function PlansSection() {
           Start free. Add AI when you need it.
         </h2>
         <p className="mt-3 text-[#566273] dark:text-[#9BAABD] text-body max-w-xl">
-          Starter uses the answers you write. Pro adds AI tools to help you build and customize faster.
+          Starter uses the answers you write. Pro adds AI answers, and lets you jump in and chat with visitors yourself.
         </p>
         <div className="mt-7">
           <BillingToggle value={billingInterval} onChange={setBillingInterval} layoutId="home-billing-toggle" />
@@ -194,8 +194,8 @@ export default function PlansSection() {
 
             <PlanCard
               title="Pro"
-              setupLabel="AI-assisted setup"
-              description="Generate FAQs from your site and customize your AI persona."
+              setupLabel="AI and live chat"
+              description="AI that answers your visitors, and live chat when you want to answer yourself."
               price={`$${yearly ? PRO_PRICE.yearly : PRO_PRICE.monthly}`}
               priceSuffix={yearly ? "/year" : "/month"}
               subtext={
@@ -214,6 +214,7 @@ export default function PlansSection() {
                 "Deep crawl your website",
                 "Up to 10 AI-enabled chatbots",
                 `${PRO_AI_REPLY_LIMIT.toLocaleString("en-US")} AI replies every month`,
+                "Live chat with visitors, with phone alerts",
                 "Read every conversation, kept 90 days",
               ]}
             />

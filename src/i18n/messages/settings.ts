@@ -47,7 +47,7 @@ export const settingsMessages = defineMessages({
 
     billingDescription: "Your subscription and AI usage. Payments are handled by Lemon Squeezy.",
     planFree: "Free",
-    upgradePitch: "Upgrade to Pro for AI replies ({limit} a month), AI-generated FAQs and AI personas, from {price}/month.",
+    upgradePitch: "Upgrade to Pro for AI replies ({limit} a month), live chat with your visitors, AI-generated FAQs and AI personas, from {price}/month.",
     cancelledUntil: "Your subscription is cancelled. You keep {plan} until {date}.",
     renewsOn: "Renews on {date}.",
     thanks: "Thanks for supporting Askio.",
@@ -127,7 +127,7 @@ export const settingsMessages = defineMessages({
     upgradeBody: "Free plans can create unlimited manual chatbots. Upgrade to Pro to enable AI on up to 10 chatbots.",
     upgradeFeatureChatbots: "AI on up to 10 chatbots",
     upgradeFeatureFaq: "AI FAQ generation and AI responses",
-    upgradeFeatureBranding: "Remove Askio branding",
+    upgradeFeatureLive: "Live chat with your visitors",
     upgradeLater: "Maybe later",
   },
   fr: {
@@ -176,8 +176,7 @@ export const settingsMessages = defineMessages({
 
     billingDescription: "Votre abonnement et votre utilisation de l'IA. Les paiements sont gérés par Lemon Squeezy.",
     planFree: "Gratuit",
-    upgradePitch:
-      "Passez à Pro pour les réponses IA ({limit} par mois), les FAQ générées par IA et les personas IA, à partir de {price}/mois.",
+    upgradePitch: "Passez à Pro pour les réponses IA ({limit} par mois), le chat en direct avec vos visiteurs, les FAQ générées par IA et les personas IA, à partir de {price}/mois.",
     cancelledUntil: "Votre abonnement est résilié. Vous gardez {plan} jusqu'au {date}.",
     renewsOn: "Renouvellement le {date}.",
     thanks: "Merci de soutenir Askio.",
@@ -259,7 +258,7 @@ export const settingsMessages = defineMessages({
       "L'offre gratuite permet de créer un nombre illimité de chatbots manuels. Passez à Pro pour activer l'IA sur 10 chatbots maximum.",
     upgradeFeatureChatbots: "IA sur 10 chatbots maximum",
     upgradeFeatureFaq: "FAQ générées et réponses par IA",
-    upgradeFeatureBranding: "Suppression de la marque Askio",
+    upgradeFeatureLive: "Chat en direct avec vos visiteurs",
     upgradeLater: "Plus tard",
   },
   nl: {
@@ -307,8 +306,7 @@ export const settingsMessages = defineMessages({
 
     billingDescription: "Je abonnement en AI-gebruik. Betalingen lopen via Lemon Squeezy.",
     planFree: "Gratis",
-    upgradePitch:
-      "Upgrade naar Pro voor AI-antwoorden ({limit} per maand), door AI gemaakte FAQ's en AI-persona's, vanaf {price}/maand.",
+    upgradePitch: "Upgrade naar Pro voor AI-antwoorden ({limit} per maand), livechat met je bezoekers, door AI gemaakte FAQ's en AI-persona's, vanaf {price}/maand.",
     cancelledUntil: "Je abonnement is opgezegd. Je houdt {plan} tot {date}.",
     renewsOn: "Wordt verlengd op {date}.",
     thanks: "Bedankt dat je Askio steunt.",
@@ -389,7 +387,7 @@ export const settingsMessages = defineMessages({
       "Met het gratis abonnement maak je onbeperkt handmatige chatbots. Upgrade naar Pro om AI aan te zetten op maximaal 10 chatbots.",
     upgradeFeatureChatbots: "AI op maximaal 10 chatbots",
     upgradeFeatureFaq: "FAQ's en antwoorden door AI",
-    upgradeFeatureBranding: "Geen Askio-branding",
+    upgradeFeatureLive: "Livechat met je bezoekers",
     upgradeLater: "Misschien later",
   },
   de: {
@@ -437,8 +435,7 @@ export const settingsMessages = defineMessages({
 
     billingDescription: "Ihr Abonnement und Ihre KI-Nutzung. Zahlungen werden über Lemon Squeezy abgewickelt.",
     planFree: "Kostenlos",
-    upgradePitch:
-      "Wechseln Sie zu Pro für KI-Antworten ({limit} pro Monat), KI-generierte FAQs und KI-Personas, ab {price}/Monat.",
+    upgradePitch: "Wechseln Sie zu Pro für KI-Antworten ({limit} pro Monat), Live-Chat mit Ihren Besuchern, KI-generierte FAQs und KI-Personas, ab {price}/Monat.",
     cancelledUntil: "Ihr Abonnement ist gekündigt. Sie behalten {plan} bis zum {date}.",
     renewsOn: "Verlängert sich am {date}.",
     thanks: "Danke, dass Sie Askio unterstützen.",
@@ -520,7 +517,7 @@ export const settingsMessages = defineMessages({
       "Im kostenlosen Tarif erstellen Sie unbegrenzt viele manuelle Chatbots. Wechseln Sie zu Pro, um KI für bis zu 10 Chatbots zu aktivieren.",
     upgradeFeatureChatbots: "KI für bis zu 10 Chatbots",
     upgradeFeatureFaq: "KI-generierte FAQs und KI-Antworten",
-    upgradeFeatureBranding: "Ohne Askio-Branding",
+    upgradeFeatureLive: "Live-Chat mit Ihren Besuchern",
     upgradeLater: "Vielleicht später",
   },
   es: {
@@ -568,8 +565,7 @@ export const settingsMessages = defineMessages({
 
     billingDescription: "Tu suscripción y tu uso de IA. Los pagos se gestionan a través de Lemon Squeezy.",
     planFree: "Gratis",
-    upgradePitch:
-      "Pásate a Pro para tener respuestas con IA ({limit} al mes), preguntas frecuentes generadas con IA y personalidades de IA, desde {price}/mes.",
+    upgradePitch: "Pásate a Pro para tener respuestas con IA ({limit} al mes), chat en vivo con tus visitantes, preguntas frecuentes generadas con IA y personalidades de IA, desde {price}/mes.",
     cancelledUntil: "Tu suscripción está cancelada. Mantienes {plan} hasta el {date}.",
     renewsOn: "Se renueva el {date}.",
     thanks: "Gracias por apoyar Askio.",
@@ -650,7 +646,7 @@ export const settingsMessages = defineMessages({
       "El plan gratuito permite crear chatbots manuales ilimitados. Pásate a Pro para activar la IA en hasta 10 chatbots.",
     upgradeFeatureChatbots: "IA en hasta 10 chatbots",
     upgradeFeatureFaq: "Preguntas frecuentes y respuestas generadas con IA",
-    upgradeFeatureBranding: "Sin la marca Askio",
+    upgradeFeatureLive: "Chat en vivo con tus visitantes",
     upgradeLater: "Quizás más tarde",
   },
 });
