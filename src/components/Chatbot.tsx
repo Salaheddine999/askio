@@ -238,7 +238,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
   const launcherRef = useRef<HTMLDivElement>(null);
   // Guards late size reports once the bubble starts hiding.
   const greetingVisibleRef = useRef(false);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesRef = useRef<HTMLDivElement>(null);
   const [fuse, setFuse] = useState<Fuse<{
     question: string;
     answer: string;
@@ -740,6 +740,8 @@ const Chatbot: React.FC<ChatbotProps> = ({
   // Reopening goes back to where the visitor was: the chat once they've
   // asked something, the home screen before that.
   const hasConversation = messages.some((m) => m.sender === "user" || m.sender === "agent");
+  const hasConversationRef = useRef(hasConversation);
+  hasConversationRef.current = hasConversation;
   const lastVisitorQuestion = [...messages].reverse().find((m) => m.sender === "user")?.text ?? "";
   // For apps whose links can't carry a message: the question goes on the
   // clipboard so the visitor only has to paste it.
@@ -781,10 +783,12 @@ const Chatbot: React.FC<ChatbotProps> = ({
   }, [isOpen, isEmbedded]);
 
   useEffect(() => {
+    // Askio.open() / close() and data-askio-open buttons on the page.
     const handleMessage = (event: MessageEvent) => {
-      if (event.data.type === "toggleChatbot") {
-        setIsOpen(event.data.isOpen);
-      }
+      if (event.source !== window.parent || event.data?.type !== "toggleChatbot") return;
+      const open = event.data.isOpen === true;
+      if (open) setView(hasConversationRef.current ? "chat" : "home");
+      setIsOpen(open);
     };
 
     window.addEventListener("message", handleMessage);
@@ -937,8 +941,11 @@ const Chatbot: React.FC<ChatbotProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isEmbedded, showGreeting]);
 
+  // Only the message list scrolls: scrollIntoView would also scroll the
+  // page around the widget, like the editor around its preview.
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    const list = messagesRef.current;
+    if (list) list.scrollTo({ top: list.scrollHeight, behavior: "smooth" });
   };
 
   useEffect(scrollToBottom, [messages]);
@@ -1268,7 +1275,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
       </div>
 
       {/* Messages Area */}
-      <div className="flex-grow overflow-y-auto px-3.5 py-4 space-y-3 [scrollbar-width:thin] [scrollbar-color:rgba(100,113,132,0.35)_transparent]">
+      <div ref={messagesRef} className="flex-grow overflow-y-auto px-3.5 py-4 space-y-3 [scrollbar-width:thin] [scrollbar-color:rgba(100,113,132,0.35)_transparent]">
         <AnimatePresence>
           {messages.map((message, index) =>
             message.sender === "notice" ? (
@@ -1476,7 +1483,6 @@ const Chatbot: React.FC<ChatbotProps> = ({
             </div>
           </div>
         )}
-        <div ref={messagesEndRef} />
       </div>
 
       {/* Input Area */}

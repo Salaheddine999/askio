@@ -9,7 +9,7 @@ export function emailConfigured() {
 }
 
 /** Returns true once Resend accepts the email; throws if it refuses. */
-export async function sendEmail({ to, subject, html, text, headers = {} }) {
+export async function sendEmail({ to, subject, html, text, headers = {}, replyTo }) {
   if (!emailConfigured()) return false;
   const response = await fetch(RESEND_URL, {
     method: "POST",
@@ -17,7 +17,7 @@ export async function sendEmail({ to, subject, html, text, headers = {} }) {
       Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ from: process.env.EMAIL_FROM, to: [to], subject, html, text, headers }),
+    body: JSON.stringify({ from: process.env.EMAIL_FROM, to: [to], subject, html, text, headers, ...(replyTo ? { reply_to: replyTo } : {}) }),
     signal: AbortSignal.timeout(8000),
   });
   if (!response.ok) {

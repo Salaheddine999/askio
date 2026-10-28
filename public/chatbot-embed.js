@@ -3,6 +3,10 @@
 //   <script src="https://www.getaskio.xyz/chatbot-embed.js" data-chatbot="CHATBOT_ID" async></script>
 //
 // Optional: data-launcher="orb" or "classic", data-greeting="on" or "off".
+//
+// Open the chat from the site's own button, no code needed:
+//   <a href="#" data-askio-open>Chat with us</a>
+// or from script: Askio.open(), Askio.close(), Askio.toggle().
 // The older three-part snippet (a #chatbot-container div and
 // ChatbotEmbed.init(id, origin)) keeps working.
 //
@@ -12,6 +16,27 @@
   // Each chatbot starts once, even if the code is on the page twice (each
   // copy of this script runs separately, so the list lives on window).
   var started = (window.__askioStarted = window.__askioStarted || {});
+
+  // Askio.open() and friends. Calls made before the widget is ready wait
+  // for it. Defined once, even if this script is on the page twice.
+  var control = window.__askioControl || (window.__askioControl = { send: null, queue: [] });
+  function command(action) {
+    if (control.send) control.send(action);
+    else control.queue.push(action);
+  }
+  if (!window.Askio) {
+    window.Askio = {
+      open: function () { command("open"); },
+      close: function () { command("close"); },
+      toggle: function () { command("toggle"); },
+    };
+    document.addEventListener("click", function (event) {
+      var target = event.target && event.target.closest ? event.target.closest("[data-askio-open]") : null;
+      if (!target) return;
+      event.preventDefault();
+      command("open");
+    });
+  }
 
   function whenPageIsReady(fn) {
     function idle() {
@@ -251,6 +276,11 @@
           if (event.source === iframe.contentWindow) {
             startPageReporting();
             sendSpace();
+            control.send = function (action) {
+              var open = action === "open" ? true : action === "close" ? false : !isOpen;
+              iframe.contentWindow.postMessage({ type: "toggleChatbot", isOpen: open }, frameOrigin);
+            };
+            while (control.queue.length) control.send(control.queue.shift());
           }
         } else if (event.data.type === "chatbotState") {
           isOpen = event.data.isOpen;
