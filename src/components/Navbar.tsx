@@ -523,7 +523,7 @@ const Navbar: React.FC<NavbarProps> = ({
         {/* Navigation, then plan and links. On short screens (laptops) it all
             scrolls together instead of squeezing the chatbot list; the account
             card below stays in view. */}
-        <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-3 pt-3 [scrollbar-width:thin]">
+        <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-3 pt-3 [scrollbar-color:transparent_transparent] [scrollbar-width:thin] hover:[scrollbar-color:#C9D2DE_transparent] focus-within:[scrollbar-color:#C9D2DE_transparent] dark:hover:[scrollbar-color:#3A4658_transparent] dark:focus-within:[scrollbar-color:#3A4658_transparent]">
           <h2 className={`mb-1.5 px-2.5 text-caption font-medium text-ink-425 dark:text-ink-545 ${hideWhenCollapsed}`}>
             {t("workspace")}
           </h2>
