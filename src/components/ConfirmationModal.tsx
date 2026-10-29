@@ -45,7 +45,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
       >
         <div className="p-6">
           <div className="mb-4 flex items-center justify-between">
-            <DialogTitle className="text-xl font-bold text-fg">{title}</DialogTitle>
+            <DialogTitle className="font-display text-h3 tracking-tight text-fg">{title}</DialogTitle>
             <button
               onClick={onClose}
               aria-label={cancelText || "Close"}

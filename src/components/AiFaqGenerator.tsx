@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
+import { Dialog, DialogBackdrop, DialogPanel, DialogTitle } from "@headlessui/react";
 import { auth } from "../utils/firebase";
 import {
   Trash2,
@@ -30,6 +31,13 @@ interface AiFaqGeneratorProps {
   canUseAi?: boolean;
   ensureChatbotSaved?: () => Promise<string | null>;
 }
+
+// Both windows fade in with plain CSS; Headless UI handles focus, Escape and scroll.
+const backdropClass =
+  "fixed inset-0 bg-black/50 transition-opacity duration-200 ease-out data-[closed]:opacity-0";
+const panelTransition = "transition duration-200 ease-out data-[closed]:scale-95 data-[closed]:opacity-0";
+const closeButton =
+  "rounded-md p-1 text-ink-545 transition-colors hover:bg-ink-70 hover:text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-ink-900/25 dark:hover:bg-ink-850 dark:focus-visible:ring-ink-130/40";
 
 // The page Kio reads while it drafts FAQs: four lines, the current one
 // darker, and Kio's gaze stepping along each line, then down to the next.
@@ -225,21 +233,15 @@ const AiFaqGenerator: React.FC<AiFaqGeneratorProps> = ({
       )}
 
       {/* URL Input Modal */}
-      <AnimatePresence>
-        {showUrlModal && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+      {/* While Kio reads the site, Escape and outside clicks don't close it,
+          so the request isn't cut off halfway. */}
+      <Dialog open={showUrlModal} onClose={() => !isScraping && setShowUrlModal(false)} className="relative z-50">
+        <DialogBackdrop transition className={backdropClass} />
+        <div className="fixed inset-0 flex items-center justify-center p-4">
+          <DialogPanel
+            transition
+            className={`relative w-full max-w-md overflow-hidden rounded-xl border border-ink-120 bg-ink-25 p-6 shadow-lg dark:border-ink-780 dark:bg-ink-875 ${panelTransition}`}
           >
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 10 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 10 }}
-              transition={{ duration: 0.2 }}
-              className="bg-ink-25 dark:bg-ink-875 rounded-xl shadow-lg w-full max-w-md p-6 border border-ink-120 dark:border-ink-780 overflow-hidden relative"
-            >
               <AnimatePresence mode="wait">
                 {isScraping ? (
                   <motion.div
@@ -251,10 +253,10 @@ const AiFaqGenerator: React.FC<AiFaqGeneratorProps> = ({
                   >
                     <ReadingKio />
 
-                    <h3 className="text-lg font-bold text-fg mb-1.5 font-display tracking-tight">
+                    <DialogTitle className="mb-1.5 font-display text-h3 tracking-tight text-fg">
                       {t("readingSite")}
-                    </h3>
-                    <p className="text-sm text-ink-545 dark:text-ink-325 max-w-[280px] leading-relaxed">
+                    </DialogTitle>
+                    <p className="max-w-[280px] text-body-sm text-fg-muted">
                       {t("readingSiteDesc")}
                     </p>
                   </motion.div>
@@ -272,18 +274,18 @@ const AiFaqGenerator: React.FC<AiFaqGeneratorProps> = ({
                             size={16}
                             className="text-fg"
                           />
-                          <h3 className="text-lg font-bold text-fg font-display tracking-tight">
+                          <DialogTitle className="font-display text-h3 tracking-tight text-fg">
                             {t("generateWithAi")}
-                          </h3>
+                          </DialogTitle>
                         </div>
-                        <p className="text-xs text-ink-545 dark:text-ink-325 leading-relaxed">
+                        <p className="text-body-sm text-fg-muted">
                           {t("generateDesc")}
                         </p>
                       </div>
                       <button
                         onClick={() => setShowUrlModal(false)}
                         aria-label={t("close")}
-                        className="text-ink-545 hover:text-fg p-1 rounded-md hover:bg-ink-70 dark:hover:bg-ink-850 transition-colors"
+                        className={closeButton}
                       >
                         <X size={18} />
                       </button>
@@ -291,7 +293,7 @@ const AiFaqGenerator: React.FC<AiFaqGeneratorProps> = ({
 
                     <div className="space-y-4">
                       <div>
-                        <label className="block text-xs font-semibold text-fg-muted mb-1.5">
+                        <label className="mb-1.5 block text-caption font-medium text-fg-muted">
                           {t("websiteUrl")}
                         </label>
                         <input
@@ -299,22 +301,22 @@ const AiFaqGenerator: React.FC<AiFaqGeneratorProps> = ({
                           placeholder="https://example.com/about"
                           value={scrapeUrl}
                           onChange={(e) => setScrapeUrl(e.target.value)}
-                          className="w-full px-3.5 py-2.5 border border-ink-120 dark:border-ink-780 rounded-xl focus:ring-2 focus:ring-ink-900/10 dark:focus:ring-ink-130/10 focus:border-ink-900 dark:focus:border-ink-325 bg-ink-30 dark:bg-ink-850 text-fg text-sm outline-none transition-all placeholder-ink-545 dark:placeholder-ink-425"
+                          className="w-full px-3.5 py-2.5 border border-ink-120 dark:border-ink-780 rounded-xl focus:ring-2 focus:ring-ink-900/10 dark:focus:ring-ink-130/10 focus:border-ink-900 dark:focus:border-ink-325 bg-ink-30 dark:bg-ink-850 text-fg text-body-sm outline-none transition-all placeholder-ink-545 dark:placeholder-ink-425"
                         />
                       </div>
 
                       <div className="flex items-center justify-between p-3 rounded-xl border border-ink-120 dark:border-ink-780 bg-ink-30 dark:bg-ink-850">
                         <div>
-                          <p className="text-sm font-semibold text-fg">
+                          <p className="text-body-sm font-medium text-fg">
                             {t("deepCrawl")}
                           </p>
-                          <p className="text-xs text-ink-545 dark:text-ink-325 mt-0.5">
+                          <p className="mt-0.5 text-caption text-fg-subtle">
                             {t("deepCrawlDesc")}
                           </p>
                         </div>
                         <button
                           onClick={() => setIsDeepCrawl(!isDeepCrawl)}
-                          className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-ink-900/30 dark:focus:ring-ink-130/30 focus:ring-offset-2 ${
+                          className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-ink-900/30 dark:focus-visible:ring-ink-130/30 focus-visible:ring-offset-2 ${
                             isDeepCrawl
                               ? "bg-ink-900 dark:bg-ink-130"
                               : "bg-ink-130 dark:bg-ink-710"
@@ -348,43 +350,34 @@ const AiFaqGenerator: React.FC<AiFaqGeneratorProps> = ({
                   </motion.div>
                 )}
               </AnimatePresence>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          </DialogPanel>
+        </div>
+      </Dialog>
 
       {/* FAQ Review Modal */}
-      <AnimatePresence>
-        {showReviewModal && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60] p-4"
+      <Dialog open={showReviewModal} onClose={() => setShowReviewModal(false)} className="relative z-[60]">
+        <DialogBackdrop transition className={backdropClass} />
+        <div className="fixed inset-0 flex items-center justify-center p-4">
+          <DialogPanel
+            transition
+            className={`flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-xl border border-ink-120 bg-ink-25 shadow-lg dark:border-ink-780 dark:bg-ink-875 ${panelTransition}`}
           >
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 10 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 10 }}
-              transition={{ duration: 0.2 }}
-              className="bg-ink-25 dark:bg-ink-875 rounded-xl shadow-lg w-full max-w-2xl max-h-[90vh] flex flex-col border border-ink-120 dark:border-ink-780 overflow-hidden"
-            >
               <div className="p-6 border-b border-ink-120 dark:border-ink-780 flex justify-between items-start shrink-0">
                 <div>
                   <div className="flex items-center gap-2 mb-1.5">
                     <HappyKio />
-                    <h3 className="text-xl font-bold text-fg font-display tracking-tight">
+                    <DialogTitle className="font-display text-h3 tracking-tight text-fg">
                       {t("reviewTitle")}
-                    </h3>
+                    </DialogTitle>
                   </div>
-                  <p className="text-sm text-ink-545 dark:text-ink-325 leading-relaxed max-w-lg">
+                  <p className="max-w-lg text-body-sm text-fg-muted">
                     {t("reviewDesc")}
                   </p>
                 </div>
                 <button
                   onClick={() => setShowReviewModal(false)}
                   aria-label={t("close")}
-                  className="text-ink-545 hover:text-fg p-1 rounded-lg hover:bg-ink-30 dark:hover:bg-ink-850 transition-colors"
+                  className={closeButton}
                 >
                   <X size={20} />
                 </button>
@@ -412,7 +405,7 @@ const AiFaqGenerator: React.FC<AiFaqGeneratorProps> = ({
                             prev.filter((_, i) => i !== index)
                           )
                         }
-                        className="absolute -right-3 -top-3 bg-ink-25 dark:bg-ink-850 border border-ink-120 dark:border-ink-780 text-ink-545 hover:text-red-500 p-2 rounded-full shadow-sm opacity-0 group-hover:opacity-100 transition-all hover:scale-110 hover:border-red-200 dark:hover:border-red-900/50 hover:bg-red-50 dark:hover:bg-red-900/20 z-10"
+                        className="absolute -right-3 -top-3 bg-ink-25 dark:bg-ink-850 border border-ink-120 dark:border-ink-780 text-ink-545 hover:text-red-500 p-2 rounded-full shadow-sm opacity-0 group-hover:opacity-100 focus-visible:opacity-100 [@media(hover:none)]:opacity-100 transition-colors hover:border-red-200 dark:hover:border-red-900/50 hover:bg-red-50 dark:hover:bg-red-900/20 z-10"
                         title={t("removeFaq")}
                         aria-label={t("removeFaq")}
                       >
@@ -421,8 +414,7 @@ const AiFaqGenerator: React.FC<AiFaqGeneratorProps> = ({
 
                       <div className="space-y-4">
                         <div>
-                          <label className="block text-caption font-bold text-ink-545 mb-1.5 flex items-center gap-1.5">
-                            <span className="w-4 h-px bg-ink-120 dark:bg-ink-790 inline-block"></span>
+                          <label className="mb-1.5 block text-caption font-medium text-fg-muted">
                             {t("question")}
                           </label>
                           <input
@@ -433,12 +425,11 @@ const AiFaqGenerator: React.FC<AiFaqGeneratorProps> = ({
                               newFaqs[index].question = e.target.value;
                               setPendingFaqs(newFaqs);
                             }}
-                            className="w-full bg-ink-30 dark:bg-ink-875 border border-transparent hover:border-ink-120 dark:hover:border-ink-780 px-3 py-2 rounded-lg text-fg font-medium outline-none focus:bg-ink-25 dark:focus:bg-ink-850 focus:border-ink-900/30 dark:focus:border-ink-325/30 focus:ring-4 focus:ring-ink-900/5 dark:focus:ring-ink-130/5 transition-all text-sm"
+                            className="w-full bg-ink-30 dark:bg-ink-875 border border-transparent hover:border-ink-120 dark:hover:border-ink-780 px-3 py-2 rounded-lg text-fg font-medium outline-none focus:bg-ink-25 dark:focus:bg-ink-850 focus:border-ink-900/30 dark:focus:border-ink-325/30 focus:ring-4 focus:ring-ink-900/5 dark:focus:ring-ink-130/5 transition-all text-body-sm"
                           />
                         </div>
                         <div>
-                          <label className="block text-caption font-bold text-ink-545 mb-1.5 flex items-center gap-1.5">
-                            <span className="w-4 h-px bg-ink-120 dark:bg-ink-790 inline-block"></span>
+                          <label className="mb-1.5 block text-caption font-medium text-fg-muted">
                             {t("answer")}
                           </label>
                           <textarea
@@ -448,7 +439,7 @@ const AiFaqGenerator: React.FC<AiFaqGeneratorProps> = ({
                               newFaqs[index].answer = e.target.value;
                               setPendingFaqs(newFaqs);
                             }}
-                            className="w-full bg-ink-30 dark:bg-ink-875 border border-transparent hover:border-ink-120 dark:hover:border-ink-780 px-3 py-2.5 rounded-lg text-fg-muted text-sm resize-none outline-none focus:bg-ink-25 dark:focus:bg-ink-850 focus:border-ink-900/30 dark:focus:border-ink-325/30 focus:ring-4 focus:ring-ink-900/5 dark:focus:ring-ink-130/5 transition-all min-h-[80px]"
+                            className="w-full bg-ink-30 dark:bg-ink-875 border border-transparent hover:border-ink-120 dark:hover:border-ink-780 px-3 py-2.5 rounded-lg text-fg-muted text-body-sm resize-none outline-none focus:bg-ink-25 dark:focus:bg-ink-850 focus:border-ink-900/30 dark:focus:border-ink-325/30 focus:ring-4 focus:ring-ink-900/5 dark:focus:ring-ink-130/5 transition-all min-h-[80px]"
                             rows={3}
                           />
                         </div>
@@ -466,10 +457,10 @@ const AiFaqGenerator: React.FC<AiFaqGeneratorProps> = ({
                     <div className="w-16 h-16 bg-ink-70 dark:bg-ink-850 rounded-full flex items-center justify-center mb-4 text-ink-425 dark:text-ink-545">
                       <Check size={32} />
                     </div>
-                    <h4 className="text-lg font-bold text-fg mb-1">
+                    <h4 className="mb-1 text-body font-semibold text-fg">
                       {t("allClear")}
                     </h4>
-                    <p className="text-sm text-ink-545 dark:text-ink-325 max-w-[250px]">
+                    <p className="max-w-[250px] text-body-sm text-fg-muted">
                       {t("allClearDesc")}
                     </p>
                   </motion.div>
@@ -498,10 +489,9 @@ const AiFaqGenerator: React.FC<AiFaqGeneratorProps> = ({
                   {t.plural("addQuestions", pendingFaqs.length)}
                 </button>
               </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          </DialogPanel>
+        </div>
+      </Dialog>
     </>
   );
 };

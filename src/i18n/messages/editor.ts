@@ -247,7 +247,7 @@ export const editorMessages = defineMessages({
     generateDesc: "Paste a page from your site and we'll write questions & answers from it.",
     close: "Close",
     websiteUrl: "Website URL",
-    deepCrawl: "Deep Crawl",
+    deepCrawl: "Deep crawl",
     deepCrawlDesc: "Scans a few linked pages like About, Pricing, and Contact for more complete FAQs.",
     generate: "Generate",
     reviewTitle: "Review generated questions",

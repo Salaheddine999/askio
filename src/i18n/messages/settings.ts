@@ -123,7 +123,7 @@ export const settingsMessages = defineMessages({
     usageResetsOn: "Resets on {date}.",
 
     upgradeClose: "Close",
-    upgradeTitle: "Unlock AI Chatbots",
+    upgradeTitle: "Unlock AI chatbots",
     upgradeBody: "Free plans can create unlimited manual chatbots. Upgrade to Pro to enable AI on up to 10 chatbots.",
     upgradeFeatureChatbots: "AI on up to 10 chatbots",
     upgradeFeatureFaq: "AI FAQ generation and AI responses",
