@@ -11,8 +11,7 @@ import {
   doc,
   QueryDocumentSnapshot,
 } from "firebase/firestore";
-import { useNavigate } from "react-router-dom";
-import { Check, Copy } from "../components/icons";
+import { Link, useNavigate } from "react-router-dom";
 import { format, isBefore, startOfDay, subDays } from "date-fns";
 import ConfirmationModal from "../components/ConfirmationModal";
 import { toast } from "react-hot-toast";
@@ -489,18 +488,20 @@ const Dashboard: React.FC<DashboardProps> = ({ testMode }) => {
           {t("embedHintBefore")} <code className="font-mono text-[13px]">&lt;/body&gt;</code>
           {t("embedHintAfter")}
         </p>
-        <div className="relative rounded-lg border border-ink-120 bg-ink-900 p-3 pr-10 dark:border-ink-710">
-          <button
-            onClick={copyEmbedCode}
-            aria-label={t("copyEmbedCode")}
-            className="absolute right-2 top-2 rounded-md p-1.5 text-ink-325 transition-colors hover:bg-white/10 hover:text-white"
+        {/* The whole snippet, wrapped, so it's readable without scrolling;
+            the Copy button below is the one way to copy it. */}
+        <pre className="whitespace-pre-wrap break-all rounded-lg bg-ink-900 px-4 py-3 font-mono text-[12.5px] leading-relaxed text-ink-130 dark:bg-ink-925">
+          {selectedChatbotId && generateEmbedCode(selectedChatbotId)}
+        </pre>
+        <p className="mt-3 text-body-sm text-fg-muted">
+          {t("embedOtherWays")}{" "}
+          <Link
+            to="/integrations"
+            className="font-medium text-fg underline underline-offset-2 hover:no-underline"
           >
-            {embedCopied ? <Check size={14} /> : <Copy size={14} />}
-          </button>
-          <pre className="overflow-x-auto whitespace-pre font-mono text-[12.5px] leading-relaxed text-ink-130">
-            {selectedChatbotId && generateEmbedCode(selectedChatbotId)}
-          </pre>
-        </div>
+            {t("embedOtherLink")}
+          </Link>
+        </p>
       </ConfirmationModal>
     </div>
   );

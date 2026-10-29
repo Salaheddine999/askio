@@ -231,7 +231,7 @@ const Panel: React.FC<{ testMode: boolean; close: () => void }> = ({ testMode, c
                   <div className="min-w-0 flex-1">
                     <p className="flex items-center gap-2 pr-6 text-body-sm">
                       <span className="truncate font-medium text-fg">{item.title}</span>
-                      {unseen && <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-ink-900 dark:bg-ink-130" aria-label={t("newBadge")} />}
+                      {unseen && <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-red-500" aria-label={t("newBadge")} />}
                     </p>
                     <p className="mt-0.5 line-clamp-2 break-words text-body-sm text-fg-muted">{item.description}</p>
                     <p className="mt-1 truncate text-caption text-fg-subtle">
@@ -309,7 +309,7 @@ const NotificationsPopover: React.FC<NotificationsPopoverProps> = ({ unread, tes
       >
         <Bell size={18} />
         {unread > 0 && (
-          <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-ink-900 ring-2 ring-ink-55 dark:bg-ink-130 dark:ring-ink-865" />
+          <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-red-500 ring-2 ring-ink-55 dark:ring-ink-865" />
         )}
       </PopoverButton>
       <PopoverPanel

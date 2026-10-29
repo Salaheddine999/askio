@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X } from "./icons";
 
@@ -25,6 +25,14 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   confirmButtonClass,
   cancelButtonClass,
 }) => {
+  // Escape closes it, like any dialog.
+  useEffect(() => {
+    if (!isOpen) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [isOpen, onClose]);
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -38,6 +46,9 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
             initial={{ scale: 0.95, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.95, opacity: 0 }}
+            role="dialog"
+            aria-modal="true"
+            aria-label={title}
             className="bg-ink-25 dark:bg-ink-850 rounded-[9px] shadow-[0px_0px_0px_0.9px_rgba(0,0,0,0.08),0px_2px_4px_rgba(0,0,0,0.04)] max-w-md w-full overflow-hidden border-none"
           >
             <div className="p-6">
@@ -47,7 +58,8 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
                 </h2>
                 <button
                   onClick={onClose}
-                  className="text-ink-605 hover:text-ink-900 dark:text-ink-325 dark:hover:text-ink-130 transition-colors duration-150"
+                  aria-label={cancelText || "Close"}
+                  className="rounded-md text-ink-605 hover:text-ink-900 dark:text-ink-325 dark:hover:text-ink-130 transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-ink-900/25 dark:focus-visible:ring-ink-130/40"
                 >
                   <X size={20} />
                 </button>
@@ -59,9 +71,9 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
                 {cancelText && (
                   <button
                     onClick={onClose}
-                    className={`px-4 py-2 rounded-[9px] text-sm font-medium transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-ink-875 ${
+                    className={`px-4 py-2 rounded-[9px] text-sm font-medium transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-ink-875 ${
                       cancelButtonClass ||
-                      "bg-ink-25 border border-ink-120 text-ink-605 hover:bg-ink-30 hover:text-ink-900 dark:border-ink-710 dark:text-ink-325 dark:bg-ink-790 dark:hover:bg-ink-710 dark:hover:text-ink-130"
+                      "bg-ink-25 border border-ink-120 text-ink-605 hover:bg-ink-30 hover:text-ink-900 focus-visible:ring-ink-900/25 dark:border-ink-710 dark:text-ink-325 dark:bg-ink-790 dark:hover:bg-ink-710 dark:hover:text-ink-130 dark:focus-visible:ring-ink-130/40"
                     }`}
                   >
                     {cancelText}
@@ -70,7 +82,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
                 {confirmText && onConfirm && (
                   <button
                     onClick={onConfirm}
-                    className={`px-4 py-2 rounded-[9px] text-sm font-medium transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-ink-875 ${
+                    className={`px-4 py-2 rounded-[9px] text-sm font-medium transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-ink-875 ${
                       confirmButtonClass ||
                       "bg-ink-900 text-white hover:bg-ink-805 dark:bg-ink-130 dark:text-ink-875 dark:hover:bg-ink-70"
                     }`}

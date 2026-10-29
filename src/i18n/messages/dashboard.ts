@@ -79,6 +79,8 @@ export const dashboardMessages = defineMessages({
     embedHintBefore: "Paste this just before the closing",
     embedHintAfter: " tag on your site.",
     copyEmbedCode: "Copy embed code",
+    embedOtherWays: "Using WordPress or Shopify?",
+    embedOtherLink: "Install from Integrations",
 
     // Overview tab
     loadingOverview: "Loading overview",
@@ -277,6 +279,8 @@ export const dashboardMessages = defineMessages({
     embedHintBefore: "Collez ce code juste avant la balise de fermeture",
     embedHintAfter: " de votre site.",
     copyEmbedCode: "Copier le code d'intégration",
+    embedOtherWays: "Vous utilisez WordPress ou Shopify ?",
+    embedOtherLink: "Installez-le depuis Intégrations",
 
     loadingOverview: "Chargement de la vue d'ensemble",
     firstChatbotTitle: "Créez votre premier chatbot",
@@ -468,6 +472,8 @@ export const dashboardMessages = defineMessages({
     embedHintBefore: "Plak dit vlak voor de afsluitende",
     embedHintAfter: "-tag op je site.",
     copyEmbedCode: "Insluitcode kopiëren",
+    embedOtherWays: "Gebruik je WordPress of Shopify?",
+    embedOtherLink: "Installeer via Integraties",
 
     loadingOverview: "Overzicht laden",
     firstChatbotTitle: "Maak je eerste chatbot",
@@ -659,6 +665,8 @@ export const dashboardMessages = defineMessages({
     embedHintBefore: "Fügen Sie dies direkt vor dem schließenden",
     embedHintAfter: "-Tag Ihrer Website ein.",
     copyEmbedCode: "Einbettungscode kopieren",
+    embedOtherWays: "Sie nutzen WordPress oder Shopify?",
+    embedOtherLink: "Über Integrationen installieren",
 
     loadingOverview: "Übersicht wird geladen",
     firstChatbotTitle: "Erstellen Sie Ihren ersten Chatbot",
@@ -850,6 +858,8 @@ export const dashboardMessages = defineMessages({
     embedHintBefore: "Pega esto justo antes de la etiqueta de cierre",
     embedHintAfter: " de tu sitio.",
     copyEmbedCode: "Copiar código de inserción",
+    embedOtherWays: "¿Usas WordPress o Shopify?",
+    embedOtherLink: "Instálalo desde Integraciones",
 
     loadingOverview: "Cargando resumen",
     firstChatbotTitle: "Crea tu primer chatbot",
