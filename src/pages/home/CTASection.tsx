@@ -13,7 +13,7 @@ export default function CTASection() {
   const bubble = (delay: number) => ({
     initial: { opacity: 0, y: 8 },
     animate: ctaInView ? { opacity: 1, y: 0 } : {},
-    transition: { duration: 0.35, ease: "easeOut", delay: reduceMotion ? 0 : delay },
+    transition: { duration: 0.35, ease: "easeOut" as const, delay: reduceMotion ? 0 : delay },
   });
 
   return (
