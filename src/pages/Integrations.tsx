@@ -14,6 +14,7 @@ import {
   Download,
   Globe,
   LoaderCircle,
+  RefreshCw,
   ShoppingBag,
   Unplug,
 } from "../components/icons";
@@ -43,6 +44,10 @@ interface Chatbot {
   primaryColor?: string;
   launcherStyle?: string;
   isActive?: boolean;
+  /** When the widget first loaded on a website; null until it has. */
+  installedAt?: Date | null;
+  /** The site it last loaded on, e.g. "shop.example". */
+  lastSeenHost?: string;
 }
 
 interface ShopifyConnection {
@@ -61,7 +66,6 @@ const PLATFORMS: {
   tagline: MessageKey;
   effort: MessageKey;
   icon: React.ReactNode;
-  logo: React.ReactNode;
 }[] = [
   {
     key: "wordpress",
@@ -69,7 +73,6 @@ const PLATFORMS: {
     tagline: "wordpressTagline",
     effort: "wordpressEffort",
     icon: <FaWordpress size={20} className="text-[#21759B]" />,
-    logo: <FaWordpress size={26} className="text-[#21759B]" />,
   },
   {
     key: "shopify",
@@ -77,7 +80,6 @@ const PLATFORMS: {
     tagline: "shopifyTagline",
     effort: "shopifyEffort",
     icon: <FaShopify size={20} className="text-[#5E8E3E]" />,
-    logo: <FaShopify size={26} className="text-[#5E8E3E]" />,
   },
   {
     key: "wix",
@@ -85,7 +87,6 @@ const PLATFORMS: {
     tagline: "wixTagline",
     effort: "wixEffort",
     icon: <SiWix size={20} className="text-[#0C6EFC]" />,
-    logo: <SiWix size={26} className="text-[#0C6EFC]" />,
   },
   {
     key: "html",
@@ -93,7 +94,6 @@ const PLATFORMS: {
     tagline: "htmlTagline",
     effort: "htmlEffort",
     icon: <Globe size={20} className="text-ink-605" />,
-    logo: <Globe size={26} className="text-ink-605" />,
   },
 ];
 
@@ -113,6 +113,28 @@ export default function Integrations({ testMode = false }: IntegrationsProps) {
   const [shopUrl, setShopUrl] = useState("");
   const [shopifyConnections, setShopifyConnections] = useState<ShopifyConnection[]>([]);
   const [connectionToRemove, setConnectionToRemove] = useState<ShopifyConnection | null>(null);
+  const [checking, setChecking] = useState(false);
+
+  // Rechecks whether the chatbot is live, e.g. after installing it in another tab.
+  const checkAgain = async () => {
+    if (testMode || checking) return;
+    setChecking(true);
+    await fetchChatbots();
+    setChecking(false);
+  };
+
+  // Coming back to this tab after installing shows the new status on its own.
+  useEffect(() => {
+    if (testMode) return;
+    let last = Date.now();
+    const onFocus = () => {
+      if (Date.now() - last < 10_000) return;
+      last = Date.now();
+      void fetchChatbots();
+    };
+    window.addEventListener("focus", onFocus);
+    return () => window.removeEventListener("focus", onFocus);
+  }, [testMode]);
 
   const origin = window.location.origin;
   // Untitled chatbots get their fallback name here, so it follows the language.
@@ -201,9 +223,12 @@ export default function Integrations({ testMode = false }: IntegrationsProps) {
         primaryColor: d.data().primaryColor,
         launcherStyle: d.data().launcherStyle,
         isActive: d.data().isActive,
+        installedAt: d.data().installedAt?.toDate?.() ?? null,
+        lastSeenHost: d.data().lastSeenHost,
       }));
       setChatbots(bots);
-      if (bots.length > 0) setSelectedChatbot(bots[0].id);
+      // A recheck keeps the chatbot the owner picked.
+      setSelectedChatbot((current) => (bots.some((b) => b.id === current) ? current : bots[0]?.id ?? ""));
     } catch (err) {
       console.error("Error fetching chatbots:", err);
     } finally {
@@ -326,32 +351,19 @@ export default function Integrations({ testMode = false }: IntegrationsProps) {
         ) : (
           <>
             {/* Chatbot to install */}
-            <section className={`${surface} flex flex-col gap-4 p-4 sm:p-5 lg:flex-row lg:items-center`}>
+            <section className={`${surface} flex flex-col gap-4 p-4 sm:p-5 lg:flex-row lg:items-end`}>
               <div className="min-w-0 lg:w-80">
-                <StepLabel n={1}>{t("stepChatbot")}</StepLabel>
+                <SectionLabel>{t("stepChatbot")}</SectionLabel>
                 <ChatbotPicker chatbots={chatbots} value={selectedChatbot} onChange={setSelectedChatbot} />
               </div>
-              <div className="hidden h-12 w-px bg-ink-70 lg:block dark:bg-ink-780" />
-              <div className="min-w-0 flex-1">
-                <p className="mb-2 text-caption font-medium text-fg-muted">{t("chatbotId")}</p>
-                <div className="flex items-center gap-2">
-                  <code className="min-w-0 flex-1 truncate rounded-lg border border-ink-70 bg-ink-30 px-3 py-2 font-mono text-[13px] text-ink-900 select-all dark:border-ink-780 dark:bg-ink-875 dark:text-ink-130">
-                    {selectedChatbot}
-                  </code>
-                  <button onClick={() => copyToClipboard(selectedChatbot, "id")} className={secondaryButton}>
-                    {copiedId ? <Check size={15} className="text-emerald-500" /> : <Copy size={15} />}
-                    <span className="hidden sm:inline">{copiedId ? t("copied") : t("copy")}</span>
-                  </button>
-                </div>
-                <p className="mt-1.5 text-caption text-fg-subtle">
-                  {t("chatbotIdHint")}
-                </p>
-              </div>
+              {selectedBot && (
+                <InstallStatus bot={selectedBot} checking={checking} onCheck={testMode ? undefined : checkAgain} />
+              )}
             </section>
 
             {/* Platform picker */}
             <section>
-              <StepLabel n={2}>{t("stepPlatform")}</StepLabel>
+              <SectionLabel>{t("stepPlatform")}</SectionLabel>
               <div role="tablist" aria-label={t("platformTabs")} className="grid grid-cols-2 gap-3 lg:grid-cols-4">
                 {PLATFORMS.map((p) => {
                   const active = p.key === activePlatform;
@@ -364,7 +376,7 @@ export default function Integrations({ testMode = false }: IntegrationsProps) {
                       onClick={() => setActivePlatform(p.key)}
                       className={`relative flex items-center gap-3 rounded-xl border p-3 text-left transition-colors sm:p-4 ${focusRing} ${
                         active
-                          ? "border-ink-900 bg-ink-25 shadow-[0_0_0_1px_#101723] dark:border-ink-130 dark:bg-ink-850 dark:shadow-[0_0_0_1px_#D7DFE5]"
+                          ? "border-ink-900 bg-ink-25 dark:border-ink-130 dark:bg-ink-850"
                           : "border-ink-120 bg-ink-25 hover:border-ink-230 dark:border-ink-780 dark:bg-ink-850 dark:hover:border-ink-710"
                       }`}
                     >
@@ -383,11 +395,6 @@ export default function Integrations({ testMode = false }: IntegrationsProps) {
                           {connected}
                         </span>
                       )}
-                      {active && (
-                        <span className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-ink-900 text-white dark:bg-ink-130 dark:text-ink-875">
-                          <Check size={12} strokeWidth={3} />
-                        </span>
-                      )}
                     </button>
                   );
                 })}
@@ -396,11 +403,8 @@ export default function Integrations({ testMode = false }: IntegrationsProps) {
 
             {/* Instructions */}
             <section className={`${surface} overflow-hidden`}>
-              <div className="flex flex-wrap items-center gap-4 border-b border-ink-70 px-5 py-4 sm:px-6 dark:border-ink-780">
-                <span className="flex h-12 w-12 items-center justify-center rounded-xl border border-ink-70 bg-white dark:border-ink-780 dark:bg-ink-30">
-                  {platform.logo}
-                </span>
-                <div className="min-w-0 flex-1">
+              <div className="border-b border-ink-70 px-5 py-4 sm:px-6 dark:border-ink-780">
+                <div className="min-w-0">
                   <h2 className="font-display text-h3 text-fg">
                     {platform.label ? t("installOn", { platform: platform.label }) : t("installOnAnyWebsite")}
                   </h2>
@@ -585,14 +589,35 @@ export default function Integrations({ testMode = false }: IntegrationsProps) {
 
 // --- Sub-components ---
 
-function StepLabel({ n, children }: { n: number; children: React.ReactNode }) {
+function SectionLabel({ children }: { children: React.ReactNode }) {
+  return <p className="mb-2 text-caption font-medium text-fg-muted">{children}</p>;
+}
+
+/** Whether the chosen chatbot is on a website yet, from what the widget reports. */
+function InstallStatus({ bot, checking, onCheck }: { bot: Chatbot; checking: boolean; onCheck?: () => void }) {
+  const t = useT(integrationsMessages);
+  const paused = bot.isActive === false;
+  const live = !paused && Boolean(bot.installedAt) && Boolean(bot.lastSeenHost);
+  const [dot, title, hint] = paused
+    ? ["bg-ink-325", t("statusPaused"), t("statusPausedHint")]
+    : live
+      ? ["bg-emerald-500", t("statusLive", { host: bot.lastSeenHost! }), t("statusLiveHint")]
+      : ["bg-amber-500", t("statusWaiting"), t("statusWaitingHint")];
+
   return (
-    <p className="mb-2 flex items-center gap-2 text-caption font-medium text-fg-muted">
-      <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-ink-900 text-caption font-semibold leading-none tabular-nums text-white dark:bg-ink-130 dark:text-ink-875">
-        {n}
-      </span>
-      {children}
-    </p>
+    <div role="status" className="flex min-w-0 flex-1 items-center gap-3 rounded-lg border border-ink-70 bg-ink-30 px-4 py-3 dark:border-ink-780 dark:bg-ink-875">
+      <span className={`h-2 w-2 shrink-0 rounded-full ${dot}`} aria-hidden="true" />
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-body-sm font-medium text-fg">{title}</p>
+        <p className="text-caption text-fg-subtle">{hint}</p>
+      </div>
+      {onCheck && !live && !paused && (
+        <button onClick={onCheck} disabled={checking} className={`${secondaryButton} shrink-0`}>
+          {checking ? <LoaderCircle size={15} className="animate-spin" /> : <RefreshCw size={15} />}
+          <span className="hidden sm:inline">{checking ? t("checking") : t("checkAgain")}</span>
+        </button>
+      )}
+    </div>
   );
 }
 
