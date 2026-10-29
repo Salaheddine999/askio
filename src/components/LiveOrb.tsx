@@ -41,8 +41,13 @@ export type LiveOrbOptions = {
   color?: string
   /** Eye hex, used when `variant="custom"`. */
   eyeColor?: string
-  /** Unlit wash stops, used when `variant="webgl"`. */
+  /** Gradient stops, start to end, used when `variant="webgl"`. */
   colors?: string[]
+  /**
+   * Direction of the `webgl` gradient, in CSS `linear-gradient` degrees
+   * (0 runs bottom to top, 90 left to right). Default 135.
+   */
+  angle?: number
   /**
    * Eyes follow the pointer. Default `true`. Without it, or once the pointer
    * rests for a few seconds, they glance around on their own.
@@ -146,6 +151,7 @@ uniform vec3 u_eye;
 uniform vec3 u_c1;
 uniform vec3 u_c2;
 uniform vec3 u_c3;
+uniform vec2 u_dir;
 
 float hash(vec2 p) {
   return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123);
@@ -200,17 +206,15 @@ float eyeMask(vec3 n, vec3 e, vec3 right, vec3 up, float halfH, float rad, float
   return fill * smoothstep(0.12, 0.32, facing);
 }
 
-vec3 wash(vec3 n, float t) {
-  vec2 q = n.xy * 2.2 + n.z * 0.85;
-  vec2 w1 = vec2(
-    fbm(q * 1.4 + vec2(t * 0.22, t * 0.18)),
-    fbm(q * 1.4 + vec2(-t * 0.16, t * 0.24) + 4.1)
-  );
-  q += (w1 - 0.5) * 0.72;
-  float f = fbm(q * 2.1 + vec2(0.0, t * 0.12));
-  float g = fbm(q * 4.6 - vec2(t * 0.2, 0.0));
-  vec3 col = mix(u_c1, u_c2, smoothstep(0.28, 0.72, f));
-  return mix(col, u_c3, pow(smoothstep(0.42, 0.9, g), 1.4));
+// The owner's gradient laid across the face, start to end along u_dir like
+// the CSS gradient it comes from, with a slow, soft sway so it stays alive
+// without breaking into blotches.
+vec3 wash(vec2 p, float t) {
+  float s = dot(p, u_dir) * 0.5 + 0.5;
+  s += (fbm(p * 1.1 + vec2(t * 0.08, -t * 0.06)) - 0.5) * 0.22;
+  s = clamp(s, 0.0, 1.0);
+  vec3 a = mix(u_c1, u_c2, smoothstep(0.0, 0.5, s));
+  return mix(a, u_c3, smoothstep(0.5, 1.0, s));
 }
 
 void main() {
@@ -250,7 +254,7 @@ void main() {
     eyeMask(n, eR, right, up, halfH, rad, aa, u_happy)
   );
 
-  vec3 body = u_mode > 0.5 ? wash(n, u_time * u_speed) : u_body;
+  vec3 body = u_mode > 0.5 ? wash(p, u_time * u_speed) : u_body;
 
   // A key light from the upper left, fixed in view space so the highlight
   // stays put while the gaze turns.
@@ -258,7 +262,8 @@ void main() {
   float diffuse = max(dot(n, light), 0.0);
   float spec = pow(max(dot(n, normalize(light + vec3(0.0, 0.0, 1.0))), 0.0), 22.0);
   float rim = pow(1.0 - z, 2.5);
-  vec3 lit = body * mix(0.62, 1.1, diffuse);
+  // Gradients get softer shading, so their end colour stays the one picked.
+  vec3 lit = body * (u_mode > 0.5 ? mix(0.82, 1.08, diffuse) : mix(0.62, 1.1, diffuse));
   lit += (vec3(1.0) - lit) * spec * 0.2;
   lit += vec3(0.16) * rim * 0.4;
   vec3 eye = u_eye * mix(0.82, 1.04, diffuse) + spec * 0.06;
@@ -331,7 +336,7 @@ export function resolveVariant(
   } else if (preset === "webgl") {
     palette = colors && colors.length > 0 ? colors : WEBGL_COLORS
     body = palette[1] ?? WEBGL_COLORS[1]!
-    eye = "#0C0C10"
+    eye = eyeColor ?? "#0C0C10"
     mode = 1
   } else if (preset === "custom") {
     body = color ?? CUSTOM_DEFAULT.color
@@ -342,7 +347,8 @@ export function resolveVariant(
 }
 
 export function fallbackFaceStyle(
-  resolved: ReturnType<typeof resolveVariant>
+  resolved: ReturnType<typeof resolveVariant>,
+  angle = 135
 ): {
   backgroundColor?: string
   backgroundImage?: string
@@ -352,7 +358,7 @@ export function fallbackFaceStyle(
     const b = resolved.palette[1] ?? WEBGL_COLORS[1]
     const c = resolved.palette[2] ?? WEBGL_COLORS[2]
     return {
-      backgroundImage: `linear-gradient(135deg, ${a}, ${b}, ${c})`,
+      backgroundImage: `linear-gradient(${angle}deg, ${a}, ${b}, ${c})`,
     }
   }
   return {
@@ -432,6 +438,7 @@ export function createLiveOrb(
   let uC1: WebGLUniformLocation | null = null
   let uC2: WebGLUniformLocation | null = null
   let uC3: WebGLUniformLocation | null = null
+  let uDir: WebGLUniformLocation | null = null
 
   // Builds every GL resource. Runs at startup and again after a context restore.
   const initGl = () => {
@@ -481,6 +488,7 @@ export function createLiveOrb(
     uC1 = gl.getUniformLocation(prog, "u_c1")
     uC2 = gl.getUniformLocation(prog, "u_c2")
     uC3 = gl.getUniformLocation(prog, "u_c3")
+    uDir = gl.getUniformLocation(prog, "u_dir")
 
     gl.viewport(0, 0, canvas.width, canvas.height)
     return true
@@ -692,6 +700,9 @@ export function createLiveOrb(
     gl.uniform3f(uC1, palette[0]![0], palette[0]![1], palette[0]![2])
     gl.uniform3f(uC2, palette[1]![0], palette[1]![1], palette[1]![2])
     gl.uniform3f(uC3, palette[2]![0], palette[2]![1], palette[2]![2])
+    // CSS angles turn clockwise from "to top"; the shader's y points up.
+    const rad = ((options.angle ?? 135) * Math.PI) / 180
+    gl.uniform2f(uDir, Math.sin(rad), Math.cos(rad))
 
     gl.drawArrays(gl.TRIANGLES, 0, 6)
     if (live && !destroyed) raf = requestAnimationFrame(tick)
@@ -800,6 +811,7 @@ export function LiveOrb({
   color,
   eyeColor,
   colors,
+  angle,
   interactive = true,
   blink = true,
   depth = true,
@@ -828,6 +840,7 @@ export function LiveOrb({
       color,
       eyeColor,
       colors,
+      angle,
       interactive,
       blink,
       depth,
@@ -850,6 +863,7 @@ export function LiveOrb({
       color,
       eyeColor,
       colors,
+      angle,
       interactive,
       blink,
       depth,
@@ -858,7 +872,7 @@ export function LiveOrb({
       theme,
       onHasGl: setHasGl,
     })
-  }, [variant, color, eyeColor, colors, interactive, blink, depth, mood, lookAt, theme])
+  }, [variant, color, eyeColor, colors, angle, interactive, blink, depth, mood, lookAt, theme])
 
   const resolved = resolveVariant(variant, color, eyeColor, colors, dark)
 
@@ -873,7 +887,7 @@ export function LiveOrb({
         <div
           aria-hidden
           className="absolute inset-[2%] overflow-hidden rounded-full"
-          style={fallbackFaceStyle(resolved)}
+          style={fallbackFaceStyle(resolved, angle)}
         >
           <span
             className="absolute rounded-full"
