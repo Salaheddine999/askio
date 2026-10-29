@@ -1,5 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Bot, SearchX } from "../../components/icons";
 import ChatbotCard from "../../components/ChatbotCard";
 import ChatbotTable from "./ChatbotTable";
@@ -63,6 +62,12 @@ const ChatbotsTab: React.FC<ChatbotsTabProps> = ({
   const [sortBy, setSortBy] = useState<SortKey>("lastUpdated");
   const [sortOrder, setSortOrder] = useState<SortOrder>("desc");
   const [viewMode, setViewMode] = useState<"grid" | "list">(readViewMode);
+  // Cards fade in when the tab first shows them; after that, switching views,
+  // pages or searching shows them at once.
+  const firstShow = useRef(true);
+  useEffect(() => {
+    firstShow.current = false;
+  }, []);
   const [page, setPage] = useState(1);
 
   useEffect(() => setPage(1), [searchTerm, sortBy, sortOrder]);
@@ -146,16 +151,10 @@ const ChatbotsTab: React.FC<ChatbotsTabProps> = ({
         </div>
       ) : (
         <>
-          <AnimatePresence mode="wait" initial={false}>
-            {viewMode === "grid" ? (
-              <motion.div
-                key="grid"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.15 }}
-                className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4"
-              >
+          {/* Switching views swaps at once: a cross-fade left the area blank
+              between the two, which read as a flicker. */}
+          {viewMode === "grid" ? (
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
                 {pageItems.map((chatbot, index) => (
                   <ChatbotCard
                     key={chatbot.id}
@@ -167,26 +166,18 @@ const ChatbotsTab: React.FC<ChatbotsTabProps> = ({
                     onDelete={actions.onDelete}
                     onToggleActive={() => actions.onToggleActive(chatbot)}
                     index={index}
+                    appear={firstShow.current}
                   />
                 ))}
-              </motion.div>
+              </div>
             ) : (
-              <motion.div
-                key="list"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.15 }}
-              >
                 <ChatbotTable
                   chatbots={pageItems}
                   feedbackCounts={feedbackCounts}
                   sort={{ sortBy, sortOrder, onSort: handleSort }}
                   {...actions}
                 />
-              </motion.div>
             )}
-          </AnimatePresence>
 
           <Pagination
             page={currentPage}

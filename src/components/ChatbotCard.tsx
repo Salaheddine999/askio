@@ -46,6 +46,8 @@ interface ChatbotCardProps {
   onDelete: (id: string) => void;
   onToggleActive: (id: string) => void;
   index: number;
+  /** Fade in on mount, staggered by index. Off when the card is just being re-shown. */
+  appear?: boolean;
 }
 
 
@@ -100,6 +102,7 @@ const ChatbotCard: React.FC<ChatbotCardProps> = ({
   onDelete,
   onToggleActive,
   index,
+  appear = true,
 }) => {
   const t = useT(dashboardMessages);
   const tc = useT(commonMessages);
@@ -215,7 +218,7 @@ const ChatbotCard: React.FC<ChatbotCardProps> = ({
 
   return (
     <motion.article
-      initial={{ opacity: 0, y: 10 }}
+      initial={appear ? { opacity: 0, y: 10 } : false}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.25, delay: index * 0.04, ease: "easeOut" }}
