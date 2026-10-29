@@ -6,6 +6,7 @@ import StatsCard from "../../components/StatsCard";
 import AiUsageMeter from "../../components/AiUsageMeter";
 import OverviewChart, { FeedbackSeries } from "../../components/OverviewChart";
 import ChatbotCard from "../../components/ChatbotCard";
+import GoLiveCard from "./GoLiveCard";
 import { ListSkeleton, Skeleton, SkeletonCard, StatTilesSkeleton } from "../../components/Skeleton";
 import { ChatbotGridSkeleton, CreateChatbotLink, EmptyState, ErrorBanner, focusRing } from "./ui";
 import { Chatbot, ChatbotActions, EMPTY_FEEDBACK, FeedbackCounts, TrendData } from "./types";
@@ -133,6 +134,7 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
 
   return (
     <div className="space-y-6">
+      <GoLiveCard chatbots={chatbots} />
       <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
         <StatsCard
           title={t("statChatbots")}

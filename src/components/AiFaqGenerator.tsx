@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import React, { useEffect, useState } from "react";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { auth } from "../utils/firebase";
 import {
   Trash2,
@@ -14,6 +14,7 @@ import { useNavigate } from "react-router-dom";
 import { useT } from "../i18n";
 import { editorMessages } from "../i18n/messages/editor";
 import { AiIcon } from "./icons";
+import { LiveOrb } from "./LiveOrb";
 
 interface FAQItem {
   question: string;
@@ -29,6 +30,48 @@ interface AiFaqGeneratorProps {
   canUseAi?: boolean;
   ensureChatbotSaved?: () => Promise<string | null>;
 }
+
+// The page Kio reads while it drafts FAQs: four lines, the current one
+// darker, and Kio's gaze stepping along each line, then down to the next.
+const READING_LINES = ["w-[85%]", "w-[65%]", "w-[75%]", "w-[50%]"];
+const LINE_Y = [0.34, 0.12, -0.1, -0.32];
+
+const ReadingKio: React.FC = () => {
+  const reduceMotion = useReducedMotion();
+  const [step, setStep] = useState(0);
+  useEffect(() => {
+    if (reduceMotion) return;
+    const id = window.setInterval(() => setStep((n) => (n + 1) % (READING_LINES.length * 2)), 600);
+    return () => window.clearInterval(id);
+  }, [reduceMotion]);
+  const line = Math.floor(step / 2);
+
+  return (
+    <div className="mb-8 flex items-end gap-3" aria-hidden="true">
+      <div className="flex h-24 w-20 flex-col justify-center gap-2.5 rounded-lg border border-ink-120 bg-ink-30 px-3 dark:border-ink-710 dark:bg-ink-850">
+        {READING_LINES.map((width, i) => (
+          <div
+            key={width}
+            className={`h-1.5 rounded-full transition-colors duration-300 ${width} ${
+              i === line ? "bg-ink-425 dark:bg-ink-325" : "bg-ink-130 dark:bg-ink-710"
+            }`}
+          />
+        ))}
+      </div>
+      <LiveOrb size={56} interactive={false} lookAt={{ x: step % 2 ? -0.35 : -0.75, y: LINE_Y[line] }} />
+    </div>
+  );
+};
+
+// Kio smiles as the drafted answers arrive, then settles.
+const HappyKio: React.FC = () => {
+  const [happy, setHappy] = useState(true);
+  useEffect(() => {
+    const id = window.setTimeout(() => setHappy(false), 2200);
+    return () => window.clearTimeout(id);
+  }, []);
+  return <LiveOrb size={32} mood={happy ? "happy" : "idle"} />;
+};
 
 const AiFaqGenerator: React.FC<AiFaqGeneratorProps> = ({
   onFaqsApproved,
@@ -206,75 +249,7 @@ const AiFaqGenerator: React.FC<AiFaqGeneratorProps> = ({
                     exit={{ opacity: 0, scale: 0.9 }}
                     className="flex flex-col items-center justify-center py-10 text-center"
                   >
-                    {/* Document icon with animated scan lines */}
-                    <div className="relative w-20 h-24 mb-8">
-                      <div className="w-full h-full rounded-lg border-2 border-ink-120 dark:border-ink-710 bg-ink-30 dark:bg-ink-850 flex flex-col items-center justify-center gap-2 overflow-hidden relative">
-                        <motion.div
-                          animate={{ y: ["-100%", "400%"] }}
-                          transition={{
-                            repeat: Infinity,
-                            duration: 1.8,
-                            ease: "easeInOut",
-                          }}
-                          className="absolute left-2 right-2 h-4 bg-gradient-to-b from-transparent via-ink-900/5 dark:via-ink-130/5 to-transparent rounded z-10"
-                        />
-                        <div className="space-y-2 w-full px-3">
-                          <motion.div
-                            animate={{ opacity: [0.3, 0.7, 0.3] }}
-                            transition={{
-                              repeat: Infinity,
-                              duration: 1.5,
-                              delay: 0,
-                            }}
-                            className="h-1.5 bg-ink-130 dark:bg-ink-710 rounded-full w-[85%]"
-                          />
-                          <motion.div
-                            animate={{ opacity: [0.3, 0.7, 0.3] }}
-                            transition={{
-                              repeat: Infinity,
-                              duration: 1.5,
-                              delay: 0.2,
-                            }}
-                            className="h-1.5 bg-ink-130 dark:bg-ink-710 rounded-full w-[65%]"
-                          />
-                          <motion.div
-                            animate={{ opacity: [0.3, 0.7, 0.3] }}
-                            transition={{
-                              repeat: Infinity,
-                              duration: 1.5,
-                              delay: 0.4,
-                            }}
-                            className="h-1.5 bg-ink-130 dark:bg-ink-710 rounded-full w-[75%]"
-                          />
-                          <motion.div
-                            animate={{ opacity: [0.3, 0.7, 0.3] }}
-                            transition={{
-                              repeat: Infinity,
-                              duration: 1.5,
-                              delay: 0.6,
-                            }}
-                            className="h-1.5 bg-ink-130 dark:bg-ink-710 rounded-full w-[50%]"
-                          />
-                        </div>
-                      </div>
-                      <motion.div
-                        animate={{
-                          scale: [1, 1.15, 1],
-                          rotate: [0, 5, -5, 0],
-                        }}
-                        transition={{
-                          repeat: Infinity,
-                          duration: 2.5,
-                          ease: "easeInOut",
-                        }}
-                        className="absolute -bottom-2 -right-2 w-8 h-8 rounded-full bg-ink-900 dark:bg-ink-130 flex items-center justify-center shadow-md"
-                      >
-                        <AiIcon
-                          size={14}
-                          className="text-white dark:text-ink-875"
-                        />
-                      </motion.div>
-                    </div>
+                    <ReadingKio />
 
                     <h3 className="text-lg font-bold text-fg mb-1.5 font-display tracking-tight">
                       {t("readingSite")}
@@ -282,35 +257,6 @@ const AiFaqGenerator: React.FC<AiFaqGeneratorProps> = ({
                     <p className="text-sm text-ink-545 dark:text-ink-325 max-w-[280px] leading-relaxed">
                       {t("readingSiteDesc")}
                     </p>
-                    <div className="flex gap-1.5 mt-5">
-                      <motion.div
-                        animate={{ opacity: [0.3, 1, 0.3] }}
-                        transition={{
-                          repeat: Infinity,
-                          duration: 1,
-                          delay: 0,
-                        }}
-                        className="w-1.5 h-1.5 rounded-full bg-ink-900 dark:bg-ink-325"
-                      />
-                      <motion.div
-                        animate={{ opacity: [0.3, 1, 0.3] }}
-                        transition={{
-                          repeat: Infinity,
-                          duration: 1,
-                          delay: 0.2,
-                        }}
-                        className="w-1.5 h-1.5 rounded-full bg-ink-900 dark:bg-ink-325"
-                      />
-                      <motion.div
-                        animate={{ opacity: [0.3, 1, 0.3] }}
-                        transition={{
-                          repeat: Infinity,
-                          duration: 1,
-                          delay: 0.4,
-                        }}
-                        className="w-1.5 h-1.5 rounded-full bg-ink-900 dark:bg-ink-325"
-                      />
-                    </div>
                   </motion.div>
                 ) : (
                   <motion.div
@@ -426,9 +372,7 @@ const AiFaqGenerator: React.FC<AiFaqGeneratorProps> = ({
               <div className="p-6 border-b border-ink-120 dark:border-ink-780 flex justify-between items-start shrink-0">
                 <div>
                   <div className="flex items-center gap-2 mb-1.5">
-                    <div className="p-1.5 bg-ink-70 dark:bg-ink-850 rounded-lg text-fg">
-                      <AiIcon size={18} />
-                    </div>
+                    <HappyKio />
                     <h3 className="text-xl font-bold text-fg font-display tracking-tight">
                       {t("reviewTitle")}
                     </h3>

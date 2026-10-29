@@ -36,6 +36,7 @@ const pages = {
   plans: () => import("./pages/Plans"),
   privacy: () => import("./pages/PrivacyPolicy"),
   terms: () => import("./pages/TermsOfService"),
+  notFound: () => import("./pages/NotFound"),
   navbar: () => import("./components/Navbar"),
 };
 
@@ -55,6 +56,7 @@ const SuspendedNotice = lazyPage(() => import("./components/SuspendedNotice"));
 const Plans = lazyPage(pages.plans);
 const PrivacyPolicy = lazyPage(pages.privacy);
 const TermsOfService = lazyPage(pages.terms);
+const NotFound = lazyPage(pages.notFound);
 const Navbar = lazyPage(pages.navbar);
 
 // Start downloading the current page's chunk right away, in parallel with
@@ -307,6 +309,7 @@ const App: React.FC = () => {
               />
               <Route path="/privacy" element={<PrivacyPolicy />} />
               <Route path="/terms" element={<TermsOfService />} />
+              <Route path="*" element={<NotFound signedIn={Boolean(user)} />} />
             </Routes>
             </SuspensionGate>
             </Suspense>
