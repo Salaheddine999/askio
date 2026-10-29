@@ -63,10 +63,13 @@ export default function HowItWorks() {
                   <div
                     key={index}
                     onClick={() => handleStepClick(index)}
-                    className={`w-full overflow-hidden flex flex-col justify-start items-start transition-all duration-300 cursor-pointer ${
+                    // Every card keeps the same 1px border and only its colours change, so
+                    // switching steps never changes the list's height (which used to nudge
+                    // the whole page below it up and down).
+                    className={`w-full overflow-hidden flex flex-col justify-start items-start border transition-colors duration-300 cursor-pointer ${
                       isActive
-                        ? "bg-ink-25 dark:bg-ink-820 shadow-[0px_0px_0px_0.75px_#D8DFE9_inset] dark:shadow-[0px_0px_0px_0.75px_#2B3646_inset]"
-                        : "border border-[rgba(2,6,23,0.08)] dark:border-ink-780 hover:border-[rgba(2,6,23,0.15)] dark:hover:border-ink-605"
+                        ? "bg-ink-25 border-[#D8DFE9] dark:bg-ink-820 dark:border-[#2B3646]"
+                        : "border-[rgba(2,6,23,0.08)] dark:border-ink-780 hover:border-[rgba(2,6,23,0.15)] dark:hover:border-ink-605"
                     }`}
                   >
                     <div className={`w-full h-1 bg-[rgba(16,23,35,0.08)] dark:bg-[rgba(255,255,255,0.08)] overflow-hidden ${isActive ? "opacity-100" : "opacity-0"}`}>
