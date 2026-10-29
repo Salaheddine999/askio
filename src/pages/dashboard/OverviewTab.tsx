@@ -199,7 +199,9 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
             <ArrowRight size={14} />
           </button>
         </div>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        {/* Two beside the sidebar on a laptop, three from 1536px; a third card
+            would wrap onto a row of its own. */}
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 min-[1536px]:grid-cols-3 sm:max-[1535px]:[&>*:nth-child(3)]:hidden">
           {featured.map((chatbot, index) => (
             <ChatbotCard
               key={chatbot.id}

@@ -319,7 +319,7 @@ export const ErrorBanner: React.FC<{ message: string; onRetry: () => void }> = (
 };
 
 export const ChatbotGridSkeleton: React.FC<{ count?: number }> = ({ count = 6 }) => (
-  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4" aria-busy="true">
+  <div className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,24rem),1fr))] gap-4" aria-busy="true">
     {Array.from({ length: count }).map((_, i) => (
       <div key={i} className="overflow-hidden rounded-2xl border border-ink-120 bg-ink-25 dark:border-ink-780 dark:bg-ink-850">
         <div className="p-4">

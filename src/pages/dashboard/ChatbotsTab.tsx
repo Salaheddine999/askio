@@ -154,7 +154,7 @@ const ChatbotsTab: React.FC<ChatbotsTabProps> = ({
           {/* Switching views swaps at once: a cross-fade left the area blank
               between the two, which read as a flicker. */}
           {viewMode === "grid" ? (
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+              <div className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,24rem),1fr))] gap-4">
                 {pageItems.map((chatbot, index) => (
                   <ChatbotCard
                     key={chatbot.id}

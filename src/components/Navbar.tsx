@@ -520,8 +520,10 @@ const Navbar: React.FC<NavbarProps> = ({
           )}
         </div>
 
-        {/* Navigation */}
-        <div className="flex-1 overflow-y-auto px-3 py-3">
+        {/* Navigation, then plan and links. On short screens (laptops) it all
+            scrolls together instead of squeezing the chatbot list; the account
+            card below stays in view. */}
+        <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-3 pt-3 [scrollbar-width:thin]">
           <h2 className={`mb-1.5 px-2.5 text-caption font-medium text-ink-425 dark:text-ink-545 ${hideWhenCollapsed}`}>
             {t("workspace")}
           </h2>
@@ -560,10 +562,8 @@ const Navbar: React.FC<NavbarProps> = ({
               )}
             </div>
           )}
-        </div>
-
-        {/* Footer */}
-        <div className="shrink-0 space-y-2 p-3">
+          {/* At the bottom when there's room, scrolling with the list when there isn't. */}
+          <div className="mt-auto space-y-2 pb-4 pt-4">
           {canUseAi && !testMode && (
             <button
               type="button"
@@ -610,7 +610,13 @@ const Navbar: React.FC<NavbarProps> = ({
             </button>
           )}
 
-          {/* The account card, with the notifications bell beside it (above it on the rail). */}
+          </div>
+          {/* A soft fade where the list scrolls under the account card. */}
+          <div aria-hidden className="pointer-events-none sticky bottom-0 -mt-4 h-4 shrink-0 bg-gradient-to-t from-ink-55 dark:from-ink-865" />
+        </div>
+
+        {/* The account card, with the notifications bell beside it (above it on the rail). */}
+        <div className="shrink-0 px-3 pb-3 pt-1">
           <div className={`flex items-center gap-1 ${collapsed ? "lg:flex-col-reverse lg:gap-2" : ""}`}>
           <Menu as="div" className="relative min-w-0 flex-1 lg:w-full">
             <Menu.Button

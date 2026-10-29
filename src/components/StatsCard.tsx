@@ -32,8 +32,8 @@ const StatsCard: React.FC<StatsCardProps> = ({
   const Arrow = TrendIcon[trendDirection];
   const tone = trendDirection === "neutral" ? "neutral" : trendDirection === goodWhen ? "good" : "bad";
   return (
-    <div className="flex h-full flex-col justify-between rounded-xl border border-ink-120 bg-ink-25 p-4 text-ink-900 sm:p-5 shadow-[0_1px_2px_rgba(16,23,35,0.04)] dark:border-ink-780 dark:bg-ink-850 dark:text-ink-130">
-      <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1.5">
+    <div className="flex h-full flex-col rounded-xl border border-ink-120 bg-ink-25 p-4 text-ink-900 sm:p-5 shadow-[0_1px_2px_rgba(16,23,35,0.04)] dark:border-ink-780 dark:bg-ink-850 dark:text-ink-130">
+      <div className="flex items-center">
         <h3 className="flex min-w-0 items-center gap-2 text-body-sm font-medium text-fg-muted">
           {icon && (
             <span className="hidden h-7 w-7 shrink-0 sm:flex items-center justify-center rounded-lg border border-ink-120 bg-ink-30 dark:border-ink-780 dark:bg-ink-875">
@@ -42,21 +42,25 @@ const StatsCard: React.FC<StatsCardProps> = ({
           )}
           <span className="line-clamp-2 sm:truncate">{title}</span>
         </h3>
-        {trend && (
-          <span
-            className={`inline-flex shrink-0 items-center gap-0.5 rounded-full px-2 py-0.5 text-caption font-medium tabular-nums ring-1 ring-inset ${trendTones[tone]}`}
-          >
-            <Arrow size={12} strokeWidth={2.25} />
-            {trend}
-          </span>
-        )}
       </div>
       <div className="mt-3 sm:mt-4">
-        <div
-          className="truncate font-display text-h3 tabular-nums sm:text-h2 text-fg"
-          title={String(value)}
-        >
-          {value}
+        {/* The trend sits beside the number, so a narrow card never wraps it
+            under the title and pushes the number out of line with the others. */}
+        <div className="flex min-w-0 items-center gap-2">
+          <div
+            className="min-w-0 truncate font-display text-h3 tabular-nums sm:text-h2 text-fg"
+            title={String(value)}
+          >
+            {value}
+          </div>
+          {trend && (
+            <span
+              className={`inline-flex shrink-0 items-center gap-0.5 rounded-full px-2 py-0.5 text-caption font-medium tabular-nums ring-1 ring-inset ${trendTones[tone]}`}
+            >
+              <Arrow size={12} strokeWidth={2.25} />
+              {trend}
+            </span>
+          )}
         </div>
         {description && (
           <p className="mt-1 text-caption text-fg-subtle">{description}</p>
