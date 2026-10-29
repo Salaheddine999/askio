@@ -4,6 +4,9 @@
 export const focusRing =
   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink-900/25 focus-visible:ring-offset-2 focus-visible:ring-offset-ink-30 dark:focus-visible:ring-ink-130/40 dark:focus-visible:ring-offset-ink-875";
 
+/** A quiet "← Somewhere" link above a page title. */
+export const backLink = `inline-flex items-center gap-1.5 rounded text-body-sm font-medium text-fg-muted transition-colors hover:text-fg ${focusRing}`;
+
 export const surface =
   "rounded-xl border border-ink-120 dark:border-ink-780 bg-ink-25 dark:bg-ink-850 shadow-[0_1px_2px_rgba(16,23,35,0.04)]";
 

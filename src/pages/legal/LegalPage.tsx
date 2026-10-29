@@ -2,6 +2,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { AlertTriangle, ArrowLeft } from "../../components/icons";
+import { backLink } from "../dashboard/styles";
 import { COMPANY, hasPlaceholders, isPlaceholder } from "./company";
 
 /** A company detail; unfilled placeholders are highlighted so they're easy to spot. */
@@ -69,9 +70,9 @@ export default function LegalPage({ title, description, intro, sections, childre
       <div className="mx-auto max-w-3xl">
         <Link
           to="/"
-          className="inline-flex items-center gap-1.5 text-sm font-medium text-ink-605 hover:text-ink-900 dark:text-ink-325 dark:hover:text-ink-70"
+          className={backLink}
         >
-          <ArrowLeft size={15} />
+          <ArrowLeft size={14} />
           Back to Askio
         </Link>
 

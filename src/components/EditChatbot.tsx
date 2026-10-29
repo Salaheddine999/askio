@@ -14,6 +14,7 @@ import BotAvatar from "./BotAvatar";
 import { Skeleton, SkeletonCard } from "./Skeleton";
 import ConfirmationModal from "./ConfirmationModal";
 import { focusRing, primaryButton, secondaryButton } from "../pages/dashboard/ui";
+import { backLink } from "../pages/dashboard/styles";
 import { Panel } from "./editor/controls";
 import { ChatbotConfig, ConfigChange, Plan } from "./editor/types";
 import GeneralTab, { GeneralErrors } from "./editor/GeneralTab";
@@ -427,9 +428,9 @@ const EditChatbot: React.FC = () => {
               <div className="min-w-0">
                 <Link
                   to="/"
-                  className={`inline-flex items-center gap-1 rounded text-caption font-medium text-ink-545 transition-colors hover:text-ink-900 dark:text-ink-425 dark:hover:text-ink-130 ${focusRing}`}
+                  className={backLink}
                 >
-                  <ArrowLeft size={13} />
+                  <ArrowLeft size={14} />
                   {t("dashboard")}
                 </Link>
                 <div className="mt-2 flex min-w-0 items-center gap-3">
