@@ -11,7 +11,7 @@ import {
   doc,
   QueryDocumentSnapshot,
 } from "firebase/firestore";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { format, isBefore, startOfDay, subDays } from "date-fns";
 import ConfirmationModal from "../components/ConfirmationModal";
 import { toast } from "react-hot-toast";
@@ -130,7 +130,12 @@ const Dashboard: React.FC<DashboardProps> = ({ testMode }) => {
   const [chatbotToDelete, setChatbotToDelete] = useState<string | null>(null);
   const [selectedChatbotId, setSelectedChatbotId] = useState<string | null>(null);
   const [embedCopied, setEmbedCopied] = useState(false);
-  const [activeTab, setActiveTab] = useState<TabId>("overview");
+  // The tab lives in the address (?tab=chatbots), so coming back from the
+  // editor, or with the browser's back button, lands on the same tab.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tabParam = searchParams.get("tab");
+  const activeTab: TabId = tabParam === "chatbots" || tabParam === "reports" ? tabParam : "overview";
+  const location = useLocation();
 
   // Only this owner's ratings; test mode uses sample data and reads nothing.
   const ownerUid = testMode ? null : auth.currentUser?.uid ?? null;
@@ -235,7 +240,7 @@ const Dashboard: React.FC<DashboardProps> = ({ testMode }) => {
   }, [feedbackSnapshot, chatbots, testMode]);
 
   const changeTab = (id: TabId) => {
-    setActiveTab(id);
+    setSearchParams(id === "overview" ? {} : { tab: id }, { replace: true });
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -365,7 +370,8 @@ const Dashboard: React.FC<DashboardProps> = ({ testMode }) => {
   };
 
   const chatbotActions = {
-    onEdit: (id: string) => navigate(`/configure/${id}`),
+    // The editor's back link returns here, to this tab.
+    onEdit: (id: string) => navigate(`/configure/${id}`, { state: { from: location.pathname + location.search } }),
     onEmbed: openEmbedModal,
     onDelete: openDeleteModal,
     onToggleActive: toggleChatbotStatus,

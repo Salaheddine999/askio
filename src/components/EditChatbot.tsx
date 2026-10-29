@@ -146,6 +146,10 @@ const EditChatbot: React.FC = () => {
 
   // Analytics links here with a question nobody could get answered.
   const faqQuestion = (location.state as { faqQuestion?: string } | null)?.faqQuestion ?? null;
+  // Back goes where the owner came from on the dashboard; otherwise to the
+  // chatbot list, the editor's natural parent.
+  const from = (location.state as { from?: string } | null)?.from;
+  const backTo = from?.startsWith("/dashboard") ? from : "/dashboard?tab=chatbots";
 
   // A new chatbot starts in the app's language, and that start is the saved baseline.
   const [config, setConfig] = useState<ChatbotConfig>(() => (id ? DEFAULT_CONFIG : newChatbotConfig(lang)));
@@ -321,7 +325,7 @@ const EditChatbot: React.FC = () => {
         toast.success(chatbotId ? t("changesSaved") : t("chatbotCreated"));
       }
       if (navigateAfterSave && result.chatbotId !== id) {
-        navigate(`/configure/${result.chatbotId}${location.search}`, { replace: true });
+        navigate(`/configure/${result.chatbotId}${location.search}`, { replace: true, state: location.state });
       }
       return result;
     } catch (error) {
@@ -427,7 +431,7 @@ const EditChatbot: React.FC = () => {
             <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
               <div className="min-w-0">
                 <Link
-                  to="/"
+                  to={backTo}
                   className={backLink}
                 >
                   <ArrowLeft size={14} />
