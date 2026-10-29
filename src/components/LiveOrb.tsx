@@ -25,6 +25,34 @@ export type LiveOrbTheme = "light" | "dark" | "auto"
 
 export type LiveOrbMood = "idle" | "thinking" | "listening" | "happy" | "unsure"
 
+export type LiveOrbPersonality = "lively" | "calm" | "shy"
+
+export type LiveOrbFinish = "glossy" | "matte"
+
+/**
+ * The timing behind each personality. Glances and blinks come every
+ * `min + random * range` ms; `reach` scales how far a glance goes, `back` is
+ * the chance a glance returns to you, `follow` how much of the pointer the
+ * eyes track, and `ease` how quickly the gaze moves.
+ */
+const PERSONALITIES: Record<
+  LiveOrbPersonality,
+  {
+    glance: [number, number]
+    blink: [number, number]
+    reach: number
+    back: number
+    follow: number
+    ease: number
+    /** Where idle glances lean, so shy looks down and away. */
+    lean: { x: number; y: number }
+  }
+> = {
+  lively: { glance: [900, 2100], blink: [2200, 3800], reach: 1, back: 0.3, follow: 1, ease: 0.1, lean: { x: 0, y: 0 } },
+  calm: { glance: [2600, 3400], blink: [3800, 4200], reach: 0.55, back: 0.5, follow: 0.6, ease: 0.05, lean: { x: 0, y: 0 } },
+  shy: { glance: [1400, 2200], blink: [1600, 2400], reach: 0.6, back: 0.12, follow: 0.45, ease: 0.08, lean: { x: 0, y: -0.3 } },
+}
+
 export type LiveOrbOptions = {
   /**
    * Material preset. Omit it and the orb follows the theme: a white orb
@@ -57,6 +85,14 @@ export type LiveOrbOptions = {
   blink?: boolean
   /** Light the sphere so it reads as 3D. Default `true`. */
   depth?: boolean
+  /**
+   * How it carries itself. `lively` (the default) looks around often and
+   * follows the pointer closely; `calm` looks around rarely and slowly;
+   * `shy` mostly looks away and down, glancing at you only now and then.
+   */
+  personality?: LiveOrbPersonality
+  /** `glossy` (the default) has a highlight; `matte` is softly lit without one. */
+  finish?: LiveOrbFinish
   /**
    * `thinking` glances up and from side to side, `listening` looks down
    * (toward an input below), `happy` arches the eyes into a smile and
@@ -146,6 +182,7 @@ uniform float u_happy;
 uniform float u_unsure;
 uniform float u_mode;
 uniform float u_depth;
+uniform float u_gloss;
 uniform vec3 u_body;
 uniform vec3 u_eye;
 uniform vec3 u_c1;
@@ -264,9 +301,13 @@ void main() {
   float rim = pow(1.0 - z, 2.5);
   // Gradients get softer shading, so their end colour stays the one picked.
   vec3 lit = body * (u_mode > 0.5 ? mix(0.82, 1.08, diffuse) : mix(0.62, 1.1, diffuse));
-  lit += (vec3(1.0) - lit) * spec * 0.2;
-  lit += vec3(0.16) * rim * 0.4;
-  vec3 eye = u_eye * mix(0.82, 1.04, diffuse) + spec * 0.06;
+  // Matte drops the highlight and the rim light and flattens the shading,
+  // so the body reads as soft and even, like clay instead of glass.
+  vec3 soft = body * mix(0.84, 1.02, diffuse);
+  lit = mix(soft, lit, u_gloss);
+  lit += (vec3(1.0) - lit) * spec * 0.2 * u_gloss;
+  lit += vec3(0.16) * rim * 0.4 * u_gloss;
+  vec3 eye = u_eye * mix(0.82, 1.04, diffuse) + spec * 0.06 * u_gloss;
 
   vec3 col = mix(
     mix(body, lit, u_depth),
@@ -433,6 +474,7 @@ export function createLiveOrb(
   let uUnsure: WebGLUniformLocation | null = null
   let uMode: WebGLUniformLocation | null = null
   let uDepth: WebGLUniformLocation | null = null
+  let uGloss: WebGLUniformLocation | null = null
   let uBody: WebGLUniformLocation | null = null
   let uEye: WebGLUniformLocation | null = null
   let uC1: WebGLUniformLocation | null = null
@@ -483,6 +525,7 @@ export function createLiveOrb(
     uUnsure = gl.getUniformLocation(prog, "u_unsure")
     uMode = gl.getUniformLocation(prog, "u_mode")
     uDepth = gl.getUniformLocation(prog, "u_depth")
+    uGloss = gl.getUniformLocation(prog, "u_gloss")
     uBody = gl.getUniformLocation(prog, "u_body")
     uEye = gl.getUniformLocation(prog, "u_eye")
     uC1 = gl.getUniformLocation(prog, "u_c1")
@@ -629,14 +672,20 @@ export function createLiveOrb(
     // The pointer steers until it rests; then the eyes look around, now
     // and then back at you. Reduced motion holds a still, centred gaze.
     const steering = options.interactive && now - pointerAt < IDLE_MS
+    const traits = PERSONALITIES[options.personality ?? "lively"]
     if (!steering && live && clock >= nextGlance) {
-      const back = Math.random() < 0.3
-      glance.x = back ? 0 : (Math.random() * 2 - 1) * 0.8
-      glance.y = back ? 0.08 : (Math.random() * 2 - 1) * 0.5
-      nextGlance = clock + 900 + Math.random() * 2100
+      const back = Math.random() < traits.back
+      glance.x = back ? 0 : traits.lean.x + (Math.random() * 2 - 1) * 0.8 * traits.reach
+      glance.y = back ? 0.08 : traits.lean.y + (Math.random() * 2 - 1) * 0.5 * traits.reach
+      nextGlance = clock + traits.glance[0] + Math.random() * traits.glance[1]
     }
     const mood = options.mood ?? "idle"
-    let goal = steering ? targetLook : reduce ? REST_LOOK : glance
+    // A shy orb meets the pointer only partway, its gaze dipping below it.
+    const followed = {
+      x: targetLook.x * traits.follow + traits.lean.x,
+      y: targetLook.y * traits.follow + traits.lean.y * 0.6,
+    }
+    let goal = steering ? followed : reduce ? REST_LOOK : glance
     if (options.lookAt) {
       goal = options.lookAt
     } else if (mood === "listening") {
@@ -655,7 +704,7 @@ export function createLiveOrb(
     happy += ((mood === "happy" ? 1 : 0) - happy) * react
     unsure += ((mood === "unsure" ? 1 : 0) - unsure) * react
     // A still frame skips the easing and shows where the gaze settles.
-    const ease = live ? (steering ? 0.16 : 0.1) : 1
+    const ease = live ? (steering ? traits.ease * 1.6 : traits.ease) : 1
     look.x += (goal.x - look.x) * ease
     look.y += (goal.y - look.y) * ease
 
@@ -665,7 +714,7 @@ export function createLiveOrb(
     }
     if (!reduce && options.blink && clock >= nextBlink) {
       blinkAt = clock
-      nextBlink = clock + 2200 + Math.random() * 3800
+      nextBlink = clock + traits.blink[0] + Math.random() * traits.blink[1]
     }
     const bt = (clock - blinkAt) / 1000
     let b = 0
@@ -695,6 +744,7 @@ export function createLiveOrb(
     gl.uniform1f(uUnsure, unsure)
     gl.uniform1f(uMode, resolved.mode)
     gl.uniform1f(uDepth, options.depth === false ? 0 : 1)
+    gl.uniform1f(uGloss, options.finish === "matte" ? 0 : 1)
     gl.uniform3f(uBody, body[0], body[1], body[2])
     gl.uniform3f(uEye, eye[0], eye[1], eye[2])
     gl.uniform3f(uC1, palette[0]![0], palette[0]![1], palette[0]![2])
@@ -812,6 +862,8 @@ export function LiveOrb({
   eyeColor,
   colors,
   angle,
+  personality,
+  finish,
   interactive = true,
   blink = true,
   depth = true,
@@ -841,6 +893,8 @@ export function LiveOrb({
       eyeColor,
       colors,
       angle,
+      personality,
+      finish,
       interactive,
       blink,
       depth,
@@ -864,6 +918,8 @@ export function LiveOrb({
       eyeColor,
       colors,
       angle,
+      personality,
+      finish,
       interactive,
       blink,
       depth,
@@ -872,7 +928,7 @@ export function LiveOrb({
       theme,
       onHasGl: setHasGl,
     })
-  }, [variant, color, eyeColor, colors, angle, interactive, blink, depth, mood, lookAt, theme])
+  }, [variant, color, eyeColor, colors, angle, personality, finish, interactive, blink, depth, mood, lookAt, theme])
 
   const resolved = resolveVariant(variant, color, eyeColor, colors, dark)
 

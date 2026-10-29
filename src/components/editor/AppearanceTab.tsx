@@ -31,6 +31,12 @@ function parseGradient(value: string) {
   return m ? { angle: Math.round(Number(m[1])), start: m[2], end: m[3] } : null;
 }
 
+const PERSONALITY_HINT = {
+  lively: "kioLivelyHint",
+  calm: "kioCalmHint",
+  shy: "kioShyHint",
+} as const;
+
 const gradientOf = (angle: number, start: string, end: string) => `linear-gradient(${angle}deg, ${start}, ${end})`;
 
 /** The colour a third of the way to white, for a second gradient stop. */
@@ -55,6 +61,8 @@ const AppearanceTab: React.FC<Props> = ({ config, onChange }) => {
   const gradient = parseGradient(config.primaryColor);
   const mode = gradient ? "gradient" : "solid";
   const launcher = config.launcherStyle ?? "classic";
+  const personality = config.kioPersonality ?? "lively";
+  const finish = config.kioFinish ?? "glossy";
 
   const setColors = (primary: string, secondary: string) => {
     onChange("primaryColor", primary);
@@ -104,7 +112,12 @@ const AppearanceTab: React.FC<Props> = ({ config, onChange }) => {
                 >
                   <span className="flex h-14 items-center justify-center">
                     {option.value === "orb" ? (
-                      <LiveOrb size={48} {...orbPropsFor(config.primaryColor)} />
+                      <LiveOrb
+                        size={48}
+                        {...orbPropsFor(config.primaryColor)}
+                        personality={personality}
+                        finish={finish}
+                      />
                     ) : (
                       <span
                         className="flex h-12 w-12 items-center justify-center rounded-full shadow-md"
@@ -125,6 +138,34 @@ const AppearanceTab: React.FC<Props> = ({ config, onChange }) => {
             })}
           </div>
         </PanelBody>
+        {/* Kio's character: only for the Kio launcher. */}
+        {launcher === "orb" && (
+          <>
+            <Row label={t("kioPersonality")} hint={t(PERSONALITY_HINT[personality])}>
+              <Segmented
+                label={t("kioPersonality")}
+                value={personality}
+                onChange={(v) => onChange("kioPersonality", v)}
+                options={[
+                  { value: "lively", label: t("kioLively") },
+                  { value: "calm", label: t("kioCalm") },
+                  { value: "shy", label: t("kioShy") },
+                ]}
+              />
+            </Row>
+            <Row label={t("kioFinish")} hint={t("kioFinishHint")}>
+              <Segmented
+                label={t("kioFinish")}
+                value={finish}
+                onChange={(v) => onChange("kioFinish", v)}
+                options={[
+                  { value: "glossy", label: t("kioGlossy") },
+                  { value: "matte", label: t("kioMatte") },
+                ]}
+              />
+            </Row>
+          </>
+        )}
         <Row
           label={t("greetingBubble")}
           hint={t("greetingBubbleHint", { greeting })}

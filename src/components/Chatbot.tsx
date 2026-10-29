@@ -10,7 +10,7 @@ import { doc, getDoc, onSnapshot } from "firebase/firestore";
 import toast from "react-hot-toast";
 import bot1 from "../assets/chat1.svg";
 import { apiRequest } from "../utils/api";
-import { LiveOrb } from "./LiveOrb";
+import { LiveOrb, type LiveOrbFinish, type LiveOrbPersonality } from "./LiveOrb";
 import { headerOrbPropsFor, orbPropsFor, type LauncherStyle } from "../utils/orbColors";
 import { isOwnerBrowsing } from "../utils/ownerSession";
 import { isPresenceOnline, LIVE_WAIT_MS, type LiveStatus } from "../utils/liveChat";
@@ -65,6 +65,10 @@ export interface ChatbotProps {
   aiTone?: string;
   aiEnabled?: boolean;
   launcherStyle?: LauncherStyle;
+  /** How Kio carries itself, when the launcher is Kio. */
+  kioPersonality?: LiveOrbPersonality;
+  /** Kio's surface: glossy with a highlight, or matte. */
+  kioFinish?: LiveOrbFinish;
   greetingBubble?: boolean;
   /** Greetings for specific pages, shown beside the launcher and on the home screen. */
   pageGreetings?: PageGreeting[];
@@ -130,6 +134,8 @@ const Chatbot: React.FC<ChatbotProps> = ({
   showSources = true,
   aiEnabled,
   launcherStyle = "classic",
+  kioPersonality = "lively",
+  kioFinish = "glossy",
   greetingBubble = false,
   pageGreetings,
   isPreview = false,
@@ -1042,7 +1048,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
       whileHover={{ scale: 1.06 }}
       whileTap={{ scale: 0.95 }}
     >
-      <LiveOrb size={56} {...orbPropsFor(primaryColor)} lookAt={greetingLook} />
+      <LiveOrb size={56} {...orbPropsFor(primaryColor)} personality={kioPersonality} finish={kioFinish} lookAt={greetingLook} />
     </motion.button>
   ) : (
     <motion.button
@@ -1119,7 +1125,13 @@ const Chatbot: React.FC<ChatbotProps> = ({
   // The bot's face: Kio with the orb launcher, the Askio bubble otherwise.
   const botFace = (size: number, onHeader = false) =>
     useOrb ? (
-      <LiveOrb size={size} {...(onHeader ? headerOrbPropsFor(primaryColor) : orbPropsFor(primaryColor))} mood={orbMood} />
+      <LiveOrb
+        size={size}
+        {...(onHeader ? headerOrbPropsFor(primaryColor) : orbPropsFor(primaryColor))}
+        personality={kioPersonality}
+        finish={kioFinish}
+        mood={orbMood}
+      />
     ) : (
       <div
         className={`flex items-center justify-center rounded-full ${onHeader ? "bg-white/[0.16]" : ""}`}
@@ -1482,7 +1494,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
           >
             {useOrb ? (
               <div className="inline-flex items-center gap-2 py-1.5 pl-1.5 pr-3.5 rounded-[18px] rounded-bl-[6px] bg-[#FFFFFF] ring-1 ring-ink-90 dark:bg-ink-850 dark:ring-ink-805">
-                <LiveOrb size={24} {...orbPropsFor(primaryColor)} mood="thinking" interactive={false} />
+                <LiveOrb size={24} {...orbPropsFor(primaryColor)} finish={kioFinish} mood="thinking" interactive={false} />
                 <span className="text-[12px] text-ink-545 dark:text-ink-325">{t("thinking")}</span>
               </div>
             ) : (

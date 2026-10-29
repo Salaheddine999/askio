@@ -77,6 +77,16 @@ export function normalizeFaqData(faqData) {
     );
 }
 
+export const KIO_PERSONALITIES = ["lively", "calm", "shy"];
+
+/** Kio's personality and finish; anything unexpected keeps today's look. */
+export function normalizeKioStyle(payload) {
+  return {
+    kioPersonality: KIO_PERSONALITIES.includes(payload.kioPersonality) ? payload.kioPersonality : "lively",
+    kioFinish: payload.kioFinish === "matte" ? "matte" : "glossy",
+  };
+}
+
 function normalizeChatbotPayload(payload, uid) {
   const aiEnabled = payload.aiEnabled === true;
 
@@ -87,6 +97,7 @@ function normalizeChatbotPayload(payload, uid) {
     secondaryColor: normalizeColor(payload.secondaryColor, "#6366F1"),
     position: POSITIONS.includes(payload.position) ? payload.position : "bottom-right",
     launcherStyle: payload.launcherStyle === "orb" ? "orb" : "classic",
+    ...normalizeKioStyle(payload),
     greetingBubble: payload.greetingBubble === true,
     pageGreetings: normalizePageGreetings(payload.pageGreetings),
     initialMessage: clip(payload.initialMessage, 500) || "Hello! How can I help you today?",
