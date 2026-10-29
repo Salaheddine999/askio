@@ -124,7 +124,7 @@ export const SortMenu: React.FC<{
                   onClick={() => onSort(option.key)}
                   className={`flex w-full items-center justify-between rounded-lg px-2.5 py-2 text-body-sm ${
                     active
-                      ? "bg-ink-30 text-ink-900 dark:bg-ink-790 dark:text-ink-130"
+                      ? "bg-ink-55 text-ink-900 dark:bg-ink-790 dark:text-ink-130"
                       : "text-fg-muted"
                   }`}
                 >

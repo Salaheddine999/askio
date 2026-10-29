@@ -209,7 +209,7 @@ const ChatbotCard: React.FC<ChatbotCardProps> = ({
   const menuItem = (active: boolean) =>
     `flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-body-sm ${
       active
-        ? "bg-ink-30 text-ink-900 dark:bg-ink-790 dark:text-ink-130"
+        ? "bg-ink-55 text-ink-900 dark:bg-ink-790 dark:text-ink-130"
         : "text-fg-muted"
     }`;
 
@@ -248,7 +248,10 @@ const ChatbotCard: React.FC<ChatbotCardProps> = ({
           <div className="flex shrink-0 items-center gap-1">
           <StatusSwitch active={isActive} title={chatbot.title} onToggle={() => onToggleActive(chatbot.id)} />
           <Menu as="div" className="relative -mr-1.5">
-            <Menu.Button className={iconButton} aria-label={t("moreActionsNamed", { name: chatbot.title })}>
+            <Menu.Button
+              className={`${iconButton} data-[open]:bg-ink-70 data-[open]:text-ink-900 dark:data-[open]:bg-ink-790 dark:data-[open]:text-ink-130`}
+              aria-label={t("moreActionsNamed", { name: chatbot.title })}
+            >
               <MoreHorizontal size={18} />
             </Menu.Button>
             <Menu.Items anchor="bottom end" modal={false} transition className="z-50 w-44 origin-top-right rounded-xl [--anchor-gap:6px] transition duration-100 ease-out data-[closed]:scale-95 data-[closed]:opacity-0 border border-ink-120 bg-ink-25 p-1.5 shadow-lg focus:outline-none dark:border-ink-780 dark:bg-ink-850">
