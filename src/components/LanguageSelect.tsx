@@ -12,6 +12,10 @@ const ENGLISH_NAMES: Record<Lang, string> = {
   nl: "Dutch",
   de: "German",
   es: "Spanish",
+  pt: "Portuguese",
+  it: "Italian",
+  pl: "Polish",
+  ar: "Arabic",
 };
 
 /** A language picker in the app's dropdown style (like the Analytics chatbot filter). */
@@ -29,13 +33,13 @@ const LanguageSelect: React.FC<{
       <ListboxButton
         id={id}
         aria-label={label}
-        className={`inline-flex w-full items-center gap-2 rounded-lg border border-ink-120 bg-ink-25 pl-3 pr-2.5 text-left text-body-sm text-ink-900 transition-colors hover:border-ink-230 dark:border-ink-780 dark:bg-ink-875 dark:text-ink-130 dark:hover:border-ink-710 ${
+        className={`inline-flex w-full items-center gap-2 rounded-lg border border-ink-120 bg-ink-25 ps-3 pe-2.5 text-start text-body-sm text-ink-900 transition-colors hover:border-ink-230 dark:border-ink-780 dark:bg-ink-875 dark:text-ink-130 dark:hover:border-ink-710 ${
           size === "sm" ? "h-9" : "h-10"
         } ${focusRing} ${className}`}
       >
         <Languages size={15} className="shrink-0 text-fg-subtle" />
         <span className="min-w-0 flex-1 truncate">{current.label}</span>
-        <ChevronDown size={15} className="ml-1 shrink-0 text-ink-425" />
+        <ChevronDown size={15} className="ms-1 shrink-0 text-ink-425" />
       </ListboxButton>
       {/* Anchored and non-modal, like the other pickers, so the page doesn't lock or shift. */}
       <ListboxOptions

@@ -298,6 +298,230 @@ const GUIDES: Record<Lang, Record<PlatformId, Guide> & { otherSite: string }> = 
       ],
     },
   },
+  pt: {
+    otherSite: "Qualquer outro site",
+    html: {
+      steps: [
+        "Copie o código abaixo.",
+        "Cole-o no HTML do seu site, logo antes de </body>, de preferência em um rodapé ou layout compartilhado por todas as páginas.",
+        "Publique seu site. O botão do chat aparece no canto.",
+      ],
+    },
+    shopify: {
+      steps: [
+        "Mais fácil: conecte sua loja em Integrações → Shopify, e o Askio se adiciona sozinho.",
+        "Ou manualmente: no Shopify, vá em Online Store → Themes → … → Edit code.",
+        "Abra o theme.liquid, cole o código logo antes de </body> e clique em Save.",
+      ],
+    },
+    wordpress: {
+      steps: [
+        "Mais fácil: baixe o plugin do Askio em Integrações → WordPress.",
+        "No WordPress, vá em Plugins → Add New → Upload Plugin, escolha o arquivo e clique em Activate.",
+        "Abra Settings → Askio Chatbot, cole o ID do seu chatbot e clique em Save.",
+      ],
+      note: "Ou cole o código com um plugin como o WPCode, na seção Footer.",
+    },
+    wix: {
+      steps: [
+        "No painel do seu site, vá em Settings → Custom code (em Advanced).",
+        "Clique em + Add Custom Code e cole o código.",
+        "Escolha All pages, posicione em Body - end e clique em Apply.",
+      ],
+      note: "O código personalizado exige um plano Wix Premium com domínio conectado.",
+    },
+    squarespace: {
+      steps: [
+        "Abra o Code Injection: Settings → Advanced → Code Injection ou, nas versões mais novas, Website → Pages → Custom code → Code Injection.",
+        "Cole o código no campo Footer.",
+        "Clique em Save.",
+      ],
+      note: "O Code Injection exige um plano Core, Plus ou Advanced (Business ou Commerce nos planos antigos).",
+    },
+    webflow: {
+      steps: [
+        "Abra Site settings → Custom code.",
+        "Cole o código em Footer code e clique em Save.",
+        "Publique seu site.",
+      ],
+      note: "O código personalizado exige um plano de site pago do Webflow.",
+    },
+    gtm: {
+      steps: [
+        "No Tag Manager, vá em Tags → New → Tag configuration → Custom HTML.",
+        "Cole o código abaixo (feito para o Tag Manager).",
+        "Defina o acionador como All Pages, clique em Save e depois em Submit e Publish.",
+      ],
+    },
+  },
+  it: {
+    otherSite: "Qualsiasi altro sito",
+    html: {
+      steps: [
+        "Copia il codice qui sotto.",
+        "Incollalo nell'HTML del tuo sito, subito prima di </body>, idealmente in un footer o layout comune a tutte le pagine.",
+        "Pubblica il sito. Il pulsante della chat compare nell'angolo.",
+      ],
+    },
+    shopify: {
+      steps: [
+        "Il modo più semplice: collega il tuo negozio in Integrazioni → Shopify e Askio si aggiunge da solo.",
+        "Oppure a mano: in Shopify, vai su Online Store → Themes → … → Edit code.",
+        "Apri theme.liquid, incolla il codice subito prima di </body> e fai clic su Save.",
+      ],
+    },
+    wordpress: {
+      steps: [
+        "Il modo più semplice: scarica il plugin di Askio in Integrazioni → WordPress.",
+        "In WordPress, vai su Plugins → Add New → Upload Plugin, scegli il file e fai clic su Activate.",
+        "Apri Settings → Askio Chatbot, incolla l'ID del tuo chatbot e fai clic su Save.",
+      ],
+      note: "Oppure incolla il codice con un plugin come WPCode, nella sua sezione Footer.",
+    },
+    wix: {
+      steps: [
+        "Nella dashboard del tuo sito, vai su Settings → Custom code (in Advanced).",
+        "Fai clic su + Add Custom Code e incolla il codice.",
+        "Scegli All pages, posizionalo in Body - end e fai clic su Apply.",
+      ],
+      note: "Il codice personalizzato richiede un piano Wix Premium con un dominio collegato.",
+    },
+    squarespace: {
+      steps: [
+        "Apri Code Injection: Settings → Advanced → Code Injection, oppure nelle versioni più recenti Website → Pages → Custom code → Code Injection.",
+        "Incolla il codice nella casella Footer.",
+        "Salva.",
+      ],
+      note: "Code Injection richiede un piano Core, Plus o Advanced (Business o Commerce nei piani precedenti).",
+    },
+    webflow: {
+      steps: [
+        "Apri Site settings → Custom code.",
+        "Incolla il codice in Footer code e salva.",
+        "Pubblica il sito.",
+      ],
+      note: "Il codice personalizzato richiede un piano Webflow a pagamento per il sito.",
+    },
+    gtm: {
+      steps: [
+        "In Tag Manager, vai su Tags → New → Tag configuration → Custom HTML.",
+        "Incolla il codice qui sotto (pensato per Tag Manager).",
+        "Imposta l'attivatore su All Pages, salva, poi fai clic su Submit e Publish.",
+      ],
+    },
+  },
+  ar: {
+    otherSite: "أي موقع آخر",
+    html: {
+      steps: [
+        "انسخ الكود أدناه.",
+        "الصقه في HTML موقعك، مباشرةً قبل </body>، ويُفضّل في تذييل أو قالب مشترك بين كل الصفحات.",
+        "انشر موقعك. يظهر زر الدردشة في الزاوية.",
+      ],
+    },
+    shopify: {
+      steps: [
+        "الأسهل: اربط متجرك من التكاملات ← Shopify، وسيضيف Askio نفسه تلقائيًا.",
+        "أو يدويًا: في Shopify، انتقل إلى «Online Store» ← «Themes» ← … ← «Edit code».",
+        "افتح theme.liquid، والصق الكود مباشرةً قبل </body>، ثم انقر «Save».",
+      ],
+    },
+    wordpress: {
+      steps: [
+        "الأسهل: نزّل إضافة Askio من التكاملات ← WordPress.",
+        "في WordPress، انتقل إلى الإضافات ← أضف جديد ← رفع إضافة، واختر الملف ثم «تفعيل».",
+        "افتح الإعدادات ← Askio Chatbot، والصق معرّف روبوت الدردشة ثم «حفظ».",
+      ],
+      note: "أو الصق الكود باستخدام إضافة مثل WPCode، في قسم التذييل (Footer).",
+    },
+    wix: {
+      steps: [
+        "في لوحة تحكم موقعك، انتقل إلى «Settings» ← «Custom code» (ضمن «Advanced»).",
+        "انقر «+ Add Custom Code» والصق الكود.",
+        "اختر «All pages»، وضعه في «Body - end»، ثم انقر «Apply».",
+      ],
+      note: "يتطلب الكود المخصص خطة Wix Premium مع نطاق مرتبط.",
+    },
+    squarespace: {
+      steps: [
+        "افتح «Code Injection»: «Settings» ← «Advanced» ← «Code Injection»، أو في الإصدارات الأحدث «Website» ← «Pages» ← «Custom code» ← «Code Injection».",
+        "الصق الكود في مربع «Footer».",
+        "انقر «Save».",
+      ],
+      note: "تتطلب ميزة «Code Injection» خطة Core أو Plus أو Advanced (أو Business أو Commerce في الخطط الأقدم).",
+    },
+    webflow: {
+      steps: [
+        "افتح «Site settings» ← «Custom code».",
+        "الصق الكود في «Footer code» وانقر «Save».",
+        "انشر موقعك.",
+      ],
+      note: "يتطلب الكود المخصص خطة موقع Webflow مدفوعة.",
+    },
+    gtm: {
+      steps: [
+        "في Tag Manager، انتقل إلى «Tags» ← «New» ← «Tag configuration» ← «Custom HTML».",
+        "الصق الكود أدناه (المُعدّ لـ Tag Manager).",
+        "اضبط المشغّل على «All Pages»، وانقر «Save»، ثم «Submit» و«Publish».",
+      ],
+    },
+  },
+  pl: {
+    otherSite: "Dowolna inna strona",
+    html: {
+      steps: [
+        "Skopiuj poniższy kod.",
+        "Wklej go do kodu HTML strony, tuż przed </body>, najlepiej w stopce lub szablonie wspólnym dla wszystkich podstron.",
+        "Opublikuj stronę. Przycisk czatu pojawi się w rogu.",
+      ],
+    },
+    shopify: {
+      steps: [
+        "Najprościej: połącz sklep w Integracje → Shopify, a Askio doda się samo.",
+        "Albo ręcznie: w Shopify przejdź do „Online Store” → „Themes” → „…” → „Edit code”.",
+        "Otwórz theme.liquid, wklej kod tuż przed </body> i kliknij „Save”.",
+      ],
+    },
+    wordpress: {
+      steps: [
+        "Najprościej: pobierz wtyczkę Askio w Integracje → WordPress.",
+        "W WordPressie przejdź do Wtyczki → Dodaj wtyczkę → Wyślij wtyczkę na serwer, wybierz plik i kliknij Włącz.",
+        "Otwórz Ustawienia → Askio Chatbot, wklej ID chatbota i zapisz.",
+      ],
+      note: "Możesz też wkleić kod za pomocą wtyczki, np. WPCode, w jej sekcji stopki.",
+    },
+    wix: {
+      steps: [
+        "W panelu strony przejdź do „Settings” → „Custom code” (w sekcji „Advanced”).",
+        "Kliknij „+ Add Custom Code” i wklej kod.",
+        "Wybierz „All pages”, umieść kod w „Body - end” i kliknij „Apply”.",
+      ],
+      note: "Własny kod wymaga planu Wix Premium z podłączoną domeną.",
+    },
+    squarespace: {
+      steps: [
+        "Otwórz „Code Injection”: „Settings” → „Advanced” → „Code Injection” albo w nowszych wersjach „Website” → „Pages” → „Custom code” → „Code Injection”.",
+        "Wklej kod w pole „Footer”.",
+        "Kliknij „Save”.",
+      ],
+      note: "„Code Injection” wymaga planu Core, Plus lub Advanced (w starszych planach: Business lub Commerce).",
+    },
+    webflow: {
+      steps: [
+        "Otwórz „Site settings” → „Custom code”.",
+        "Wklej kod w pole „Footer code” i kliknij „Save”.",
+        "Opublikuj stronę.",
+      ],
+      note: "Własny kod wymaga płatnego planu strony w Webflow.",
+    },
+    gtm: {
+      steps: [
+        "W Tag Managerze przejdź do „Tags” → „New” → „Tag configuration” → „Custom HTML”.",
+        "Wklej poniższy kod (przygotowany dla Tag Managera).",
+        "Ustaw regułę „All Pages”, kliknij „Save”, a potem „Submit” i „Publish”.",
+      ],
+    },
+  },
 };
 
 export function guideFor(lang: Lang, platform: PlatformId): Guide {

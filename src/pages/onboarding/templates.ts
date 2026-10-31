@@ -379,7 +379,659 @@ const es: Starter[] = [
   },
 ];
 
-const STARTERS: Record<Lang, Starter[]> = { en, fr, nl, de, es };
+const pt: Starter[] = [
+  {
+    id: "store",
+    label: "Loja online",
+    hint: "Entrega, trocas, pagamentos",
+    welcome: "Oi! Está procurando algo ou tem uma dúvida sobre um pedido?",
+    faqs: [
+      {
+        question: "Quanto tempo leva a entrega?",
+        answer: "Os pedidos são enviados em até [1–2] dias úteis. A entrega costuma levar [3–5] dias úteis.",
+      },
+      {
+        question: "Quanto custa o frete?",
+        answer: "O frete é [grátis em compras acima de R$ 200]. Caso contrário, custa [R$ 20], exibido no checkout.",
+      },
+      {
+        question: "Posso devolver ou trocar um produto?",
+        answer: "Sim. Você pode devolver produtos sem uso em até [30] dias. Solicite a devolução em [link ou e-mail].",
+      },
+      {
+        question: "Como posso rastrear meu pedido?",
+        answer: "Você receberá um link de rastreio por e-mail assim que seu pedido for enviado. Confira a pasta de spam se não o encontrar.",
+      },
+      {
+        question: "Quais formas de pagamento vocês aceitam?",
+        answer: "Aceitamos [Pix, cartão de crédito em até 3x e boleto].",
+      },
+      {
+        question: "Vocês entregam fora do Brasil?",
+        answer: "Entregamos para [lista de países]. Os custos e prazos aparecem no checkout.",
+      },
+      {
+        question: "Como posso falar com vocês?",
+        answer: "Envie um e-mail para [seu e-mail] ou mande uma mensagem no [número de WhatsApp]. Respondemos em até [24 horas].",
+      },
+    ],
+  },
+  {
+    id: "restaurant",
+    label: "Restaurante ou café",
+    hint: "Horários, reservas, cardápio",
+    welcome: "Oi! Quer reservar uma mesa ou ver nossos horários?",
+    faqs: [
+      {
+        question: "Qual é o horário de funcionamento?",
+        answer: "Funcionamos [de segunda a sábado, das 12h às 23h]. Fechamos [aos domingos].",
+      },
+      {
+        question: "Posso reservar uma mesa?",
+        answer: "Sim. Reserve em [link de reserva] ou ligue para [número de telefone].",
+      },
+      {
+        question: "Onde vocês ficam?",
+        answer: "Estamos em [endereço]. [Há estacionamento nas proximidades.]",
+      },
+      {
+        question: "Vocês fazem entrega ou pedidos para viagem?",
+        answer: "Sim, peça para viagem por telefone ou receba em casa pelo [iFood ou outros apps de entrega].",
+      },
+      {
+        question: "Vocês têm opções vegetarianas ou veganas?",
+        answer: "Sim. Os pratos vegetarianos e veganos estão indicados no nosso cardápio: [link do cardápio].",
+      },
+      {
+        question: "Vocês atendem quem tem alergias?",
+        answer: "Informe suas alergias ao fazer o pedido e faremos o possível para ajudar.",
+      },
+    ],
+  },
+  {
+    id: "beauty",
+    label: "Salão, spa ou clínica",
+    hint: "Agendamentos, preços, serviços",
+    welcome: "Oi! Quer agendar um horário ou tirar dúvidas sobre um tratamento?",
+    faqs: [
+      {
+        question: "Como faço para agendar?",
+        answer: "Agende online em [link de agendamento] ou ligue para [número de telefone].",
+      },
+      {
+        question: "Quais são os preços?",
+        answer: "Nossa tabela de preços completa está aqui: [link]. [Cortes a partir de R$ 60.]",
+      },
+      {
+        question: "Qual é o horário de funcionamento?",
+        answer: "Funcionamos [de terça a sábado, das 9h às 19h].",
+      },
+      {
+        question: "Posso cancelar ou remarcar?",
+        answer: "Sim, sem custo até [24 horas] antes do seu horário.",
+      },
+      {
+        question: "Onde vocês ficam?",
+        answer: "Estamos em [endereço].",
+      },
+      {
+        question: "Vocês vendem vale-presente?",
+        answer: "Sim. Compre [no salão ou online em link].",
+      },
+    ],
+  },
+  {
+    id: "services",
+    label: "Serviços locais",
+    hint: "Orçamentos, regiões, disponibilidade",
+    welcome: "Oi! Precisa de um orçamento ou quer saber se atendemos sua região?",
+    faqs: [
+      {
+        question: "Quais regiões vocês atendem?",
+        answer: "Atendemos [cidade e região].",
+      },
+      {
+        question: "Como faço para pedir um orçamento?",
+        answer: "Conte o que você precisa em [link de contato ou telefone] e enviaremos um orçamento gratuito em até [24 horas].",
+      },
+      {
+        question: "Quanto vocês cobram?",
+        answer: "O preço depende do serviço. [A maioria das visitas começa em R$ X.] Sempre confirmamos o valor antes de começar.",
+      },
+      {
+        question: "Em quanto tempo vocês podem vir?",
+        answer: "Normalmente agendamos visitas em [2–3 dias] e oferecemos [atendimento de emergência no mesmo dia].",
+      },
+      {
+        question: "Vocês têm seguro?",
+        answer: "Sim, somos [profissionais registrados e com seguro].",
+      },
+      {
+        question: "Como posso pagar?",
+        answer: "Aceitamos [Pix, dinheiro, cartão e transferência bancária].",
+      },
+    ],
+  },
+  {
+    id: "agency",
+    label: "Agência ou freelancer",
+    hint: "Serviços, preços, processo",
+    welcome: "Oi! Conte sobre seu projeto ou pergunte como trabalhamos.",
+    faqs: [
+      {
+        question: "Quais serviços vocês oferecem?",
+        answer: "Fazemos [web design, branding e marketing] para [pequenas empresas].",
+      },
+      {
+        question: "Quanto custa um projeto?",
+        answer: "Os projetos geralmente começam em [R$ X]. Conte o que você precisa e enviaremos um orçamento claro.",
+      },
+      {
+        question: "Quanto tempo leva um projeto?",
+        answer: "A maioria dos projetos leva [2–6 semanas], dependendo do escopo.",
+      },
+      {
+        question: "Posso ver trabalhos anteriores?",
+        answer: "Sim, veja nosso portfólio em [link].",
+      },
+      {
+        question: "Como começamos?",
+        answer: "Agende uma conversa gratuita em [link de agendamento] e falaremos sobre o seu projeto.",
+      },
+    ],
+  },
+];
+
+const it: Starter[] = [
+  {
+    id: "store",
+    label: "Negozio online",
+    hint: "Spedizioni, resi, pagamenti",
+    welcome: "Ciao! Stai cercando qualcosa o hai una domanda su un ordine?",
+    faqs: [
+      {
+        question: "Quanto tempo richiede la spedizione?",
+        answer: "Gli ordini vengono spediti entro [1–2] giorni lavorativi. La consegna richiede di solito [3–5] giorni lavorativi.",
+      },
+      {
+        question: "Quanto costa la spedizione?",
+        answer: "La spedizione è [gratuita per ordini superiori a 50 €]. Altrimenti costa [5 €], indicati al momento del pagamento.",
+      },
+      {
+        question: "Posso restituire o cambiare un articolo?",
+        answer: "Sì. Puoi restituire gli articoli non usati entro [30] giorni. Avvia un reso su [link o email].",
+      },
+      {
+        question: "Come posso tracciare il mio ordine?",
+        answer: "Riceverai un link di tracciamento via email appena il tuo ordine viene spedito. Se non lo trovi, controlla la cartella spam.",
+      },
+      {
+        question: "Quali metodi di pagamento accettate?",
+        answer: "Accettiamo [Visa, Mastercard, PayPal e contrassegno].",
+      },
+      {
+        question: "Spedite all'estero?",
+        answer: "Spediamo in [elenco dei paesi]. Costi e tempi di consegna sono indicati al momento del pagamento.",
+      },
+      {
+        question: "Come posso contattarvi?",
+        answer: "Scrivici a [la tua email] o mandaci un messaggio su [numero WhatsApp]. Rispondiamo entro [24 ore].",
+      },
+    ],
+  },
+  {
+    id: "restaurant",
+    label: "Ristorante o bar",
+    hint: "Orari, prenotazioni, menu",
+    welcome: "Ciao! Vuoi prenotare un tavolo o conoscere i nostri orari?",
+    faqs: [
+      {
+        question: "Quali sono i vostri orari di apertura?",
+        answer: "Siamo aperti [dal lunedì al sabato, 12:00–23:00]. Siamo chiusi [la domenica].",
+      },
+      {
+        question: "Posso prenotare un tavolo?",
+        answer: "Sì. Prenota su [link di prenotazione] o chiamaci al [numero di telefono].",
+      },
+      {
+        question: "Dove vi trovate?",
+        answer: "Siamo in [indirizzo]. [C'è parcheggio nelle vicinanze.]",
+      },
+      {
+        question: "Fate consegne a domicilio o asporto?",
+        answer: "Sì, ordina da asporto per telefono o ricevi a domicilio tramite [app di consegna].",
+      },
+      {
+        question: "Avete opzioni vegetariane o vegane?",
+        answer: "Sì. I piatti vegetariani e vegani sono indicati nel nostro menu: [link al menu].",
+      },
+      {
+        question: "Tenete conto delle allergie?",
+        answer: "Segnalaci eventuali allergie quando ordini e faremo del nostro meglio per aiutarti.",
+      },
+    ],
+  },
+  {
+    id: "beauty",
+    label: "Salone, spa o centro estetico",
+    hint: "Appuntamenti, prezzi, servizi",
+    welcome: "Ciao! Vuoi prenotare un appuntamento o chiedere informazioni su un trattamento?",
+    faqs: [
+      {
+        question: "Come prenoto un appuntamento?",
+        answer: "Prenota online su [link di prenotazione] o chiamaci al [numero di telefono].",
+      },
+      {
+        question: "Quali sono i vostri prezzi?",
+        answer: "Trovi il listino prezzi completo qui: [link]. [I tagli partono da 30 €.]",
+      },
+      {
+        question: "Quali sono i vostri orari di apertura?",
+        answer: "Siamo aperti [dal martedì al sabato, 9:00–19:00].",
+      },
+      {
+        question: "Posso disdire o spostare un appuntamento?",
+        answer: "Sì, gratuitamente fino a [24 ore] prima dell'appuntamento.",
+      },
+      {
+        question: "Dove vi trovate?",
+        answer: "Siamo in [indirizzo].",
+      },
+      {
+        question: "Vendete buoni regalo?",
+        answer: "Sì. Puoi acquistarli [in salone o online su link].",
+      },
+    ],
+  },
+  {
+    id: "services",
+    label: "Servizi locali",
+    hint: "Preventivi, zone, disponibilità",
+    welcome: "Ciao! Ti serve un preventivo o vuoi sapere se copriamo la tua zona?",
+    faqs: [
+      {
+        question: "Quali zone coprite?",
+        answer: "Lavoriamo a [città e dintorni].",
+      },
+      {
+        question: "Come ottengo un preventivo?",
+        answer: "Dicci di cosa hai bisogno su [link di contatto o telefono] e ti invieremo un preventivo gratuito entro [24 ore].",
+      },
+      {
+        question: "Quanto costate?",
+        answer: "I prezzi dipendono dal lavoro. [La maggior parte degli interventi parte da X €.] Confermiamo sempre il prezzo prima di iniziare.",
+      },
+      {
+        question: "Quanto presto potete venire?",
+        answer: "Di solito fissiamo gli interventi entro [2–3 giorni] e offriamo [interventi d'urgenza in giornata].",
+      },
+      {
+        question: "Siete assicurati?",
+        answer: "Sì, siamo [pienamente assicurati e abilitati].",
+      },
+      {
+        question: "Come posso pagare?",
+        answer: "Accettiamo [contanti, carta e bonifico].",
+      },
+    ],
+  },
+  {
+    id: "agency",
+    label: "Agenzia o freelance",
+    hint: "Servizi, prezzi, metodo",
+    welcome: "Ciao! Raccontami il tuo progetto o chiedimi come lavoriamo.",
+    faqs: [
+      {
+        question: "Quali servizi offrite?",
+        answer: "Ci occupiamo di [web design, branding e marketing] per [piccole imprese].",
+      },
+      {
+        question: "Quanto costa un progetto?",
+        answer: "I progetti partono di solito da [X €]. Dicci di cosa hai bisogno e ti invieremo un preventivo chiaro.",
+      },
+      {
+        question: "Quanto dura un progetto?",
+        answer: "La maggior parte dei progetti richiede [2–6 settimane], a seconda della portata.",
+      },
+      {
+        question: "Posso vedere i vostri lavori precedenti?",
+        answer: "Sì, guarda il nostro portfolio su [link].",
+      },
+      {
+        question: "Come iniziamo?",
+        answer: "Prenota una chiamata gratuita su [link di prenotazione] e parleremo del tuo progetto.",
+      },
+    ],
+  },
+];
+
+const ar: Starter[] = [
+  {
+    id: "store",
+    label: "متجر إلكتروني",
+    hint: "الشحن، الإرجاع، الدفع",
+    welcome: "مرحبًا! هل تبحث عن شيء ما، أو لديك سؤال عن طلب؟",
+    faqs: [
+      {
+        question: "كم يستغرق الشحن؟",
+        answer: "تُشحن الطلبات خلال [1–2] يوم عمل. ويستغرق التوصيل عادةً [3–5] أيام عمل.",
+      },
+      {
+        question: "كم تكلفة الشحن؟",
+        answer: "الشحن [مجاني للطلبات التي تتجاوز 500 درهم]. وإلا فتكلفته [30 درهمًا]، وتظهر عند الدفع.",
+      },
+      {
+        question: "هل يمكنني إرجاع منتج أو استبداله؟",
+        answer: "نعم. يمكنك إرجاع المنتجات غير المستخدمة خلال [30] يومًا. ابدأ الإرجاع عبر [الرابط أو البريد الإلكتروني].",
+      },
+      {
+        question: "كيف يمكنني تتبع طلبي؟",
+        answer: "ستصلك رسالة بريد إلكتروني فيها رابط التتبع فور شحن طلبك. تحقّق من مجلد الرسائل غير المرغوب فيها إن لم تجدها.",
+      },
+      {
+        question: "ما طرق الدفع المتاحة؟",
+        answer: "نقبل [Visa وMastercard وPayPal والدفع عند الاستلام].",
+      },
+      {
+        question: "هل تشحنون إلى الخارج؟",
+        answer: "نشحن إلى [قائمة الدول]. تظهر التكاليف ومدة التوصيل عند الدفع.",
+      },
+      {
+        question: "كيف يمكنني التواصل معكم؟",
+        answer: "راسلنا على [بريدك الإلكتروني] أو على [رقم WhatsApp]. نرد خلال [24 ساعة].",
+      },
+    ],
+  },
+  {
+    id: "restaurant",
+    label: "مطعم أو مقهى",
+    hint: "المواعيد، الحجوزات، القائمة",
+    welcome: "مرحبًا! هل تريد حجز طاولة أو معرفة مواعيد العمل؟",
+    faqs: [
+      {
+        question: "ما ساعات العمل لديكم؟",
+        answer: "نفتح [من الاثنين إلى السبت، 12 ظهرًا–11 مساءً]. ونغلق [يوم الأحد].",
+      },
+      {
+        question: "هل يمكنني حجز طاولة؟",
+        answer: "نعم. احجز عبر [رابط الحجز] أو اتصل بنا على [رقم الهاتف].",
+      },
+      {
+        question: "أين موقعكم؟",
+        answer: "نحن في [العنوان]. [يتوفر موقف سيارات قريب.]",
+      },
+      {
+        question: "هل تقدمون التوصيل أو الطلبات الخارجية؟",
+        answer: "نعم، اطلب طلبك الخارجي عبر الهاتف أو احصل على التوصيل عبر [تطبيقات التوصيل].",
+      },
+      {
+        question: "هل لديكم خيارات نباتية؟",
+        answer: "نعم. الأطباق النباتية والخالية من المنتجات الحيوانية مميّزة في قائمتنا: [رابط القائمة].",
+      },
+      {
+        question: "هل تراعون الحساسية الغذائية؟",
+        answer: "يُرجى إخبارنا بأي حساسية عند الطلب وسنبذل قصارى جهدنا للمساعدة.",
+      },
+    ],
+  },
+  {
+    id: "beauty",
+    label: "صالون أو سبا أو عيادة",
+    hint: "المواعيد، الأسعار، الخدمات",
+    welcome: "مرحبًا! هل تريد حجز موعد أو السؤال عن علاج؟",
+    faqs: [
+      {
+        question: "كيف أحجز موعدًا؟",
+        answer: "احجز عبر الإنترنت على [رابط الحجز] أو اتصل بنا على [رقم الهاتف].",
+      },
+      {
+        question: "ما أسعاركم؟",
+        answer: "تجد قائمة أسعارنا الكاملة هنا: [الرابط]. [تبدأ قصّات الشعر من 100 درهم.]",
+      },
+      {
+        question: "ما ساعات العمل لديكم؟",
+        answer: "نفتح [من الثلاثاء إلى السبت، 9 صباحًا–7 مساءً].",
+      },
+      {
+        question: "هل يمكنني الإلغاء أو تغيير الموعد؟",
+        answer: "نعم، مجانًا حتى [24 ساعة] قبل موعدك.",
+      },
+      {
+        question: "أين موقعكم؟",
+        answer: "نحن في [العنوان].",
+      },
+      {
+        question: "هل تبيعون بطاقات الهدايا؟",
+        answer: "نعم. اشترِها [في الصالون أو عبر الإنترنت على الرابط].",
+      },
+    ],
+  },
+  {
+    id: "services",
+    label: "خدمات محلية",
+    hint: "عروض الأسعار، المناطق، التوفر",
+    welcome: "مرحبًا! هل تحتاج إلى عرض سعر أو تريد معرفة إن كنا نغطي منطقتك؟",
+    faqs: [
+      {
+        question: "ما المناطق التي تغطونها؟",
+        answer: "نعمل في [المدينة والمناطق المجاورة].",
+      },
+      {
+        question: "كيف أحصل على عرض سعر؟",
+        answer: "أخبرنا بما تحتاج إليه عبر [رابط التواصل أو الهاتف] وسنرسل إليك عرض سعر مجانيًا خلال [24 ساعة].",
+      },
+      {
+        question: "كم تتقاضون؟",
+        answer: "تعتمد الأسعار على العمل. [تبدأ معظم الزيارات من X درهم.] نؤكد السعر دائمًا قبل البدء.",
+      },
+      {
+        question: "متى يمكنكم الحضور؟",
+        answer: "نحجز الزيارات عادةً خلال [2–3 أيام]، ونقدم [زيارات طارئة في اليوم نفسه].",
+      },
+      {
+        question: "هل لديكم تأمين؟",
+        answer: "نعم، [لدينا تأمين كامل وترخيص].",
+      },
+      {
+        question: "كيف يمكنني الدفع؟",
+        answer: "نقبل [النقد والبطاقة والتحويل البنكي].",
+      },
+    ],
+  },
+  {
+    id: "agency",
+    label: "وكالة أو مستقل",
+    hint: "الخدمات، الأسعار، طريقة العمل",
+    welcome: "مرحبًا! أخبرني عن مشروعك، أو اسأل عن طريقة عملنا.",
+    faqs: [
+      {
+        question: "ما الخدمات التي تقدمونها؟",
+        answer: "نقدم [تصميم المواقع والهوية التجارية والتسويق] لـ [الشركات الصغيرة].",
+      },
+      {
+        question: "كم تكلفة المشروع؟",
+        answer: "تبدأ المشاريع عادةً من [X درهم]. أخبرنا بما تحتاج إليه وسنرسل إليك عرض سعر واضحًا.",
+      },
+      {
+        question: "كم يستغرق المشروع؟",
+        answer: "تستغرق معظم المشاريع [2–6 أسابيع]، حسب نطاق العمل.",
+      },
+      {
+        question: "هل يمكنني رؤية أعمالكم السابقة؟",
+        answer: "نعم، اطّلع على معرض أعمالنا على [الرابط].",
+      },
+      {
+        question: "كيف نبدأ؟",
+        answer: "احجز مكالمة مجانية عبر [رابط الحجز] وسنتحدث عن مشروعك.",
+      },
+    ],
+  },
+];
+
+const pl: Starter[] = [
+  {
+    id: "store",
+    label: "Sklep internetowy",
+    hint: "Wysyłka, zwroty, płatności",
+    welcome: "Cześć! Szukasz czegoś albo masz pytanie o zamówienie?",
+    faqs: [
+      {
+        question: "Jak długo trwa wysyłka?",
+        answer: "Zamówienia wysyłamy w ciągu [1–2] dni roboczych. Dostawa trwa zwykle [2–3] dni robocze.",
+      },
+      {
+        question: "Ile kosztuje wysyłka?",
+        answer: "Wysyłka jest [darmowa przy zamówieniach powyżej 200 zł]. W pozostałych przypadkach kosztuje [15 zł], co zobaczysz przy składaniu zamówienia.",
+      },
+      {
+        question: "Czy mogę zwrócić lub wymienić produkt?",
+        answer: "Tak. Nieużywane produkty możesz zwrócić w ciągu [30] dni. Zwrot zgłosisz przez [link lub e-mail].",
+      },
+      {
+        question: "Jak mogę śledzić zamówienie?",
+        answer: "Gdy tylko zamówienie zostanie wysłane, otrzymasz e-mailem link do śledzenia przesyłki. Jeśli go nie widzisz, sprawdź folder spam.",
+      },
+      {
+        question: "Jakie formy płatności akceptujecie?",
+        answer: "Akceptujemy [BLIK, Visa, Mastercard, PayPal i płatność przy odbiorze].",
+      },
+      {
+        question: "Czy wysyłacie za granicę?",
+        answer: "Wysyłamy do [lista krajów]. Koszty i czas dostawy zobaczysz przy składaniu zamówienia.",
+      },
+      {
+        question: "Jak mogę się z Wami skontaktować?",
+        answer: "Napisz do nas na [Twój e-mail] lub na WhatsAppie: [numer]. Odpowiadamy w ciągu [24 godzin].",
+      },
+    ],
+  },
+  {
+    id: "restaurant",
+    label: "Restauracja lub kawiarnia",
+    hint: "Godziny, rezerwacje, menu",
+    welcome: "Cześć! Chcesz zarezerwować stolik albo sprawdzić godziny otwarcia?",
+    faqs: [
+      {
+        question: "W jakich godzinach jesteście otwarci?",
+        answer: "Jesteśmy otwarci [od poniedziałku do soboty, 12:00–23:00]. [W niedziele] mamy zamknięte.",
+      },
+      {
+        question: "Czy mogę zarezerwować stolik?",
+        answer: "Tak. Zarezerwuj przez [link do rezerwacji] lub zadzwoń pod [numer telefonu].",
+      },
+      {
+        question: "Gdzie się znajdujecie?",
+        answer: "Znajdziesz nas pod adresem [adres]. [W pobliżu jest parking.]",
+      },
+      {
+        question: "Czy macie dostawę lub jedzenie na wynos?",
+        answer: "Tak, zamów na wynos telefonicznie lub z dostawą przez [aplikacje, np. Pyszne.pl, Glovo].",
+      },
+      {
+        question: "Czy macie dania wegetariańskie lub wegańskie?",
+        answer: "Tak. Dania wegetariańskie i wegańskie są oznaczone w menu: [link do menu].",
+      },
+      {
+        question: "Czy uwzględniacie alergie?",
+        answer: "Poinformuj nas o alergiach przy zamówieniu, a zrobimy wszystko, żeby pomóc.",
+      },
+    ],
+  },
+  {
+    id: "beauty",
+    label: "Salon, spa lub gabinet",
+    hint: "Wizyty, ceny, usługi",
+    welcome: "Cześć! Chcesz umówić wizytę albo zapytać o zabieg?",
+    faqs: [
+      {
+        question: "Jak umówić wizytę?",
+        answer: "Umów się online przez [link do rezerwacji] lub zadzwoń pod [numer telefonu].",
+      },
+      {
+        question: "Jakie są Wasze ceny?",
+        answer: "Pełny cennik znajdziesz tutaj: [link]. [Strzyżenie od 80 zł.]",
+      },
+      {
+        question: "W jakich godzinach jesteście otwarci?",
+        answer: "Jesteśmy otwarci [od wtorku do soboty, 9:00–19:00].",
+      },
+      {
+        question: "Czy mogę odwołać lub przełożyć wizytę?",
+        answer: "Tak, bezpłatnie do [24 godzin] przed wizytą.",
+      },
+      {
+        question: "Gdzie się znajdujecie?",
+        answer: "Znajdziesz nas pod adresem [adres].",
+      },
+      {
+        question: "Czy sprzedajecie karty podarunkowe?",
+        answer: "Tak. Kupisz je [w salonie lub online: link].",
+      },
+    ],
+  },
+  {
+    id: "services",
+    label: "Usługi lokalne",
+    hint: "Wyceny, obszar, terminy",
+    welcome: "Cześć! Potrzebujesz wyceny albo chcesz sprawdzić, czy działamy w Twojej okolicy?",
+    faqs: [
+      {
+        question: "Na jakim obszarze działacie?",
+        answer: "Pracujemy w [miasto i okolice].",
+      },
+      {
+        question: "Jak otrzymać wycenę?",
+        answer: "Opisz, czego potrzebujesz, przez [link do kontaktu lub telefon], a w ciągu [24 godzin] wyślemy bezpłatną wycenę.",
+      },
+      {
+        question: "Ile to kosztuje?",
+        answer: "Cena zależy od zlecenia. [Większość wizyt zaczyna się od X zł.] Zawsze potwierdzamy cenę przed rozpoczęciem pracy.",
+      },
+      {
+        question: "Jak szybko możecie przyjechać?",
+        answer: "Zwykle umawiamy wizyty w ciągu [2–3 dni] i oferujemy [pilne wizyty tego samego dnia].",
+      },
+      {
+        question: "Czy macie ubezpieczenie?",
+        answer: "Tak, [mamy pełne ubezpieczenie OC i wymagane uprawnienia].",
+      },
+      {
+        question: "Jak mogę zapłacić?",
+        answer: "Akceptujemy [gotówkę, kartę, BLIK i przelew].",
+      },
+    ],
+  },
+  {
+    id: "agency",
+    label: "Agencja lub freelancer",
+    hint: "Usługi, ceny, proces",
+    welcome: "Cześć! Opowiedz o swoim projekcie albo zapytaj, jak pracujemy.",
+    faqs: [
+      {
+        question: "Jakie usługi oferujecie?",
+        answer: "Zajmujemy się [projektowaniem stron, brandingiem i marketingiem] dla [małych firm].",
+      },
+      {
+        question: "Ile kosztuje projekt?",
+        answer: "Projekty zaczynają się zwykle od [X zł]. Opisz, czego potrzebujesz, a wyślemy przejrzystą wycenę.",
+      },
+      {
+        question: "Ile trwa projekt?",
+        answer: "Większość projektów trwa [2–6 tygodni], w zależności od zakresu.",
+      },
+      {
+        question: "Czy mogę zobaczyć Wasze realizacje?",
+        answer: "Tak, zobacz nasze portfolio: [link].",
+      },
+      {
+        question: "Jak zacząć współpracę?",
+        answer: "Umów bezpłatną rozmowę przez [link do rezerwacji], a omówimy Twój projekt.",
+      },
+    ],
+  },
+];
+
+const STARTERS: Record<Lang, Starter[]> = { en, fr, nl, de, es, pt, it, ar, pl };
 
 /** The starter templates in a language (English if it has none). */
 export const startersFor = (lang: Lang): Starter[] => STARTERS[lang] || STARTERS.en;

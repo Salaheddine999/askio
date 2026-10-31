@@ -521,7 +521,7 @@ export default function Analytics({ testMode = false }: AnalyticsProps) {
                             <span className={`h-2.5 w-2.5 shrink-0 rounded-sm ${r.color}`} />
                             <span className="flex-1 text-fg-muted">{r.label}</span>
                             <span className="tabular-nums font-medium text-fg">{num(r.value)}</span>
-                            <span className="w-10 text-right tabular-nums text-caption text-ink-425">
+                            <span className="w-10 text-end tabular-nums text-caption text-ink-425">
                               {t("percent", { value: num(Math.round((r.value / breakdown.total) * 100)) })}
                             </span>
                           </li>
@@ -544,7 +544,7 @@ export default function Analytics({ testMode = false }: AnalyticsProps) {
                       <li key={q.question}>
                         <div className="flex items-baseline justify-between gap-4 text-body-sm">
                           <span className="min-w-0 truncate text-fg">
-                            <span className="mr-2 tabular-nums text-ink-425">{num(i + 1)}</span>
+                            <span className="me-2 tabular-nums text-ink-425">{num(i + 1)}</span>
                             {q.question}
                           </span>
                           <span className="shrink-0 tabular-nums font-medium text-fg-muted">{num(q.count)}</span>
@@ -602,7 +602,7 @@ export default function Analytics({ testMode = false }: AnalyticsProps) {
                         </div>
                         {bot && open && answering && (
                           <form
-                            className="mt-3 space-y-2.5 sm:pl-11"
+                            className="mt-3 space-y-2.5 sm:ps-11"
                             onSubmit={(e) => {
                               e.preventDefault();
                               void saveAnswer(g);
@@ -648,7 +648,7 @@ export default function Analytics({ testMode = false }: AnalyticsProps) {
                               <Link
                                 to={`/configure/${bot.id}?tab=faq`}
                                 state={{ faqQuestion: answering.question }}
-                                className={`ml-auto rounded text-caption text-ink-545 underline-offset-2 hover:text-ink-900 hover:underline dark:text-ink-425 dark:hover:text-ink-130 ${focusRing}`}
+                                className={`ms-auto rounded text-caption text-ink-545 underline-offset-2 hover:text-ink-900 hover:underline dark:text-ink-425 dark:hover:text-ink-130 ${focusRing}`}
                               >
                                 {t("moreOptions")}
                               </Link>
@@ -696,7 +696,7 @@ export default function Analytics({ testMode = false }: AnalyticsProps) {
                               <th
                                 key={h}
                                 scope="col"
-                                className={`px-5 py-2.5 text-left text-caption font-medium text-ink-545 sm:px-6 dark:text-ink-425 ${
+                                className={`px-5 py-2.5 text-start text-caption font-medium text-ink-545 sm:px-6 dark:text-ink-425 ${
                                   i === 1 ? "hidden sm:table-cell" : ""
                                 }`}
                               >
@@ -779,7 +779,7 @@ function ChatbotFilter({
   return (
     <Listbox value={value} onChange={onChange}>
       <ListboxButton
-        className={`inline-flex h-9 w-48 items-center gap-2 rounded-lg border border-ink-120 bg-ink-25 px-2.5 text-left text-[13px] font-medium text-ink-900 transition-colors hover:border-ink-230 dark:border-ink-780 dark:bg-ink-850 dark:text-ink-130 ${focusRing}`}
+        className={`inline-flex h-9 w-48 items-center gap-2 rounded-lg border border-ink-120 bg-ink-25 px-2.5 text-start text-[13px] font-medium text-ink-900 transition-colors hover:border-ink-230 dark:border-ink-780 dark:bg-ink-850 dark:text-ink-130 ${focusRing}`}
       >
         {selected ? <BotAvatar color={selected.primaryColor} launcherStyle={selected.launcherStyle} size={18} /> : <Bot size={15} className="shrink-0 text-ink-545" />}
         <span className="min-w-0 flex-1 truncate">{selected?.title || t("allChatbots")}</span>

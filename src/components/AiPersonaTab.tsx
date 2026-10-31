@@ -131,7 +131,7 @@ const AiPersonaTab: React.FC<AiPersonaTabProps> = ({ aiTone, onChange, accentCol
                   role="radio"
                   aria-checked={selected}
                   onClick={() => onChange(char.prompt)}
-                  className={`flex items-center gap-3 rounded-xl border p-3 text-left transition-colors ${focusRing} ${
+                  className={`flex items-center gap-3 rounded-xl border p-3 text-start transition-colors ${focusRing} ${
                     selected
                       ? "border-ink-900 bg-ink-30 dark:border-ink-130 dark:bg-ink-875"
                       : "border-ink-120 hover:border-ink-325 dark:border-ink-780 dark:hover:border-ink-605"
@@ -161,14 +161,14 @@ const AiPersonaTab: React.FC<AiPersonaTabProps> = ({ aiTone, onChange, accentCol
             <div className="mt-3 space-y-2.5">
               <div className="flex justify-end">
                 <span
-                  className="max-w-[80%] rounded-2xl rounded-br-md px-3.5 py-2 text-body-sm text-white"
+                  className="max-w-[80%] rounded-2xl rounded-ee-md px-3.5 py-2 text-body-sm text-white"
                   style={{ background: accentColor }}
                 >
                   {t("sampleQuestion")}
                 </span>
               </div>
               <div className="flex justify-start">
-                <span className="max-w-[85%] whitespace-pre-line rounded-2xl rounded-bl-md bg-ink-25 px-3.5 py-2 text-body-sm text-ink-900 ring-1 ring-ink-70 dark:bg-ink-850 dark:text-ink-130 dark:ring-ink-780">
+                <span className="max-w-[85%] whitespace-pre-line rounded-2xl rounded-es-md bg-ink-25 px-3.5 py-2 text-body-sm text-ink-900 ring-1 ring-ink-70 dark:bg-ink-850 dark:text-ink-130 dark:ring-ink-780">
                   {active
                     ? t(active.sampleResponse)
                     : t("customSample")}

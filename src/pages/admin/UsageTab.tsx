@@ -14,10 +14,10 @@ export const UsageItem: React.FC<{ row: UsageRow; rank?: number; onOpen: (uid: s
     <button
       type="button"
       onClick={() => onOpen(row.uid)}
-      className={`flex w-full items-center gap-4 px-5 py-3 text-left transition-colors hover:bg-ink-30 sm:px-6 dark:hover:bg-ink-875 ${focusRing}`}
+      className={`flex w-full items-center gap-4 px-5 py-3 text-start transition-colors hover:bg-ink-30 sm:px-6 dark:hover:bg-ink-875 ${focusRing}`}
     >
       {rank !== undefined && (
-        <span className="w-6 shrink-0 text-right text-caption tabular-nums text-ink-425">{rank}</span>
+        <span className="w-6 shrink-0 text-end text-caption tabular-nums text-ink-425">{rank}</span>
       )}
       <span className="min-w-0 flex-1">
         <span className="mb-1.5 flex min-w-0 items-center gap-2">

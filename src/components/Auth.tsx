@@ -235,7 +235,7 @@ const Auth: React.FC = () => {
               className="w-full flex items-center justify-center py-2.5 px-4 border border-ink-120 dark:border-ink-780 rounded-xl bg-ink-25 dark:bg-ink-875 text-fg text-[13px] font-medium hover:bg-ink-30 dark:hover:bg-ink-850 hover:border-ink-130 dark:hover:border-ink-710 transition-all duration-200 group"
             >
               <svg
-                className="h-4 w-4 mr-2.5 group-hover:scale-110 transition-transform"
+                className="h-4 w-4 me-2.5 group-hover:scale-110 transition-transform"
                 viewBox="0 0 24 24"
               >
                 <path
@@ -351,7 +351,7 @@ const Auth: React.FC = () => {
                 {isLoading ? (
                   <span className="flex items-center justify-center">
                     <svg
-                      className="animate-spin -ml-1 mr-2 h-4 w-4"
+                      className="animate-spin -ms-1 me-2 h-4 w-4"
                       fill="none"
                       viewBox="0 0 24 24"
                     >

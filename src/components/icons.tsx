@@ -126,11 +126,19 @@ function weightFor({ weight, strokeWidth, fill }: IconProps, fallback: IconWeigh
   return "regular";
 }
 
+// Icons that point along the reading direction (back, forward, send, the
+// sidebar) flip in right-to-left languages.
+const MIRRORED = new Set(["ArrowLeft", "ArrowRight", "ChevronLeft", "ChevronRight", "LogOut", "PanelLeft", "PanelLeftClose", "PanelLeftOpen", "PanelRight", "Send"]);
+
 function icon(Ph: PhosphorIcon, name: string, fallback: IconWeight = "regular"): LucideIcon {
+  const mirror = MIRRORED.has(name);
   const Wrapped = React.forwardRef<SVGSVGElement, IconProps>((props, ref) => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { size = 24, strokeWidth, weight, fill, ...rest } = props;
-    return <Ph ref={ref} size={size} weight={weightFor(props, fallback)} {...(rest as object)} />;
+    const { size = 24, strokeWidth, weight, fill, className, ...rest } = props;
+    // :dir(rtl) follows the nearest direction, so an English chat widget shown
+    // inside the Arabic app keeps its arrows pointing the English way.
+    const classes = mirror ? `[&:dir(rtl)]:-scale-x-100 ${className ?? ""}`.trim() : className;
+    return <Ph ref={ref} size={size} weight={weightFor(props, fallback)} className={classes} {...(rest as object)} />;
   });
   Wrapped.displayName = name;
   return Wrapped;

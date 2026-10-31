@@ -4,8 +4,11 @@ import { db } from "../utils/db";
 import { doc, getDoc } from "firebase/firestore";
 import Chatbot, { ChatbotProps } from "../components/Chatbot";
 import { isLauncherStyle } from "../utils/orbColors";
+import { useLeftToRight } from "../i18n";
 
 const ChatbotEmbed: React.FC = () => {
+  // The widget keeps the corner the owner chose; its text sets its own direction.
+  useLeftToRight();
   const { id } = useParams<{ id: string }>();
   const [searchParams] = useSearchParams();
   // The embed code can override saved settings with ?launcher= and ?greeting=.

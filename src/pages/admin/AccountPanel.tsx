@@ -21,7 +21,7 @@ const inputClass =
 const Detail: React.FC<{ label: string; children: React.ReactNode; copy?: string }> = ({ label, children, copy }) => (
   <div className="flex items-start justify-between gap-4 py-2.5">
     <dt className="shrink-0 text-body-sm text-fg-subtle">{label}</dt>
-    <dd className="flex min-w-0 items-center gap-1.5 text-right text-body-sm text-fg">
+    <dd className="flex min-w-0 items-center gap-1.5 text-end text-body-sm text-fg">
       <span className="truncate">{children}</span>
       {copy && (
         <button
@@ -112,7 +112,7 @@ const AccountPanel: React.FC<Props> = ({ uid, onClose, onChanged }) => {
     <Dialog open={uid !== null} onClose={onClose} className="relative z-50">
       <DialogBackdrop className="fixed inset-0 bg-ink-900/30" />
       <div className="fixed inset-0 flex justify-end">
-        <DialogPanel className="flex h-full w-full max-w-md flex-col border-l border-ink-120 bg-ink-25 shadow-lg dark:border-ink-780 dark:bg-ink-850">
+        <DialogPanel className="flex h-full w-full max-w-md flex-col border-s border-ink-120 bg-ink-25 shadow-lg dark:border-ink-780 dark:bg-ink-850">
           <div className="flex items-start justify-between gap-4 border-b border-ink-70 px-5 py-4 dark:border-ink-780">
             <div className="min-w-0">
               <DialogTitle className="truncate text-body font-semibold text-ink-900 dark:text-ink-70">
@@ -213,7 +213,7 @@ const AccountPanel: React.FC<Props> = ({ uid, onClose, onChanged }) => {
                           <button
                             type="button"
                             onClick={() => setShowAllBots((v) => !v)}
-                            className={`w-full px-3.5 py-2.5 text-left text-caption font-medium text-ink-605 hover:text-ink-900 dark:text-ink-325 dark:hover:text-ink-130 ${focusRing}`}
+                            className={`w-full px-3.5 py-2.5 text-start text-caption font-medium text-ink-605 hover:text-ink-900 dark:text-ink-325 dark:hover:text-ink-130 ${focusRing}`}
                           >
                             {showAllBots ? "Show fewer" : `Show all ${chatbots.length}`}
                           </button>

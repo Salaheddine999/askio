@@ -26,7 +26,9 @@ export interface DocsContent {
   faqs: { q: string; a: string }[];
 }
 
-export const docsContent: Record<Lang, DocsContent> = {
+// The help center articles exist in the first five languages; the others
+// show the English articles until they are translated.
+export const docsContent: { en: DocsContent } & Partial<Record<Lang, DocsContent>> = {
   en: {
     guides: {
       create: {

@@ -36,7 +36,7 @@ export default function BillingToggle({
             // The savings badge sits as evenly inset (6px) as the button sits in
             // the track, so its right end matches its top and bottom.
             className={`relative flex h-8 items-center gap-2 rounded-full text-sm font-medium leading-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink-425 ${
-              option === "yearly" ? "pl-4 pr-1.5" : "px-4"
+              option === "yearly" ? "ps-4 pe-1.5" : "px-4"
             }`}
           >
             {selected ? (

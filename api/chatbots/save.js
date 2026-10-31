@@ -77,6 +77,9 @@ export function normalizeFaqData(faqData) {
     );
 }
 
+// The languages a chatbot can speak; the app offers the same list (src/i18n).
+export const CHATBOT_LANGUAGES = ["en", "fr", "nl", "de", "es", "pt", "it", "pl", "ar"];
+
 export const KIO_PERSONALITIES = ["lively", "calm", "shy"];
 
 /** Kio's personality and finish; anything unexpected keeps today's look. */
@@ -102,7 +105,7 @@ function normalizeChatbotPayload(payload, uid) {
     pageGreetings: normalizePageGreetings(payload.pageGreetings),
     initialMessage: clip(payload.initialMessage, 500) || "Hello! How can I help you today?",
     placeholder: clip(payload.placeholder, 120) || "Type your message...",
-    language: ["en", "fr", "nl", "de", "es"].includes(payload.language) ? payload.language : "en",
+    language: CHATBOT_LANGUAGES.includes(payload.language) ? payload.language : "en",
     faqData: normalizeFaqData(payload.faqData),
     liveChatLink: clip(payload.liveChatLink, 500),
     enableLeadCapture: payload.enableLeadCapture === true,

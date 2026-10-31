@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { AlertTriangle, ArrowLeft } from "../../components/icons";
 import { backLink } from "../dashboard/styles";
+import { useLeftToRight } from "../../i18n";
 import { COMPANY, hasPlaceholders, isPlaceholder } from "./company";
 
 /** A company detail; unfilled placeholders are highlighted so they're easy to spot. */
@@ -60,6 +61,8 @@ interface LegalPageProps {
 }
 
 export default function LegalPage({ title, description, intro, sections, children }: LegalPageProps) {
+  // The legal pages are in English only, so they always read left to right.
+  useLeftToRight({ english: true });
   return (
     <div className="min-h-screen bg-ink-30 px-4 py-12 sm:py-16 dark:bg-ink-875">
       <Helmet>

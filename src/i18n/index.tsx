@@ -1,6 +1,6 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import type { Locale } from "date-fns";
-import { de, enUS, es, fr, nl } from "date-fns/locale";
+import { ar, de, enUS, es, fr, it, nl, pl, ptBR } from "date-fns/locale";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "../utils/firebase";
 
@@ -15,13 +15,20 @@ export const LANGUAGES = [
   { code: "nl", label: "Nederlands" },
   { code: "de", label: "Deutsch" },
   { code: "es", label: "Español" },
+  { code: "pt", label: "Português" },
+  { code: "it", label: "Italiano" },
+  { code: "pl", label: "Polski" },
+  { code: "ar", label: "العربية" },
 ] as const;
 
 export type Lang = (typeof LANGUAGES)[number]["code"];
 
 export const isLang = (value: unknown): value is Lang => LANGUAGES.some((l) => l.code === value);
 
-type Translations<T extends Record<string, string>> = { [K in keyof T]: string };
+// Languages like Polish and Arabic have more plural forms than English's one
+// and other; they may add <base>_zero, _two, _few or _many next to a plural.
+type ExtraPlurals = { [K in `${string}_${"zero" | "two" | "few" | "many"}`]?: string };
+type Translations<T extends Record<string, string>> = { [K in keyof T]: string } & ExtraPlurals;
 
 /** English plus every other language, each with exactly the same keys. */
 export type Messages<T extends Record<string, string>> = { en: T } & {
@@ -40,8 +47,9 @@ const interpolate = (text: string, vars?: Vars) =>
 export interface TFunction<K extends string> {
   (key: K, vars?: Vars): string;
   /**
-   * Picks "<base>_one" or "<base>_other" for a count, which is also passed
-   * to the text as {count}.
+   * Picks the language's plural form for a count, "<base>_one", "<base>_few"
+   * and so on, falling back to "<base>_other"; the count is also passed to the
+   * text as {count}.
    */
   plural: (base: string, count: number, vars?: Vars) => string;
   lang: Lang;
@@ -55,17 +63,30 @@ export function makeT<T extends Record<string, string>>(messages: Messages<T>, l
   const rules = new Intl.PluralRules(lang);
   const t = ((key: string, vars?: Vars) => interpolate(lookup(key), vars)) as unknown as TFunction<Extract<keyof T, string>>;
   t.plural = (base, count, vars) => {
-    const form = rules.select(count) === "one" ? "one" : "other";
-    return interpolate(lookup(`${base}_${form}`), { count: count.toLocaleString(lang), ...vars });
+    const form = rules.select(count);
+    const key = table[`${base}_${form}`] !== undefined ? `${base}_${form}` : form === "one" ? `${base}_one` : `${base}_other`;
+    return interpolate(lookup(key), { count: count.toLocaleString(lang), ...vars });
   };
   t.lang = lang;
   return t;
 }
 
-const DATE_LOCALES: Record<Lang, Locale> = { en: enUS, fr, nl, de, es };
+const DATE_LOCALES: Record<Lang, Locale> = { en: enUS, fr, nl, de, es, pt: ptBR, it, pl, ar };
 
 /** The date-fns locale for formatting dates in a language. */
 export const dateLocale = (lang: Lang) => DATE_LOCALES[lang];
+
+/** Arabic reads right to left; every other language here left to right. */
+export const dirFor = (lang: Lang) => (lang === "ar" ? "rtl" : "ltr");
+
+// English-only pages currently open (see useLeftToRight); while any is, the
+// page stays left to right (and, if they ask, English) whatever the app's language.
+let leftToRightPages = 0;
+let englishPages = 0;
+const applyDir = (lang: Lang) => {
+  document.documentElement.dir = leftToRightPages > 0 ? "ltr" : dirFor(lang);
+  document.documentElement.lang = englishPages > 0 ? "en" : lang;
+};
 
 const STORAGE_KEY = "askio_lang";
 
@@ -104,8 +125,10 @@ const LanguageContext = createContext<LanguageState>({ lang: "en", setLang: () =
 export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [lang, setLangState] = useState<Lang>(detectLanguage);
 
+  // The page's language and reading direction. Pages that are only in English
+  // (the homepage, legal pages) set dir="ltr" on themselves.
   useEffect(() => {
-    document.documentElement.lang = lang;
+    applyDir(lang);
   }, [lang]);
 
   // On sign-in, the language saved on the account wins over this browser's.
@@ -139,6 +162,25 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const value = useMemo(() => ({ lang, setLang }), [lang, setLang]);
   return <LanguageContext.Provider value={value}>{children}</LanguageContext.Provider>;
 };
+
+/**
+ * For pages that are only in English (the homepage, legal pages, the chat
+ * widget page): keeps the page left to right while they're open, whatever
+ * the app's language.
+ */
+export function useLeftToRight({ english = false }: { english?: boolean } = {}) {
+  const { lang } = useContext(LanguageContext);
+  useEffect(() => {
+    leftToRightPages++;
+    if (english) englishPages++;
+    applyDir(lang);
+    return () => {
+      leftToRightPages--;
+      if (english) englishPages--;
+      applyDir(lang);
+    };
+  }, [lang, english]);
+}
 
 /** The app's language and a way to change it (Settings has the picker). */
 export const useLanguage = () => useContext(LanguageContext);

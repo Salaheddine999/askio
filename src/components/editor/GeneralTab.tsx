@@ -177,15 +177,15 @@ const GeneralTab: React.FC<Props> = ({ config, onChange, errors, onLinkBlur, can
                   role="radio"
                   aria-checked={selected}
                   onClick={() => onChange("position", p.value)}
-                  className={`group rounded-xl border p-2 text-left transition-colors ${focusRing} ${
+                  className={`group rounded-xl border p-2 text-start transition-colors ${focusRing} ${
                     selected
                       ? "border-ink-900 bg-ink-30 dark:border-ink-130 dark:bg-ink-875"
                       : "border-ink-120 hover:border-ink-325 dark:border-ink-780 dark:hover:border-ink-605"
                   }`}
                 >
                   <span className="relative block h-14 rounded-lg border border-ink-70 bg-ink-25 dark:border-ink-780 dark:bg-ink-850">
-                    <span className="absolute left-2 right-8 top-2.5 h-1 rounded-full bg-ink-70 dark:bg-ink-790" />
-                    <span className="absolute left-2 right-12 top-5 h-1 rounded-full bg-ink-70 dark:bg-ink-790" />
+                    <span className="absolute start-2 end-8 top-2.5 h-1 rounded-full bg-ink-70 dark:bg-ink-790" />
+                    <span className="absolute start-2 end-12 top-5 h-1 rounded-full bg-ink-70 dark:bg-ink-790" />
                     <span
                       className={`absolute h-3.5 w-3.5 rounded-full transition-colors ${p.dot} ${
                         selected ? "" : "bg-ink-170 group-hover:bg-ink-325 dark:bg-ink-710"
@@ -219,7 +219,7 @@ const GeneralTab: React.FC<Props> = ({ config, onChange, errors, onLinkBlur, can
                   role="radio"
                   aria-checked={selected}
                   onClick={() => chooseFallback(f.value)}
-                  className={`flex w-full items-start gap-3 rounded-xl border px-4 py-3 text-left transition-colors ${focusRing} ${
+                  className={`flex w-full items-start gap-3 rounded-xl border px-4 py-3 text-start transition-colors ${focusRing} ${
                     selected
                       ? "border-ink-900 bg-ink-30 dark:border-ink-130 dark:bg-ink-875"
                       : "border-ink-120 hover:border-ink-325 dark:border-ink-780 dark:hover:border-ink-605"

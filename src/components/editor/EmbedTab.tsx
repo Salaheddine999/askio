@@ -47,7 +47,7 @@ const CopyButton: React.FC<{ text: string; label: string; className?: string }> 
 /** A dark code box with a copy button. */
 const CodeBlock: React.FC<{ code: string; label: string }> = ({ code, label }) => (
   <div className="overflow-hidden rounded-xl border border-ink-830 bg-ink-900">
-    <div className="flex items-center justify-between border-b border-white/10 py-1.5 pl-4 pr-1.5">
+    <div className="flex items-center justify-between border-b border-white/10 py-1.5 ps-4 pe-1.5">
       <span className="text-caption font-medium text-ink-325">HTML</span>
       <CopyButton text={code} label={label} className="text-ink-130 hover:bg-white/10 hover:text-white" />
     </div>
@@ -115,13 +115,13 @@ const PlatformSelect: React.FC<{ value: PlatformId | ""; onChange: (id: Platform
     <Listbox value={value} onChange={onChange}>
       <ListboxButton
         aria-label={label}
-        className={`inline-flex h-9 w-full items-center gap-2 rounded-lg border border-ink-120 bg-ink-25 pl-3 pr-2.5 text-left text-body-sm transition-colors hover:border-ink-230 sm:w-56 dark:border-ink-780 dark:bg-ink-875 dark:hover:border-ink-710 ${focusRing}`}
+        className={`inline-flex h-9 w-full items-center gap-2 rounded-lg border border-ink-120 bg-ink-25 ps-3 pe-2.5 text-start text-body-sm transition-colors hover:border-ink-230 sm:w-56 dark:border-ink-780 dark:bg-ink-875 dark:hover:border-ink-710 ${focusRing}`}
       >
         <Globe size={15} className="shrink-0 text-fg-subtle" />
         <span className={`min-w-0 flex-1 truncate ${current ? "text-fg" : "text-ink-425"}`}>
           {current ? current.name : placeholder}
         </span>
-        <ChevronDown size={15} className="ml-1 shrink-0 text-ink-425" />
+        <ChevronDown size={15} className="ms-1 shrink-0 text-ink-425" />
       </ListboxButton>
       {/* Anchored and non-modal, like the other pickers, so the page doesn't lock or shift. */}
       <ListboxOptions

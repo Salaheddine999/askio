@@ -33,7 +33,7 @@ const UpgradeModal: React.FC<UpgradeModalProps> = ({ isOpen, onClose }) => {
             <ProIcon className="h-12 w-12 text-white" />
             <button
               onClick={onClose}
-              className="absolute right-3 top-3 rounded-full bg-black/20 p-1.5 text-white transition-colors hover:bg-black/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
+              className="absolute end-3 top-3 rounded-full bg-black/20 p-1.5 text-white transition-colors hover:bg-black/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
               aria-label={t("upgradeClose")}
             >
               <X size={16} />
@@ -44,7 +44,7 @@ const UpgradeModal: React.FC<UpgradeModalProps> = ({ isOpen, onClose }) => {
             <DialogTitle className="mb-2 font-display text-h3 tracking-tight text-fg">{t("upgradeTitle")}</DialogTitle>
             <p className="mb-6 text-body-sm text-fg-muted">{t("upgradeBody")}</p>
 
-            <ul className="mx-auto mb-8 max-w-[300px] space-y-3 text-left">
+            <ul className="mx-auto mb-8 max-w-[300px] space-y-3 text-start">
               {FEATURES.map((key) => (
                 <li key={key} className="flex items-center gap-3 text-body-sm text-fg">
                   <CheckCircle2 size={16} className="shrink-0 text-emerald-600 dark:text-emerald-400" />

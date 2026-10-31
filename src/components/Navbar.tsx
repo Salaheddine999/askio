@@ -34,7 +34,7 @@ import { DUMMY_CHATBOTS } from "../utils/dummyData";
 import { usePlanAccess } from "../hooks/usePlanAccess";
 import { AI_USAGE_WARNING_RATIO, PRO_AI_REPLY_LIMIT } from "../utils/pricing";
 import { useIsAdmin } from "../hooks/useIsAdmin";
-import { useT } from "../i18n";
+import { dirFor, useLanguage, useT } from "../i18n";
 import { navMessages } from "../i18n/messages/nav";
 import { fetchAiUsage, fetchSidebarCounts, SEEN_EVENT, type AiUsage, type SidebarCounts } from "../utils/sidebarCounts";
 import { FreeIcon, ProIcon } from "./icons";
@@ -134,6 +134,9 @@ const Navbar: React.FC<NavbarProps> = ({
   const user = auth.currentUser;
   const isAdmin = useIsAdmin();
   const t = useT(navMessages);
+  // Pop-ups open away from the sidebar: to its right, or its left when the
+  // app reads right to left and the sidebar sits on the right.
+  const outward = dirFor(useLanguage().lang) === "rtl" ? "left" : "right";
   // The Admin link is only shown to admins; /admin itself checks on the server.
   const footerLinks: NavItem[] = isAdmin ? [...FOOTER_LINKS, { title: "admin", href: "/admin", icon: ShieldCheck }] : FOOTER_LINKS;
   const hideWhenCollapsed = collapsed ? "lg:hidden" : "";
@@ -388,7 +391,7 @@ const Navbar: React.FC<NavbarProps> = ({
                 <Icon size={18} strokeWidth={isActive ? 2.1 : 1.8} className={isActive ? "" : "opacity-80"} />
                 {n > 0 && collapsed && (
                   <span
-                    className={`absolute -right-1 -top-1 hidden h-2 w-2 rounded-full ring-2 ring-ink-55 lg:block dark:ring-ink-865 ${
+                    className={`absolute -end-1 -top-1 hidden h-2 w-2 rounded-full ring-2 ring-ink-55 lg:block dark:ring-ink-865 ${
                       live ? "bg-emerald-500" : "bg-ink-900 dark:bg-ink-130"
                     }`}
                   />
@@ -445,7 +448,7 @@ const Navbar: React.FC<NavbarProps> = ({
           testMode={testMode}
           anchor="bottom end"
           label={t("notifications")}
-          className="ml-auto"
+          className="ms-auto"
         />
         <Link
           to="/configure"
@@ -472,8 +475,8 @@ const Navbar: React.FC<NavbarProps> = ({
 
       <nav
         aria-label={t("mainNavigation")}
-        className={`fixed left-0 top-0 z-50 flex h-[100dvh] flex-col border-r border-ink-120 bg-ink-55 transition-[width,transform] duration-300 ease-in-out dark:border-ink-780 dark:bg-ink-865 ${
-          sidebarOpen ? "w-64 translate-x-0" : "w-64 -translate-x-full lg:w-[72px] lg:translate-x-0"
+        className={`fixed start-0 top-0 z-50 flex h-[100dvh] flex-col border-e border-ink-120 bg-ink-55 transition-[width,transform] duration-300 ease-in-out dark:border-ink-780 dark:bg-ink-865 ${
+          sidebarOpen ? "w-64 translate-x-0" : "w-64 -translate-x-full rtl:translate-x-full lg:w-[72px] lg:translate-x-0 rtl:lg:translate-x-0"
         }`}
       >
         {/* Brand */}
@@ -485,14 +488,14 @@ const Navbar: React.FC<NavbarProps> = ({
             onClick={toggleSidebar}
             aria-label={t("collapseSidebar")}
             title={t("collapseSidebar")}
-            className={`ml-auto hidden rounded-lg p-1.5 text-ink-545 hover:bg-ink-95 hover:text-ink-900 lg:block dark:text-ink-425 dark:hover:bg-ink-790 dark:hover:text-ink-130 ${focusRing} ${hideWhenCollapsed}`}
+            className={`ms-auto hidden rounded-lg p-1.5 text-ink-545 hover:bg-ink-95 hover:text-ink-900 lg:block dark:text-ink-425 dark:hover:bg-ink-790 dark:hover:text-ink-130 ${focusRing} ${hideWhenCollapsed}`}
           >
             <PanelLeftClose size={17} />
           </button>
           <button
             onClick={closeSidebar}
             aria-label={t("closeNavigation")}
-            className={`ml-auto rounded-lg p-1.5 text-ink-605 lg:hidden dark:text-ink-325 ${focusRing}`}
+            className={`ms-auto rounded-lg p-1.5 text-ink-605 lg:hidden dark:text-ink-325 ${focusRing}`}
           >
             <X size={18} />
           </button>
@@ -579,7 +582,7 @@ const Navbar: React.FC<NavbarProps> = ({
                 aria-hidden
                 className={`h-2.5 w-2.5 shrink-0 rounded-full ${liveOnline ? "bg-emerald-500 ring-4 ring-emerald-500/15" : "bg-ink-235 dark:bg-ink-640"}`}
               />
-              <span className={`flex-1 truncate text-left font-medium ${hideWhenCollapsed}`}>
+              <span className={`flex-1 truncate text-start font-medium ${hideWhenCollapsed}`}>
                 {t(liveOnline ? "liveOnline" : "liveOffline")}
               </span>
               <span
@@ -589,7 +592,7 @@ const Navbar: React.FC<NavbarProps> = ({
                 }`}
               >
                 <span
-                  className={`absolute top-0.5 h-3 w-3 rounded-full bg-white shadow transition-[left] ${liveOnline ? "left-[14px]" : "left-0.5"}`}
+                  className={`absolute top-0.5 h-3 w-3 rounded-full bg-white shadow transition-[left] ${liveOnline ? "start-[14px]" : "start-0.5"}`}
                 />
               </span>
             </button>
@@ -605,7 +608,7 @@ const Navbar: React.FC<NavbarProps> = ({
               }`}
             >
               <Beaker size={14} className="shrink-0" />
-              <span className={`flex-1 text-left ${hideWhenCollapsed}`}>{t("testModeOn")}</span>
+              <span className={`flex-1 text-start ${hideWhenCollapsed}`}>{t("testModeOn")}</span>
               <span className={`opacity-70 ${hideWhenCollapsed}`}>{t("turnOff")}</span>
             </button>
           )}
@@ -620,7 +623,7 @@ const Navbar: React.FC<NavbarProps> = ({
           <div className={`flex items-center gap-1 ${collapsed ? "lg:flex-col-reverse lg:gap-2" : ""}`}>
           <Menu as="div" className="relative min-w-0 flex-1 lg:w-full">
             <Menu.Button
-              className={`flex w-full items-center gap-2.5 rounded-xl bg-ink-25 p-2 text-left ring-1 ring-ink-120 transition-colors hover:ring-ink-235 dark:bg-ink-825 dark:ring-ink-780 dark:hover:ring-ink-710 ${focusRing} ${
+              className={`flex w-full items-center gap-2.5 rounded-xl bg-ink-25 p-2 text-start ring-1 ring-ink-120 transition-colors hover:ring-ink-235 dark:bg-ink-825 dark:ring-ink-780 dark:hover:ring-ink-710 ${focusRing} ${
                 collapsed ? "lg:justify-center lg:bg-transparent lg:p-1.5 lg:ring-0 dark:lg:bg-transparent" : ""
               }`}
               title={collapsed ? user?.displayName || t("account") : undefined}
@@ -637,7 +640,7 @@ const Navbar: React.FC<NavbarProps> = ({
               <ChevronsUpDown size={15} className={`shrink-0 text-ink-425 ${hideWhenCollapsed}`} />
             </Menu.Button>
                           <Menu.Items
-                anchor={collapsed && isDesktop() ? "right end" : "top start"}
+                anchor={collapsed && isDesktop() ? `${outward} end` : "top start"}
                 modal={false}
                 transition
                 className={`z-[60] rounded-xl border border-ink-120 bg-ink-25 p-1.5 shadow-lg transition duration-100 ease-out data-[closed]:scale-95 data-[closed]:opacity-0 [--anchor-gap:8px] focus:outline-none dark:border-ink-780 dark:bg-ink-850 ${
@@ -674,7 +677,7 @@ const Navbar: React.FC<NavbarProps> = ({
                   {({ active }) => (
                     <button onClick={toggleTestMode} className={menuItem(active)}>
                       <Beaker size={15} />
-                      <span className="flex-1 text-left">{t("testMode")}</span>
+                      <span className="flex-1 text-start">{t("testMode")}</span>
                       <span
                         className={`relative h-4 w-7 rounded-full transition-colors ${
                           testMode ? "bg-amber-500" : "bg-ink-130 dark:bg-ink-710"
@@ -682,7 +685,7 @@ const Navbar: React.FC<NavbarProps> = ({
                       >
                         <span
                           className={`absolute top-0.5 h-3 w-3 rounded-full bg-white shadow transition-[left] ${
-                            testMode ? "left-[14px]" : "left-0.5"
+                            testMode ? "start-[14px]" : "start-0.5"
                           }`}
                         />
                       </span>
@@ -703,7 +706,7 @@ const Navbar: React.FC<NavbarProps> = ({
           <NotificationsPopover
             unread={counts.notifications}
             testMode={testMode}
-            anchor="right end"
+            anchor={`${outward} end`}
             label={t("notifications")}
             className="hidden shrink-0 lg:block"
           />

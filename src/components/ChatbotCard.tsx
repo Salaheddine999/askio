@@ -68,7 +68,7 @@ const StatusSwitch: React.FC<{ active: boolean; title: string; onToggle: () => v
     aria-checked={active}
     aria-label={t(active ? "statusLiveAria" : "statusPausedAria", { name: title })}
     onClick={onToggle}
-    className={`inline-flex shrink-0 items-center gap-2 rounded-full py-0.5 pl-0.5 pr-2.5 text-caption font-medium ring-1 ring-inset transition-colors ${focusRing} ${
+    className={`inline-flex shrink-0 items-center gap-2 rounded-full py-0.5 ps-0.5 pe-2.5 text-caption font-medium ring-1 ring-inset transition-colors ${focusRing} ${
       active
         ? "bg-emerald-50 text-emerald-700 ring-emerald-600/20 dark:bg-emerald-900/25 dark:text-emerald-400 dark:ring-emerald-400/25"
         : "bg-ink-70 text-ink-605 ring-ink-605/15 dark:bg-ink-805 dark:text-ink-325 dark:ring-white/10"
@@ -81,7 +81,7 @@ const StatusSwitch: React.FC<{ active: boolean; title: string; onToggle: () => v
     >
       <span
         className={`absolute top-0.5 h-3 w-3 rounded-full bg-white shadow-sm transition-[left] duration-200 ${
-          active ? "left-[14px]" : "left-0.5"
+          active ? "start-[14px]" : "start-0.5"
         }`}
       />
     </span>
@@ -121,8 +121,8 @@ const ChatbotCard: React.FC<ChatbotCardProps> = ({
   if (viewMode === "list") {
     return (
       <tr className="group transition-colors hover:bg-ink-30 dark:hover:bg-ink-825">
-        <td className="py-3 pl-3 pr-2 sm:px-6">
-          <button onClick={() => onEdit(chatbot.id)} className={`flex items-center gap-3 rounded text-left ${focusRing}`}>
+        <td className="py-3 ps-3 pe-2 sm:px-6">
+          <button onClick={() => onEdit(chatbot.id)} className={`flex items-center gap-3 rounded text-start ${focusRing}`}>
             <BotAvatar color={chatbot.primaryColor} launcherStyle={chatbot.launcherStyle} size={34} muted={!isActive} />
             <span className="min-w-0">
               <span className="block max-w-[8.5rem] truncate text-body-sm font-medium text-ink-900 sm:max-w-[16rem] dark:text-ink-130">
@@ -174,7 +174,7 @@ const ChatbotCard: React.FC<ChatbotCardProps> = ({
         <td className="hidden whitespace-nowrap px-6 py-3 text-body-sm text-ink-605 xl:table-cell dark:text-ink-325">
           <span title={updatedTitle}>{updatedLabel}</span>
         </td>
-        <td className="whitespace-nowrap py-3 pl-1 pr-2 text-right sm:px-6">
+        <td className="whitespace-nowrap py-3 ps-1 pe-2 text-end sm:px-6">
           <div className="flex items-center justify-end gap-0.5">
             <button
               onClick={() => onToggleActive(chatbot.id)}
@@ -230,7 +230,7 @@ const ChatbotCard: React.FC<ChatbotCardProps> = ({
           <div className="min-w-0 flex-1">
             <button
               onClick={() => onEdit(chatbot.id)}
-              className={`block max-w-full truncate rounded text-left text-body font-semibold tracking-tight text-ink-900 hover:underline hover:underline-offset-4 dark:text-ink-30 ${focusRing}`}
+              className={`block max-w-full truncate rounded text-start text-body font-semibold tracking-tight text-ink-900 hover:underline hover:underline-offset-4 dark:text-ink-30 ${focusRing}`}
               title={chatbot.title}
             >
               {chatbot.title}
@@ -250,7 +250,7 @@ const ChatbotCard: React.FC<ChatbotCardProps> = ({
           </div>
           <div className="flex shrink-0 items-center gap-1">
           <StatusSwitch active={isActive} title={chatbot.title} onToggle={() => onToggleActive(chatbot.id)} />
-          <Menu as="div" className="relative -mr-1.5">
+          <Menu as="div" className="relative -me-1.5">
             <Menu.Button
               className={`${iconButton} data-[open]:bg-ink-70 data-[open]:text-ink-900 dark:data-[open]:bg-ink-790 dark:data-[open]:text-ink-130`}
               aria-label={t("moreActionsNamed", { name: chatbot.title })}
@@ -319,7 +319,7 @@ const ChatbotCard: React.FC<ChatbotCardProps> = ({
                   <ThumbsDown size={11} className="text-rose-600 dark:text-rose-400" />
                   {feedback.negative}
                 </span>
-                <span className="ml-auto">{t.plural("ratingCount", totalFeedback)}</span>
+                <span className="ms-auto">{t.plural("ratingCount", totalFeedback)}</span>
               </>
             ) : (
               <span>{t("noRatingsYet")}</span>
@@ -332,21 +332,21 @@ const ChatbotCard: React.FC<ChatbotCardProps> = ({
               card keeps them lined up. */}
           {installed && chatbot.lastSeenHost ? (
             <span
-              className="mr-auto flex min-w-0 items-center gap-1.5 text-caption text-fg-subtle"
+              className="me-auto flex min-w-0 items-center gap-1.5 text-caption text-fg-subtle"
               title={`${chatbot.lastSeenHost} · ${t("updatedAgo", { time: updatedLabel })}`}
             >
               <Globe size={12} className="shrink-0" />
               <span className="truncate">{t("onSite", { host: chatbot.lastSeenHost })}</span>
             </span>
           ) : installed ? (
-            <span className="mr-auto truncate text-caption text-fg-subtle" title={updatedTitle}>
+            <span className="me-auto truncate text-caption text-fg-subtle" title={updatedTitle}>
               {t("updatedAgo", { time: updatedLabel })}
             </span>
           ) : (
             <button
               onClick={() => onEmbed(chatbot.id)}
               title={t("notOnSiteHint")}
-              className={`mr-auto flex min-w-0 items-center gap-1.5 rounded text-caption font-medium text-amber-700 hover:underline hover:underline-offset-2 dark:text-amber-300 ${focusRing}`}
+              className={`me-auto flex min-w-0 items-center gap-1.5 rounded text-caption font-medium text-amber-700 hover:underline hover:underline-offset-2 dark:text-amber-300 ${focusRing}`}
             >
               <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-amber-500" aria-hidden="true" />
               <span className="truncate">{t("notOnSite")}</span>

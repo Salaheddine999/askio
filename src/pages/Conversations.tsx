@@ -160,11 +160,11 @@ const ChatbotPicker: React.FC<{ chatbots: ChatbotInfo[]; value: string; onChange
     <Listbox value={value} onChange={onChange}>
       <ListboxButton
         aria-label={t("chatbotFilter")}
-        className={`inline-flex h-9 w-56 items-center gap-2 rounded-lg border border-ink-120 bg-ink-25 pl-2.5 pr-2.5 text-left text-[13px] font-medium text-ink-900 transition-colors hover:border-ink-230 dark:border-ink-780 dark:bg-ink-850 dark:text-ink-130 ${focusRing}`}
+        className={`inline-flex h-9 w-56 items-center gap-2 rounded-lg border border-ink-120 bg-ink-25 ps-2.5 pe-2.5 text-start text-[13px] font-medium text-ink-900 transition-colors hover:border-ink-230 dark:border-ink-780 dark:bg-ink-850 dark:text-ink-130 ${focusRing}`}
       >
         {selected ? <BotAvatar color={selected.primaryColor} launcherStyle={selected.launcherStyle} size={18} /> : <Bot size={15} className="shrink-0 text-ink-545" />}
         <span className="min-w-0 flex-1 truncate">{selected ? selected.title || t("untitled") : t("allChatbots")}</span>
-        <ChevronsUpDown size={14} className="ml-1 shrink-0 text-ink-425" />
+        <ChevronsUpDown size={14} className="ms-1 shrink-0 text-ink-425" />
       </ListboxButton>
       <ListboxOptions
         anchor="bottom end"
@@ -320,7 +320,7 @@ const Transcript: React.FC<{
           type="button"
           onClick={onBack}
           aria-label={t("back")}
-          className={`-ml-1 mt-0.5 rounded-lg p-1.5 text-ink-605 hover:bg-ink-70 lg:hidden dark:text-ink-325 dark:hover:bg-ink-790 ${focusRing}`}
+          className={`-ms-1 mt-0.5 rounded-lg p-1.5 text-ink-605 hover:bg-ink-70 lg:hidden dark:text-ink-325 dark:hover:bg-ink-790 ${focusRing}`}
         >
           <ArrowLeft size={16} />
         </button>
@@ -381,7 +381,7 @@ const Transcript: React.FC<{
             onClick={() => navigator.clipboard.writeText(conversation.leadEmail!).then(() => toast.success(t("copied")), () => undefined)}
             aria-label={t("copyEmail")}
             title={t("copyEmail")}
-            className={`ml-auto shrink-0 rounded p-1 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 ${focusRing}`}
+            className={`ms-auto shrink-0 rounded p-1 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 ${focusRing}`}
           >
             <Copy size={13} />
           </button>
@@ -420,16 +420,16 @@ const Transcript: React.FC<{
                 <div
                   className={`whitespace-pre-wrap break-words rounded-2xl px-3.5 py-2 text-body-sm leading-relaxed ${isPending ? "opacity-60" : ""} ${
                     isVisitor
-                      ? "rounded-br-md text-white dark:ring-1 dark:ring-white/15"
+                      ? "rounded-ee-md text-white dark:ring-1 dark:ring-white/15"
                       : isAgent
-                        ? "rounded-bl-md bg-emerald-50 text-ink-900 ring-1 ring-emerald-200 dark:bg-emerald-950/30 dark:text-ink-130 dark:ring-emerald-900/60"
-                        : "rounded-bl-md bg-ink-25 text-ink-900 ring-1 ring-ink-70 dark:bg-ink-850 dark:text-ink-130 dark:ring-ink-780"
+                        ? "rounded-es-md bg-emerald-50 text-ink-900 ring-1 ring-emerald-200 dark:bg-emerald-950/30 dark:text-ink-130 dark:ring-emerald-900/60"
+                        : "rounded-es-md bg-ink-25 text-ink-900 ring-1 ring-ink-70 dark:bg-ink-850 dark:text-ink-130 dark:ring-ink-780"
                   }`}
                   style={isVisitor ? { background: visitorColor } : undefined}
                 >
                   {m.text}
                 </div>
-                <p className={`mt-1 text-caption text-ink-425 ${isVisitor ? "text-right" : ""}`}>
+                <p className={`mt-1 text-caption text-ink-425 ${isVisitor ? "text-end" : ""}`}>
                   {isVisitor ? t("visitor") : isAgent ? t("you") : chatbot?.title || "Bot"} ·{" "}
                   {isPending ? t("sending") : format(new Date(m.at), t("timeFormat"), { locale })}
                 </p>
@@ -766,7 +766,7 @@ const Conversations: React.FC<{ testMode?: boolean }> = ({ testMode = false }) =
   } else {
     body = (
       <div className={`${surface} grid h-[calc(100dvh-13rem)] min-h-[420px] grid-cols-1 overflow-hidden lg:grid-cols-[minmax(280px,380px)_minmax(0,1fr)]`}>
-        <div className={`flex min-h-0 flex-col border-ink-70 lg:border-r dark:border-ink-780 ${open ? "hidden lg:flex" : "flex"}`}>
+        <div className={`flex min-h-0 flex-col border-ink-70 lg:border-e dark:border-ink-780 ${open ? "hidden lg:flex" : "flex"}`}>
           {liveItems.length > 0 && (
             <div className="border-b border-ink-70 bg-emerald-50/40 dark:border-ink-780 dark:bg-emerald-950/15">
               <p className="px-4 pb-1 pt-3 text-caption font-semibold text-emerald-700 dark:text-emerald-300">
@@ -781,7 +781,7 @@ const Conversations: React.FC<{ testMode?: boolean }> = ({ testMode = false }) =
                         type="button"
                         onClick={() => openChat(c.id)}
                         aria-current={c.id === openId ? "true" : undefined}
-                        className={`flex w-full items-center gap-3 px-4 py-2.5 text-left transition-colors ${focusRing} ${
+                        className={`flex w-full items-center gap-3 px-4 py-2.5 text-start transition-colors ${focusRing} ${
                           c.id === openId ? "bg-emerald-100/60 dark:bg-emerald-950/40" : "hover:bg-emerald-100/40 dark:hover:bg-emerald-950/30"
                         }`}
                       >
@@ -813,7 +813,7 @@ const Conversations: React.FC<{ testMode?: boolean }> = ({ testMode = false }) =
                     type="button"
                     onClick={() => openChat(c.id)}
                     aria-current={selected ? "true" : undefined}
-                    className={`flex w-full items-start gap-3 px-4 py-3.5 text-left transition-colors ${focusRing} ${
+                    className={`flex w-full items-start gap-3 px-4 py-3.5 text-start transition-colors ${focusRing} ${
                       selected ? "bg-ink-30 dark:bg-ink-875" : "hover:bg-ink-30/70 dark:hover:bg-ink-875/60"
                     }`}
                   >

@@ -25,7 +25,7 @@ export const AccountRow: React.FC<{ user: AdminUser; onOpen: (uid: string) => vo
     <button
       type="button"
       onClick={() => onOpen(user.uid)}
-      className={`grid w-full gap-1.5 px-5 py-3 text-left transition-colors hover:bg-ink-30 sm:px-6 dark:hover:bg-ink-875 ${
+      className={`grid w-full gap-1.5 px-5 py-3 text-start transition-colors hover:bg-ink-30 sm:px-6 dark:hover:bg-ink-875 ${
         compact ? "grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3" : `grid-cols-1 md:items-center md:gap-4 ${COLUMNS}`
       } ${focusRing}`}
     >
@@ -38,13 +38,13 @@ export const AccountRow: React.FC<{ user: AdminUser; onOpen: (uid: string) => vo
         )}
       </span>
       {compact ? (
-        <span className="text-right text-caption tabular-nums text-fg-subtle">
+        <span className="text-end text-caption tabular-nums text-fg-subtle">
           {user.createdAt ? format(user.createdAt, "MMM d") : "—"}
         </span>
       ) : (
         <>
           <PlanBadge user={user} />
-          <span className="text-caption tabular-nums text-ink-545 md:text-right dark:text-ink-425">
+          <span className="text-caption tabular-nums text-ink-545 md:text-end dark:text-ink-425">
             {user.createdAt ? format(user.createdAt, "MMM d, yyyy") : "—"}
           </span>
         </>
@@ -115,7 +115,7 @@ const AccountsTab: React.FC<{ onOpen: (uid: string) => void; version: number }> 
           >
             <span>Account</span>
             <span>Plan</span>
-            <span className="text-right">Joined</span>
+            <span className="text-end">Joined</span>
           </div>
           <ul className="divide-y divide-ink-70 dark:divide-ink-780">
             {list.items.map((u) => (

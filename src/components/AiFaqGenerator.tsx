@@ -405,7 +405,7 @@ const AiFaqGenerator: React.FC<AiFaqGeneratorProps> = ({
                             prev.filter((_, i) => i !== index)
                           )
                         }
-                        className="absolute -right-3 -top-3 bg-ink-25 dark:bg-ink-850 border border-ink-120 dark:border-ink-780 text-ink-545 hover:text-red-500 p-2 rounded-full shadow-sm opacity-0 group-hover:opacity-100 focus-visible:opacity-100 [@media(hover:none)]:opacity-100 transition-colors hover:border-red-200 dark:hover:border-red-900/50 hover:bg-red-50 dark:hover:bg-red-900/20 z-10"
+                        className="absolute -end-3 -top-3 bg-ink-25 dark:bg-ink-850 border border-ink-120 dark:border-ink-780 text-ink-545 hover:text-red-500 p-2 rounded-full shadow-sm opacity-0 group-hover:opacity-100 focus-visible:opacity-100 [@media(hover:none)]:opacity-100 transition-colors hover:border-red-200 dark:hover:border-red-900/50 hover:bg-red-50 dark:hover:bg-red-900/20 z-10"
                         title={t("removeFaq")}
                         aria-label={t("removeFaq")}
                       >

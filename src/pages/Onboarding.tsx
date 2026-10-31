@@ -326,7 +326,7 @@ const Onboarding: React.FC = () => {
                             role="radio"
                             aria-checked={isSelected}
                             onClick={() => setStarterId(s.id)}
-                            className={`rounded-xl border px-4 py-3 text-left transition-colors ${focusRing} ${
+                            className={`rounded-xl border px-4 py-3 text-start transition-colors ${focusRing} ${
                               isSelected
                                 ? "border-ink-900 bg-ink-30 dark:border-ink-130 dark:bg-ink-875"
                                 : "border-ink-120 hover:border-ink-325 dark:border-ink-780 dark:hover:border-ink-605"
@@ -429,7 +429,7 @@ const Onboarding: React.FC = () => {
                                 <button
                                   type="button"
                                   onClick={() => setEditing(i)}
-                                  className={`min-w-0 flex-1 rounded-md text-left ${focusRing}`}
+                                  className={`min-w-0 flex-1 rounded-md text-start ${focusRing}`}
                                 >
                                   <span className="block text-body-sm font-medium text-fg">
                                     {faq.question || t("untitledQuestion")}
@@ -589,7 +589,7 @@ const Onboarding: React.FC = () => {
                               role="radio"
                               aria-checked={isSelected}
                               onClick={() => update("launcherStyle", o.value)}
-                              className={`flex items-center gap-3 rounded-xl border px-3 py-2.5 text-left transition-colors ${focusRing} ${
+                              className={`flex items-center gap-3 rounded-xl border px-3 py-2.5 text-start transition-colors ${focusRing} ${
                                 isSelected
                                   ? "border-ink-900 bg-ink-30 dark:border-ink-130 dark:bg-ink-875"
                                   : "border-ink-120 hover:border-ink-325 dark:border-ink-780"

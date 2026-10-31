@@ -267,7 +267,7 @@ const FaqTab: React.FC<Props> = ({ faqs, onChange, aiGenerator, initialQuestion 
           <div className="relative">
             <Search
               size={15}
-              className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ink-425"
+              className="pointer-events-none absolute start-3 top-1/2 -translate-y-1/2 text-ink-425"
             />
             <input
               type="search"
@@ -275,7 +275,7 @@ const FaqTab: React.FC<Props> = ({ faqs, onChange, aiGenerator, initialQuestion 
               onChange={(e) => setQuery(e.target.value)}
               placeholder={t.plural("searchQuestions", faqs.length)}
               aria-label={t("searchAria")}
-              className={`${inputClass} h-9 pl-9`}
+              className={`${inputClass} h-9 ps-9`}
             />
           </div>
         </div>
@@ -355,7 +355,7 @@ const FaqTab: React.FC<Props> = ({ faqs, onChange, aiGenerator, initialQuestion 
                   <span
                     aria-hidden
                     title={t("dragToReorder")}
-                    className="-ml-2 mt-0.5 hidden shrink-0 cursor-grab text-ink-235 active:cursor-grabbing sm:block dark:text-ink-640"
+                    className="-ms-2 mt-0.5 hidden shrink-0 cursor-grab text-ink-235 active:cursor-grabbing sm:block dark:text-ink-640"
                   >
                     <GripVertical size={16} />
                   </span>
@@ -363,12 +363,12 @@ const FaqTab: React.FC<Props> = ({ faqs, onChange, aiGenerator, initialQuestion 
                 <button
                   type="button"
                   onClick={() => setEditing(index)}
-                  className={`min-w-0 flex-1 rounded-md text-left ${focusRing}`}
+                  className={`min-w-0 flex-1 rounded-md text-start ${focusRing}`}
                 >
                   <p className="text-body-sm font-medium text-fg">
                     {faq.question}
                     {suggestedSet.has(faq) && faqs.length > 1 && (
-                      <span className="ml-2 inline-block rounded-full bg-ink-70 px-2 py-px align-[1px] text-caption font-medium text-ink-605 dark:bg-ink-790 dark:text-ink-325">
+                      <span className="ms-2 inline-block rounded-full bg-ink-70 px-2 py-px align-[1px] text-caption font-medium text-ink-605 dark:bg-ink-790 dark:text-ink-325">
                         {t("suggestedBadge")}
                       </span>
                     )}

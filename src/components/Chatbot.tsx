@@ -16,7 +16,7 @@ import { isOwnerBrowsing } from "../utils/ownerSession";
 import { isPresenceOnline, LIVE_WAIT_MS, type LiveStatus } from "../utils/liveChat";
 import { contactChannel, normalizeContactLink, withWhatsAppText, type ContactChannel } from "../utils/links";
 import { pickSuggested, SUGGESTED_QUESTIONS as MAX_SUGGESTIONS } from "../utils/suggestions";
-import { isLang, makeT, type Lang } from "../i18n";
+import { dirFor, isLang, makeT, type Lang } from "../i18n";
 import { widgetMessages } from "../i18n/widget";
 import { AiIcon } from "./icons";
 
@@ -144,6 +144,9 @@ const Chatbot: React.FC<ChatbotProps> = ({
   liveChat = false,
 }) => {
   const t = useMemo(() => makeT(widgetMessages, isLang(language) ? language : "en"), [language]);
+  // The chat reads in the chatbot's language (right to left for Arabic),
+  // wherever it's shown, whatever the owner's own app language.
+  const chatDir = dirFor(t.lang);
   const contactHref = normalizeContactLink(liveChatLink);
   // A chat app link (WhatsApp, Telegram, Messenger, Instagram) gets its own
   // button and home card. WhatsApp can take the visitor's question typed in;
@@ -1092,9 +1095,9 @@ const Chatbot: React.FC<ChatbotProps> = ({
           setView(hasConversation ? "chat" : "home");
           setIsOpen(true);
         }}
-        className="whitespace-nowrap rounded-full py-2 pl-3.5 pr-1 text-[13px] font-medium text-ink-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ink-425"
+        className="whitespace-nowrap rounded-full py-2 ps-3.5 pe-1 text-[13px] font-medium text-ink-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ink-425"
       >
-        <span className="block max-w-[260px] truncate">{greetingText || t("greeting")}</span>
+        <span dir="auto" className="block max-w-[260px] truncate">{greetingText || t("greeting")}</span>
       </button>
       <button
         type="button"
@@ -1103,7 +1106,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
           e.stopPropagation();
           setShowGreeting(false);
         }}
-        className="mr-1.5 flex h-6 w-6 items-center justify-center rounded-full text-ink-425 transition-colors hover:bg-ink-70 hover:text-ink-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ink-425"
+        className="me-1.5 flex h-6 w-6 items-center justify-center rounded-full text-ink-425 transition-colors hover:bg-ink-70 hover:text-ink-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ink-425"
       >
         <X size={12} strokeWidth={2.5} />
       </button>
@@ -1113,6 +1116,9 @@ const Chatbot: React.FC<ChatbotProps> = ({
   const chatbotButton = (
     <div
       ref={launcherRef}
+      // The launcher and its greeting sit by the owner's chosen corner, so their
+      // layout never mirrors.
+      dir="ltr"
       className={`fixed ${combinedPositionClass} z-50 flex items-center gap-2 ${isLeftPosition ? "flex-row-reverse" : "flex-row"}`}
     >
       <AnimatePresence onExitComplete={handleGreetingHidden}>
@@ -1170,14 +1176,14 @@ const Chatbot: React.FC<ChatbotProps> = ({
         <button
           type="button"
           onClick={startChat}
-          className={`${homeCard} group flex items-center justify-between gap-3 px-4 py-3.5 text-left shadow-[0_6px_20px_-12px_rgba(16,23,35,0.25)] transition-colors hover:border-ink-165 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ink-425 dark:hover:border-ink-710`}
+          className={`${homeCard} group flex items-center justify-between gap-3 px-4 py-3.5 text-start shadow-[0_6px_20px_-12px_rgba(16,23,35,0.25)] transition-colors hover:border-ink-165 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ink-425 dark:hover:border-ink-710`}
         >
           <span className="min-w-0">
             <span className="block text-[14px] font-semibold text-ink-900 dark:text-ink-70">{t("askQuestion")}</span>
             <span className="mt-0.5 block text-[12px] text-ink-545 dark:text-ink-325">{t("askQuestionHint")}</span>
           </span>
           <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-white transition-transform group-hover:translate-x-0.5" style={buttonStyle}>
-            <ArrowUp size={16} strokeWidth={2.5} className="rotate-90" />
+            <ArrowUp size={16} strokeWidth={2.5} className="rotate-90 [&:dir(rtl)]:-rotate-90" />
           </span>
         </button>
 
@@ -1220,7 +1226,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
                   <button
                     type="button"
                     onClick={() => askSuggested(question)}
-                    className="flex w-full items-center justify-between gap-3 px-4 py-2.5 text-left text-[13px] text-ink-900 transition-colors hover:bg-ink-35 focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ink-425 dark:text-ink-130 dark:hover:bg-ink-835"
+                    className="flex w-full items-center justify-between gap-3 px-4 py-2.5 text-start text-[13px] text-ink-900 transition-colors hover:bg-ink-35 focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ink-425 dark:text-ink-130 dark:hover:bg-ink-835"
                   >
                     <span className="min-w-0 [text-wrap:pretty]">{question}</span>
                     <ChevronRight size={15} className="shrink-0 text-ink-425" aria-hidden="true" />
@@ -1239,6 +1245,8 @@ const Chatbot: React.FC<ChatbotProps> = ({
   const onSite = isEmbedded && !customPositionClass;
   const chatbotContent = (
     <motion.div
+      dir={chatDir}
+      lang={t.lang}
       initial={onSite ? false : { opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={onSite ? undefined : { opacity: 0, y: 20 }}
@@ -1269,7 +1277,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
         </button>
         <div className="relative shrink-0">
           {botFace(34)}
-          <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-white bg-emerald-400 dark:border-ink-865" aria-hidden="true" />
+          <span className="absolute -bottom-0.5 -end-0.5 h-2.5 w-2.5 rounded-full border-2 border-white bg-emerald-400 dark:border-ink-865" aria-hidden="true" />
         </div>
         <div className="min-w-0 flex-1">
           <h2 className="truncate text-[14px] font-semibold leading-tight tracking-[-0.01em] text-ink-900 dark:text-ink-70">{title || "Askio Assistant"}</h2>
@@ -1318,6 +1326,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
                 key={index}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
+                dir="auto"
                 className="text-center text-caption text-ink-545 dark:text-ink-325"
               >
                 {message.text}
@@ -1334,13 +1343,16 @@ const Chatbot: React.FC<ChatbotProps> = ({
               }`}
             >
               <div className={`flex max-w-[84%] flex-col ${message.sender === "user" ? "items-end" : "items-start"}`}>
+              {/* dir="auto": Arabic (or any end-to-left) text reads and aligns right to
+                  left inside its bubble; the widget's layout and corner stay as set. */}
               <div
+                dir="auto"
                 className={`inline-block px-3.5 py-2.5 text-[13.5px] leading-relaxed [overflow-wrap:anywhere] ${
                   message.sender === "user"
-                    ? "text-white rounded-[18px] rounded-br-[6px]"
+                    ? "text-white rounded-[18px] rounded-ee-[6px]"
                     : message.sender === "agent"
-                      ? "bg-emerald-50 dark:bg-emerald-950/30 ring-1 ring-emerald-200 dark:ring-emerald-900/60 text-fg rounded-[18px] rounded-bl-[6px]"
-                      : "bg-[#FFFFFF] dark:bg-ink-850 ring-1 ring-ink-90 dark:ring-ink-805 text-fg rounded-[18px] rounded-bl-[6px]"
+                      ? "bg-emerald-50 dark:bg-emerald-950/30 ring-1 ring-emerald-200 dark:ring-emerald-900/60 text-fg rounded-[18px] rounded-es-[6px]"
+                      : "bg-[#FFFFFF] dark:bg-ink-850 ring-1 ring-ink-90 dark:ring-ink-805 text-fg rounded-[18px] rounded-es-[6px]"
                 }`}
                 style={message.sender === "user" ? userMessageStyle : {}}
               >
@@ -1475,7 +1487,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
                       key={idx}
                       whileTap={{ scale: 0.98 }}
                       onClick={(e) => handleSuggestionClick(e, question)}
-                      className="max-w-[88%] text-[12.5px] leading-snug [text-wrap:pretty] bg-[#FFFFFF] dark:bg-ink-850 hover:bg-ink-60 dark:hover:bg-ink-805 text-fg py-2 px-3.5 rounded-[18px] transition-colors duration-150 ring-1 ring-ink-120 hover:ring-ink-165 dark:ring-ink-780 dark:hover:ring-ink-710 text-left"
+                      className="max-w-[88%] text-[12.5px] leading-snug [text-wrap:pretty] bg-[#FFFFFF] dark:bg-ink-850 hover:bg-ink-60 dark:hover:bg-ink-805 text-fg py-2 px-3.5 rounded-[18px] transition-colors duration-150 ring-1 ring-ink-120 hover:ring-ink-165 dark:ring-ink-780 dark:hover:ring-ink-710 text-start"
                     >
                       {question}
                     </motion.button>
@@ -1493,12 +1505,12 @@ const Chatbot: React.FC<ChatbotProps> = ({
             className="flex justify-start"
           >
             {useOrb ? (
-              <div className="inline-flex items-center gap-2 py-1.5 pl-1.5 pr-3.5 rounded-[18px] rounded-bl-[6px] bg-[#FFFFFF] ring-1 ring-ink-90 dark:bg-ink-850 dark:ring-ink-805">
+              <div className="inline-flex items-center gap-2 py-1.5 ps-1.5 pe-3.5 rounded-[18px] rounded-es-[6px] bg-[#FFFFFF] ring-1 ring-ink-90 dark:bg-ink-850 dark:ring-ink-805">
                 <LiveOrb size={24} {...orbPropsFor(primaryColor)} finish={kioFinish} mood="thinking" interactive={false} />
                 <span className="text-[12px] text-ink-545 dark:text-ink-325">{t("thinking")}</span>
               </div>
             ) : (
-              <div className="inline-flex items-center gap-1 px-3.5 py-3 rounded-[18px] rounded-bl-[6px] bg-[#FFFFFF] ring-1 ring-ink-90 dark:bg-ink-850 dark:ring-ink-805">
+              <div className="inline-flex items-center gap-1 px-3.5 py-3 rounded-[18px] rounded-es-[6px] bg-[#FFFFFF] ring-1 ring-ink-90 dark:bg-ink-850 dark:ring-ink-805">
                 <span className="h-1.5 w-1.5 bg-ink-325 dark:bg-ink-545 rounded-full animate-bounce" style={{ animationDelay: "0s" }}></span>
                 <span className="h-1.5 w-1.5 bg-ink-325 dark:bg-ink-545 rounded-full animate-bounce" style={{ animationDelay: "0.15s" }}></span>
                 <span className="h-1.5 w-1.5 bg-ink-325 dark:bg-ink-545 rounded-full animate-bounce" style={{ animationDelay: "0.3s" }}></span>
@@ -1508,7 +1520,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
         )}
         {agentTyping && (
           <div className="flex justify-start" aria-live="polite">
-            <div className="inline-flex items-center gap-2 rounded-2xl rounded-bl-md bg-emerald-50 px-3.5 py-2 text-[12px] text-emerald-800 ring-1 ring-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-200 dark:ring-emerald-900/60">
+            <div className="inline-flex items-center gap-2 rounded-2xl rounded-es-md bg-emerald-50 px-3.5 py-2 text-[12px] text-emerald-800 ring-1 ring-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-200 dark:ring-emerald-900/60">
               <span className="flex gap-0.5" aria-hidden="true">
                 {[0, 1, 2].map((i) => (
                   <span key={i} className="h-1.5 w-1.5 animate-bounce rounded-full bg-emerald-500 motion-reduce:animate-none" style={{ animationDelay: `${i * 0.15}s` }} />
@@ -1535,10 +1547,11 @@ const Chatbot: React.FC<ChatbotProps> = ({
             {t("talkToPerson")}
           </button>
         )}
-        <form onSubmit={handleSend} className="flex items-center gap-1.5 rounded-full bg-ink-45 py-1.5 pl-4 pr-1.5 ring-1 ring-transparent transition-shadow focus-within:ring-ink-165 dark:bg-ink-835 dark:focus-within:ring-ink-710">
+        <form onSubmit={handleSend} className="flex items-center gap-1.5 rounded-full bg-ink-45 py-1.5 ps-4 pe-1.5 ring-1 ring-transparent transition-shadow focus-within:ring-ink-165 dark:bg-ink-835 dark:focus-within:ring-ink-710">
           <input
             ref={inputRef}
             type="text"
+            dir="auto"
             value={input}
             maxLength={MAX_MESSAGE_LENGTH}
             onChange={(e) => {

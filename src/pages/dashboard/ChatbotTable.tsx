@@ -14,7 +14,7 @@ interface ChatbotTableProps extends ChatbotActions {
 }
 
 const headerCell =
-  "py-2.5 pl-3 pr-2 text-left text-caption font-medium text-ink-545 sm:px-6 dark:text-ink-425";
+  "py-2.5 ps-3 pe-2 text-start text-caption font-medium text-ink-545 sm:px-6 dark:text-ink-425";
 
 const ChatbotTable: React.FC<ChatbotTableProps> = ({
   chatbots,

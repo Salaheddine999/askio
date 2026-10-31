@@ -71,7 +71,7 @@ export const SearchInput: React.FC<{
   <div className="relative w-full sm:w-64">
     <Search
       size={16}
-      className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-fg-subtle"
+      className="pointer-events-none absolute start-3 top-1/2 -translate-y-1/2 text-fg-subtle"
     />
     <input
       type="search"
@@ -79,14 +79,14 @@ export const SearchInput: React.FC<{
       onChange={(e) => onChange(e.target.value)}
       placeholder={placeholder}
       aria-label={placeholder}
-      className="h-9 w-full rounded-lg border border-ink-120 bg-ink-25 pl-9 pr-8 text-body-sm text-ink-900 placeholder:text-ink-545 focus:border-ink-900 focus:outline-none focus:ring-2 focus:ring-ink-900/10 dark:border-ink-780 dark:bg-ink-850 dark:text-ink-130 dark:placeholder:text-ink-425 dark:focus:border-ink-325 dark:focus:ring-ink-130/10 [&::-webkit-search-cancel-button]:hidden"
+      className="h-9 w-full rounded-lg border border-ink-120 bg-ink-25 ps-9 pe-8 text-body-sm text-ink-900 placeholder:text-ink-545 focus:border-ink-900 focus:outline-none focus:ring-2 focus:ring-ink-900/10 dark:border-ink-780 dark:bg-ink-850 dark:text-ink-130 dark:placeholder:text-ink-425 dark:focus:border-ink-325 dark:focus:ring-ink-130/10 [&::-webkit-search-cancel-button]:hidden"
     />
     {value && (
       <button
         type="button"
         onClick={() => onChange("")}
         aria-label={t("clearSearch")}
-        className={`absolute right-2 top-1/2 -translate-y-1/2 rounded p-0.5 text-ink-545 hover:text-ink-900 dark:text-ink-425 dark:hover:text-ink-130 ${focusRing}`}
+        className={`absolute end-2 top-1/2 -translate-y-1/2 rounded p-0.5 text-ink-545 hover:text-ink-900 dark:text-ink-425 dark:hover:text-ink-130 ${focusRing}`}
       >
         <X size={14} />
       </button>

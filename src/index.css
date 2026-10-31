@@ -36,6 +36,14 @@
   }
 }
 
+/* Right-to-left pages (Arabic): a cut-off line takes its direction from its own
+   text, so an English name or an email loses its end to the ellipsis, not its
+   start, while staying aligned with the Arabic around it. */
+[dir="rtl"] .truncate {
+  unicode-bidi: plaintext;
+  text-align: right;
+}
+
 @layer utilities {
   /* Sideways-scrolling rows such as tab bars: scrollable by swipe or wheel,
      without a scrollbar, and never vertically (an underline poking out of

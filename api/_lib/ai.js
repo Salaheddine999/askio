@@ -461,7 +461,17 @@ export async function generateFaqsFromUrl(url, isDeepCrawl = false, aiTone = "")
   return safeParseFaqs(resultText);
 }
 
-const LANGUAGE_NAMES = { en: "English", fr: "French", nl: "Dutch", de: "German", es: "Spanish" };
+const LANGUAGE_NAMES = {
+  en: "English",
+  fr: "French",
+  nl: "Dutch",
+  de: "German",
+  es: "Spanish",
+  pt: "Portuguese",
+  it: "Italian",
+  pl: "Polish",
+  ar: "Arabic",
+};
 
 /**
  * A reply to a visitor from the chatbot's FAQs. Returns the reply and whether

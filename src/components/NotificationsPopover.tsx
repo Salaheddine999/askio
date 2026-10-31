@@ -175,7 +175,7 @@ const Panel: React.FC<{ testMode: boolean; close: () => void }> = ({ testMode, c
 
   return (
     <>
-      <div className="flex shrink-0 items-center gap-5 border-b border-ink-120 pl-4 pr-2 dark:border-ink-780">
+      <div className="flex shrink-0 items-center gap-5 border-b border-ink-120 ps-4 pe-2 dark:border-ink-780">
         <button onClick={() => setTab("inbox")} className={tabClass(tab === "inbox")} aria-pressed={tab === "inbox"}>
           {t("notificationsInbox")}
           {inbox.length > 0 && (
@@ -192,7 +192,7 @@ const Panel: React.FC<{ testMode: boolean; close: () => void }> = ({ testMode, c
           onClick={close}
           title={t("notificationSettings")}
           aria-label={t("notificationSettings")}
-          className={`ml-auto flex h-8 w-8 items-center justify-center rounded-lg text-fg-subtle transition-colors hover:bg-ink-55 hover:text-fg dark:hover:bg-ink-820 ${focusRing}`}
+          className={`ms-auto flex h-8 w-8 items-center justify-center rounded-lg text-fg-subtle transition-colors hover:bg-ink-55 hover:text-fg dark:hover:bg-ink-820 ${focusRing}`}
         >
           <Settings size={16} />
         </Link>
@@ -229,7 +229,7 @@ const Panel: React.FC<{ testMode: boolean; close: () => void }> = ({ testMode, c
                     <Icon size={14} className={tone} />
                   </span>
                   <div className="min-w-0 flex-1">
-                    <p className="flex items-center gap-2 pr-6 text-body-sm">
+                    <p className="flex items-center gap-2 pe-6 text-body-sm">
                       <span className="truncate font-medium text-fg">{item.title}</span>
                       {unseen && <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-red-500" aria-label={t("newBadge")} />}
                     </p>
@@ -250,7 +250,7 @@ const Panel: React.FC<{ testMode: boolean; close: () => void }> = ({ testMode, c
                     onClick={() => toggleArchived(item)}
                     title={isArchived ? t("moveToInbox") : t("archiveNotification")}
                     aria-label={isArchived ? t("moveToInbox") : t("archiveNotification")}
-                    className={`absolute right-3 top-2.5 flex h-7 w-7 items-center justify-center rounded-md text-fg-subtle opacity-0 transition hover:bg-ink-70 hover:text-fg focus-visible:opacity-100 group-hover:opacity-100 dark:hover:bg-ink-790 ${focusRing} [@media(hover:none)]:opacity-100`}
+                    className={`absolute end-3 top-2.5 flex h-7 w-7 items-center justify-center rounded-md text-fg-subtle opacity-0 transition hover:bg-ink-70 hover:text-fg focus-visible:opacity-100 group-hover:opacity-100 dark:hover:bg-ink-790 ${focusRing} [@media(hover:none)]:opacity-100`}
                   >
                     {isArchived ? <Inbox size={15} /> : <Archive size={15} />}
                   </button>
@@ -309,7 +309,7 @@ const NotificationsPopover: React.FC<NotificationsPopoverProps> = ({ unread, tes
       >
         <Bell size={18} />
         {unread > 0 && (
-          <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-red-500 ring-2 ring-ink-55 dark:ring-ink-865" />
+          <span className="absolute end-2 top-2 h-2 w-2 rounded-full bg-red-500 ring-2 ring-ink-55 dark:ring-ink-865" />
         )}
       </PopoverButton>
       <PopoverPanel

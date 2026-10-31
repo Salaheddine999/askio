@@ -36,7 +36,20 @@ describe("translations", () => {
     const english = set.en;
 
     it.each(codes)("%s has exactly the English keys", (lang) => {
-      expect(Object.keys(set[lang]).sort()).toEqual(Object.keys(english).sort());
+      // Languages with more plural forms than English (Polish, Arabic) may add
+      // <base>_zero, _two, _few or _many next to a plural; nothing else.
+      const extra = (key: string) => {
+        const m = key.match(/^(.*)_(zero|two|few|many)$/);
+        return !!m && `${m[1]}_other` in english;
+      };
+      expect(Object.keys(set[lang]).filter((key) => !extra(key)).sort()).toEqual(Object.keys(english).sort());
+    });
+
+    it.each(codes)("%s keeps every {placeholder} in its extra plural forms", (lang) => {
+      for (const [key, text] of Object.entries(set[lang])) {
+        const m = key.match(/^(.*)_(zero|two|few|many)$/);
+        if (m && `${m[1]}_other` in english) expect(placeholders(text), `${lang}.${key}`).toEqual(placeholders(english[`${m[1]}_other`]));
+      }
     });
 
     it.each(codes)("%s keeps every {placeholder} and leaves no line empty", (lang) => {
@@ -57,10 +70,11 @@ describe("translations", () => {
     });
   });
 
-  it("the docs have the same guides and the same number of steps in every language", () => {
+  it("the docs have the same guides and the same number of steps in every language they're in", () => {
     const guides = Object.keys(docsContent.en.guides);
-    for (const lang of codes) {
-      const content = docsContent[lang as keyof typeof docsContent];
+    // Languages without their own articles show the English ones.
+    for (const lang of codes.filter((code) => code in docsContent)) {
+      const content = docsContent[lang as keyof typeof docsContent]!;
       expect(Object.keys(content.guides).sort(), lang).toEqual([...guides].sort());
       for (const id of guides) {
         const g = id as keyof typeof content.guides;
@@ -82,6 +96,18 @@ describe("makeT", () => {
 
   it("fills in placeholders", () => {
     expect(makeT(messages, "fr")("hello", { name: "Sara" })).toBe("Bonjour Sara");
+  });
+
+  it("uses a language's extra plural forms when it has them", () => {
+    const polish = {
+      ...messages,
+      pl: { hello: "Cześć {name}", items_one: "{count} element", items_few: "{count} elementy", items_many: "{count} elementów", items_other: "{count} elementu" },
+    };
+    const t = makeT(polish as never, "pl" as never);
+    expect(t.plural("items", 1)).toBe("1 element");
+    expect(t.plural("items", 3)).toBe("3 elementy");
+    expect(t.plural("items", 5)).toBe("5 elementów");
+    expect(t.plural("items", 22)).toBe("22 elementy");
   });
 
   it("picks the plural form for the language", () => {

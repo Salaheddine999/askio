@@ -190,7 +190,7 @@ const App: React.FC = () => {
         {(wasSignedIn || isAppRoute(window.location.pathname)) && (
           <div className="flex">
             <div
-              className={`hidden h-screen shrink-0 border-r border-ink-120 bg-ink-55 p-3 lg:block dark:border-ink-780 dark:bg-ink-865 ${
+              className={`hidden h-screen shrink-0 border-e border-ink-120 bg-ink-55 p-3 lg:block dark:border-ink-780 dark:bg-ink-865 ${
                 sidebarOpen ? "w-64" : "w-[72px]"
               }`}
             >
@@ -230,7 +230,7 @@ const App: React.FC = () => {
           )}
           <div
             className={`flex-1 min-w-0 transition-all duration-300 ${
-              user ? `bg-ink-30 pt-14 dark:bg-ink-875 lg:pt-0 ${sidebarOpen ? "lg:ml-64" : "lg:ml-[72px]"}` : ""
+              user ? `bg-ink-30 pt-14 dark:bg-ink-875 lg:pt-0 ${sidebarOpen ? "lg:ms-64" : "lg:ms-[72px]"}` : ""
             }`}
           >
             <RouteErrorBoundary>

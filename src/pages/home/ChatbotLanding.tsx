@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { Helmet } from "react-helmet-async";
+import { useLeftToRight } from "../../i18n";
 import LandingNav from "./LandingNav";
 import HeroSection from "./HeroSection";
 import FeaturesSection from "./FeaturesSection";
@@ -13,6 +14,8 @@ import Footer from "./Footer";
 import MarqueeStrip from "./MarqueeStrip";
 
 export default function ChatbotLanding() {
+  // The homepage is in English only, so it always reads left to right.
+  useLeftToRight({ english: true });
   useEffect(() => {
     const chatbotContainer = document.createElement("div");
     chatbotContainer.id = "chatbot-container";

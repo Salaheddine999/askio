@@ -162,7 +162,7 @@ export const ColorField: React.FC<{
       <p className="mb-1.5 text-label text-fg">{label}</p>
       <Popover>
         <PopoverButton
-          className={`flex h-10 w-full items-center gap-2.5 rounded-lg border border-ink-120 bg-ink-25 pl-1.5 pr-3 text-left transition-colors hover:border-ink-325 dark:border-ink-780 dark:bg-ink-875 dark:hover:border-ink-605 ${focusRing}`}
+          className={`flex h-10 w-full items-center gap-2.5 rounded-lg border border-ink-120 bg-ink-25 ps-1.5 pe-3 text-start transition-colors hover:border-ink-325 dark:border-ink-780 dark:bg-ink-875 dark:hover:border-ink-605 ${focusRing}`}
         >
           <span
             className="h-7 w-7 shrink-0 rounded-md ring-1 ring-inset ring-black/10 dark:ring-white/10"

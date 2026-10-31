@@ -374,7 +374,7 @@ export default function Integrations({ testMode = false }: IntegrationsProps) {
                       role="tab"
                       aria-selected={active}
                       onClick={() => setActivePlatform(p.key)}
-                      className={`relative flex items-center gap-3 rounded-xl border p-3 text-left transition-colors sm:p-4 ${focusRing} ${
+                      className={`relative flex items-center gap-3 rounded-xl border p-3 text-start transition-colors sm:p-4 ${focusRing} ${
                         active
                           ? "border-ink-900 bg-ink-25 dark:border-ink-130 dark:bg-ink-850"
                           : "border-ink-120 bg-ink-25 hover:border-ink-230 dark:border-ink-780 dark:bg-ink-850 dark:hover:border-ink-710"
@@ -390,7 +390,7 @@ export default function Integrations({ testMode = false }: IntegrationsProps) {
                         <span className="hidden truncate text-caption text-ink-545 sm:block dark:text-ink-425">{t(p.tagline)}</span>
                       </span>
                       {connected > 0 && (
-                        <span className="absolute right-2 top-2 inline-flex items-center gap-1 rounded-full bg-emerald-50 px-1.5 py-0.5 text-caption font-medium text-emerald-700 ring-1 ring-inset ring-emerald-600/20 dark:bg-emerald-900/25 dark:text-emerald-400">
+                        <span className="absolute end-2 top-2 inline-flex items-center gap-1 rounded-full bg-emerald-50 px-1.5 py-0.5 text-caption font-medium text-emerald-700 ring-1 ring-inset ring-emerald-600/20 dark:bg-emerald-900/25 dark:text-emerald-400">
                           <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
                           {connected}
                         </span>
@@ -473,7 +473,7 @@ export default function Integrations({ testMode = false }: IntegrationsProps) {
                             {t("storeUrl")}
                           </label>
                           <div className="relative flex-1">
-                            <ShoppingBag size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ink-425" />
+                            <ShoppingBag size={15} className="pointer-events-none absolute start-3 top-1/2 -translate-y-1/2 text-ink-425" />
                             <input
                               id="shop-url"
                               type="text"
@@ -482,7 +482,7 @@ export default function Integrations({ testMode = false }: IntegrationsProps) {
                               value={shopUrl}
                               onChange={(e) => setShopUrl(e.target.value)}
                               placeholder="yourstore.myshopify.com"
-                              className="h-9 w-full rounded-lg border border-ink-120 bg-ink-25 pl-9 pr-3 text-body-sm text-ink-900 placeholder:text-ink-425 focus:border-ink-900 focus:outline-none focus:ring-2 focus:ring-ink-900/10 dark:border-ink-780 dark:bg-ink-850 dark:text-ink-130 dark:focus:border-ink-325"
+                              className="h-9 w-full rounded-lg border border-ink-120 bg-ink-25 ps-9 pe-3 text-body-sm text-ink-900 placeholder:text-ink-425 focus:border-ink-900 focus:outline-none focus:ring-2 focus:ring-ink-900/10 dark:border-ink-780 dark:bg-ink-850 dark:text-ink-130 dark:focus:border-ink-325"
                             />
                           </div>
                           <button type="submit" className={primaryButton}>
@@ -635,7 +635,7 @@ function ChatbotPicker({
   return (
     <Listbox value={value} onChange={onChange}>
       <ListboxButton
-        className={`flex h-11 w-full items-center gap-2.5 rounded-lg border border-ink-120 bg-ink-25 px-2.5 text-left transition-colors hover:border-ink-230 data-[open]:border-ink-900 dark:border-ink-780 dark:bg-ink-875 dark:hover:border-ink-710 dark:data-[open]:border-ink-325 ${focusRing}`}
+        className={`flex h-11 w-full items-center gap-2.5 rounded-lg border border-ink-120 bg-ink-25 px-2.5 text-start transition-colors hover:border-ink-230 data-[open]:border-ink-900 dark:border-ink-780 dark:bg-ink-875 dark:hover:border-ink-710 dark:data-[open]:border-ink-325 ${focusRing}`}
       >
         <BotAvatar color={selected?.primaryColor} launcherStyle={selected?.launcherStyle} size={26} muted={selected?.isActive === false} />
         <span className="min-w-0 flex-1 truncate text-body-sm font-medium text-fg">
@@ -676,7 +676,7 @@ function Steps({ steps, footer }: { steps: { title: string; body: string }[]; fo
         {steps.map((step, i) => (
           <li key={step.title} className="relative flex gap-4 pb-6 last:pb-0">
             {i < steps.length - 1 && (
-              <span aria-hidden className="absolute left-[13px] top-8 bottom-1 w-px bg-ink-120 dark:bg-ink-780" />
+              <span aria-hidden className="absolute start-[13px] top-8 bottom-1 w-px bg-ink-120 dark:bg-ink-780" />
             )}
             <span className="relative flex size-7 shrink-0 items-center justify-center rounded-full border border-ink-120 bg-ink-30 text-caption font-semibold leading-none tabular-nums text-ink-900 dark:border-ink-710 dark:bg-ink-875 dark:text-ink-130">
               {i + 1}

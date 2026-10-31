@@ -287,7 +287,7 @@ const Documentation: React.FC<{ toggleSidebar: () => void }> = () => {
                           type="button"
                           aria-expanded={open}
                           onClick={() => setOpenFaq(open ? null : i)}
-                          className={`flex w-full items-center justify-between gap-4 px-5 py-3.5 text-left text-body-sm font-medium text-ink-900 hover:bg-ink-30/70 sm:px-6 dark:text-ink-70 dark:hover:bg-ink-825 ${focusRing}`}
+                          className={`flex w-full items-center justify-between gap-4 px-5 py-3.5 text-start text-body-sm font-medium text-ink-900 hover:bg-ink-30/70 sm:px-6 dark:text-ink-70 dark:hover:bg-ink-825 ${focusRing}`}
                         >
                           {f.q}
                           <ChevronDown size={16} className={`shrink-0 text-ink-425 transition-transform ${open ? "rotate-180" : ""}`} />
