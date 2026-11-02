@@ -118,6 +118,68 @@ export function shouldApplyEvent(stored = {}, { subscriptionId, updatedAt, signe
   return !storedId || !BILLABLE.has(String(stored.subscriptionStatus || "").toLowerCase());
 }
 
+const sameTime = (a, b) => Boolean(a && b) && Date.parse(a) === Date.parse(b);
+
+/**
+ * A refunded period doesn't give Pro (see the Refund Policy). Once a payment
+ * is refunded, later events for the same period, like the owner cancelling the
+ * subscription in Lemon Squeezy, keep the account on the free plan. A new
+ * payment moves the period end, which gives Pro again.
+ */
+export function keepsRefund(stored = {}, { subscriptionId, periodEnd, mapped }) {
+  return (
+    mapped.isPro &&
+    String(stored.lemonSqueezySubscriptionId ?? "") === subscriptionId &&
+    sameTime(stored.refundedPeriodEnd, periodEnd)
+  );
+}
+
+/**
+ * What a refund changes on the account: a full refund of a subscription
+ * payment (subscription_payment_refunded) or of the order that started it
+ * (order_refunded) ends Pro straight away. Partial refunds change nothing.
+ */
+export function refundUpdate(stored = {}, payload) {
+  const type = payload?.data?.type;
+  const attributes = payload?.data?.attributes || {};
+  if (String(attributes.status || "").toLowerCase() !== "refunded") return null;
+  const matches =
+    type === "subscription-invoices"
+      ? String(stored.lemonSqueezySubscriptionId ?? "") === String(attributes.subscription_id ?? "")
+      : type === "orders"
+        ? String(stored.lemonSqueezyOrderId ?? "") === String(payload.data.id ?? "")
+        : false;
+  if (!matches || stored.lemonSqueezySubscriptionId == null) return null;
+  return {
+    ...mapPlanStatus("refunded"),
+    refundedPeriodEnd: stored.currentPeriodEnd ?? null,
+    refundedAt: attributes.refunded_at ?? new Date().toISOString(),
+  };
+}
+
+// A refund is only ever applied to the account whose stored subscription or
+// order it's for, never matched by email.
+async function handleRefundEvent(payload) {
+  const type = payload?.data?.type;
+  const attributes = payload?.data?.attributes || {};
+  const users = adminDb.collection("users");
+  const query =
+    type === "subscription-invoices" && attributes.subscription_id != null
+      ? users.where("lemonSqueezySubscriptionId", "==", String(attributes.subscription_id))
+      : type === "orders" && payload.data.id != null
+        ? users.where("lemonSqueezyOrderId", "in", [Number(payload.data.id), String(payload.data.id)])
+        : null;
+  if (!query) return;
+  const snap = await query.limit(1).get();
+  if (snap.empty) return;
+  const ref = snap.docs[0].ref;
+
+  await adminDb.runTransaction(async (transaction) => {
+    const update = refundUpdate((await transaction.get(ref)).data() || {}, payload);
+    if (update) transaction.set(ref, { ...update, lastBillingSyncAt: FieldValue.serverTimestamp() }, { merge: true });
+  });
+}
+
 async function handleSubscriptionEvent(payload) {
   // Only subscription objects carry a subscription's status; the
   // subscription_payment_* events carry invoices.
@@ -129,7 +191,7 @@ async function handleSubscriptionEvent(payload) {
 
   const attributes = payload.data.attributes || {};
   const subscriptionId = String(payload.data.id);
-  const mapped = mapPlanStatus(attributes.status);
+  const periodEnd = attributes.renews_at || attributes.ends_at || null;
 
   await adminDb.runTransaction(async (transaction) => {
     const stored = (await transaction.get(target.ref)).data() || {};
@@ -137,6 +199,8 @@ async function handleSubscriptionEvent(payload) {
       console.warn(`Ignored Lemon Squeezy event for subscription ${subscriptionId}: it doesn't match the account's billing.`);
       return;
     }
+    let mapped = mapPlanStatus(attributes.status);
+    if (keepsRefund(stored, { subscriptionId, periodEnd, mapped })) mapped = mapPlanStatus("refunded");
     transaction.set(
       target.ref,
       {
@@ -148,7 +212,7 @@ async function handleSubscriptionEvent(payload) {
         lemonSqueezySubscriptionId: subscriptionId,
         lemonSqueezyCustomerPortalUrl: attributes.urls?.customer_portal ?? null,
         lemonSqueezyUpdatedAt: attributes.updated_at ?? null,
-        currentPeriodEnd: attributes.renews_at || attributes.ends_at || null,
+        currentPeriodEnd: periodEnd,
         lastBillingSyncAt: FieldValue.serverTimestamp(),
       },
       { merge: true }
@@ -180,7 +244,9 @@ async function handler(req, res) {
     // The event name inside the signed body, not the unsigned header.
     const eventName = payload?.meta?.event_name || "";
 
-    if (String(eventName).startsWith("subscription_")) {
+    if (eventName === "subscription_payment_refunded" || eventName === "order_refunded") {
+      await handleRefundEvent(payload);
+    } else if (String(eventName).startsWith("subscription_")) {
       await handleSubscriptionEvent(payload);
     }
 

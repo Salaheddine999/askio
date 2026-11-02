@@ -64,6 +64,7 @@ export const settingsMessages = defineMessages({
     status_unpaid: "Unpaid",
     status_cancelled: "Cancelled",
     status_expired: "Expired",
+    status_refunded: "Refunded",
     status_inactive: "Inactive",
 
     appearanceDescription: "How Askio looks on this device.",
@@ -193,6 +194,7 @@ export const settingsMessages = defineMessages({
     status_unpaid: "Impayé",
     status_cancelled: "Résilié",
     status_expired: "Expiré",
+    status_refunded: "Remboursé",
     status_inactive: "Inactif",
 
     appearanceDescription: "L'apparence d'Askio sur cet appareil.",
@@ -323,6 +325,7 @@ export const settingsMessages = defineMessages({
     status_unpaid: "Onbetaald",
     status_cancelled: "Opgezegd",
     status_expired: "Verlopen",
+    status_refunded: "Terugbetaald",
     status_inactive: "Inactief",
 
     appearanceDescription: "Hoe Askio eruitziet op dit apparaat.",
@@ -452,6 +455,7 @@ export const settingsMessages = defineMessages({
     status_unpaid: "Unbezahlt",
     status_cancelled: "Gekündigt",
     status_expired: "Abgelaufen",
+    status_refunded: "Erstattet",
     status_inactive: "Inaktiv",
 
     appearanceDescription: "So sieht Askio auf diesem Gerät aus.",
@@ -582,6 +586,7 @@ export const settingsMessages = defineMessages({
     status_unpaid: "Sin pagar",
     status_cancelled: "Cancelada",
     status_expired: "Caducada",
+    status_refunded: "Reembolsada",
     status_inactive: "Inactiva",
 
     appearanceDescription: "Cómo se ve Askio en este dispositivo.",
@@ -708,6 +713,7 @@ export const settingsMessages = defineMessages({
     status_unpaid: "Não paga",
     status_cancelled: "Cancelada",
     status_expired: "Expirada",
+    status_refunded: "Reembolsada",
     status_inactive: "Inativa",
     appearanceDescription: "Como o Askio aparece neste dispositivo.",
     language: "Idioma",
@@ -824,6 +830,7 @@ export const settingsMessages = defineMessages({
     status_unpaid: "Non pagato",
     status_cancelled: "Annullato",
     status_expired: "Terminato",
+    status_refunded: "Rimborsato",
     status_inactive: "Inattivo",
     appearanceDescription: "L'aspetto di Askio su questo dispositivo.",
     language: "Lingua",
@@ -940,6 +947,7 @@ export const settingsMessages = defineMessages({
     status_unpaid: "غير مدفوع",
     status_cancelled: "ملغى",
     status_expired: "منتهٍ",
+    status_refunded: "مستردّ",
     status_inactive: "غير نشط",
     appearanceDescription: "كيف يبدو Askio على هذا الجهاز.",
     language: "اللغة",
@@ -1056,6 +1064,7 @@ export const settingsMessages = defineMessages({
     status_unpaid: "Nieopłacona",
     status_cancelled: "Anulowana",
     status_expired: "Wygasła",
+    status_refunded: "Zwrócona",
     status_inactive: "Nieaktywna",
     appearanceDescription: "Jak Askio wygląda na tym urządzeniu.",
     language: "Język",

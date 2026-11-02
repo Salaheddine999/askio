@@ -5,7 +5,7 @@ import { describe, expect, it, vi } from "vitest";
 vi.mock("../api/_lib/firebaseAdmin.js", () => ({ adminDb: {}, adminAuth: {} }));
 
 const { verifyWebhookSignature } = await import("../api/_lib/lemonsqueezy.js");
-const { mapPlanStatus } = await import("../api/webhooks/lemonsqueezy.js");
+const { keepsRefund, mapPlanStatus, refundUpdate } = await import("../api/webhooks/lemonsqueezy.js");
 const { buildAccessProfile } = await import("../api/_lib/plan.js");
 
 const sign = (body: string, secret: string) => crypto.createHmac("sha256", secret).update(body).digest("hex");
@@ -65,5 +65,53 @@ describe("buildAccessProfile (what an account may use)", () => {
 
   it("legacy isPro accounts count as Pro", () => {
     expect(buildAccessProfile({ isPro: true })).toMatchObject({ plan: "pro" });
+  });
+});
+
+describe("refunds end Pro", () => {
+  const PERIOD_END = "2026-12-02T10:00:00.000000Z";
+  const stored = { lemonSqueezySubscriptionId: "77", lemonSqueezyOrderId: 501, currentPeriodEnd: PERIOD_END, plan: "pro" };
+  const invoice = (status: string, subscriptionId = 77) => ({
+    data: { type: "subscription-invoices", id: "9", attributes: { status, subscription_id: subscriptionId, refunded_at: "2026-11-05T00:00:00Z" } },
+  });
+  const order = (status: string, id = "501") => ({ data: { type: "orders", id, attributes: { status } } });
+  const refunded = () => ({ ...stored, ...refundUpdate(stored, invoice("refunded")) });
+
+  it("a fully refunded subscription payment drops the account to free", () => {
+    expect(refundUpdate(stored, invoice("refunded"))).toMatchObject({
+      plan: "free",
+      isPro: false,
+      subscriptionStatus: "refunded",
+      refundedPeriodEnd: PERIOD_END,
+    });
+  });
+
+  it("a fully refunded first order drops the account to free", () => {
+    expect(refundUpdate(stored, order("refunded"))).toMatchObject({ plan: "free", isPro: false });
+  });
+
+  it("partial refunds change nothing", () => {
+    expect(refundUpdate(stored, invoice("partial_refund"))).toBeNull();
+    expect(refundUpdate(stored, order("partial_refund"))).toBeNull();
+  });
+
+  it("a refund for another subscription or order changes nothing", () => {
+    expect(refundUpdate(stored, invoice("refunded", 78))).toBeNull();
+    expect(refundUpdate(stored, order("refunded", "502"))).toBeNull();
+    expect(refundUpdate({}, order("refunded", "501"))).toBeNull();
+  });
+
+  it("cancelling after the refund doesn't bring Pro back for that period", () => {
+    const periodEnd = "2026-12-02T10:00:00Z";
+    expect(keepsRefund(refunded(), { subscriptionId: "77", periodEnd, mapped: mapPlanStatus("cancelled") })).toBe(true);
+  });
+
+  it("a new payment gives Pro again", () => {
+    const periodEnd = "2027-01-02T10:00:00Z";
+    expect(keepsRefund(refunded(), { subscriptionId: "77", periodEnd, mapped: mapPlanStatus("active") })).toBe(false);
+  });
+
+  it("a refunded account has no Pro access", () => {
+    expect(buildAccessProfile(refunded())).toMatchObject({ plan: "free" });
   });
 });
