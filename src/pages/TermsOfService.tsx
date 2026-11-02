@@ -157,8 +157,8 @@ export default function TermsOfService() {
             you keep paid features until the end of the period you've paid for.
           </li>
           <li>
-            Fees are non-refundable except where the law requires a refund or we decide to give one. If something has gone
-            wrong, contact <ContactEmail />.
+            New paid plans come with a 14-day money-back guarantee. When and how we refund is set out in our{" "}
+            <Link to="/refunds" className="underline underline-offset-2">Refund Policy</Link>.
           </li>
           <li>We'll tell you in advance before changing the price of your plan, and you can cancel before it applies.</li>
         </List>

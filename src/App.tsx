@@ -36,6 +36,7 @@ const pages = {
   plans: () => import("./pages/Plans"),
   privacy: () => import("./pages/PrivacyPolicy"),
   terms: () => import("./pages/TermsOfService"),
+  refunds: () => import("./pages/RefundPolicy"),
   notFound: () => import("./pages/NotFound"),
   navbar: () => import("./components/Navbar"),
 };
@@ -56,6 +57,7 @@ const SuspendedNotice = lazyPage(() => import("./components/SuspendedNotice"));
 const Plans = lazyPage(pages.plans);
 const PrivacyPolicy = lazyPage(pages.privacy);
 const TermsOfService = lazyPage(pages.terms);
+const RefundPolicy = lazyPage(pages.refunds);
 const NotFound = lazyPage(pages.notFound);
 const Navbar = lazyPage(pages.navbar);
 
@@ -72,6 +74,7 @@ function preloadCurrentPage(path: string) {
     [path === "/plans", pages.plans],
     [path === "/privacy", pages.privacy],
     [path === "/terms", pages.terms],
+    [path === "/refunds", pages.refunds],
   ];
   match.find(([hit]) => hit)?.[1]();
 }
@@ -81,7 +84,7 @@ const SIDEBAR_KEY = "askio_sidebar";
 // Remembers whether this browser was signed in last time, so public pages can
 // render straight away instead of waiting for Firebase to restore the session.
 const SIGNED_IN_KEY = "askio_signed_in";
-const PUBLIC_PATHS = ["/", "/auth", "/plans", "/privacy", "/terms"];
+const PUBLIC_PATHS = ["/", "/auth", "/plans", "/privacy", "/terms", "/refunds"];
 
 // Pages that render inside the signed-in app shell (sidebar + content).
 const isAppRoute = (path: string) => !PUBLIC_PATHS.includes(path) && !path.startsWith("/chatbot/");
@@ -309,6 +312,7 @@ const App: React.FC = () => {
               />
               <Route path="/privacy" element={<PrivacyPolicy />} />
               <Route path="/terms" element={<TermsOfService />} />
+              <Route path="/refunds" element={<RefundPolicy />} />
               <Route path="*" element={<NotFound signedIn={Boolean(user)} />} />
             </Routes>
             </SuspensionGate>
