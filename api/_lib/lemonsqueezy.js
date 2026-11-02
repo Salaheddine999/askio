@@ -102,7 +102,9 @@ export async function lemonRequest(path, options = {}) {
       payload?.errors?.[0]?.detail ||
       payload?.errors?.[0]?.title ||
       "Lemon Squeezy API request failed.";
-    throw new Error(message);
+    // Kept so callers can tell "not found" (like a test-mode id used with a
+    // live key) from other failures.
+    throw Object.assign(new Error(message), { lemonStatus: response.status });
   }
 
   return payload;

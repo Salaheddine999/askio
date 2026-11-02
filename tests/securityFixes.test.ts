@@ -167,6 +167,15 @@ describe("cancelling from Settings", () => {
     expect(calls.some((c) => c.startsWith("DELETE"))).toBe(false);
   });
 
+  it("explains a subscription Lemon Squeezy can't find, like a test-mode one", async () => {
+    db.docs.set("users/owner1", { plan: "pro", subscriptionStatus: "active", lemonSqueezySubscriptionId: "999", lemonSqueezyCustomerId: "77" });
+    globalThis.fetch = (async () =>
+      new Response(JSON.stringify({ errors: [{ status: "404", title: "Not Found" }] }), { status: 404 })) as typeof fetch;
+    const res = await post();
+    expect(res.statusCode).toBe(404);
+    expect((res.body as { error: string }).error).toContain("test mode");
+  });
+
   it("refuses a subscription that's already cancelled", async () => {
     db.docs.set("users/owner1", { plan: "pro", subscriptionStatus: "cancelled", lemonSqueezySubscriptionId: "999", lemonSqueezyCustomerId: "77" });
     const calls = lemon("cancelled");
