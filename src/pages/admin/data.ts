@@ -36,6 +36,9 @@ export interface AdminUser {
   subscriptionId: string | null;
   customerId: string | null;
   aiReplyLimit: number;
+  /** Set while the account has a gift of Pro from an admin. */
+  giftedUntil: string | null;
+  giftNote: string | null;
 }
 
 export interface AdminChatbot {
@@ -53,6 +56,7 @@ export interface Overview {
   signups7d: number | null;
   signups30d: number | null;
   paid: number | null;
+  gifted: number | null;
   suspended: number | null;
   chatbots: number | null;
   aiChatbots: number | null;
@@ -71,6 +75,9 @@ export interface LogEntry {
   targetEmail: string | null;
   adminEmail: string | null;
   reason: string | null;
+  /** For gifts: the end date and the admin's note. */
+  until: string | null;
+  note: string | null;
   at: Date | null;
 }
 
@@ -88,11 +95,16 @@ const toDate = (value: unknown): Date | null => {
   return null;
 };
 
-// Same rules as api/_lib/plan.js: a cancelled Pro keeps access to its period end.
+// Same rules as api/_lib/plan.js: a cancelled Pro keeps access to its period
+// end, and a gift of Pro lasts until its end date.
 function effectivePlan(data: DocumentData): Plan {
   const stored: Plan = data.plan || (data.isPro ? "pro" : "free");
-  if (stored === "enterprise" || stored === "pro") return stored;
   const status = String(data.subscriptionStatus || "").toLowerCase();
+  if (stored !== "enterprise" && status === "gifted") {
+    const giftEnd = toDate(data.giftedUntil);
+    return giftEnd && giftEnd.getTime() > Date.now() ? "pro" : "free";
+  }
+  if (stored === "enterprise" || stored === "pro") return stored;
   const end = toDate(data.currentPeriodEnd);
   return ["cancelled", "canceled"].includes(status) && end && end.getTime() > Date.now() ? "pro" : "free";
 }
@@ -114,6 +126,8 @@ export function toAdminUser(uid: string, data: DocumentData): AdminUser {
     customerId: data.lemonSqueezyCustomerId ? String(data.lemonSqueezyCustomerId) : null,
     aiReplyLimit:
       data.aiReplyLimit ?? (plan === "enterprise" ? Infinity : plan === "pro" ? PRO_AI_REPLY_LIMIT : 0),
+    giftedUntil: data.giftedUntil || null,
+    giftNote: data.giftNote || null,
   };
 }
 
@@ -137,12 +151,15 @@ export async function fetchOverview(): Promise<Overview> {
     getAggregateFromServer(query(collection(db, "ai_usage"), where("month", "==", currentUsageMonth())), {
       replies: sum("replies"),
     }).then((s) => s.data().replies ?? 0),
+    count(query(users, where("subscriptionStatus", "==", "gifted"))),
   ]);
   results.forEach((r) => r.status === "rejected" && console.warn("Admin overview figure failed:", r.reason));
-  const [accounts, signups7d, signups30d, paid, suspended, chatbots, aiChatbots, aiRepliesThisMonth] = results.map(
+  const [accounts, signups7d, signups30d, proAccounts, suspended, chatbots, aiChatbots, aiRepliesThisMonth, gifted] = results.map(
     (r) => (r.status === "fulfilled" ? r.value : null)
   );
-  return { accounts, signups7d, signups30d, paid, suspended, chatbots, aiChatbots, aiRepliesThisMonth };
+  // Gifted accounts are stored as Pro but don't pay.
+  const paid = proAccounts === null ? null : proAccounts - (gifted ?? 0);
+  return { accounts, signups7d, signups30d, paid, gifted, suspended, chatbots, aiChatbots, aiRepliesThisMonth };
 }
 
 export async function fetchUser(uid: string) {
@@ -201,12 +218,14 @@ export async function toUsageRow(d: QueryDocumentSnapshot): Promise<UsageRow> {
   return { uid, replies: Number(d.data().replies) || 0, user: await fetchUser(uid).catch(() => null) };
 }
 
-export type LogFilter = "all" | "suspend" | "unsuspend" | "delete";
+export type LogFilter = "all" | "suspend" | "unsuspend" | "delete" | "gift";
 
 export const logQuery = (action: LogFilter) =>
   action === "all"
     ? query(collection(db, "admin_log"), orderBy("at", "desc"))
-    : query(collection(db, "admin_log"), where("action", "==", action), orderBy("at", "desc"));
+    : action === "gift"
+      ? query(collection(db, "admin_log"), where("action", "in", ["gift", "gift-extend", "gift-end"]), orderBy("at", "desc"))
+      : query(collection(db, "admin_log"), where("action", "==", action), orderBy("at", "desc"));
 
 export function toLogEntry(d: QueryDocumentSnapshot): LogEntry {
   const data = d.data();
@@ -216,6 +235,8 @@ export function toLogEntry(d: QueryDocumentSnapshot): LogEntry {
     targetEmail: data.targetEmail ?? null,
     adminEmail: data.adminEmail ?? null,
     reason: data.reason ?? null,
+    until: data.until ?? null,
+    note: data.note || null,
     at: toDate(data.at),
   };
 }

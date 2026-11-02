@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { Dialog, DialogBackdrop, DialogPanel, DialogTitle } from "@headlessui/react";
-import { format } from "date-fns";
+import { addMonths, addYears, format } from "date-fns";
 import { toast } from "react-hot-toast";
-import { Ban, Copy, RotateCcw, Trash2, X } from "../../components/icons";
+import { Ban, Copy, Gift, RotateCcw, Trash2, X } from "../../components/icons";
 import { apiRequest } from "../../utils/api";
 import { Skeleton } from "../../components/Skeleton";
 import { focusRing, primaryButton, secondaryButton } from "../dashboard/ui";
@@ -10,7 +10,23 @@ import { AdminChatbot, AdminUser, fetchAccountDetail, fetchUser } from "./data";
 import { PlanBadge, UsageBar } from "./parts";
 import { AiIcon } from "../../components/icons";
 
-type Confirm = "suspend" | "delete" | null;
+type Confirm = "suspend" | "delete" | "gift" | "end-gift" | null;
+type Action = "admin-suspend" | "admin-unsuspend" | "admin-delete" | "admin-gift" | "admin-end-gift";
+
+const DONE: Record<Exclude<Action, "admin-delete">, string> = {
+  "admin-suspend": "Account suspended",
+  "admin-unsuspend": "Account restored",
+  "admin-gift": "Gift saved",
+  "admin-end-gift": "Gift ended",
+};
+
+const GIFT_LENGTHS = [
+  { label: "1 month", add: (d: Date) => addMonths(d, 1) },
+  { label: "3 months", add: (d: Date) => addMonths(d, 3) },
+  { label: "1 year", add: (d: Date) => addYears(d, 1) },
+];
+
+const day = (d: Date) => format(d, "yyyy-MM-dd");
 
 /** Chatbots listed before "Show all", so a big account doesn't make the panel endless. */
 const BOTS_SHOWN = 8;
@@ -54,6 +70,8 @@ const AccountPanel: React.FC<Props> = ({ uid, onClose, onChanged }) => {
   const [confirmEmail, setConfirmEmail] = useState("");
   const [busy, setBusy] = useState(false);
   const [showAllBots, setShowAllBots] = useState(false);
+  const [giftUntil, setGiftUntil] = useState("");
+  const [giftNote, setGiftNote] = useState("");
 
   useEffect(() => {
     if (!uid) return;
@@ -78,13 +96,13 @@ const AccountPanel: React.FC<Props> = ({ uid, onClose, onChanged }) => {
     };
   }, [uid]);
 
-  const run = async (action: "admin-suspend" | "admin-unsuspend" | "admin-delete") => {
+  const run = async (action: Action) => {
     if (!user) return;
     setBusy(true);
     try {
       await apiRequest(`/api/account/${action}`, {
         authRequired: true,
-        body: { uid: user.uid, reason, confirmEmail },
+        body: { uid: user.uid, reason, confirmEmail, until: giftUntil, note: giftNote },
       });
       if (action === "admin-delete") {
         toast.success(`Deleted ${user.email}`);
@@ -98,7 +116,7 @@ const AccountPanel: React.FC<Props> = ({ uid, onClose, onChanged }) => {
       onChanged(user.uid, fresh);
       setConfirm(null);
       setReason("");
-      toast.success(action === "admin-suspend" ? "Account suspended" : "Account restored");
+      toast.success(DONE[action]);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "That didn't work. Please try again.");
     } finally {
@@ -107,6 +125,16 @@ const AccountPanel: React.FC<Props> = ({ uid, onClose, onChanged }) => {
   };
 
   const periodEnd = user?.currentPeriodEnd ? new Date(user.currentPeriodEnd) : null;
+  const gifted = user?.subscriptionStatus === "gifted";
+  const giftEnd = user?.giftedUntil ? new Date(user.giftedUntil) : null;
+  // A new gift counts from today; changing one counts from its current end.
+  const giftFrom = gifted && giftEnd && giftEnd.getTime() > Date.now() ? giftEnd : new Date();
+
+  const openGift = () => {
+    setGiftUntil(day(addMonths(giftFrom, 1)));
+    setGiftNote(user?.giftNote || "");
+    setConfirm("gift");
+  };
 
   return (
     <Dialog open={uid !== null} onClose={onClose} className="relative z-50">
@@ -159,7 +187,11 @@ const AccountPanel: React.FC<Props> = ({ uid, onClose, onChanged }) => {
                   <Detail label="Subscription">
                     {user.subscriptionStatus.charAt(0).toUpperCase() + user.subscriptionStatus.slice(1).replace("_", " ")}
                   </Detail>
-                  {periodEnd && !Number.isNaN(periodEnd.getTime()) && (
+                  {gifted && giftEnd && (
+                    <Detail label="Gift until">{format(giftEnd, "MMM d, yyyy")}</Detail>
+                  )}
+                  {gifted && user.giftNote && <Detail label="Gift note">{user.giftNote}</Detail>}
+                  {!gifted && periodEnd && !Number.isNaN(periodEnd.getTime()) && (
                     <Detail label={user.subscriptionStatus === "cancelled" ? "Access until" : "Renews"}>
                       {format(periodEnd, "MMM d, yyyy")}
                     </Detail>
@@ -260,6 +292,79 @@ const AccountPanel: React.FC<Props> = ({ uid, onClose, onChanged }) => {
                   </div>
                 )}
 
+                {confirm === "gift" && (
+                  <div className="space-y-3 rounded-xl border border-ink-120 p-4 dark:border-ink-780">
+                    <p className="text-body-sm text-fg">
+                      {gifted
+                        ? "Change when their gift of Pro ends."
+                        : "They get Pro for free until the date below, with nothing charged. When it ends, their account goes back to the free plan."}
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {GIFT_LENGTHS.map((length) => {
+                        const value = day(length.add(giftFrom));
+                        return (
+                          <button
+                            key={length.label}
+                            type="button"
+                            aria-pressed={giftUntil === value}
+                            onClick={() => setGiftUntil(value)}
+                            className={`${secondaryButton} ${giftUntil === value ? "!border-ink-900 dark:!border-ink-130" : ""}`}
+                          >
+                            {gifted ? `+${length.label}` : length.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    <label className="block">
+                      <span className="mb-1.5 block text-label text-fg">Ends on</span>
+                      <input
+                        type="date"
+                        value={giftUntil}
+                        min={day(new Date())}
+                        max={day(addYears(new Date(), 3))}
+                        onChange={(e) => setGiftUntil(e.target.value)}
+                        className={`${inputClass} h-10`}
+                      />
+                    </label>
+                    <label className="block">
+                      <span className="mb-1.5 block text-label text-fg">
+                        Note <span className="font-normal text-ink-425">· only admins see it</span>
+                      </span>
+                      <input
+                        value={giftNote}
+                        onChange={(e) => setGiftNote(e.target.value)}
+                        maxLength={200}
+                        placeholder="e.g. Beta tester"
+                        className={`${inputClass} h-10`}
+                      />
+                    </label>
+                    <div className="flex justify-end gap-2">
+                      <button type="button" onClick={() => setConfirm(null)} className={secondaryButton}>
+                        Cancel
+                      </button>
+                      <button type="button" disabled={busy || !giftUntil} onClick={() => run("admin-gift")} className={primaryButton}>
+                        {busy ? "Saving…" : gifted ? "Save new date" : "Gift Pro"}
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {confirm === "end-gift" && (
+                  <div className="space-y-3 rounded-xl border border-ink-120 p-4 dark:border-ink-780">
+                    <p className="text-body-sm text-fg">
+                      Their account goes back to the free plan now. Their chatbots and FAQs stay, but AI answers stop.
+                    </p>
+                    <div className="flex justify-end gap-2">
+                      <button type="button" onClick={() => setConfirm(null)} className={secondaryButton}>
+                        Cancel
+                      </button>
+                      <button type="button" disabled={busy} onClick={() => run("admin-end-gift")} className={primaryButton}>
+                        {busy ? "Ending…" : "End gift"}
+                      </button>
+                    </div>
+                  </div>
+                )}
+
                 {confirm === "delete" && (
                   <div className="space-y-3 rounded-xl border border-red-200 p-4 dark:border-red-900/60">
                     <p className="text-body-sm text-fg">
@@ -294,6 +399,24 @@ const AccountPanel: React.FC<Props> = ({ uid, onClose, onChanged }) => {
 
           {user && !loading && confirm === null && (
             <div className="flex flex-wrap justify-end gap-2 border-t border-ink-70 px-5 py-3 dark:border-ink-780">
+              {gifted ? (
+                <>
+                  <button type="button" onClick={() => setConfirm("end-gift")} className={secondaryButton}>
+                    End gift
+                  </button>
+                  <button type="button" onClick={openGift} className={secondaryButton}>
+                    <Gift size={15} />
+                    Change gift
+                  </button>
+                </>
+              ) : (
+                user.plan === "free" && (
+                  <button type="button" onClick={openGift} className={secondaryButton}>
+                    <Gift size={15} />
+                    Gift Pro
+                  </button>
+                )
+              )}
               {user.suspended ? (
                 <button type="button" disabled={busy} onClick={() => run("admin-unsuspend")} className={secondaryButton}>
                   <RotateCcw size={15} />

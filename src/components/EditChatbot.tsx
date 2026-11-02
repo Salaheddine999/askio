@@ -17,6 +17,7 @@ import { focusRing, primaryButton, secondaryButton } from "../pages/dashboard/ui
 import { backLink } from "../pages/dashboard/styles";
 import { Panel } from "./editor/controls";
 import { ChatbotConfig, ConfigChange, Plan } from "./editor/types";
+import { planAccess } from "../hooks/usePlanAccess";
 import GeneralTab, { GeneralErrors } from "./editor/GeneralTab";
 import AppearanceTab from "./editor/AppearanceTab";
 import FaqTab from "./editor/FaqTab";
@@ -40,19 +41,6 @@ const aiPersonaModuleLoader = Object.values(aiPersonaModules)[0];
 const AiPersonaTab = aiPersonaModuleLoader
   ? lazy(() => aiPersonaModuleLoader() as Promise<{ default: React.ComponentType<Record<string, unknown>> }>)
   : null;
-
-function hasPaidAccessUntilPeriodEnd(subscriptionStatus: string, currentPeriodEnd?: string | null) {
-  if (!["cancelled", "canceled"].includes(String(subscriptionStatus || "").toLowerCase())) {
-    return false;
-  }
-
-  if (!currentPeriodEnd) {
-    return false;
-  }
-
-  const endDate = new Date(currentPeriodEnd);
-  return !Number.isNaN(endDate.getTime()) && endDate.getTime() > Date.now();
-}
 
 const DEFAULT_CONFIG: ChatbotConfig = {
   id: "",
@@ -231,17 +219,7 @@ const EditChatbot: React.FC = () => {
     (async () => {
       try {
         const userSnap = await getDoc(doc(db, "users", currentUser.uid));
-        const userData = userSnap.data();
-        const storedPlan = (userData?.plan || (userData?.isPro ? "pro" : "free")) as Plan;
-        const subscriptionStatus =
-          userData?.subscriptionStatus || (storedPlan === "free" ? "inactive" : "active");
-        const paidThroughPeriodEnd = hasPaidAccessUntilPeriodEnd(subscriptionStatus, userData?.currentPeriodEnd);
-        const plan: Plan =
-          storedPlan === "enterprise" ? "enterprise" : storedPlan === "pro" || paidThroughPeriodEnd ? "pro" : "free";
-        const allowed =
-          plan === "enterprise" ||
-          (plan === "pro" &&
-            (["active", "trialing", "on_trial"].includes(subscriptionStatus) || paidThroughPeriodEnd));
+        const { plan, canUseAi: allowed } = planAccess(userSnap.data());
 
         setUserPlan(plan);
         setCanUseAi(allowed);

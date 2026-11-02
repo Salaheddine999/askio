@@ -43,6 +43,7 @@ import {
   FileCsv as PhFileCsv,
   Flask as PhFlask,
   Gear as PhGear,
+  Gift as PhGift,
   Globe as PhGlobe,
   GridFour as PhGridFour,
   HandWaving as PhHandWaving,
@@ -185,6 +186,7 @@ export const ExternalLink = icon(PhArrowSquareOut, "ExternalLink");
 export const Eye = icon(PhEye, "Eye");
 export const EyeOff = icon(PhEyeSlash, "EyeOff");
 export const FileSpreadsheet = icon(PhFileCsv, "FileSpreadsheet");
+export const Gift = icon(PhGift, "Gift");
 export const Globe = icon(PhGlobe, "Globe");
 export const GripVertical = icon(PhDotsSixVertical, "GripVertical");
 export const Hand = icon(PhHandWaving, "Hand");

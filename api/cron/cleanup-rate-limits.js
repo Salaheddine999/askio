@@ -4,6 +4,7 @@ import { adminDb } from "../_lib/firebaseAdmin.js";
 import { sendError } from "../_lib/response.js";
 import { withMonitoring } from "../_lib/monitoring.js";
 import { sendSetupReminders } from "../_lib/email/alerts.js";
+import { GIFT_ENDED } from "../_lib/plan.js";
 
 const BATCH_SIZE = 400;
 // Keeps one run well inside the serverless time limit and the free daily delete quota.
@@ -27,13 +28,34 @@ async function deleteWhere(query, budget) {
 }
 
 /**
+ * Moves accounts whose gift of Pro has ended back to the free plan. An account
+ * that started paying during its gift keeps its plan; only the old end date goes.
+ */
+export async function expireGifts(now = new Date()) {
+  const snap = await adminDb
+    .collection("users")
+    .where("giftedUntil", "<=", now.toISOString())
+    .limit(BATCH_SIZE)
+    .get();
+  if (snap.empty) return 0;
+  const batch = adminDb.batch();
+  for (const d of snap.docs) {
+    const gifted = String(d.data().subscriptionStatus || "").toLowerCase() === "gifted";
+    batch.update(d.ref, gifted ? GIFT_ENDED : { giftedUntil: GIFT_ENDED.giftedUntil, giftNote: GIFT_ENDED.giftNote });
+  }
+  await batch.commit();
+  return snap.size;
+}
+
+/**
  * Daily Vercel Cron job, doing the job of Firestore TTL policies without
  * needing a Google Cloud billing account. It deletes:
  * - rate-limit records (hashed IP and chatbot counters) whose `expiresAt` has passed;
  * - hourly AI failure counters, the same way;
  * - anything left by the removed homepage demo;
  * - saved conversations with no message for 90 days.
- * It also emails owners whose new chatbot isn't on a website yet.
+ * It also ends expired gifts of Pro and emails owners whose new chatbot isn't
+ * on a website yet.
  *
  * Vercel sends `Authorization: Bearer <CRON_SECRET>` when that environment
  * variable is set, so only the scheduler can trigger it.
@@ -68,8 +90,9 @@ async function handler(req, res) {
       adminDb.collection("conversations").where("lastMessageAt", "<", cutoff),
       MAX_PER_RUN - rateLimits - aiCounters - demos
     );
+    const giftsEnded = await expireGifts();
     const setupReminders = await sendSetupReminders();
-    return res.status(200).json({ deleted: rateLimits + aiCounters + demos + conversations, rateLimits, aiCounters, demos, conversations, setupReminders });
+    return res.status(200).json({ deleted: rateLimits + aiCounters + demos + conversations, rateLimits, aiCounters, demos, conversations, giftsEnded, setupReminders });
   } catch (error) {
     console.error("Cleanup failed:", error);
     return sendError(res, error);

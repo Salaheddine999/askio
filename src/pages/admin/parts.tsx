@@ -8,6 +8,7 @@ const tone = {
   paid: "bg-emerald-50 text-emerald-700 ring-emerald-600/15 dark:bg-emerald-900/25 dark:text-emerald-400 dark:ring-emerald-400/20",
   warn: "bg-amber-50 text-amber-700 ring-amber-600/15 dark:bg-amber-900/25 dark:text-amber-300 dark:ring-amber-400/20",
   bad: "bg-red-50 text-red-700 ring-red-600/15 dark:bg-red-950/40 dark:text-red-300 dark:ring-red-400/20",
+  gift: "bg-violet-50 text-violet-700 ring-violet-600/15 dark:bg-violet-900/25 dark:text-violet-300 dark:ring-violet-400/20",
 };
 
 const Pill: React.FC<{ className: string; children: React.ReactNode }> = ({ className, children }) => (
@@ -25,6 +26,7 @@ export const PlanBadge: React.FC<{ user: AdminUser }> = ({ user }) => {
       <Pill className={user.plan === "free" ? tone.free : tone.paid}>
         {user.plan === "pro" ? "Pro" : user.plan === "enterprise" ? "Enterprise" : "Free"}
       </Pill>
+      {user.plan === "pro" && status === "gifted" && <Pill className={tone.gift}>Gift</Pill>}
       {user.plan !== "free" && ["cancelled", "canceled"].includes(status) && <Pill className={tone.warn}>Cancelled</Pill>}
       {["past_due", "unpaid", "paused"].includes(status) && <Pill className={tone.warn}>{status === "past_due" ? "Past due" : status[0].toUpperCase() + status.slice(1)}</Pill>}
     </span>

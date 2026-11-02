@@ -37,6 +37,7 @@ import { Helmet } from "react-helmet-async";
 import { FormPageSkeleton } from "../components/Skeleton";
 import { cancelSubscription, redirectToBillingPortal, redirectToProCheckout } from "../utils/billing";
 import { PRO_AI_REPLY_LIMIT, PRO_PRICE } from "../utils/pricing";
+import { planAccess } from "../hooks/usePlanAccess";
 import { focusRing, primaryButton, secondaryButton, surface } from "./dashboard/ui";
 import type { Suspension } from "../hooks/useSuspension";
 import { useLanguage, useT } from "../i18n";
@@ -162,6 +163,7 @@ const Settings: React.FC<SettingsProps> = ({ darkMode, setDarkMode, suspension }
   const [subscriptionStatus, setSubscriptionStatus] = useState("inactive");
   const [currentPeriodEnd, setCurrentPeriodEnd] = useState<string | null>(null);
   const [hasSubscription, setHasSubscription] = useState(false);
+  const [giftedUntil, setGiftedUntil] = useState<string | null>(null);
   const [billingActionLoading, setBillingActionLoading] = useState(false);
 
   useEffect(() => {
@@ -173,13 +175,14 @@ const Settings: React.FC<SettingsProps> = ({ darkMode, setDarkMode, suspension }
         setIsGoogleAccount(currentUser.providerData.some((p) => p.providerId === "google.com"));
         const userDoc = await getDoc(doc(db, "users", currentUser.uid));
         const userData = userDoc.data() || {};
-        const plan = (userData.plan || (userData.isPro ? "pro" : "free")) as Plan;
+        const { plan } = planAccess(userData);
         const displayName = userData.name || currentUser.displayName || "";
         setName(displayName);
         setSavedName(displayName);
         setUserPlan(plan);
         setSubscriptionStatus(userData.subscriptionStatus || (plan === "free" ? "inactive" : "active"));
         setCurrentPeriodEnd(userData.currentPeriodEnd || null);
+        setGiftedUntil(userData.giftedUntil || null);
         setEmailAlerts({
           leads: userData.emailAlerts?.leads !== false,
           missedChats: userData.emailAlerts?.missedChats !== false,
@@ -337,9 +340,16 @@ const Settings: React.FC<SettingsProps> = ({ darkMode, setDarkMode, suspension }
       ? periodEnd.toLocaleDateString(t.lang, { year: "numeric", month: "long", day: "numeric" })
       : null;
   const isPaid = userPlan !== "free";
+  // A gift of Pro from Askio: nothing to manage or cancel, but they can subscribe.
+  const gifted = isPaid && subscriptionStatus === "gifted";
+  const giftEnd = giftedUntil ? new Date(giftedUntil) : null;
+  const giftEndLabel =
+    giftEnd && !Number.isNaN(giftEnd.getTime())
+      ? giftEnd.toLocaleDateString(t.lang, { year: "numeric", month: "long", day: "numeric" })
+      : null;
   const cancelled = subscriptionStatus === "cancelled" || subscriptionStatus === "expired";
   const canCancelPlan = userPlan === "pro" && hasSubscription && ["active", "on_trial"].includes(subscriptionStatus);
-  const statusTone = ["active", "on_trial", "trialing"].includes(subscriptionStatus)
+  const statusTone = ["active", "on_trial", "trialing", "gifted"].includes(subscriptionStatus)
     ? "bg-emerald-50 text-emerald-700 ring-emerald-600/20 dark:bg-emerald-900/25 dark:text-emerald-400"
     : ["paused", "past_due", "unpaid", "cancelled"].includes(subscriptionStatus)
       ? "bg-amber-50 text-amber-700 ring-amber-600/20 dark:bg-amber-900/25 dark:text-amber-400"
@@ -456,7 +466,9 @@ const Settings: React.FC<SettingsProps> = ({ darkMode, setDarkMode, suspension }
                   <p className="mt-1 text-body-sm text-fg-subtle">
                     {!isPaid
                       ? t("upgradePitch", { limit: PRO_AI_REPLY_LIMIT.toLocaleString(t.lang), price: `$${PRO_PRICE.monthly}` })
-                      : cancelled && periodEndLabel
+                      : gifted && giftEndLabel
+                        ? t("giftUntil", { date: giftEndLabel })
+                        : cancelled && periodEndLabel
                         ? t("cancelledUntil", { plan: planLabel, date: periodEndLabel })
                         : periodEndLabel
                           ? t("renewsOn", { date: periodEndLabel })
@@ -464,7 +476,7 @@ const Settings: React.FC<SettingsProps> = ({ darkMode, setDarkMode, suspension }
                   </p>
                 </div>
                 <div className="flex shrink-0 gap-2">
-                  {!isPaid && !suspension && (
+                  {(!isPaid || gifted) && !suspension && (
                     <button
                       type="button"
                       disabled={billingActionLoading}
@@ -472,10 +484,10 @@ const Settings: React.FC<SettingsProps> = ({ darkMode, setDarkMode, suspension }
                       className={primaryButton}
                     >
                       <ProIcon size={15} />
-                      {billingActionLoading ? t("opening") : t("upgradeToPro")}
+                      {billingActionLoading ? t("opening") : gifted ? t("subscribeToKeepPro") : t("upgradeToPro")}
                     </button>
                   )}
-                  {(isPaid || hasSubscription) && (
+                  {((isPaid && !gifted) || hasSubscription) && (
                     <button
                       type="button"
                       disabled={billingActionLoading}

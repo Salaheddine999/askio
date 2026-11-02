@@ -51,7 +51,11 @@ const OverviewTab: React.FC<Props> = ({ overview, newest, usage, log, onOpen, on
           <StatsCard
             title="Paid accounts"
             value={fmt(overview.paid)}
-            description={overview.suspended ? `${fmt(overview.suspended)} suspended` : "Pro and Enterprise"}
+            description={
+              [overview.gifted ? `${fmt(overview.gifted)} gifted` : "", overview.suspended ? `${fmt(overview.suspended)} suspended` : ""]
+                .filter(Boolean)
+                .join(" · ") || "Pro and Enterprise"
+            }
             icon={<UserPlus className={statIcon} />}
           />
           <StatsCard

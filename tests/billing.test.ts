@@ -5,8 +5,10 @@ import { describe, expect, it, vi } from "vitest";
 vi.mock("../api/_lib/firebaseAdmin.js", () => ({ adminDb: {}, adminAuth: {} }));
 
 const { verifyWebhookSignature } = await import("../api/_lib/lemonsqueezy.js");
-const { keepsRefund, mapPlanStatus, refundUpdate } = await import("../api/webhooks/lemonsqueezy.js");
+const { keepsGift, keepsRefund, mapPlanStatus, refundUpdate } = await import("../api/webhooks/lemonsqueezy.js");
 const { buildAccessProfile } = await import("../api/_lib/plan.js");
+const { giftEndDate } = await import("../api/_lib/account/adminActions.js");
+const { planAccess } = await import("../src/hooks/usePlanAccess");
 
 const sign = (body: string, secret: string) => crypto.createHmac("sha256", secret).update(body).digest("hex");
 
@@ -113,5 +115,35 @@ describe("refunds end Pro", () => {
 
   it("a refunded account has no Pro access", () => {
     expect(buildAccessProfile(refunded())).toMatchObject({ plan: "free" });
+  });
+});
+
+describe("gifts of Pro", () => {
+  const DAY = 86_400_000;
+  const inDays = (n: number) => new Date(Date.now() + n * DAY).toISOString();
+  const gifted = (days: number) => ({ plan: "pro", isPro: true, aiChatbotLimit: 10, subscriptionStatus: "gifted", giftedUntil: inDays(days) });
+
+  it("a gift gives Pro and AI until its end date", () => {
+    expect(buildAccessProfile(gifted(10))).toMatchObject({ plan: "pro", isSubscriptionActive: true });
+    expect(planAccess(gifted(10))).toEqual({ plan: "pro", canUseAi: true, gifted: true });
+  });
+
+  it("an ended gift is free, even before the daily job runs", () => {
+    expect(buildAccessProfile(gifted(-1))).toMatchObject({ plan: "free" });
+    expect(planAccess(gifted(-1))).toMatchObject({ plan: "free", canUseAi: false });
+  });
+
+  it("a subscription ending during a gift keeps the gift", () => {
+    expect(keepsGift({ giftedUntil: inDays(10) }, mapPlanStatus("expired"))).toBe(true);
+    expect(keepsGift({ giftedUntil: inDays(-1) }, mapPlanStatus("expired"))).toBe(false);
+    expect(keepsGift({ giftedUntil: inDays(10) }, mapPlanStatus("active"))).toBe(false);
+  });
+
+  it("the end date is the end of the chosen day, in the future and within 3 years", () => {
+    const now = Date.parse("2026-11-02T12:00:00Z");
+    expect(giftEndDate("2026-12-02", now)).toBe("2026-12-02T23:59:59.000Z");
+    expect(() => giftEndDate("2026-11-01", now)).toThrow("future");
+    expect(() => giftEndDate("2031-01-01", now)).toThrow("3 years");
+    expect(() => giftEndDate("soon", now)).toThrow();
   });
 });

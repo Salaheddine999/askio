@@ -1,3 +1,4 @@
+import { FieldValue } from "firebase-admin/firestore";
 import { adminDb } from "./firebaseAdmin.js";
 import { PRO_AI_REPLY_LIMIT } from "./aiUsage.js";
 
@@ -14,6 +15,28 @@ function hasPaidAccessUntilPeriodEnd(subscriptionStatus, currentPeriodEnd) {
   return !Number.isNaN(endDate.getTime()) && endDate.getTime() > Date.now();
 }
 
+/**
+ * A gift of Pro from an admin (subscriptionStatus "gifted"), until giftedUntil.
+ * The daily cleanup job moves expired gifts back to the free plan; until it
+ * runs, this already treats them as free.
+ */
+export const GIFTED_PRO = { plan: "pro", subscriptionStatus: "gifted", aiChatbotLimit: 10, isPro: true };
+/** What an account goes back to when its gift ends. */
+export const GIFT_ENDED = {
+  plan: "free",
+  subscriptionStatus: "inactive",
+  aiChatbotLimit: 0,
+  isPro: false,
+  giftedUntil: FieldValue.delete(),
+  giftNote: FieldValue.delete(),
+};
+
+export function hasActiveGift(userData = {}) {
+  if (String(userData.subscriptionStatus || "").toLowerCase() !== "gifted") return false;
+  const end = Date.parse(userData.giftedUntil || "");
+  return Number.isFinite(end) && end > Date.now();
+}
+
 export function buildAccessProfile(userData = {}) {
   const legacyPlan = userData.isPro ? "pro" : "free";
   const storedPlan = userData.plan || legacyPlan;
@@ -23,12 +46,17 @@ export function buildAccessProfile(userData = {}) {
     subscriptionStatus,
     userData.currentPeriodEnd
   );
+  const gift = subscriptionStatus === "gifted" ? hasActiveGift(userData) : null;
   const plan =
     storedPlan === "enterprise"
       ? "enterprise"
-      : storedPlan === "pro" || paidThroughPeriodEnd
-        ? "pro"
-        : "free";
+      : gift !== null
+        ? gift
+          ? "pro"
+          : "free"
+        : storedPlan === "pro" || paidThroughPeriodEnd
+          ? "pro"
+          : "free";
 
   const defaultLimit =
     plan === "enterprise" ? Number.MAX_SAFE_INTEGER : plan === "pro" ? 10 : 0;
@@ -44,6 +72,7 @@ export function buildAccessProfile(userData = {}) {
     isSubscriptionActive:
       plan === "free" ||
       ["active", "trialing", "on_trial"].includes(subscriptionStatus) ||
+      gift === true ||
       (plan === "pro" && paidThroughPeriodEnd),
   };
 }

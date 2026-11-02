@@ -5,6 +5,7 @@ import {
   isSignedCheckoutUid,
   verifyWebhookSignature,
 } from "../_lib/lemonsqueezy.js";
+import { GIFTED_PRO } from "../_lib/plan.js";
 import { readRawBody } from "../_lib/rawBody.js";
 import { reportError, withMonitoring } from "../_lib/monitoring.js";
 
@@ -180,6 +181,15 @@ async function handleRefundEvent(payload) {
   });
 }
 
+/**
+ * A gift of Pro from an admin outlasts a paid subscription: if the
+ * subscription ends while the gift hasn't, the account stays on the gift.
+ */
+export function keepsGift(stored = {}, mapped) {
+  const end = Date.parse(stored.giftedUntil || "");
+  return !mapped.isPro && Number.isFinite(end) && end > Date.now();
+}
+
 async function handleSubscriptionEvent(payload) {
   // Only subscription objects carry a subscription's status; the
   // subscription_payment_* events carry invoices.
@@ -201,6 +211,7 @@ async function handleSubscriptionEvent(payload) {
     }
     let mapped = mapPlanStatus(attributes.status);
     if (keepsRefund(stored, { subscriptionId, periodEnd, mapped })) mapped = mapPlanStatus("refunded");
+    if (keepsGift(stored, mapped)) mapped = GIFTED_PRO;
     transaction.set(
       target.ref,
       {

@@ -1,6 +1,7 @@
 import { FieldValue } from "firebase-admin/firestore";
 import { requireUser } from "../auth.js";
 import { adminAuth, adminDb } from "../firebaseAdmin.js";
+import { GIFT_ENDED, GIFTED_PRO, buildAccessProfile } from "../plan.js";
 import { sendError } from "../response.js";
 import { deleteAccountData } from "./deleteAccount.js";
 
@@ -110,9 +111,55 @@ async function remove(admin, body) {
   return { deleted: true, chatbots };
 }
 
-const ACTIONS = { suspend, unsuspend, delete: remove };
+/** Longest gift, so a typo in the year can't hand out Pro forever. */
+const MAX_GIFT_DAYS = 3 * 366;
 
-/** POST /api/account/admin-<suspend|unsuspend|delete> with { uid, ... }. */
+/** "2027-01-31" means through the end of that day (UTC). */
+export function giftEndDate(value, now = Date.now()) {
+  const text = String(value || "").trim();
+  const end = Date.parse(/^\d{4}-\d{2}-\d{2}$/.test(text) ? `${text}T23:59:59.000Z` : text);
+  if (!Number.isFinite(end) || end <= now) throw httpError(400, "Pick an end date in the future.");
+  if (end > now + MAX_GIFT_DAYS * 86_400_000) throw httpError(400, "A gift can last up to 3 years.");
+  return new Date(end).toISOString();
+}
+
+// Pro for free until a date, with no payment or subscription in Lemon Squeezy.
+// Sending it again for a gifted account changes the end date.
+async function gift(admin, body) {
+  const { authUser, userRef, userData } = await targetAccount(admin, body.uid);
+  const until = giftEndDate(body.until);
+  const gifted = String(userData.subscriptionStatus || "").toLowerCase() === "gifted";
+  if (!gifted && buildAccessProfile(userData).plan !== "free") {
+    throw httpError(400, "They already have a paid plan, so there's nothing to gift.");
+  }
+  const note = String(body.note || "").trim().slice(0, 200);
+
+  await userRef.set(
+    {
+      ...GIFTED_PRO,
+      giftedUntil: until,
+      giftNote: note || null,
+      giftedAt: FieldValue.serverTimestamp(),
+    },
+    { merge: true }
+  );
+  await logAction(admin, gifted ? "gift-extend" : "gift", body.uid, authUser?.email || userData.email, { until, note });
+  return { gifted: true, until };
+}
+
+async function endGift(admin, body) {
+  const { authUser, userRef, userData } = await targetAccount(admin, body.uid);
+  if (String(userData.subscriptionStatus || "").toLowerCase() !== "gifted") {
+    throw httpError(400, "This account doesn't have a gift.");
+  }
+  await userRef.set({ ...GIFT_ENDED, giftedAt: FieldValue.delete() }, { merge: true });
+  await logAction(admin, "gift-end", body.uid, authUser?.email || userData.email);
+  return { gifted: false };
+}
+
+const ACTIONS = { suspend, unsuspend, delete: remove, gift, "end-gift": endGift };
+
+/** POST /api/account/admin-<suspend|unsuspend|delete|gift|end-gift> with { uid, ... }. */
 export default async function adminAction(req, res, name) {
   if (req.method !== "POST") {
     res.setHeader("Allow", "POST");

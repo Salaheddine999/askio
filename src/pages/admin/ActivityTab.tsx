@@ -1,15 +1,20 @@
 import React, { useEffect, useState } from "react";
 import { format, formatDistanceToNowStrict } from "date-fns";
-import { Ban, RotateCcw, ShieldCheck, Trash2 } from "../../components/icons";
+import { Ban, Gift, RotateCcw, ShieldCheck, Trash2 } from "../../components/icons";
 import { EmptyState } from "../dashboard/ui";
 import { LogEntry, LogFilter, logQuery, toLogEntry } from "./data";
 import { Card, FilterChips, Pager, RowsLoading } from "./parts";
 import { rangeSummary, usePaged } from "../../hooks/usePaged";
 
+const GIFT_TONE = "bg-violet-50 text-violet-600 dark:bg-violet-950/40 dark:text-violet-300";
+
 const ACTIONS: Record<string, { label: string; icon: typeof Ban; tone: string }> = {
   suspend: { label: "Suspended", icon: Ban, tone: "bg-amber-50 text-amber-600 dark:bg-amber-950/40 dark:text-amber-300" },
   unsuspend: { label: "Unsuspended", icon: RotateCcw, tone: "bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-300" },
   delete: { label: "Deleted", icon: Trash2, tone: "bg-red-50 text-red-600 dark:bg-red-950/40 dark:text-red-300" },
+  gift: { label: "Gifted Pro to", icon: Gift, tone: GIFT_TONE },
+  "gift-extend": { label: "Changed the gift for", icon: Gift, tone: GIFT_TONE },
+  "gift-end": { label: "Ended the gift for", icon: Gift, tone: "bg-ink-70 text-ink-605 dark:bg-ink-805 dark:text-ink-325" },
 };
 
 const FILTERS: { value: LogFilter; label: string }[] = [
@@ -17,6 +22,7 @@ const FILTERS: { value: LogFilter; label: string }[] = [
   { value: "suspend", label: "Suspensions" },
   { value: "unsuspend", label: "Unsuspensions" },
   { value: "delete", label: "Deletions" },
+  { value: "gift", label: "Gifts" },
 ];
 
 export const LogItem: React.FC<{ entry: LogEntry; showAdmin?: boolean }> = ({ entry, showAdmin }) => {
@@ -31,6 +37,12 @@ export const LogItem: React.FC<{ entry: LogEntry; showAdmin?: boolean }> = ({ en
         <p className="truncate text-body-sm text-fg" title={entry.targetEmail || undefined}>
           <span className="font-medium">{action.label}</span> {entry.targetEmail || "an account"}
         </p>
+        {entry.until && (
+          <p className="mt-0.5 truncate text-caption text-fg-subtle" title={entry.note || undefined}>
+            Until {format(new Date(entry.until), "MMM d, yyyy")}
+            {entry.note ? ` · ${entry.note}` : ""}
+          </p>
+        )}
         {entry.reason && (
           <p className="mt-0.5 line-clamp-2 text-caption text-fg-subtle" title={entry.reason}>
             “{entry.reason}”
@@ -60,7 +72,7 @@ const ActivityTab: React.FC<{ version: number }> = ({ version }) => {
   }, [version]);
 
   return (
-    <Card title="Activity" description="Every suspension and deletion by an admin, newest first.">
+    <Card title="Activity" description="Every suspension, deletion and gift by an admin, newest first.">
       <div className="border-b border-ink-70 px-5 py-3 sm:px-6 dark:border-ink-780">
         <FilterChips label="Filter activity" value={filter} onChange={setFilter} options={FILTERS} />
       </div>

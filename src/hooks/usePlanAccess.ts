@@ -1,20 +1,43 @@
 import { useEffect, useState } from "react";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, type DocumentData } from "firebase/firestore";
 import { auth } from "../utils/firebase";
 import { db } from "../utils/db";
 
 export type Plan = "free" | "pro" | "enterprise";
 
-function paidUntilPeriodEnd(status: string, periodEnd?: string | null) {
-  if (!["cancelled", "canceled"].includes(String(status || "").toLowerCase()) || !periodEnd) return false;
-  const end = new Date(periodEnd);
-  return !Number.isNaN(end.getTime()) && end.getTime() > Date.now();
-}
+const isFuture = (value?: string | null) => {
+  const end = value ? new Date(value) : null;
+  return Boolean(end && !Number.isNaN(end.getTime()) && end.getTime() > Date.now());
+};
 
 /**
- * The signed-in account's plan and whether it may use AI features, by the
- * same rules as the server (api/_lib/plan.js). The server still decides.
+ * An account's plan and whether it may use AI features, from its user
+ * document, by the same rules as the server (api/_lib/plan.js): a cancelled
+ * Pro keeps access to its period end, and a gift of Pro lasts until its end date.
  */
+export function planAccess(data: DocumentData = {}): { plan: Plan; canUseAi: boolean; gifted: boolean } {
+  const stored: Plan = data.plan || (data.isPro ? "pro" : "free");
+  const status = String(data.subscriptionStatus || (stored === "free" ? "inactive" : "active")).toLowerCase();
+  const gifted = status === "gifted";
+  const giftActive = gifted && isFuture(data.giftedUntil);
+  const paidThrough = ["cancelled", "canceled"].includes(status) && isFuture(data.currentPeriodEnd);
+  const plan: Plan =
+    stored === "enterprise"
+      ? "enterprise"
+      : gifted
+        ? giftActive
+          ? "pro"
+          : "free"
+        : stored === "pro" || paidThrough
+          ? "pro"
+          : "free";
+  const canUseAi =
+    plan === "enterprise" ||
+    (plan === "pro" && (["active", "trialing", "on_trial"].includes(status) || paidThrough || giftActive));
+  return { plan, canUseAi, gifted: giftActive };
+}
+
+/** The signed-in account's plan access (see planAccess). The server still decides. */
 export function usePlanAccess() {
   const [state, setState] = useState<{ loading: boolean; plan: Plan; canUseAi: boolean }>({
     loading: true,
@@ -31,14 +54,7 @@ export function usePlanAccess() {
     let cancelled = false;
     getDoc(doc(db, "users", user.uid))
       .then((snap) => {
-        const data = snap.data() || {};
-        const stored: Plan = data.plan || (data.isPro ? "pro" : "free");
-        const status = data.subscriptionStatus || (stored === "free" ? "inactive" : "active");
-        const paidThrough = paidUntilPeriodEnd(status, data.currentPeriodEnd);
-        const plan: Plan = stored === "enterprise" ? "enterprise" : stored === "pro" || paidThrough ? "pro" : "free";
-        const canUseAi =
-          plan === "enterprise" ||
-          (plan === "pro" && (["active", "trialing", "on_trial"].includes(status) || paidThrough));
+        const { plan, canUseAi } = planAccess(snap.data());
         if (!cancelled) setState({ loading: false, plan, canUseAi });
       })
       .catch(() => !cancelled && setState({ loading: false, plan: "free", canUseAi: false }));
