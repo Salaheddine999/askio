@@ -13,6 +13,7 @@ import { withMonitoring } from "../_lib/monitoring.js";
 //   POST /api/account/admin-delete      admin only: delete an account and its data
 //   POST /api/account/admin-gift        admin only: give Pro until a date, or change the date
 //   POST /api/account/admin-end-gift    admin only: end that gift now
+//   POST /api/account/admin-cancel-subscription   admin only: cancel their subscription, now or at period end
 //   POST /api/account/live-reply        reply to a visitor who asked for a person
 //   POST /api/account/live-end          end that live chat
 //   GET|POST /api/account/email-unsubscribe   the signed link in alert emails
@@ -28,6 +29,7 @@ const HANDLERS = {
   "admin-delete": (req, res) => adminAction(req, res, "delete"),
   "admin-gift": (req, res) => adminAction(req, res, "gift"),
   "admin-end-gift": (req, res) => adminAction(req, res, "end-gift"),
+  "admin-cancel-subscription": (req, res) => adminAction(req, res, "cancel-subscription"),
   "live-reply": (req, res) => liveChat(req, res, "reply"),
   "live-end": (req, res) => liveChat(req, res, "end"),
   "email-unsubscribe": emailUnsubscribe,

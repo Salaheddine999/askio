@@ -1,6 +1,7 @@
 import { FieldValue } from "firebase-admin/firestore";
 import { requireUser } from "../auth.js";
 import { adminAuth, adminDb } from "../firebaseAdmin.js";
+import { cancelAccountSubscription } from "../billing/cancelSubscription.js";
 import { GIFT_ENDED, GIFTED_PRO, buildAccessProfile } from "../plan.js";
 import { sendError } from "../response.js";
 import { deleteAccountData } from "./deleteAccount.js";
@@ -157,9 +158,29 @@ async function endGift(admin, body) {
   return { gifted: false };
 }
 
-const ACTIONS = { suspend, unsuspend, delete: remove, gift, "end-gift": endGift };
+// Cancels the account's subscription in Lemon Squeezy. `when: "now"` also ends
+// Pro straight away, for example after a refund.
+async function cancelSubscription(admin, body) {
+  const { authUser, userRef, userData } = await targetAccount(admin, body.uid);
+  const now = body.when === "now";
+  const result = await cancelAccountSubscription(userRef, userData, { now });
+  await logAction(admin, "cancel-subscription", body.uid, authUser?.email || userData.email, {
+    when: now ? "now" : "period_end",
+    until: now ? null : result.endsAt,
+  });
+  return result;
+}
 
-/** POST /api/account/admin-<suspend|unsuspend|delete|gift|end-gift> with { uid, ... }. */
+const ACTIONS = {
+  suspend,
+  unsuspend,
+  delete: remove,
+  gift,
+  "end-gift": endGift,
+  "cancel-subscription": cancelSubscription,
+};
+
+/** POST /api/account/admin-<suspend|unsuspend|delete|gift|end-gift|cancel-subscription> with { uid, ... }. */
 export default async function adminAction(req, res, name) {
   if (req.method !== "POST") {
     res.setHeader("Allow", "POST");

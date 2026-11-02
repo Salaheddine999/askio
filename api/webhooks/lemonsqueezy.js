@@ -122,16 +122,16 @@ export function shouldApplyEvent(stored = {}, { subscriptionId, updatedAt, signe
 const sameTime = (a, b) => Boolean(a && b) && Date.parse(a) === Date.parse(b);
 
 /**
- * A refunded period doesn't give Pro (see the Refund Policy). Once a payment
- * is refunded, later events for the same period, like the owner cancelling the
- * subscription in Lemon Squeezy, keep the account on the free plan. A new
- * payment moves the period end, which gives Pro again.
+ * A refunded period doesn't give Pro (see the Refund Policy), and neither does
+ * one an admin ended early. Later events for that period, like the owner
+ * cancelling the subscription in Lemon Squeezy, keep the account on the free
+ * plan. A new payment moves the period end, which gives Pro again.
  */
 export function keepsRefund(stored = {}, { subscriptionId, periodEnd, mapped }) {
   return (
     mapped.isPro &&
     String(stored.lemonSqueezySubscriptionId ?? "") === subscriptionId &&
-    sameTime(stored.refundedPeriodEnd, periodEnd)
+    (sameTime(stored.refundedPeriodEnd, periodEnd) || sameTime(stored.endedPeriodEnd, periodEnd))
   );
 }
 
@@ -218,7 +218,9 @@ async function handleSubscriptionEvent(payload) {
       return;
     }
     let mapped = mapPlanStatus(attributes.status);
-    if (keepsRefund(stored, { subscriptionId, periodEnd, mapped })) mapped = mapPlanStatus("refunded");
+    if (keepsRefund(stored, { subscriptionId, periodEnd, mapped })) {
+      mapped = mapPlanStatus(stored.subscriptionStatus === "ended" ? "ended" : "refunded");
+    }
     if (keepsGift(stored, mapped)) mapped = GIFTED_PRO;
     transaction.set(
       target.ref,

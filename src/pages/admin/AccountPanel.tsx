@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Dialog, DialogBackdrop, DialogPanel, DialogTitle } from "@headlessui/react";
 import { addMonths, addYears, format } from "date-fns";
 import { toast } from "react-hot-toast";
-import { Ban, Copy, Gift, RotateCcw, Trash2, X } from "../../components/icons";
+import { Ban, Copy, CreditCard, Gift, RotateCcw, Trash2, X } from "../../components/icons";
 import { apiRequest } from "../../utils/api";
 import { Skeleton } from "../../components/Skeleton";
 import { focusRing, primaryButton, secondaryButton } from "../dashboard/ui";
@@ -10,14 +10,24 @@ import { AdminChatbot, AdminUser, fetchAccountDetail, fetchUser } from "./data";
 import { PlanBadge, UsageBar } from "./parts";
 import { AiIcon } from "../../components/icons";
 
-type Confirm = "suspend" | "delete" | "gift" | "end-gift" | null;
-type Action = "admin-suspend" | "admin-unsuspend" | "admin-delete" | "admin-gift" | "admin-end-gift";
+type Confirm = "suspend" | "delete" | "gift" | "end-gift" | "cancel-subscription" | null;
+type Action =
+  | "admin-suspend"
+  | "admin-unsuspend"
+  | "admin-delete"
+  | "admin-gift"
+  | "admin-end-gift"
+  | "admin-cancel-subscription";
+
+/** Subscription states the admin panel can cancel; "cancelled" can still be ended now. */
+const CANCELLABLE = ["active", "on_trial", "past_due", "unpaid", "paused", "cancelled"];
 
 const DONE: Record<Exclude<Action, "admin-delete">, string> = {
   "admin-suspend": "Account suspended",
   "admin-unsuspend": "Account restored",
   "admin-gift": "Gift saved",
   "admin-end-gift": "Gift ended",
+  "admin-cancel-subscription": "Subscription cancelled",
 };
 
 const GIFT_LENGTHS = [
@@ -72,6 +82,7 @@ const AccountPanel: React.FC<Props> = ({ uid, onClose, onChanged }) => {
   const [showAllBots, setShowAllBots] = useState(false);
   const [giftUntil, setGiftUntil] = useState("");
   const [giftNote, setGiftNote] = useState("");
+  const [cancelWhen, setCancelWhen] = useState<"period_end" | "now">("period_end");
 
   useEffect(() => {
     if (!uid) return;
@@ -102,7 +113,7 @@ const AccountPanel: React.FC<Props> = ({ uid, onClose, onChanged }) => {
     try {
       await apiRequest(`/api/account/${action}`, {
         authRequired: true,
-        body: { uid: user.uid, reason, confirmEmail, until: giftUntil, note: giftNote },
+        body: { uid: user.uid, reason, confirmEmail, until: giftUntil, note: giftNote, when: cancelWhen },
       });
       if (action === "admin-delete") {
         toast.success(`Deleted ${user.email}`);
@@ -129,6 +140,11 @@ const AccountPanel: React.FC<Props> = ({ uid, onClose, onChanged }) => {
   const giftEnd = user?.giftedUntil ? new Date(user.giftedUntil) : null;
   // A new gift counts from today; changing one counts from its current end.
   const giftFrom = gifted && giftEnd && giftEnd.getTime() > Date.now() ? giftEnd : new Date();
+
+  const subscriptionStatus = user?.subscriptionStatus.toLowerCase() || "";
+  const canCancel = Boolean(user?.subscriptionId) && !gifted && CANCELLABLE.includes(subscriptionStatus);
+  const alreadyCancelled = subscriptionStatus === "cancelled";
+  const periodEndLabel = periodEnd && !Number.isNaN(periodEnd.getTime()) ? format(periodEnd, "MMM d, yyyy") : null;
 
   const openGift = () => {
     setGiftUntil(day(addMonths(giftFrom, 1)));
@@ -354,6 +370,59 @@ const AccountPanel: React.FC<Props> = ({ uid, onClose, onChanged }) => {
                   </div>
                 )}
 
+                {confirm === "cancel-subscription" && (
+                  <div className="space-y-3 rounded-xl border border-ink-120 p-4 dark:border-ink-780">
+                    <p className="text-body-sm text-fg">
+                      This cancels their subscription in Lemon Squeezy, so they won't be charged again. Refunds are
+                      separate: do those in Lemon Squeezy first.
+                    </p>
+                    <fieldset className="space-y-2">
+                      <legend className="sr-only">When Pro ends</legend>
+                      {([
+                        {
+                          value: "period_end",
+                          label: "At the end of the period",
+                          hint: periodEndLabel ? `They keep Pro until ${periodEndLabel}.` : "They keep Pro until the period they paid for ends.",
+                        },
+                        { value: "now", label: "Now", hint: "Pro ends straight away. Use this after a refund." },
+                      ] as const)
+                        .filter((option) => option.value === "now" || !alreadyCancelled)
+                        .map((option) => (
+                          <label
+                            key={option.value}
+                            className="flex cursor-pointer items-start gap-2.5 rounded-lg border border-ink-120 px-3 py-2.5 has-[:checked]:border-ink-900 dark:border-ink-780 dark:has-[:checked]:border-ink-130"
+                          >
+                            <input
+                              type="radio"
+                              name="cancel-when"
+                              value={option.value}
+                              checked={cancelWhen === option.value}
+                              onChange={() => setCancelWhen(option.value)}
+                              className="mt-1 accent-ink-900"
+                            />
+                            <span>
+                              <span className="block text-body-sm font-medium text-fg">{option.label}</span>
+                              <span className="block text-caption text-fg-subtle">{option.hint}</span>
+                            </span>
+                          </label>
+                        ))}
+                    </fieldset>
+                    <div className="flex justify-end gap-2">
+                      <button type="button" onClick={() => setConfirm(null)} className={secondaryButton}>
+                        Keep it
+                      </button>
+                      <button
+                        type="button"
+                        disabled={busy}
+                        onClick={() => run("admin-cancel-subscription")}
+                        className={`${primaryButton} !bg-red-600 hover:!bg-red-700 !text-white`}
+                      >
+                        {busy ? "Cancelling…" : cancelWhen === "now" ? "Cancel and end Pro now" : "Cancel subscription"}
+                      </button>
+                    </div>
+                  </div>
+                )}
+
                 {confirm === "end-gift" && (
                   <div className="space-y-3 rounded-xl border border-ink-120 p-4 dark:border-ink-780">
                     <p className="text-body-sm text-fg">
@@ -404,6 +473,19 @@ const AccountPanel: React.FC<Props> = ({ uid, onClose, onChanged }) => {
 
           {user && !loading && confirm === null && (
             <div className="flex flex-wrap justify-end gap-2 border-t border-ink-70 px-5 py-3 dark:border-ink-780">
+              {canCancel && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setCancelWhen(alreadyCancelled ? "now" : "period_end");
+                    setConfirm("cancel-subscription");
+                  }}
+                  className={secondaryButton}
+                >
+                  <CreditCard size={15} />
+                  {alreadyCancelled ? "End Pro now" : "Cancel subscription"}
+                </button>
+              )}
               {gifted ? (
                 <>
                   <button type="button" onClick={() => setConfirm("end-gift")} className={secondaryButton}>

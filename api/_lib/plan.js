@@ -21,6 +21,12 @@ function hasPaidAccessUntilPeriodEnd(subscriptionStatus, currentPeriodEnd) {
  * runs, this already treats them as free.
  */
 export const GIFTED_PRO = { plan: "pro", subscriptionStatus: "gifted", aiChatbotLimit: 10, isPro: true };
+/**
+ * An admin ended Pro straight away (e.g. after a refund), before the paid
+ * period ended. The webhook keeps it this way for that period.
+ */
+export const ENDED_NOW = { plan: "free", subscriptionStatus: "ended", aiChatbotLimit: 0, isPro: false };
+
 /** What an account goes back to when its gift ends. */
 export const GIFT_ENDED = {
   plan: "free",

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { format, formatDistanceToNowStrict } from "date-fns";
-import { Ban, Gift, RotateCcw, ShieldCheck, Trash2 } from "../../components/icons";
+import { Ban, CreditCard, Gift, RotateCcw, ShieldCheck, Trash2 } from "../../components/icons";
 import { EmptyState } from "../dashboard/ui";
 import { LogEntry, LogFilter, logQuery, toLogEntry } from "./data";
 import { Card, FilterChips, Pager, RowsLoading } from "./parts";
@@ -15,6 +15,7 @@ const ACTIONS: Record<string, { label: string; icon: typeof Ban; tone: string }>
   gift: { label: "Gifted Pro to", icon: Gift, tone: GIFT_TONE },
   "gift-extend": { label: "Changed the gift for", icon: Gift, tone: GIFT_TONE },
   "gift-end": { label: "Ended the gift for", icon: Gift, tone: "bg-ink-70 text-ink-605 dark:bg-ink-805 dark:text-ink-325" },
+  "cancel-subscription": { label: "Cancelled the subscription of", icon: CreditCard, tone: "bg-amber-50 text-amber-600 dark:bg-amber-950/40 dark:text-amber-300" },
 };
 
 const FILTERS: { value: LogFilter; label: string }[] = [

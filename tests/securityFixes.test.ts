@@ -34,7 +34,8 @@ const { takeRateLimits, visitorKey } = await import("../api/_lib/rateLimit.js");
 const { safeFetch } = await import("../api/_lib/safeFetch.js");
 const { buildCheckoutUrl, isSignedCheckoutUid, lemonId, ownedSubscription } = await import("../api/_lib/lemonsqueezy.js");
 const { shouldApplyEvent } = await import("../api/webhooks/lemonsqueezy.js");
-const { default: cancelSubscription } = await import("../api/_lib/billing/cancelSubscription.js");
+const { default: cancelSubscription, cancelAccountSubscription } = await import("../api/_lib/billing/cancelSubscription.js");
+const { keepsRefund } = await import("../api/webhooks/lemonsqueezy.js");
 const { signState, readState, isSignedByShopify, connectShopifyInstall } = await import("../api/_lib/shopify/install.js");
 const crypto = await import("node:crypto");
 
@@ -174,6 +175,27 @@ describe("cancelling from Settings", () => {
     const res = await post();
     expect(res.statusCode).toBe(404);
     expect((res.body as { error: string }).error).toContain("test mode");
+  });
+
+  it("an admin can end Pro now, which the webhook then keeps for that period", async () => {
+    db.docs.set("users/owner1", { plan: "pro", subscriptionStatus: "active", lemonSqueezySubscriptionId: "999", lemonSqueezyCustomerId: "77" });
+    const calls = lemon("active");
+    const ref = { set: async (v: Record<string, unknown>) => void db.docs.set("users/owner1", { ...db.docs.get("users/owner1"), ...v }) };
+    await cancelAccountSubscription(ref, db.docs.get("users/owner1"), { now: true });
+    expect(calls).toContain("DELETE https://api.lemonsqueezy.com/v1/subscriptions/999");
+    const stored = db.docs.get("users/owner1")!;
+    expect(stored).toMatchObject({ plan: "free", isPro: false, subscriptionStatus: "ended", endedPeriodEnd: ENDS_AT });
+    // Lemon Squeezy's "cancelled" event for the same period doesn't bring Pro back.
+    expect(keepsRefund(stored, { subscriptionId: "999", periodEnd: ENDS_AT, mapped: { isPro: true } })).toBe(true);
+  });
+
+  it("an admin can end a subscription that's already cancelled without calling Lemon Squeezy again", async () => {
+    db.docs.set("users/owner1", { plan: "pro", subscriptionStatus: "cancelled", lemonSqueezySubscriptionId: "999", lemonSqueezyCustomerId: "77" });
+    const calls = lemon("cancelled");
+    const ref = { set: async (v: Record<string, unknown>) => void db.docs.set("users/owner1", { ...db.docs.get("users/owner1"), ...v }) };
+    await cancelAccountSubscription(ref, db.docs.get("users/owner1"), { now: true });
+    expect(calls.some((c) => c.startsWith("DELETE"))).toBe(false);
+    expect(db.docs.get("users/owner1")).toMatchObject({ plan: "free", subscriptionStatus: "ended" });
   });
 
   it("refuses a subscription that's already cancelled", async () => {
