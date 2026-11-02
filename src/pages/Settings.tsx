@@ -37,7 +37,7 @@ import { Helmet } from "react-helmet-async";
 import { FormPageSkeleton } from "../components/Skeleton";
 import { cancelSubscription, redirectToBillingPortal, redirectToProCheckout } from "../utils/billing";
 import { PRO_AI_REPLY_LIMIT, PRO_PRICE, billingIntervalOf, type BillingInterval } from "../utils/pricing";
-import { planAccess } from "../hooks/usePlanAccess";
+import { planAccess } from "../utils/planAccess";
 import { focusRing, primaryButton, secondaryButton, surface } from "./dashboard/ui";
 import type { Suspension } from "../hooks/useSuspension";
 import { useLanguage, useT } from "../i18n";

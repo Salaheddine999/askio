@@ -17,7 +17,7 @@ import { focusRing, primaryButton, secondaryButton } from "../pages/dashboard/ui
 import { backLink } from "../pages/dashboard/styles";
 import { Panel } from "./editor/controls";
 import { ChatbotConfig, ConfigChange, Plan } from "./editor/types";
-import { planAccess } from "../hooks/usePlanAccess";
+import { planAccess } from "../utils/planAccess";
 import GeneralTab, { GeneralErrors } from "./editor/GeneralTab";
 import AppearanceTab from "./editor/AppearanceTab";
 import FaqTab from "./editor/FaqTab";

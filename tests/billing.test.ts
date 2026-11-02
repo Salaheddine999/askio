@@ -11,7 +11,7 @@ const { billingIntervalOf: billingIntervalFromVariant, keepsGift, keepsRefund, m
 const { billingIntervalOf } = await import("../src/utils/pricing");
 const { buildAccessProfile } = await import("../api/_lib/plan.js");
 const { giftEndDate } = await import("../api/_lib/account/adminActions.js");
-const { planAccess } = await import("../src/hooks/usePlanAccess");
+const { planAccess } = await import("../src/utils/planAccess");
 
 const sign = (body: string, secret: string) => crypto.createHmac("sha256", secret).update(body).digest("hex");
 
