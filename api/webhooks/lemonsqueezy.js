@@ -181,6 +181,14 @@ async function handleRefundEvent(payload) {
   });
 }
 
+/** "monthly" or "yearly", from the variant's name in Lemon Squeezy ("Monthly", "Yearly"). */
+export function billingIntervalOf(variantName) {
+  const name = String(variantName || "").toLowerCase();
+  if (/year|annual/.test(name)) return "yearly";
+  if (/month/.test(name)) return "monthly";
+  return null;
+}
+
 /**
  * A gift of Pro from an admin outlasts a paid subscription: if the
  * subscription ends while the gift hasn't, the account stays on the gift.
@@ -220,6 +228,7 @@ async function handleSubscriptionEvent(payload) {
         lemonSqueezyOrderId: attributes.order_id ?? null,
         lemonSqueezyProductId: attributes.product_id ?? null,
         lemonSqueezyVariantId: attributes.variant_id ?? null,
+        ...(billingIntervalOf(attributes.variant_name) && { billingInterval: billingIntervalOf(attributes.variant_name) }),
         lemonSqueezySubscriptionId: subscriptionId,
         lemonSqueezyCustomerPortalUrl: attributes.urls?.customer_portal ?? null,
         lemonSqueezyUpdatedAt: attributes.updated_at ?? null,

@@ -36,7 +36,7 @@ import { useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { FormPageSkeleton } from "../components/Skeleton";
 import { cancelSubscription, redirectToBillingPortal, redirectToProCheckout } from "../utils/billing";
-import { PRO_AI_REPLY_LIMIT, PRO_PRICE } from "../utils/pricing";
+import { PRO_AI_REPLY_LIMIT, PRO_PRICE, billingIntervalOf, type BillingInterval } from "../utils/pricing";
 import { planAccess } from "../hooks/usePlanAccess";
 import { focusRing, primaryButton, secondaryButton, surface } from "./dashboard/ui";
 import type { Suspension } from "../hooks/useSuspension";
@@ -164,6 +164,7 @@ const Settings: React.FC<SettingsProps> = ({ darkMode, setDarkMode, suspension }
   const [currentPeriodEnd, setCurrentPeriodEnd] = useState<string | null>(null);
   const [hasSubscription, setHasSubscription] = useState(false);
   const [giftedUntil, setGiftedUntil] = useState<string | null>(null);
+  const [billingInterval, setBillingInterval] = useState<BillingInterval | null>(null);
   const [billingActionLoading, setBillingActionLoading] = useState(false);
 
   useEffect(() => {
@@ -183,6 +184,7 @@ const Settings: React.FC<SettingsProps> = ({ darkMode, setDarkMode, suspension }
         setSubscriptionStatus(userData.subscriptionStatus || (plan === "free" ? "inactive" : "active"));
         setCurrentPeriodEnd(userData.currentPeriodEnd || null);
         setGiftedUntil(userData.giftedUntil || null);
+        setBillingInterval(billingIntervalOf(userData));
         setEmailAlerts({
           leads: userData.emailAlerts?.leads !== false,
           missedChats: userData.emailAlerts?.missedChats !== false,
@@ -459,6 +461,11 @@ const Settings: React.FC<SettingsProps> = ({ darkMode, setDarkMode, suspension }
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="font-display text-h3 text-ink-900 dark:text-ink-70">{planLabel}</span>
+                    {userPlan === "pro" && !gifted && hasSubscription && billingInterval && (
+                      <span className="text-body-sm text-fg-subtle">
+                        · {billingInterval === "yearly" ? t("intervalYearly") : t("intervalMonthly")}
+                      </span>
+                    )}
                     {isPaid && (
                       <span className={`rounded-full px-2 py-0.5 text-caption font-medium ring-1 ring-inset ${statusTone}`}>{statusLabel}</span>
                     )}

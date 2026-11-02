@@ -5,7 +5,10 @@ import { describe, expect, it, vi } from "vitest";
 vi.mock("../api/_lib/firebaseAdmin.js", () => ({ adminDb: {}, adminAuth: {} }));
 
 const { verifyWebhookSignature } = await import("../api/_lib/lemonsqueezy.js");
-const { keepsGift, keepsRefund, mapPlanStatus, refundUpdate } = await import("../api/webhooks/lemonsqueezy.js");
+const { billingIntervalOf: billingIntervalFromVariant, keepsGift, keepsRefund, mapPlanStatus, refundUpdate } = await import(
+  "../api/webhooks/lemonsqueezy.js"
+);
+const { billingIntervalOf } = await import("../src/utils/pricing");
 const { buildAccessProfile } = await import("../api/_lib/plan.js");
 const { giftEndDate } = await import("../api/_lib/account/adminActions.js");
 const { planAccess } = await import("../src/hooks/usePlanAccess");
@@ -115,6 +118,23 @@ describe("refunds end Pro", () => {
 
   it("a refunded account has no Pro access", () => {
     expect(buildAccessProfile(refunded())).toMatchObject({ plan: "free" });
+  });
+});
+
+describe("monthly or yearly", () => {
+  it("reads it from the variant name Lemon Squeezy sends", () => {
+    expect(billingIntervalFromVariant("Yearly")).toBe("yearly");
+    expect(billingIntervalFromVariant("Annual plan")).toBe("yearly");
+    expect(billingIntervalFromVariant("Monthly")).toBe("monthly");
+    expect(billingIntervalFromVariant("Default")).toBeNull();
+    expect(billingIntervalFromVariant(undefined)).toBeNull();
+  });
+
+  it("falls back to the live variant ids for accounts saved before", () => {
+    expect(billingIntervalOf({ billingInterval: "yearly" })).toBe("yearly");
+    expect(billingIntervalOf({ lemonSqueezyVariantId: 2329884 })).toBe("yearly");
+    expect(billingIntervalOf({ lemonSqueezyVariantId: 2329885 })).toBe("monthly");
+    expect(billingIntervalOf({ lemonSqueezyVariantId: 1 })).toBeNull();
   });
 });
 

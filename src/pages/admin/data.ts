@@ -15,7 +15,7 @@ import {
   type DocumentData,
 } from "firebase/firestore";
 import { db } from "../../utils/db";
-import { PRO_AI_REPLY_LIMIT } from "../../utils/pricing";
+import { PRO_AI_REPLY_LIMIT, billingIntervalOf, type BillingInterval } from "../../utils/pricing";
 
 // Reads for the admin dashboard. They only work for accounts with the admin
 // claim: the Firestore rules give admins read access to these collections.
@@ -36,6 +36,7 @@ export interface AdminUser {
   subscriptionId: string | null;
   customerId: string | null;
   aiReplyLimit: number;
+  billingInterval: BillingInterval | null;
   /** Set while the account has a gift of Pro from an admin. */
   giftedUntil: string | null;
   giftNote: string | null;
@@ -126,6 +127,7 @@ export function toAdminUser(uid: string, data: DocumentData): AdminUser {
     customerId: data.lemonSqueezyCustomerId ? String(data.lemonSqueezyCustomerId) : null,
     aiReplyLimit:
       data.aiReplyLimit ?? (plan === "enterprise" ? Infinity : plan === "pro" ? PRO_AI_REPLY_LIMIT : 0),
+    billingInterval: billingIntervalOf(data),
     giftedUntil: data.giftedUntil || null,
     giftNote: data.giftNote || null,
   };

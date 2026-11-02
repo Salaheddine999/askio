@@ -18,6 +18,15 @@ export function isBillingInterval(value: unknown): value is BillingInterval {
   return value === "monthly" || value === "yearly";
 }
 
+/** The live Lemon Squeezy variants, for accounts saved before the webhook stored billingInterval. */
+const PRO_VARIANTS: Record<string, BillingInterval> = { "2329885": "monthly", "2329884": "yearly" };
+
+/** Whether a user's subscription is billed monthly or yearly, if known. */
+export function billingIntervalOf(data: { billingInterval?: unknown; lemonSqueezyVariantId?: unknown } = {}) {
+  if (isBillingInterval(data.billingInterval)) return data.billingInterval;
+  return PRO_VARIANTS[String(data.lemonSqueezyVariantId ?? "")] ?? null;
+}
+
 /** What Pro costs per month when paid yearly, e.g. "$32.50". */
 export function proYearlyMonthlyEquivalent() {
   return `$${(PRO_PRICE.yearly / 12).toFixed(2)}`;

@@ -187,6 +187,11 @@ const AccountPanel: React.FC<Props> = ({ uid, onClose, onChanged }) => {
                   <Detail label="Subscription">
                     {user.subscriptionStatus.charAt(0).toUpperCase() + user.subscriptionStatus.slice(1).replace("_", " ")}
                   </Detail>
+                  {!gifted && user.subscriptionId && user.billingInterval && (
+                    <Detail label="Billing">
+                      {user.billingInterval === "yearly" ? "Yearly" : "Monthly"}
+                    </Detail>
+                  )}
                   {gifted && giftEnd && (
                     <Detail label="Gift until">{format(giftEnd, "MMM d, yyyy")}</Detail>
                   )}
