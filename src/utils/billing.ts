@@ -124,6 +124,13 @@ export async function redirectToProCheckout(interval: BillingInterval = "monthly
   }
 }
 
+/** Cancels the account's subscription at the end of the paid period. */
+export function cancelSubscription() {
+  return apiRequest<{ status: string; endsAt: string | null }>("/api/billing/cancel-subscription", {
+    authRequired: true,
+  });
+}
+
 export async function redirectToBillingPortal() {
   const user = auth.currentUser;
 

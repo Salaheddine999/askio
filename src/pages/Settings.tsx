@@ -35,7 +35,7 @@ import { reportClientError } from "../utils/monitoring";
 import { useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { FormPageSkeleton } from "../components/Skeleton";
-import { redirectToBillingPortal, redirectToProCheckout } from "../utils/billing";
+import { cancelSubscription, redirectToBillingPortal, redirectToProCheckout } from "../utils/billing";
 import { PRO_AI_REPLY_LIMIT, PRO_PRICE } from "../utils/pricing";
 import { focusRing, primaryButton, secondaryButton, surface } from "./dashboard/ui";
 import type { Suspension } from "../hooks/useSuspension";
@@ -106,6 +106,8 @@ const Settings: React.FC<SettingsProps> = ({ darkMode, setDarkMode, suspension }
   const t = useT(settingsMessages);
   const navigate = useNavigate();
   const deleteAccountModal = useModal();
+  const cancelPlanModal = useModal();
+  const [cancellingPlan, setCancellingPlan] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const [emailAlerts, setEmailAlerts] = useState({ leads: true, missedChats: true, setup: true });
   const [push, setPush] = useState<PushState | null>(null);
@@ -298,6 +300,23 @@ const Settings: React.FC<SettingsProps> = ({ darkMode, setDarkMode, suspension }
     }
   };
 
+  const cancelPlan = async () => {
+    setCancellingPlan(true);
+    try {
+      const { endsAt } = await cancelSubscription();
+      setSubscriptionStatus("cancelled");
+      if (endsAt) setCurrentPeriodEnd(endsAt);
+      cancelPlanModal.closeModal();
+      toast.success(t("planCancelled"));
+    } catch (error) {
+      console.error("Cancelling the subscription failed:", error);
+      const failure = t("cancelPlanFailed");
+      toast.error(error instanceof Error && error.message ? `${failure} ${error.message}` : failure);
+    } finally {
+      setCancellingPlan(false);
+    }
+  };
+
   // Links like /settings#emails land on that section once it has rendered.
   useEffect(() => {
     const id = window.location.hash.slice(1);
@@ -319,6 +338,7 @@ const Settings: React.FC<SettingsProps> = ({ darkMode, setDarkMode, suspension }
       : null;
   const isPaid = userPlan !== "free";
   const cancelled = subscriptionStatus === "cancelled" || subscriptionStatus === "expired";
+  const canCancelPlan = userPlan === "pro" && hasSubscription && ["active", "on_trial"].includes(subscriptionStatus);
   const statusTone = ["active", "on_trial", "trialing"].includes(subscriptionStatus)
     ? "bg-emerald-50 text-emerald-700 ring-emerald-600/20 dark:bg-emerald-900/25 dark:text-emerald-400"
     : ["paused", "past_due", "unpaid", "cancelled"].includes(subscriptionStatus)
@@ -472,6 +492,16 @@ const Settings: React.FC<SettingsProps> = ({ darkMode, setDarkMode, suspension }
                 <div className="px-5 py-4 sm:px-6 [&>div]:border-0 [&>div]:bg-transparent [&>div]:p-0 [&>div]:shadow-none">
                   <AiUsageMeter />
                 </div>
+              )}
+              {canCancelPlan && (
+                <Row
+                  label={t("cancelPlan")}
+                  hint={periodEndLabel ? t("cancelPlanHint", { date: periodEndLabel }) : t("cancelPlanHintNoDate")}
+                >
+                  <button type="button" onClick={cancelPlanModal.openModal} className={secondaryButton}>
+                    {t("cancelPlan")}
+                  </button>
+                </Row>
               )}
             </Section>
 
@@ -652,6 +682,20 @@ const Settings: React.FC<SettingsProps> = ({ darkMode, setDarkMode, suspension }
           </div>
         </div>
       </div>
+
+      <ConfirmationModal
+        isOpen={cancelPlanModal.isOpen}
+        onClose={cancelPlanModal.closeModal}
+        onConfirm={cancellingPlan ? undefined : cancelPlan}
+        title={t("cancelPlanTitle")}
+        confirmText={cancellingPlan ? t("cancellingPlan") : t("cancelPlan")}
+        cancelText={t("keepPro")}
+        confirmButtonClass="bg-red-600 text-white hover:bg-red-700 shadow-md"
+      >
+        <p className="text-body-sm text-fg-muted">
+          {periodEndLabel ? t("cancelPlanBody", { date: periodEndLabel }) : t("cancelPlanBodyNoDate")}
+        </p>
+      </ConfirmationModal>
 
       <ConfirmationModal
         isOpen={deleteAccountModal.isOpen}

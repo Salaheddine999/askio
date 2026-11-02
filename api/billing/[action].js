@@ -1,3 +1,4 @@
+import cancelSubscription from "../_lib/billing/cancelSubscription.js";
 import createCheckout from "../_lib/billing/createCheckout.js";
 import customerPortal from "../_lib/billing/customerPortal.js";
 import { withMonitoring } from "../_lib/monitoring.js";
@@ -5,9 +6,11 @@ import { withMonitoring } from "../_lib/monitoring.js";
 // Billing endpoints share one function to stay within Vercel's function limit:
 //   POST /api/billing/create-checkout
 //   POST /api/billing/customer-portal
+//   POST /api/billing/cancel-subscription
 const HANDLERS = {
   "create-checkout": createCheckout,
   "customer-portal": customerPortal,
+  "cancel-subscription": cancelSubscription,
 };
 
 function handler(req, res) {

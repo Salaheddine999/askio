@@ -34,6 +34,7 @@ const { takeRateLimits, visitorKey } = await import("../api/_lib/rateLimit.js");
 const { safeFetch } = await import("../api/_lib/safeFetch.js");
 const { buildCheckoutUrl, isSignedCheckoutUid, lemonId, ownedSubscription } = await import("../api/_lib/lemonsqueezy.js");
 const { shouldApplyEvent } = await import("../api/webhooks/lemonsqueezy.js");
+const { default: cancelSubscription } = await import("../api/_lib/billing/cancelSubscription.js");
 const { signState, readState, isSignedByShopify, connectShopifyInstall } = await import("../api/_lib/shopify/install.js");
 const crypto = await import("node:crypto");
 
@@ -125,6 +126,52 @@ describe("billing ids", () => {
     expect(await ownedSubscription({ lemonSqueezySubscriptionId: "999", lemonSqueezyCustomerId: "5" })).toBeNull();
     expect(await ownedSubscription({ lemonSqueezySubscriptionId: "../webhooks/1" })).toBeNull();
     expect(urls.every((u) => u === "https://api.lemonsqueezy.com/v1/subscriptions/999")).toBe(true);
+  });
+});
+
+describe("cancelling from Settings", () => {
+  const ENDS_AT = "2026-12-02T10:00:00.000000Z";
+  // Lemon Squeezy: GET returns the subscription, DELETE cancels it.
+  const lemon = (status: string, customerId = 77) => {
+    const calls: string[] = [];
+    globalThis.fetch = (async (url: string, init?: RequestInit) => {
+      const method = init?.method || "GET";
+      calls.push(`${method} ${url}`);
+      const attributes =
+        method === "DELETE"
+          ? { status: "cancelled", ends_at: ENDS_AT, updated_at: "2026-11-02T18:00:00Z" }
+          : { status, customer_id: customerId };
+      return new Response(JSON.stringify({ data: { id: "999", attributes } }), { status: 200 });
+    }) as typeof fetch;
+    return calls;
+  };
+  const post = async () => {
+    const res = fakeRes();
+    await cancelSubscription({ method: "POST" } as never, res as never);
+    return res;
+  };
+
+  it("cancels the account's own subscription and keeps Pro until the period ends", async () => {
+    db.docs.set("users/owner1", { plan: "pro", subscriptionStatus: "active", lemonSqueezySubscriptionId: "999", lemonSqueezyCustomerId: "77" });
+    const calls = lemon("active");
+    const res = await post();
+    expect(res.statusCode).toBe(200);
+    expect(calls).toContain("DELETE https://api.lemonsqueezy.com/v1/subscriptions/999");
+    expect(db.docs.get("users/owner1")).toMatchObject({ plan: "pro", subscriptionStatus: "cancelled", currentPeriodEnd: ENDS_AT });
+  });
+
+  it("never cancels a subscription that belongs to another customer", async () => {
+    db.docs.set("users/owner1", { plan: "pro", subscriptionStatus: "active", lemonSqueezySubscriptionId: "999", lemonSqueezyCustomerId: "5" });
+    const calls = lemon("active", 77);
+    expect((await post()).statusCode).toBe(404);
+    expect(calls.some((c) => c.startsWith("DELETE"))).toBe(false);
+  });
+
+  it("refuses a subscription that's already cancelled", async () => {
+    db.docs.set("users/owner1", { plan: "pro", subscriptionStatus: "cancelled", lemonSqueezySubscriptionId: "999", lemonSqueezyCustomerId: "77" });
+    const calls = lemon("cancelled");
+    expect((await post()).statusCode).toBe(409);
+    expect(calls.some((c) => c.startsWith("DELETE"))).toBe(false);
   });
 });
 
