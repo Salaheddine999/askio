@@ -117,8 +117,9 @@ export default function PrivacyPolicy() {
             <Term>Feedback:</Term> whether the visitor rated an answer as helpful or not.
           </li>
           <li>
-            <Term>An anonymous browser ID:</Term> a random identifier stored in the visitor's browser (see section 6) that
-            links a visitor's feedback and questions together. It doesn't contain any personal details.
+            <Term>An anonymous browser ID:</Term> a random identifier kept in the visitor's browser for one visit (see
+            section 6) that links that visit's questions and feedback together and limits abuse. It doesn't contain any
+            personal details, and a new one is made on the next visit, so visitors aren't recognised across visits.
           </li>
           <li>
             <Term>A hashed IP address:</Term> converted with a one-way hash, never stored in readable form, and used only to
@@ -193,10 +194,12 @@ export default function PrivacyPolicy() {
             dark mode, sidebar layout and when you last checked notifications.
           </li>
           <li>
-            <Term>In chatbots on customers' websites:</Term> the anonymous browser ID described in section 3, whether the
-            visitor has already given feedback, and whether the greeting bubble has been shown, so it isn't repeated. When
-            the business saves conversations, a random conversation ID is kept in the browser's session storage, which is
-            cleared when the tab is closed.
+            <Term>In chatbots on customers' websites:</Term> whether the visitor has already given feedback, and whether
+            the greeting bubble has been shown, so neither is repeated, and the date the chatbot last told us it's on
+            the website, so it only does that once a day. The anonymous browser ID described in section 3
+            and, when the business saves conversations, a random conversation ID are kept in the browser's session
+            storage, which is cleared when the tab is closed. Chatbots don't use cookies or track visitors across visits
+            or websites.
           </li>
         </List>
         <p>

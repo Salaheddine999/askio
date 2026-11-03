@@ -324,16 +324,24 @@ const Chatbot: React.FC<ChatbotProps> = ({
   }, [faqData]);
 
   useEffect(() => {
-    // Kept across visits when the browser allows storage; a fresh one per
-    // visit when it doesn't (third-party iframes often can't store anything).
+    // Kept for one visit only (session storage, cleared when the tab closes),
+    // so the widget stores nothing that needs consent on the business's site.
+    // A fresh one per page when storage is blocked (third-party iframes often
+    // can't store anything).
     try {
-      const storedToken = localStorage.getItem("anonymousToken");
+      // Older versions kept it across visits; remove that copy.
+      try {
+        localStorage.removeItem("anonymousToken");
+      } catch {
+        // Storage blocked: there's nothing to remove.
+      }
+      const storedToken = sessionStorage.getItem("anonymousToken");
       if (storedToken) {
         setAnonymousToken(storedToken);
         return;
       }
       const newToken = randomId(16);
-      localStorage.setItem("anonymousToken", newToken);
+      sessionStorage.setItem("anonymousToken", newToken);
       setAnonymousToken(newToken);
     } catch {
       setAnonymousToken(randomId(16));
