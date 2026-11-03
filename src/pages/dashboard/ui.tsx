@@ -1,4 +1,5 @@
-import React, { lazy, Suspense } from "react";
+import React, { Suspense } from "react";
+import { lazyPage } from "../../utils/lazyPage";
 import { Link } from "react-router-dom";
 import { Menu } from "@headlessui/react";
 import {
@@ -250,7 +251,7 @@ export const Pagination: React.FC<{
 };
 
 // Kio is loaded only where an empty state shows it.
-const LiveOrb = lazy(() => import("../../components/LiveOrb").then((m) => ({ default: m.LiveOrb })));
+const LiveOrb = lazyPage(() => import("../../components/LiveOrb").then((m) => m && { default: m.LiveOrb }));
 
 export const EmptyState: React.FC<{
   icon: LucideIcon;

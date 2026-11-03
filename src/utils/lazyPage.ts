@@ -33,14 +33,19 @@ export function reloadForNewVersion() {
 /** React.lazy that reloads once when the page's file is missing after a deploy. */
 // Same constraint as React.lazy, so any page component fits.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function lazyPage<T extends ComponentType<any>>(load: () => Promise<{ default: T }>) {
+export function lazyPage<T extends ComponentType<any>>(load: () => Promise<{ default: T } | undefined>) {
+  // The page is reloading; never settle so nothing flashes meanwhile.
+  const reloading = () => new Promise<{ default: T }>(() => undefined);
   return lazy(() =>
-    load().catch((error) => {
-      if (isChunkLoadError(error) && reloadForNewVersion()) {
-        // The page is reloading; never settle so nothing flashes meanwhile.
-        return new Promise<{ default: T }>(() => undefined);
+    load().then(
+      // No module means Vite's preload error handler in main.tsx already
+      // started a reload: Vite then resolves the import to undefined instead
+      // of rejecting, and React would crash reading `.default`.
+      (module) => module ?? reloading(),
+      (error) => {
+        if (isChunkLoadError(error) && reloadForNewVersion()) return reloading();
+        throw error;
       }
-      throw error;
-    })
+    )
   );
 }

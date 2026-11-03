@@ -1,4 +1,5 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState, lazy, Suspense } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState, Suspense } from "react";
+import { lazyPage } from "../utils/lazyPage";
 import { Link, useLocation, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { doc, getDoc } from "firebase/firestore";
 import { toast } from "react-hot-toast";
@@ -33,13 +34,13 @@ import { AiIcon } from "./icons";
 const aiModules = import.meta.glob('./AiFaqGenerator.tsx');
 const aiModuleLoader = Object.values(aiModules)[0];
 const AiFaqGenerator = aiModuleLoader
-  ? lazy(() => aiModuleLoader() as Promise<{ default: React.ComponentType<Record<string, unknown>> }>)
+  ? lazyPage(() => aiModuleLoader() as Promise<{ default: React.ComponentType<Record<string, unknown>> }>)
   : null;
 
 const aiPersonaModules = import.meta.glob('./AiPersonaTab.tsx');
 const aiPersonaModuleLoader = Object.values(aiPersonaModules)[0];
 const AiPersonaTab = aiPersonaModuleLoader
-  ? lazy(() => aiPersonaModuleLoader() as Promise<{ default: React.ComponentType<Record<string, unknown>> }>)
+  ? lazyPage(() => aiPersonaModuleLoader() as Promise<{ default: React.ComponentType<Record<string, unknown>> }>)
   : null;
 
 const DEFAULT_CONFIG: ChatbotConfig = {
