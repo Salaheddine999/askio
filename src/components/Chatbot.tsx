@@ -11,7 +11,7 @@ import toast from "react-hot-toast";
 import bot1 from "../assets/chat1.svg";
 import { apiRequest } from "../utils/api";
 import { LiveOrb, type LiveOrbFinish, type LiveOrbPersonality } from "./LiveOrb";
-import { headerOrbPropsFor, orbPropsFor, type LauncherStyle } from "../utils/orbColors";
+import { headerOrbPropsFor, needsDarkText, orbPropsFor, type LauncherStyle } from "../utils/orbColors";
 import { isOwnerBrowsing } from "../utils/ownerSession";
 import { isPresenceOnline, LIVE_WAIT_MS, type LiveStatus } from "../utils/liveChat";
 import { contactChannel, normalizeContactLink, withWhatsAppText, type ContactChannel } from "../utils/links";
@@ -297,6 +297,24 @@ const Chatbot: React.FC<ChatbotProps> = ({
     backgroundColor: isGradient ? "transparent" : secondaryColor,
     backgroundImage: isGradient ? secondaryColor : "none",
   };
+
+  // Text on the owner's colors: dark on light ones (beige, amber, light
+  // green), white on the rest, so it always stays readable.
+  const lightPrimary = needsDarkText(primaryColor);
+  const headerInk = lightPrimary
+    ? {
+        text: "text-ink-900",
+        title: "text-ink-900/90",
+        soft: "text-ink-900/55",
+        close: "text-ink-900/70 hover:bg-ink-900/[0.08] hover:text-ink-900 focus-visible:outline-ink-900/50",
+      }
+    : {
+        text: "text-white",
+        title: "text-white/90",
+        soft: "text-white/55",
+        close: "text-white/75 hover:bg-white/[0.12] hover:text-white focus-visible:outline-white/60",
+      };
+  const onButton = needsDarkText(secondaryColor) ? "text-ink-900" : "text-white";
 
   useEffect(() => {
     setMessages([{ text: initialMessage, sender: "bot" }]);
@@ -1148,10 +1166,16 @@ const Chatbot: React.FC<ChatbotProps> = ({
       />
     ) : (
       <div
-        className={`flex items-center justify-center rounded-full ${onHeader ? "bg-white/[0.16]" : ""}`}
+        className={`flex items-center justify-center rounded-full ${onHeader ? (lightPrimary ? "bg-ink-900/[0.08]" : "bg-white/[0.16]") : ""}`}
         style={{ width: size, height: size, ...(onHeader ? {} : headerStyle) }}
       >
-        <img src={brandLogo} alt="" className="brightness-0 invert" style={{ width: size * 0.55, height: size * 0.55 }} />
+        {/* The logo in black on light colors, white on dark ones. */}
+        <img
+          src={brandLogo}
+          alt=""
+          className={lightPrimary ? "brightness-0" : "brightness-0 invert"}
+          style={{ width: size * 0.55, height: size * 0.55 }}
+        />
       </div>
     );
 
@@ -1159,24 +1183,24 @@ const Chatbot: React.FC<ChatbotProps> = ({
     "rounded-2xl border border-ink-90 bg-[#FFFFFF] dark:border-ink-805 dark:bg-ink-865";
   const homeView = (
     <div className="flex min-h-0 flex-1 flex-col overflow-y-auto [scrollbar-width:thin]">
-      <div className="relative flex-shrink-0 px-5 pb-14 pt-5 text-white" style={headerStyle}>
+      <div className={`relative flex-shrink-0 px-5 pb-14 pt-5 ${headerInk.text}`} style={headerStyle}>
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/[0.07] to-transparent" />
         <div className="relative flex items-center justify-between gap-3">
           <div className="flex min-w-0 items-center gap-2.5">
             {botFace(38, true)}
-            <span className="truncate text-[13px] font-semibold text-white/90">{title || "Askio Assistant"}</span>
+            <span className={`truncate text-[13px] font-semibold ${headerInk.title}`}>{title || "Askio Assistant"}</span>
           </div>
           {isEmbedded && (
             <button
               onClick={toggleChatbot}
               aria-label={t("closeChat")}
-              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-white/75 transition-colors hover:bg-white/[0.12] hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-white/60"
+              className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full transition-colors focus-visible:outline focus-visible:outline-2 ${headerInk.close}`}
             >
               <X size={16} strokeWidth={2.25} />
             </button>
           )}
         </div>
-        <p className="relative mt-7 text-[24px] font-semibold leading-[1.2] tracking-[-0.02em] text-white/55">{t("homeHello")}</p>
+        <p className={`relative mt-7 text-[24px] font-semibold leading-[1.2] tracking-[-0.02em] ${headerInk.soft}`}>{t("homeHello")}</p>
         <p className="relative text-[24px] font-semibold leading-[1.2] tracking-[-0.02em] [text-wrap:balance]">{pageGreeting?.message || t("homeHeading")}</p>
       </div>
 
@@ -1190,7 +1214,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
             <span className="block text-[14px] font-semibold text-ink-900 dark:text-ink-70">{t("askQuestion")}</span>
             <span className="mt-0.5 block text-[12px] text-ink-545 dark:text-ink-325">{t("askQuestionHint")}</span>
           </span>
-          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-white transition-transform group-hover:translate-x-0.5" style={buttonStyle}>
+          <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${onButton} transition-transform group-hover:translate-x-0.5`} style={buttonStyle}>
             <ArrowUp size={16} strokeWidth={2.5} className="rotate-90 [&:dir(rtl)]:-rotate-90" />
           </span>
         </button>
@@ -1357,7 +1381,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
                 dir="auto"
                 className={`inline-block px-3.5 py-2.5 text-[13.5px] leading-relaxed [overflow-wrap:anywhere] ${
                   message.sender === "user"
-                    ? "text-white rounded-[18px] rounded-ee-[6px]"
+                    ? `${onButton} rounded-[18px] rounded-ee-[6px]`
                     : message.sender === "agent"
                       ? "bg-emerald-50 dark:bg-emerald-950/30 ring-1 ring-emerald-200 dark:ring-emerald-900/60 text-fg rounded-[18px] rounded-es-[6px]"
                       : "bg-[#FFFFFF] dark:bg-ink-850 ring-1 ring-ink-90 dark:ring-ink-805 text-fg rounded-[18px] rounded-es-[6px]"
@@ -1459,7 +1483,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
                   href={message.action.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="mt-1.5 inline-flex max-w-full items-center gap-1.5 rounded-full px-3.5 py-2 text-[12.5px] font-medium text-white transition-opacity hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink-425"
+                  className={`mt-1.5 inline-flex max-w-full items-center gap-1.5 rounded-full px-3.5 py-2 text-[12.5px] font-medium ${onButton} transition-opacity hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink-425`}
                   style={buttonStyle}
                 >
                   <span className="truncate">{message.action.label}</span>
@@ -1574,7 +1598,7 @@ const Chatbot: React.FC<ChatbotProps> = ({
           <motion.button
             type="submit"
             disabled={!input.trim()}
-            className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-white transition-opacity disabled:opacity-35"
+            className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full ${onButton} transition-opacity disabled:opacity-35`}
             style={buttonStyle}
             whileTap={{ scale: 0.92 }}
             onClick={(e) => e.stopPropagation()}
