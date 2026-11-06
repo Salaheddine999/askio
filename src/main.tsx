@@ -4,7 +4,10 @@ import App from "./App.tsx";
 import { LanguageProvider } from "./i18n";
 import { reloadForNewVersion } from "./utils/lazyPage";
 import { startMonitoring } from "./utils/monitoring";
+import { guardAgainstTranslators } from "./utils/translationGuard";
 
+// Before React renders anything, so a translated page (app or widget) can't crash it.
+guardAgainstTranslators();
 startMonitoring();
 
 // Vite reports a page's code or styles failing to preload here, typically
