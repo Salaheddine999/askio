@@ -5,6 +5,9 @@
     },
     "api/ai/[action].js": {
       "maxDuration": 20
+    },
+    "api/mcp.js": {
+      "maxDuration": 60
     }
   },
   "regions": [

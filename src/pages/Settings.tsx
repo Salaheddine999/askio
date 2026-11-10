@@ -15,6 +15,7 @@ import {
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 import {
   AlertTriangle,
+  Bot,
   Check,
   CreditCard,
   ExternalLink,
@@ -29,6 +30,7 @@ import {
 } from "../components/icons";
 import ConfirmationModal from "../components/ConfirmationModal";
 import AiUsageMeter from "../components/AiUsageMeter";
+import ApiKeysSettings from "../components/ApiKeysSettings";
 import { useModal } from "../hooks/useModal";
 import { toast } from "react-hot-toast";
 import { reportClientError } from "../utils/monitoring";
@@ -56,6 +58,7 @@ const SECTIONS: { id: string; label: SettingsKey; icon: LucideIcon }[] = [
   { id: "profile", label: "sectionProfile", icon: UserRound },
   { id: "billing", label: "sectionBilling", icon: CreditCard },
   { id: "appearance", label: "sectionAppearance", icon: Monitor },
+  { id: "ai", label: "sectionAi", icon: Bot },
   { id: "security", label: "sectionSecurity", icon: KeyRound },
   { id: "danger", label: "sectionDanger", icon: Trash2 },
 ];
@@ -592,6 +595,11 @@ const Settings: React.FC<SettingsProps> = ({ darkMode, setDarkMode, suspension }
                   })}
                 </div>
               </Row>
+            </Section>
+
+            {/* Connect your AI: the MCP server and its API keys */}
+            <Section id="ai" title={t("sectionAi")} description={t("aiDescription")}>
+              <ApiKeysSettings />
             </Section>
 
             {/* Sign-in & security */}

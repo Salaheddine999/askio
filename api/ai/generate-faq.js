@@ -37,6 +37,55 @@ function normalizeUrl(value) {
   }
 }
 
+function httpError(statusCode, message) {
+  const error = new Error(message);
+  error.statusCode = statusCode;
+  return error;
+}
+
+/**
+ * Reads a public website and writes FAQs from it for one of the owner's AI
+ * chatbots. Nothing is saved to the chatbot: the caller reviews the FAQs
+ * first. Used by the dashboard (below) and by the MCP server.
+ */
+export async function scanWebsiteForFaqs({ uid, chatbotId, url, isDeepCrawl = false, aiTone = "" }) {
+  const normalizedUrl = normalizeUrl(url);
+
+  if (!chatbotId) throw httpError(400, "Chatbot ID is required.");
+  if (!normalizedUrl) throw httpError(400, "Please provide a valid website URL.");
+
+  // Only public websites: never localhost, private networks or cloud metadata.
+  await assertPublicUrl(normalizedUrl);
+
+  const { chatbotRef, chatbotData } = await getOwnedChatbot(uid, chatbotId);
+  const ownerProfile = await assertCanUseAiForOwner(uid);
+  assertNotSuspended(ownerProfile.userData);
+
+  if (!chatbotData.aiEnabled) throw httpError(403, "Enable AI for this chatbot before generating FAQs.");
+
+  // Checked last, so a refused request (no plan, AI off) doesn't use a scan.
+  if (!(await takeRateLimit(`faq_${uid}`, FAQ_SCANS_PER_DAY, DAY_MS))) {
+    throw httpError(
+      429,
+      `You've used today's ${FAQ_SCANS_PER_DAY} website scans. You can scan again tomorrow, or add FAQs by hand.`
+    );
+  }
+  if (!(await takeAiBudget("faq"))) {
+    const error = httpError(503, "FAQ writing is paused for today. Please try again tomorrow, or add FAQs by hand.");
+    // A planned pause, not a fault: no error report.
+    error.expected = true;
+    throw error;
+  }
+
+  const tone = typeof aiTone === "string" ? aiTone.slice(0, MAX_TONE_CHARS) : "";
+  const faqs = await generateFaqsFromUrl(normalizedUrl, Boolean(isDeepCrawl), tone);
+
+  await adminDb.collection("users").doc(uid).set({ aiScansCount: FieldValue.increment(1) }, { merge: true });
+  await chatbotRef.set({ lastAiFaqGeneratedAt: new Date() }, { merge: true });
+
+  return faqs;
+}
+
 async function handler(req, res) {
   if (req.method !== "POST") {
     res.setHeader("Allow", "POST");
@@ -46,52 +95,7 @@ async function handler(req, res) {
   try {
     const decodedToken = await requireUser(req);
     const { chatbotId, url, isDeepCrawl = false, aiTone = "" } = req.body || {};
-
-    const normalizedUrl = normalizeUrl(url);
-
-    if (!chatbotId) {
-      return res.status(400).json({ error: "Chatbot ID is required." });
-    }
-
-    if (!normalizedUrl) {
-      return res.status(400).json({ error: "Please provide a valid website URL." });
-    }
-
-    // Only public websites: never localhost, private networks or cloud metadata.
-    await assertPublicUrl(normalizedUrl);
-
-    const { chatbotRef, chatbotData } = await getOwnedChatbot(decodedToken.uid, chatbotId);
-    const ownerProfile = await assertCanUseAiForOwner(decodedToken.uid);
-    assertNotSuspended(ownerProfile.userData);
-
-    if (!chatbotData.aiEnabled) {
-      return res.status(403).json({
-        error: "Enable AI for this chatbot before generating FAQs.",
-      });
-    }
-
-    // Checked last, so a refused request (no plan, AI off) doesn't use a scan.
-    if (!(await takeRateLimit(`faq_${decodedToken.uid}`, FAQ_SCANS_PER_DAY, DAY_MS))) {
-      return res.status(429).json({
-        error: `You've used today's ${FAQ_SCANS_PER_DAY} website scans. You can scan again tomorrow, or add FAQs by hand.`,
-      });
-    }
-    if (!(await takeAiBudget("faq"))) {
-      return res.status(503).json({ error: "FAQ writing is paused for today. Please try again tomorrow, or add FAQs by hand." });
-    }
-
-    const tone = typeof aiTone === "string" ? aiTone.slice(0, MAX_TONE_CHARS) : "";
-    const faqs = await generateFaqsFromUrl(normalizedUrl, Boolean(isDeepCrawl), tone);
-
-    await adminDb.collection("users").doc(decodedToken.uid).set({ aiScansCount: FieldValue.increment(1) }, { merge: true });
-
-    await chatbotRef.set(
-      {
-        lastAiFaqGeneratedAt: new Date(),
-      },
-      { merge: true }
-    );
-
+    const faqs = await scanWebsiteForFaqs({ uid: decodedToken.uid, chatbotId, url, isDeepCrawl, aiTone });
     return res.status(200).json({ faqs });
   } catch (error) {
     console.error("Failed to generate FAQs:", error);

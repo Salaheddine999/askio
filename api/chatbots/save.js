@@ -90,7 +90,7 @@ export function normalizeKioStyle(payload) {
   };
 }
 
-function normalizeChatbotPayload(payload, uid) {
+export function normalizeChatbotPayload(payload, uid) {
   const aiEnabled = payload.aiEnabled === true;
 
   return {
@@ -121,7 +121,7 @@ function normalizeChatbotPayload(payload, uid) {
   };
 }
 
-async function saveChatbotConfigTransactional({ uid, chatbotId, normalized }) {
+export async function saveChatbotConfigTransactional({ uid, chatbotId, normalized }) {
   const profile = await getUserAccessProfile(uid);
   assertNotSuspended(profile.userData);
   const targetRef = chatbotId
