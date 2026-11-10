@@ -53,7 +53,8 @@ export async function expireGifts(now = new Date()) {
  * - rate-limit records (hashed IP and chatbot counters) whose `expiresAt` has passed;
  * - hourly AI failure counters, the same way;
  * - anything left by the removed homepage demo;
- * - saved conversations with no message for 90 days.
+ * - saved conversations with no message for 90 days;
+ * - sign-in codes and tokens of connected AI apps (see oauth.js) that have expired.
  * It also ends expired gifts of Pro and emails owners whose new chatbot isn't
  * on a website yet.
  *
@@ -90,9 +91,16 @@ async function handler(req, res) {
       adminDb.collection("conversations").where("lastMessageAt", "<", cutoff),
       MAX_PER_RUN - rateLimits - aiCounters - demos
     );
+    let oauthExpired = 0;
+    for (const name of ["oauth_codes", "oauth_tokens"]) {
+      oauthExpired += await deleteWhere(
+        adminDb.collection(name).where("expiresAt", "<", Timestamp.now()),
+        MAX_PER_RUN - rateLimits - aiCounters - demos - conversations - oauthExpired
+      );
+    }
     const giftsEnded = await expireGifts();
     const setupReminders = await sendSetupReminders();
-    return res.status(200).json({ deleted: rateLimits + aiCounters + demos + conversations, rateLimits, aiCounters, demos, conversations, giftsEnded, setupReminders });
+    return res.status(200).json({ deleted: rateLimits + aiCounters + demos + conversations + oauthExpired, rateLimits, aiCounters, demos, conversations, oauthExpired, giftsEnded, setupReminders });
   } catch (error) {
     console.error("Cleanup failed:", error);
     return sendError(res, error);

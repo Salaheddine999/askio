@@ -77,6 +77,9 @@ export async function deleteAccountData(uid) {
   await deleteMatching(adminDb.collection("shopify_connections").where("userId", "==", uid));
   // API keys, so nothing can act for the account once it is gone.
   await deleteMatching(adminDb.collection("api_keys").where("userId", "==", uid));
+  // And the AI apps connected through "Allow access".
+  await deleteMatching(adminDb.collection("oauth_tokens").where("userId", "==", uid));
+  await deleteMatching(adminDb.collection("oauth_codes").where("userId", "==", uid));
   await deleteMatching(adminDb.collection("chatbot_configs").where("user_id", "==", uid));
   await userRef.delete();
 

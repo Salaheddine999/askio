@@ -1,21 +1,25 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
-import { Check, Copy, KeyRound, Trash2 } from "./icons";
+import { Bot, Check, Copy, KeyRound, Trash2 } from "./icons";
 import { apiRequest } from "../utils/api";
 import { reportClientError } from "../utils/monitoring";
 import { useT } from "../i18n";
 import { settingsMessages } from "../i18n/messages/settings";
 import { focusRing, primaryButton, secondaryButton } from "../pages/dashboard/styles";
 
-// Settings → Connect your AI: the MCP server address and the API keys an AI
-// assistant uses to manage this account's chatbots (see api/mcp.js). A key is
-// shown once, right after it's made; the server keeps only its hash.
+// Settings → Connect your AI: the MCP server address, the AI apps connected
+// by signing in ("Allow access", see api/_lib/oauth.js) and the API keys
+// developer tools use instead (see api/mcp.js). A key is shown once, right
+// after it's made; the server keeps only its hash.
 
 /** The most keys an account can have; the server enforces it (api/_lib/apiKeys.js). */
 const MAX_KEYS = 5;
 
 type ApiKey = { id: string; name: string; hint: string; createdAt: number | null; lastUsedAt: number | null };
 type NewKey = { key: string; id: string; name: string; hint: string };
+type ConnectedApp = { id: string; name: string; connectedAt: number | null; lastUsedAt: number | null };
+
+const dangerButton = `inline-flex h-9 items-center gap-2 rounded-lg bg-red-600 px-3.5 text-button text-white transition-colors hover:bg-red-700 disabled:opacity-60 ${focusRing}`;
 
 const inputClass =
   "h-10 w-full rounded-lg border border-ink-120 bg-ink-25 px-3 text-body-sm text-ink-900 placeholder:text-ink-425 focus:border-ink-900 focus:outline-none focus:ring-2 focus:ring-ink-900/10 disabled:opacity-60 dark:border-ink-780 dark:bg-ink-875 dark:text-ink-130 dark:focus:border-ink-325 dark:focus:ring-ink-130/10";
@@ -51,6 +55,7 @@ const CopyLine: React.FC<{ text: string; copyLabel: string; copiedLabel: string 
 const ApiKeysSettings: React.FC = () => {
   const t = useT(settingsMessages);
   const [keys, setKeys] = useState<ApiKey[] | null>(null);
+  const [apps, setApps] = useState<ConnectedApp[] | null>(null);
   const [name, setName] = useState("");
   const [creating, setCreating] = useState(false);
   const [newKey, setNewKey] = useState<NewKey | null>(null);
@@ -73,9 +78,37 @@ const ApiKeysSettings: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const loadApps = useCallback(async () => {
+    try {
+      const { apps: list } = await apiRequest<{ apps: ConnectedApp[] }>("/api/account/oauth-apps-list", { authRequired: true });
+      setApps(list);
+    } catch (error) {
+      reportClientError(error, { area: "oauth-apps" });
+      setApps([]);
+      toast.error(t("aiAppsLoadFailed"));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   useEffect(() => {
     void load();
-  }, [load]);
+    void loadApps();
+  }, [load, loadApps]);
+
+  const disconnect = async (id: string) => {
+    setRevokingId(id);
+    try {
+      await apiRequest("/api/account/oauth-apps-revoke", { authRequired: true, body: { id } });
+      setApps((current) => (current || []).filter((app) => app.id !== id));
+      toast.success(t("aiDisconnected"));
+    } catch (error) {
+      reportClientError(error, { area: "oauth-apps" });
+      toast.error(t("aiDisconnectFailed"));
+    } finally {
+      setRevokingId(null);
+      setConfirmingId(null);
+    }
+  };
 
   const create = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -125,6 +158,49 @@ const ApiKeysSettings: React.FC = () => {
         <p className="text-body-sm font-medium text-fg">{t("aiServerUrl")}</p>
         <p className="mb-2 mt-0.5 text-caption text-fg-subtle">{t("aiServerUrlHint")}</p>
         <CopyLine text={serverUrl} {...copyLabels} />
+      </div>
+
+      <div className="px-5 py-4 sm:px-6">
+        <p className="text-body-sm font-medium text-fg">{t("aiApps")}</p>
+        <p className="mt-0.5 text-caption text-fg-subtle">{t("aiAppsHint")}</p>
+
+        {apps !== null && apps.length === 0 && <p className="mt-3 text-body-sm text-fg-subtle">{t("aiNoApps")}</p>}
+
+        {apps !== null && apps.length > 0 && (
+          <ul className="mt-3 divide-y divide-ink-70 rounded-lg border border-ink-120 dark:divide-ink-780 dark:border-ink-780">
+            {apps.map((app) => (
+              <li key={app.id} className="flex flex-col gap-2 px-3 py-2.5 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex min-w-0 items-center gap-2.5">
+                  <Bot size={15} className="shrink-0 text-fg-subtle" />
+                  <div className="min-w-0">
+                    <p className="truncate text-body-sm font-medium text-fg">{app.name}</p>
+                    <p className="text-caption text-fg-subtle">
+                      {app.connectedAt ? t("aiConnected", { date: formatDate(app.connectedAt) }) : ""}
+                      {app.connectedAt && app.lastUsedAt ? " · " : ""}
+                      {app.lastUsedAt ? t("aiLastUsed", { date: formatDate(app.lastUsedAt) }) : ""}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex shrink-0 gap-2">
+                  {confirmingId === app.id ? (
+                    <>
+                      <button type="button" onClick={() => setConfirmingId(null)} className={secondaryButton}>
+                        {t("cancel")}
+                      </button>
+                      <button type="button" disabled={revokingId === app.id} onClick={() => void disconnect(app.id)} className={dangerButton}>
+                        {t("aiDisconnectConfirm")}
+                      </button>
+                    </>
+                  ) : (
+                    <button type="button" onClick={() => setConfirmingId(app.id)} className={secondaryButton}>
+                      {t("aiDisconnect")}
+                    </button>
+                  )}
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
 
       <div className="px-5 py-4 sm:px-6">
@@ -189,7 +265,7 @@ const ApiKeysSettings: React.FC = () => {
                         type="button"
                         disabled={revokingId === key.id}
                         onClick={() => void revoke(key.id)}
-                        className={`inline-flex h-9 items-center gap-2 rounded-lg bg-red-600 px-3.5 text-button text-white transition-colors hover:bg-red-700 disabled:opacity-60 ${focusRing}`}
+                        className={dangerButton}
                       >
                         {t("aiRevokeConfirm")}
                       </button>

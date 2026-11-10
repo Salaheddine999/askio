@@ -14,6 +14,7 @@ import { toast } from "react-hot-toast";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { redirectToProCheckout } from "../utils/billing";
+import { oauthReturnPath } from "../utils/oauthReturn";
 import { useT } from "../i18n";
 import { authMessages } from "../i18n/messages/auth";
 
@@ -41,7 +42,8 @@ const Auth: React.FC = () => {
       return;
     }
 
-    navigate(isNewAccount ? "/start" : "/dashboard");
+    // An AI app sent them here to connect: back to its "Allow access" page.
+    navigate(oauthReturnPath() ?? (isNewAccount ? "/start" : "/dashboard"));
   };
 
   const switchMode = (next: "login" | "register" | "reset") => {

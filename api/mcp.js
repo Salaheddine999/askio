@@ -1,4 +1,5 @@
 import { requireApiKey } from "./_lib/apiKeys.js";
+import { resourceMetadataUrl, userForAccessToken } from "./_lib/oauth.js";
 import { TOOLS } from "./_lib/mcp/tools.js";
 import { reportError, withMonitoring } from "./_lib/monitoring.js";
 import { noteAiFailure } from "./_lib/aiHealth.js";
@@ -6,9 +7,10 @@ import { takeRateLimit } from "./_lib/rateLimit.js";
 
 // POST /api/mcp: Askio's MCP server (Model Context Protocol, Streamable HTTP
 // transport), so an owner's AI assistant can set up and manage their chatbots.
-// It is stateless: every request carries the owner's API key
-// (Authorization: Bearer askio_…, made in Settings) and gets one JSON answer;
-// there are no sessions or server-sent streams.
+// It is stateless: every request carries a bearer token and gets one JSON
+// answer; there are no sessions or server-sent streams. The token is either
+// an OAuth access token (the AI app sent the owner to "Allow access"; see
+// _lib/oauth.js) or an API key made in Settings (developer tools and scripts).
 
 const SERVER_INFO = { name: "askio", title: "Askio", version: "1.0.0" };
 /** Newest first; a client asking for another version is offered the newest. */
@@ -90,6 +92,12 @@ async function answer(uid, message) {
   }
 }
 
+/** The account behind the request's bearer token: OAuth first, then an API key. */
+async function authenticate(req) {
+  const [, bearer] = String(req.headers.authorization || "").match(/^Bearer (\S+)$/i) || [];
+  return (bearer && (await userForAccessToken(bearer))) || requireApiKey(req);
+}
+
 async function handler(req, res) {
   if (req.method !== "POST") {
     // No server-sent stream to open (GET) and no session to end (DELETE).
@@ -99,10 +107,15 @@ async function handler(req, res) {
 
   let uid;
   try {
-    ({ uid } = await requireApiKey(req));
+    ({ uid } = await authenticate(req));
   } catch (error) {
     if (error.statusCode !== 401) throw error;
-    res.setHeader("WWW-Authenticate", 'Bearer realm="Askio"');
+    // Tells an AI app where to send the owner to sign in and allow access,
+    // and, for a token that stopped working, to get a new one.
+    res.setHeader(
+      "WWW-Authenticate",
+      `Bearer realm="Askio", resource_metadata="${resourceMetadataUrl(req)}"${error.invalidToken ? ', error="invalid_token"' : ""}`
+    );
     return res.status(401).json(fail(null, INVALID_REQUEST, error.message));
   }
 

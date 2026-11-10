@@ -16,6 +16,7 @@ import { lazyPage } from "./utils/lazyPage";
 import { setMonitoringUser } from "./utils/monitoring";
 import { rememberSignedInOwner } from "./utils/ownerSession";
 import AppErrorBoundary from "./components/AppErrorBoundary";
+import { oauthReturnPath } from "./utils/oauthReturn";
 
 // Every page is its own chunk, so visitors only download the page they open.
 // That keeps the homepage light, and the chat widget (/chatbot/:id), which
@@ -38,6 +39,7 @@ const pages = {
   terms: () => import("./pages/TermsOfService"),
   refunds: () => import("./pages/RefundPolicy"),
   notFound: () => import("./pages/NotFound"),
+  oauthAuthorize: () => import("./pages/OAuthAuthorize"),
   navbar: () => import("./components/Navbar"),
 };
 
@@ -59,6 +61,7 @@ const PrivacyPolicy = lazyPage(pages.privacy);
 const TermsOfService = lazyPage(pages.terms);
 const RefundPolicy = lazyPage(pages.refunds);
 const NotFound = lazyPage(pages.notFound);
+const OAuthAuthorize = lazyPage(pages.oauthAuthorize);
 const Navbar = lazyPage(pages.navbar);
 
 // Start downloading the current page's chunk right away, in parallel with
@@ -71,6 +74,7 @@ function preloadCurrentPage(path: string) {
     [path === "/dashboard", pages.dashboard],
     [path.startsWith("/configure"), pages.editor],
     [path === "/start", pages.onboarding],
+    [path === "/oauth/authorize", pages.oauthAuthorize],
     [path === "/plans", pages.plans],
     [path === "/privacy", pages.privacy],
     [path === "/terms", pages.terms],
@@ -84,7 +88,8 @@ const SIDEBAR_KEY = "askio_sidebar";
 // Remembers whether this browser was signed in last time, so public pages can
 // render straight away instead of waiting for Firebase to restore the session.
 const SIGNED_IN_KEY = "askio_signed_in";
-const PUBLIC_PATHS = ["/", "/auth", "/plans", "/privacy", "/terms", "/refunds"];
+// "/oauth/authorize" is the "Allow access" page an AI app opens; it draws itself, signed in or not.
+const PUBLIC_PATHS = ["/", "/auth", "/plans", "/privacy", "/terms", "/refunds", "/oauth/authorize"];
 
 // Pages that render inside the signed-in app shell (sidebar + content).
 const isAppRoute = (path: string) => !PUBLIC_PATHS.includes(path) && !path.startsWith("/chatbot/");
@@ -246,7 +251,8 @@ const App: React.FC = () => {
               />
               <Route
                 path="/auth"
-                element={!user ? <Auth /> : <Navigate to="/dashboard" />}
+                // An AI app waiting on "Allow access" gets the owner back first.
+                element={!user ? <Auth /> : <Navigate to={oauthReturnPath() ?? "/dashboard"} />}
               />
               <Route
                 path="/dashboard"
@@ -310,6 +316,7 @@ const App: React.FC = () => {
                 path="/plans"
                 element={<Plans />}
               />
+              <Route path="/oauth/authorize" element={<OAuthAuthorize user={user} />} />
               <Route path="/privacy" element={<PrivacyPolicy />} />
               <Route path="/terms" element={<TermsOfService />} />
               <Route path="/refunds" element={<RefundPolicy />} />
