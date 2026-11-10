@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import brandLogo from "../../assets/logo.svg";
 import MainCta from "./MainCta";
+import AgentStart from "./AgentStart";
 import KioMark from "../../components/KioMark";
 
 export default function HeroSection() {
@@ -41,7 +42,11 @@ export default function HeroSection() {
         transition={{ duration: 0.5, delay: 0.2 }}
         className="w-full flex flex-col items-center justify-center gap-3 px-6 mb-10 sm:mb-14"
       >
-        <MainCta>Create your chatbot</MainCta>
+        {/* Two ways to start: build it yourself, or have your AI app do it with you. */}
+        <div className="flex flex-col items-center gap-3 sm:flex-row">
+          <MainCta>Create your chatbot</MainCta>
+          <AgentStart />
+        </div>
         <p className="text-caption text-ink-545 dark:text-ink-325">Free plan · No credit card needed</p>
       </motion.div>
 
