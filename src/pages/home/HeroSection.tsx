@@ -2,7 +2,8 @@ import { motion } from "framer-motion";
 import brandLogo from "../../assets/logo.svg";
 import MainCta from "./MainCta";
 import AgentStart from "./AgentStart";
-import KioMark from "../../components/KioMark";
+import { LiveOrb } from "../../components/LiveOrb";
+import { ArrowRight } from "../../components/icons";
 
 export default function HeroSection() {
   const sectionBorder = "border-b border-[rgba(16,23,35,0.12)] dark:border-ink-780";
@@ -19,11 +20,16 @@ export default function HeroSection() {
           href="#kio"
           className="group mb-7 inline-flex items-center gap-2.5 rounded-full border border-ink-120 py-1.5 pl-1.5 pr-3.5 text-body-sm text-fg-muted transition-colors duration-200 hover:border-ink-235 hover:text-fg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ink-425 dark:border-ink-780 dark:hover:border-ink-710"
         >
-          <KioMark size={20} className="shrink-0 text-fg" />
-          <span className="sm:hidden">Meet Kio, the launcher that looks back</span>
-          <span className="hidden sm:inline">Meet Kio, a chat launcher whose eyes follow your visitors</span>
-          <span className="hidden font-medium text-fg underline decoration-ink-235 underline-offset-4 group-hover:decoration-current sm:inline dark:decoration-ink-710">
-            See it
+          {/* Kio itself, blinking and glancing about; here it doesn't follow the pointer. */}
+          <LiveOrb size={22} interactive={false} className="shrink-0" />
+          <span>Meet Kio, the launcher that looks back</span>
+          <span className="inline-flex items-center gap-1 font-medium text-fg">
+            <span className="hidden sm:inline">See it</span>
+            <ArrowRight
+              size={14}
+              aria-hidden="true"
+              className="transition-transform duration-200 ease-out group-hover:translate-x-0.5 group-focus-visible:translate-x-0.5 motion-reduce:transition-none"
+            />
           </span>
         </a>
         <h1 className="text-[2.25rem] sm:text-[clamp(2.5rem,5vw,4rem)] font-display leading-[1.08] tracking-[-0.025em] [text-wrap:balance] text-fg mb-5">
