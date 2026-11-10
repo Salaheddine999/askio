@@ -110,7 +110,7 @@ export default async function apiKeys(req, res, action) {
 export async function requireApiKey(req) {
   const [, key] = String(req.headers.authorization || "").match(/^Bearer (\S+)$/i) || [];
   if (!key || !KEY_SHAPE.test(key)) {
-    throw httpError(401, "Send your Askio API key as: Authorization: Bearer askio_…");
+    throw httpError(401, "Sign in to Askio to connect, or send an API key as: Authorization: Bearer askio_…");
   }
 
   const ref = keys().doc(hashApiKey(key));
