@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
-import { FaGithub } from "react-icons/fa";
 import { ArrowUpRight } from "../../components/icons";
 import BrandLogo, { BrandWordmark } from "../../components/BrandLogo";
+import AgentStart from "./AgentStart";
 
 const GITHUB_URL = "https://github.com/Salaheddine999/askio";
 
@@ -71,15 +71,7 @@ export default function Footer() {
           <p className="max-w-[300px] text-sm leading-relaxed text-fg-muted">
             Turn your FAQs into a chatbot that looks like your brand and answers visitors around the clock.
           </p>
-          <a
-            href={GITHUB_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex h-9 items-center gap-2 rounded-full border border-ink-120 bg-ink-25 px-3.5 text-[13px] font-medium text-ink-900 transition-colors duration-150 hover:border-ink-235 hover:bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ink-425 dark:border-ink-780 dark:bg-ink-850 dark:text-ink-130 dark:hover:border-ink-605"
-          >
-            <FaGithub className="h-4 w-4" />
-            Star on GitHub
-          </a>
+          <AgentStart variant="footer" />
         </div>
 
         <nav aria-label="Footer" className="grid grid-cols-2 gap-8 sm:grid-cols-3">

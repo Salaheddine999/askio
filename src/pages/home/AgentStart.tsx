@@ -41,6 +41,9 @@ const AGENTS: Agent[] = [
 /** The logos shown on the hero button itself. */
 const ON_BUTTON = [ClaudeLogo, ChatGptLogo, GeminiLogo];
 
+/** The apps offered as tiles in the footer card; "Others" sits last. */
+const IN_FOOTER = ["Claude", "ChatGPT", "Gemini", "Grok", "Cursor", "Codex", "Others"];
+
 const focus =
   "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ink-425";
 
@@ -49,7 +52,11 @@ const ink = "text-ink-900 dark:text-ink-70";
 
 const dialogButton = `inline-flex h-10 items-center justify-center gap-2 rounded-full px-4 text-body-sm font-medium transition-colors duration-150 ${focus} focus-visible:outline-offset-2`;
 
-export default function AgentStart() {
+/**
+ * `hero` is the large button next to "Create your chatbot". `footer` is a
+ * compact pill for the footer; both open the same dialog.
+ */
+export default function AgentStart({ variant = "hero" }: { variant?: "hero" | "footer" }) {
   const [open, setOpen] = useState(false);
   const [agent, setAgent] = useState<Agent>(AGENTS[0]);
   const [copied, setCopied] = useState(false);
@@ -64,14 +71,43 @@ export default function AgentStart() {
     }
   };
 
+  const openDialog = (pick?: Agent) => {
+    if (pick) setAgent(pick);
+    setCopied(false);
+    setOpen(true);
+  };
+
   return (
     <>
+      {variant === "footer" ? (
+        // A line of text and every app as an overlapping circle, like the
+        // hero button's logos. Each circle opens the dialog with that app picked.
+        <div className="max-w-[300px]">
+          <p className="text-[13px] font-medium text-fg">Set up with your AI</p>
+          <div className="mt-2.5 flex items-center">
+            {IN_FOOTER.map((name, index) => {
+              const item = AGENTS.find((a) => a.name === name)!;
+              return (
+                <button
+                  key={name}
+                  type="button"
+                  onClick={() => openDialog(item)}
+                  aria-label={`Set up with ${name === "Others" ? "another AI app" : name}`}
+                  title={name}
+                  className={`relative flex h-9 w-9 items-center justify-center rounded-full bg-white ring-1 ring-ink-120 transition-transform duration-150 ease-out hover:z-10 hover:-translate-y-0.5 focus-visible:z-10 motion-reduce:transition-none motion-reduce:hover:translate-y-0 dark:bg-ink-805 dark:ring-ink-710 ${ink} ${focus} focus-visible:outline-offset-2 ${
+                    index > 0 ? "-ml-2" : ""
+                  }`}
+                >
+                  <item.icon size={16} />
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      ) : (
       <button
         type="button"
-        onClick={() => {
-          setCopied(false);
-          setOpen(true);
-        }}
+        onClick={() => openDialog()}
         className={`inline-flex h-[52px] items-center justify-center gap-3 rounded-full bg-ink-25 pl-3 pr-6 text-button font-medium text-ink-900 ring-1 ring-inset ring-ink-120 transition-[background-color,box-shadow,transform] duration-150 ease-out hover:bg-white hover:ring-ink-235 active:scale-[0.98] motion-reduce:transition-none motion-reduce:active:scale-100 dark:bg-ink-850 dark:text-ink-70 dark:ring-ink-780 dark:hover:bg-ink-825 dark:hover:ring-ink-710 ${focus}`}
       >
         {/* The apps it works with, overlapping like a short stack of coins. */}
@@ -89,6 +125,7 @@ export default function AgentStart() {
         </span>
         Set up with your AI
       </button>
+      )}
 
       <Dialog open={open} onClose={() => setOpen(false)} className="relative z-50">
         <DialogBackdrop
