@@ -35,6 +35,7 @@ const pages = {
   onboarding: () => import("./pages/Onboarding"),
   conversations: () => import("./pages/Conversations"),
   plans: () => import("./pages/Plans"),
+  mcp: () => import("./pages/Mcp"),
   privacy: () => import("./pages/PrivacyPolicy"),
   terms: () => import("./pages/TermsOfService"),
   refunds: () => import("./pages/RefundPolicy"),
@@ -57,6 +58,7 @@ const Onboarding = lazyPage(pages.onboarding);
 const Conversations = lazyPage(pages.conversations);
 const SuspendedNotice = lazyPage(() => import("./components/SuspendedNotice"));
 const Plans = lazyPage(pages.plans);
+const Mcp = lazyPage(pages.mcp);
 const PrivacyPolicy = lazyPage(pages.privacy);
 const TermsOfService = lazyPage(pages.terms);
 const RefundPolicy = lazyPage(pages.refunds);
@@ -76,6 +78,7 @@ function preloadCurrentPage(path: string) {
     [path === "/start", pages.onboarding],
     [path === "/oauth/authorize", pages.oauthAuthorize],
     [path === "/plans", pages.plans],
+    [path === "/mcp", pages.mcp],
     [path === "/privacy", pages.privacy],
     [path === "/terms", pages.terms],
     [path === "/refunds", pages.refunds],
@@ -89,7 +92,7 @@ const SIDEBAR_KEY = "askio_sidebar";
 // render straight away instead of waiting for Firebase to restore the session.
 const SIGNED_IN_KEY = "askio_signed_in";
 // "/oauth/authorize" is the "Allow access" page an AI app opens; it draws itself, signed in or not.
-const PUBLIC_PATHS = ["/", "/auth", "/plans", "/privacy", "/terms", "/refunds", "/oauth/authorize"];
+const PUBLIC_PATHS = ["/", "/auth", "/plans", "/mcp", "/privacy", "/terms", "/refunds", "/oauth/authorize"];
 
 // Pages that render inside the signed-in app shell (sidebar + content).
 const isAppRoute = (path: string) => !PUBLIC_PATHS.includes(path) && !path.startsWith("/chatbot/");
@@ -317,6 +320,7 @@ const App: React.FC = () => {
                 element={<Plans />}
               />
               <Route path="/oauth/authorize" element={<OAuthAuthorize user={user} />} />
+              <Route path="/mcp" element={<Mcp />} />
               <Route path="/privacy" element={<PrivacyPolicy />} />
               <Route path="/terms" element={<TermsOfService />} />
               <Route path="/refunds" element={<RefundPolicy />} />
