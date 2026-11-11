@@ -21,6 +21,7 @@ const COLUMNS: { title: string; links: FooterLink[] }[] = [
     title: "Resources",
     links: [
       { label: "Get started", href: "/auth", route: true },
+      { label: "MCP", href: "/mcp", route: true },
       { label: "Testimonials", href: "#testimonials" },
       { label: "GitHub", href: GITHUB_URL, external: true },
     ],
